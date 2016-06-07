@@ -1,0 +1,47 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevpp", "libevpp.vcxproj", "{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{772C2111-BBBF-49E6-B912-198A7F7A88E5} = {772C2111-BBBF-49E6-B912-198A7F7A88E5}
+		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9} = {CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevpp-test", "libevpp-test.vcxproj", "{13C5E832-391B-47E7-9907-182553B0175E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F} = {4877AA94-AD55-407F-9ED3-D4503FAB2A7F}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libglog_static", "..\3rdparty\glog-0.3.4\vsprojects\libglog_static\libglog_static_libevpp.vcxproj", "{772C2111-BBBF-49E6-B912-198A7F7A88E5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libbase", "libbase.vcxproj", "{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}.Debug|Win32.Build.0 = Debug|Win32
+		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}.Release|Win32.ActiveCfg = Release|Win32
+		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}.Release|Win32.Build.0 = Release|Win32
+		{13C5E832-391B-47E7-9907-182553B0175E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{13C5E832-391B-47E7-9907-182553B0175E}.Debug|Win32.Build.0 = Debug|Win32
+		{13C5E832-391B-47E7-9907-182553B0175E}.Release|Win32.ActiveCfg = Release|Win32
+		{13C5E832-391B-47E7-9907-182553B0175E}.Release|Win32.Build.0 = Release|Win32
+		{772C2111-BBBF-49E6-B912-198A7F7A88E5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{772C2111-BBBF-49E6-B912-198A7F7A88E5}.Debug|Win32.Build.0 = Debug|Win32
+		{772C2111-BBBF-49E6-B912-198A7F7A88E5}.Release|Win32.ActiveCfg = Release|Win32
+		{772C2111-BBBF-49E6-B912-198A7F7A88E5}.Release|Win32.Build.0 = Release|Win32
+		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Debug|Win32.Build.0 = Debug|Win32
+		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Release|Win32.ActiveCfg = Release|Win32
+		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
