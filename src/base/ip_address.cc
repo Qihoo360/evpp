@@ -389,6 +389,3 @@ int _itow_s(int value, uint16_t* buffer, size_t size_in_chars, int radix) {
     return 0;
 }
 #endif
-
-
-

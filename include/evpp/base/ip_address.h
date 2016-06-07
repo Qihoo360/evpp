@@ -13,6 +13,27 @@
 #include "evpp/base/evppbase_export.h"
 #include "evpp/base/slice.h"
 
+
+#ifndef H_OS_WINDOWS
+#ifdef __cplusplus
+extern "C" {
+#endif
+    // Implementations of Windows' int-to-string conversions
+    int _itoa_s(int value, char* buffer, size_t size_in_chars, int radix);
+    int _itow_s(int value, uint16_t* buffer, size_t size_in_chars, int radix);
+#ifdef __cplusplus
+}
+#endif
+
+// Secure template overloads for these functions
+template<size_t N>
+inline int _itoa_s(int value, char(&buffer)[N], int radix) {
+    return _itoa_s(value, buffer, N, radix);
+}
+
+#endif
+
+
 namespace evpp {
     namespace base {
         class EVPPBASE_EXPORT IPAddress {
@@ -357,21 +378,3 @@ namespace evpp {
 
 
 
-#ifndef H_OS_WINDOWS
-#ifdef __cplusplus
-extern "C" {
-#endif
-    // Implementations of Windows' int-to-string conversions
-    int _itoa_s(int value, char* buffer, size_t size_in_chars, int radix);
-    int _itow_s(int value, uint16_t* buffer, size_t size_in_chars, int radix);
-#ifdef __cplusplus
-}
-#endif
-
-// Secure template overloads for these functions
-template<size_t N>
-inline int _itoa_s(int value, char(&buffer)[N], int radix) {
-    return _itoa_s(value, buffer, N, radix);
-}
-
-#endif
