@@ -1,0 +1,29 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.d
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# vim swp file
+*.swp
+
+msvc/Debug/
+msvc/Release/
+msvc/bin/
+msvc/*.opensdf
+msvc/*.sdf
+msvc/*.suo
+
+test/evpp
+
+*.out
+

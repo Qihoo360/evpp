@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="base">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="evloop">
+      <UniqueIdentifier>{6a94d149-6f7b-47af-94e3-19d9eab3d441}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="event">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="sockets">
+      <UniqueIdentifier>{eee53411-c7a0-4552-85ab-81e36a0b66cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{1c4d9814-0cfc-4b4c-a095-ffe63e2c5779}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\fd_event.cc">
+      <Filter>event</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libevent_watcher.cc">
+      <Filter>event</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\inner_pre.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libevent_compact.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\pch.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\fd_channel.cc">
+      <Filter>sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\event_loop.cc">
+      <Filter>evloop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\event_loop_thread.cc">
+      <Filter>evloop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\event_loop_thread_pool.cc">
+      <Filter>evloop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\buffer.cc">
+      <Filter>common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\evpp\exp.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\inner_pre.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\libevent_headers.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\platform_config.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\fd_channel.h">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\fd_event.h">
+      <Filter>event</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\libevent_watcher.h">
+      <Filter>event</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\event_loop.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\invoke_timer.inl.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\event_loop_thread.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\event_loop_thread_pool.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\buffer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\sockets.h">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\evpp_export.h">
+      <Filter>base</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
