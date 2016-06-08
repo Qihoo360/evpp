@@ -18,6 +18,9 @@
     <Filter Include="common">
       <UniqueIdentifier>{1c4d9814-0cfc-4b4c-a095-ffe63e2c5779}</UniqueIdentifier>
     </Filter>
+    <Filter Include="tcp">
+      <UniqueIdentifier>{d854f834-9974-478e-b538-06390c055be3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\fd_event.cc">
@@ -49,6 +52,9 @@
     </ClCompile>
     <ClCompile Include="..\src\buffer.cc">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\listener.cc">
+      <Filter>tcp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -93,6 +99,9 @@
     </ClInclude>
     <ClInclude Include="..\include\evpp\evpp_export.h">
       <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\listener.h">
+      <Filter>tcp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
