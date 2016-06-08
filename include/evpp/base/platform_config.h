@@ -118,7 +118,9 @@
 #endif
 
 #ifdef H_OS_WINDOWS
+#pragma warning( disable: 4005 ) // warning C4005 : 'va_copy' : macro redefinition
 #pragma warning( disable: 4251 )
+#pragma warning( disable: 4996 ) // warning C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
 #endif
 
 
@@ -164,3 +166,12 @@
 
 #define H_ARRAY_SIZE H_ARRAYSIZE
 
+
+#ifndef H_OS_WINDOWS
+#ifndef SOCKET
+#	define SOCKET int		    /**< SOCKET definition */
+#endif
+#ifndef INVALID_SOCKET
+#	define INVALID_SOCKET -1	/**< invalid socket definition */
+#endif
+#endif

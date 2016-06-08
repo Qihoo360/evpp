@@ -68,7 +68,7 @@ namespace evpp {
         virtual void DoClose();
         static void HandlerFn(int fd, short which, void *v);
 
-        int pipe_[2];
+        int pipe_[2]; // Write to pipe_[0] , Read from pipe_[1]
     };
 
     //////////////////////////////////////////////////////////////////////////
