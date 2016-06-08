@@ -27,6 +27,8 @@ namespace evpp {
         struct event_base *event_base() { return event_base_; }
         void AddAfterLoopFunctor(const Functor& handler);
 
+        bool IsInLoopThread() const;
+
     private:
         void StopInLoop();
         void Init();

@@ -46,6 +46,11 @@ namespace evpp {
         //LOG_TRACE << "EventLoop stopped, tid: " << std::this_thread::get_id();
     }
 
+    bool EventLoop::IsInLoopThread() const {
+        std::thread::id cur_tid = std::this_thread::get_id();
+        return cur_tid == tid_;
+    }
+
     void EventLoop::Stop() {
         RunInLoop(xstd::bind(&EventLoop::StopInLoop, this));
     }
@@ -99,8 +104,7 @@ namespace evpp {
     }
 
     void EventLoop::RunInLoop(const Functor& functor) {
-        std::thread::id cur_tid = std::this_thread::get_id();
-        if (cur_tid == tid_) {
+        if (IsInLoopThread()) {
             functor();
         } else {
             QueueInLoop(functor);

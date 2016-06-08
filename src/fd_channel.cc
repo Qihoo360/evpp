@@ -11,7 +11,7 @@ namespace evpp {
 
     FdChannel::FdChannel(struct event_base *event_base, int f, bool r, bool w)
         : fd_(f) {
-        events_ = (w ? kWritable : 0) | (r ? kReadable : 0) | EV_PERSIST;
+        events_ = (r ? kReadable : 0) | (w ? kWritable : 0) | EV_PERSIST;
         event_ = new event;
         memset(event_, 0, sizeof(struct event));
         event_set(event_, fd_, events_, FdChannel::HandlerFn, this);
