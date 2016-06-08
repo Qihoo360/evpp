@@ -20,6 +20,7 @@
     <ClCompile Include="..\src\inner_pre.cc" />
     <ClCompile Include="..\src\libevent_compact.cc" />
     <ClCompile Include="..\src\libevent_watcher.cc" />
+    <ClCompile Include="..\src\listener.cc" />
     <ClCompile Include="..\src\pch.cc" />
   </ItemGroup>
   <ItemGroup>
@@ -34,6 +35,7 @@
     <ClInclude Include="..\include\evpp\inner_pre.h" />
     <ClInclude Include="..\include\evpp\libevent_headers.h" />
     <ClInclude Include="..\include\evpp\libevent_watcher.h" />
+    <ClInclude Include="..\include\evpp\listener.h" />
     <ClInclude Include="..\include\evpp\platform_config.h" />
     <ClInclude Include="..\include\evpp\sockets.h" />
     <ClInclude Include="..\src\invoke_timer.inl.h" />
