@@ -159,4 +159,9 @@ namespace evpp {
         return peer_addr;
     }
 
+    void Listener::Stop() {
+        loop_->AssertInLoopThread();
+        chan_->DisableAllEvent();
+        chan_->Close();
+    }
 }
