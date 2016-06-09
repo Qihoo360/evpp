@@ -115,7 +115,7 @@
     <ClInclude Include="..\include\evpp\tcp_server.h">
       <Filter>tcp</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\tcp_callbacks.h">
+    <ClInclude Include="..\include\evpp\tcp_callbacks.h">
       <Filter>tcp</Filter>
     </ClInclude>
   </ItemGroup>

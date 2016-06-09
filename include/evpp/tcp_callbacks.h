@@ -17,6 +17,6 @@ namespace evpp {
 
     // the data has been read to (buf, len)
     typedef xstd::function<void(const TcpConnectionPtr&,
-                                 Buffer*,
-                                 base::Timestamp)> MessageCallback;
+                                Buffer*,
+                                base::Timestamp)> MessageCallback;
 }

@@ -9,7 +9,8 @@ struct event_base;
 
 namespace evpp {
 
-    //
+    class EventLoop;
+
     // A selectable I/O channel.
     //
     // This class doesn't own the file descriptor.
@@ -18,7 +19,7 @@ namespace evpp {
     class EVPP_EXPORT FdChannel {
     public:
         enum EventType {
-            kNone     = 0x00,
+            kNone = 0x00,
             kReadable = 0x02,
             kWritable = 0x04,
         };
@@ -26,16 +27,28 @@ namespace evpp {
         typedef xstd::function<void(base::Timestamp)> ReadEventCallback;
 
     public:
-        FdChannel(struct event_base *evbase, int fd,
-            bool watch_read_event, bool watch_write_event);
-
-        // Add this FdChannel to EventLoop
-        bool Start();
+        FdChannel(EventLoop* loop, int fd,
+                  bool watch_read_event, bool watch_write_event);
 
         void Close();
 
+        // Attach this FdChannel to EventLoop
+        void AttachToLoop();
+
+    public:
+        bool IsReadable() const { return (events_ & kReadable) != 0; }
+        bool IsWritable() const { return (events_ & kWritable) != 0; }
+        bool IsNoneEvent() const { return events_ == kNone; }
+
+        void EnableReadEvent() { events_ |= kReadable; Update(); }
+        void EnableWriteEvent() { events_ |= kWritable; Update(); }
+        void DisableReadEvent() { events_ &= ~kReadable; Update(); }
+        void DisableWriteEvent() { events_ &= ~kWritable; Update(); }
+        void DisableAllEvent() { events_ = kNone; Update(); }
+
     public:
         int fd() const { return fd_; }
+        std::string EventsToString() const;
 
     public:
         void SetReadCallback(const ReadEventCallback& cb) {
@@ -54,19 +67,22 @@ namespace evpp {
             error_fn_ = cb;
         }
     private:
-        void HandlerFn(int fd, short which);
-        static void HandlerFn(int fd, short which, void *v);
+        void HandleEvent(int fd, short which);
+        static void HandleEvent(int fd, short which, void *v);
 
+        void Update();
     private:
         ReadEventCallback read_fn_;
         EventCallback write_fn_;
         EventCallback close_fn_;
         EventCallback error_fn_;
 
-        struct event*      event_;
-        struct event_base* evbase_;
+        EventLoop* loop_;
+        bool attached_to_loop_;
 
-        int events_;
+        struct event* event_;
+        int events_; // the bitwise OR of zero or more of the EventType flags
+        
         int fd_;
     };
 
