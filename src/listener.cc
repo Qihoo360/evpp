@@ -44,7 +44,15 @@ namespace evpp {
             LOG_FATAL << "bind error :" << strerror(serrno);
         }
 
+        ret = ::listen(fd_, SOMAXCONN);
+        if (ret < 0) {
+            int serrno = errno;
+            LOG_FATAL << "Listen failed " << strerror(serrno);
+        } 
+
         chan_ = xstd::shared_ptr<FdChannel>(new FdChannel(loop_->event_base(), fd_, true, false));
+        chan_->SetReadCallback(xstd::bind(&Listener::HandleAccept, this, xstd::placeholders::_1));
+        chan_->Start();
     }
 
 
@@ -77,5 +85,64 @@ namespace evpp {
     out:
         EVUTIL_CLOSESOCKET(fd);
         return INVALID_SOCKET;
+    }
+
+    void Listener::HandleAccept(base::Timestamp ts) {
+        LOG_INFO << __FUNCTION__ << " New connections";
+
+        struct sockaddr_storage ss;
+        socklen_t addrlen = sizeof(ss);
+        int nfd = -1;
+
+        if ((nfd = ::accept(fd_, (struct sockaddr *)&ss, &addrlen)) == -1) {
+            int serrno = errno;
+            if (serrno != EAGAIN && serrno != EINTR)
+                LOG_WARN << __FUNCTION__ << "bad accept " << strerror(serrno);
+            return;
+        }
+
+        if (evutil_make_socket_nonblocking(nfd) < 0) {
+            LOG_ERROR << "set nfd=" << nfd << " nonblocking failed.";
+            EVUTIL_CLOSESOCKET(nfd);
+            return;
+        }
+
+        std::string peer_addr;
+        int port = 0;
+        if (ss.ss_family == AF_INET) {
+            struct sockaddr_in* addr4 = (sockaddr_in*)&ss;
+            char addr_str[INET_ADDRSTRLEN];
+            const char* addr = ::inet_ntop(ss.ss_family, &addr4->sin_addr, addr_str, INET_ADDRSTRLEN);
+            if (addr) {
+                peer_addr = addr;
+            }
+            port = ::ntohs(addr4->sin_port);
+            LOG_INFO << "accepted from : " << peer_addr << ":" << port
+                << ", listen fd:" << fd_
+                << ", client fd: " << nfd;
+        } else if (ss.ss_family == AF_INET6) {
+            struct sockaddr_in6* addr6 = (sockaddr_in6*)&ss;
+            char addr_str[INET6_ADDRSTRLEN];
+            const char* addr = ::inet_ntop(ss.ss_family, &addr6->sin6_addr, addr_str, INET6_ADDRSTRLEN);
+            if (addr) {
+                peer_addr = addr;
+            }
+            port = ::ntohs(addr6->sin6_port);
+            LOG_INFO << "accepted from : " << peer_addr << ":" << port
+                << ", listen fd:" << fd_
+                << ", client fd: " << nfd;
+        } else {
+            LOG_ERROR << "unknown socket family connected";
+            EVUTIL_CLOSESOCKET(nfd);
+            return;
+        }
+
+        char buf[16] = {};
+        sprintf(buf, "%d", port);
+        peer_addr.append(":", 1).append(buf);
+
+        if (new_conn_fn_) {
+            new_conn_fn_(nfd, peer_addr);
+        }
     }
 }
