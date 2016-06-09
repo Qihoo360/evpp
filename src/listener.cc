@@ -48,11 +48,12 @@ namespace evpp {
         if (ret < 0) {
             int serrno = errno;
             LOG_FATAL << "Listen failed " << strerror(serrno);
-        } 
+        }
 
-        chan_ = xstd::shared_ptr<FdChannel>(new FdChannel(loop_->event_base(), fd_, true, false));
+        chan_ = xstd::shared_ptr<FdChannel>(new FdChannel(loop_, fd_, true, false));
         chan_->SetReadCallback(xstd::bind(&Listener::HandleAccept, this, xstd::placeholders::_1));
-        chan_->Start();
+        loop_->RunInLoop(xstd::bind(&FdChannel::AttachToLoop, chan_.get()));
+        LOG_INFO << "TCPServer is running at " << addr_;
     }
 
 
@@ -107,42 +108,55 @@ namespace evpp {
             return;
         }
 
-        std::string peer_addr;
-        int port = 0;
-        if (ss.ss_family == AF_INET) {
-            struct sockaddr_in* addr4 = (sockaddr_in*)&ss;
-            char addr_str[INET_ADDRSTRLEN];
-            const char* addr = ::inet_ntop(ss.ss_family, &addr4->sin_addr, addr_str, INET_ADDRSTRLEN);
-            if (addr) {
-                peer_addr = addr;
-            }
-            port = ::ntohs(addr4->sin_port);
-            LOG_INFO << "accepted from : " << peer_addr << ":" << port
-                << ", listen fd:" << fd_
-                << ", client fd: " << nfd;
-        } else if (ss.ss_family == AF_INET6) {
-            struct sockaddr_in6* addr6 = (sockaddr_in6*)&ss;
-            char addr_str[INET6_ADDRSTRLEN];
-            const char* addr = ::inet_ntop(ss.ss_family, &addr6->sin6_addr, addr_str, INET6_ADDRSTRLEN);
-            if (addr) {
-                peer_addr = addr;
-            }
-            port = ::ntohs(addr6->sin6_port);
-            LOG_INFO << "accepted from : " << peer_addr << ":" << port
-                << ", listen fd:" << fd_
-                << ", client fd: " << nfd;
-        } else {
-            LOG_ERROR << "unknown socket family connected";
+        int on = 1;
+        ::setsockopt(nfd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
+
+        std::string peer_addr = GetRemoteAddr(ss);
+        if (peer_addr.empty()) {
             EVUTIL_CLOSESOCKET(nfd);
             return;
         }
 
-        char buf[16] = {};
-        sprintf(buf, "%d", port);
-        peer_addr.append(":", 1).append(buf);
+        LOG_INFO << "accepted from : " << peer_addr
+            << ", listen fd:" << fd_
+            << ", client fd: " << nfd;
 
         if (new_conn_fn_) {
             new_conn_fn_(nfd, peer_addr);
         }
     }
+
+    std::string Listener::GetRemoteAddr(struct sockaddr_storage &ss) {
+        std::string peer_addr;
+        int port = 0;
+        if (ss.ss_family == AF_INET) {
+            struct sockaddr_in* addr4 = (sockaddr_in*)&ss;
+            char buf[INET_ADDRSTRLEN] = {};
+            const char* addr = ::inet_ntop(ss.ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
+            if (addr) {
+                peer_addr = addr;
+            }
+            port = ::ntohs(addr4->sin_port);
+        } else if (ss.ss_family == AF_INET6) {
+            struct sockaddr_in6* addr6 = (sockaddr_in6*)&ss;
+            char buf[INET6_ADDRSTRLEN] = {};
+            const char* addr = ::inet_ntop(ss.ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
+            if (addr) {
+                peer_addr = addr;
+            }
+            port = ::ntohs(addr6->sin6_port);
+        } else {
+            LOG_ERROR << "unknown socket family connected";
+            return std::string();
+        }
+
+        if (!peer_addr.empty()) {
+            char buf[16] = {};
+            snprintf(buf, sizeof(buf), "%d", port);
+            peer_addr.append(":", 1).append(buf);
+        }
+
+        return peer_addr;
+    }
+
 }
