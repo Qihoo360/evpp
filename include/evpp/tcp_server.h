@@ -18,7 +18,7 @@ namespace evpp {
             kIPAddressHashing,
         };
         TCPServer(EventLoop* loop,
-                  const std::string& listen_addr,
+                  const std::string& listen_addr/*ip:port*/,
                   const std::string& name,
                   int thread_num);
 
@@ -30,6 +30,8 @@ namespace evpp {
             threads_dispatch_policy_ = v;
         }
     private:
+        void RemoveConnection(const TcpConnectionPtr& conn);
+        void RemoveConnectionInLoop(const TcpConnectionPtr& conn); // Remove the connection in the listener EventLoop
         void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/);
         EventLoop* GetNextLoop(const std::string& remote_addr);
     private:
@@ -38,22 +40,16 @@ namespace evpp {
         EventLoop* loop_;  // the acceptor loop
         const std::string listen_addr_;
         const std::string name_;
-        xstd::shared_ptr<Listener> acceptor_; // avoid revealing Acceptor
+        xstd::shared_ptr<Listener> listener_; // avoid revealing Acceptor
         xstd::shared_ptr<EventLoopThreadPool> tpool_;
         MessageCallback messageCallback_;
-//         ConnectionCallback connectionCallback_;
-//         
-//         WriteCompleteCallback writeCompleteCallback_;
-//         ThreadInitCallback threadInitCallback_;
-        std::atomic<int> started_;
-
+        ConnectionCallback connectionCallback_;
+        WriteCompleteCallback writeCompleteCallback_;
 
         ThreadDispatchPolicy threads_dispatch_policy_;
 
         // always in loop thread
         uint64_t nextConnId_;
-        ConnectionMap connections_;
-
-
+        ConnectionMap connections_; // TODO 这个变量真的有必要存在么？
     };
 }

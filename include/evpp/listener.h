@@ -14,6 +14,7 @@ namespace evpp {
         ~Listener();
 
         void Start();
+        void Stop();
         void SetNewConnectionCallback(NewConnectionCallback cb) {
             new_conn_fn_ = cb;
         }
