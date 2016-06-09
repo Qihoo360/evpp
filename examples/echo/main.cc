@@ -3,6 +3,32 @@
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>
 
+void OnMessage(const evpp::TcpConnectionPtr& conn,
+               evpp::Buffer* msg,
+               evpp::base::Timestamp ts) {
+    std::string s = msg->NextAllString();
+    LOG_INFO << "Received a message [" << s << "]";
+    conn->Send(s.data(), s.size());
+}
+
+int main(int argc, char* argv[]) {
+    std::string port = "9099";
+    if (argc == 2) {
+        port = argv[1];
+    }
+    std::string addr = std::string("127.0.0.1:") + port;
+    evpp::EventLoop loop;
+    evpp::TCPServer server(&loop, addr, "TCPEcho", 1);
+    server.SetMesageHandler(&OnMessage);
+    server.Start();
+    loop.Run();
+    return 0;
+}
+
+
+
+
+
 #ifdef WIN32
 #   ifdef _DEBUG
 #		pragma comment(lib,"libevent_d.lib")
@@ -32,25 +58,4 @@ namespace {
         }
     } __s_onexit_pause;
 #endif
-}
-
-void OnMessage(const evpp::TcpConnectionPtr& conn,
-               evpp::Buffer* msg,
-               evpp::base::Timestamp ts) {
-    std::string s = msg->NextAllString();
-    LOG_INFO << "Received a message [" << s << "]";
-    conn->Send(s.data(), s.size());
-}
-int main(int argc, char* argv[]) {
-    std::string port = "9099";
-    if (argc == 2) {
-        port = argv[1];
-    }
-    std::string addr = std::string("127.0.0.1:") + port;
-    evpp::EventLoop loop;
-    evpp::TCPServer server(&loop, addr, "TCPEcho", 1);
-    server.SetMesageHandler(OnMessage);
-    server.Start();
-    loop.Run();
-    return 0;
 }

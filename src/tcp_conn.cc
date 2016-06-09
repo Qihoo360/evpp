@@ -1,5 +1,7 @@
 #include "evpp/inner_pre.h"
 
+#include "evpp/libevent_headers.h"
+
 #include "evpp/tcp_conn.h"
 #include "evpp/fd_channel.h"
 #include "evpp/event_loop.h"
@@ -11,6 +13,7 @@ namespace evpp {
                      const std::string& local_addr,
                      const std::string& peer_addr)
                      : loop_(loop)
+                     , fd_(sockfd)
                      , name_(name)
                      , local_addr_(local_addr)
                      , remote_addr_(peer_addr) {
@@ -29,6 +32,12 @@ namespace evpp {
         //socket_->setKeepAlive(true);
     }
 
+    TCPConn::~TCPConn() {
+        LOG_INFO << "TCPConn::~TCPConn close(fd=" << fd_ << ")";
+        EVUTIL_CLOSESOCKET(fd_);
+        fd_ = INVALID_SOCKET;
+    }
+
     void TCPConn::HandleRead(base::Timestamp receiveTime) {
         loop_->AssertInLoopThread();
         int serrno = 0;
@@ -39,7 +48,7 @@ namespace evpp {
             HandleClose();
         } else {
             errno = serrno;
-            LOG_ERROR << "TCPConn::HandleRead";
+            LOG_ERROR << "TCPConn::HandleRead " << strerror(serrno);
             HandleError();
         }
     }
@@ -77,19 +86,14 @@ namespace evpp {
 
     void TCPConn::HandleClose() {
         loop_->AssertInLoopThread();
+        chan_->DisableAllEvent();
         chan_->Close();
-        chan_.reset();
 
-        //         LOG_TRACE << "fd = " << channel_->fd() << " state = " << stateToString();
-        //         assert(state_ == kConnected || state_ == kDisconnecting);
-        //         // we don't close fd, leave it to dtor, so we can find leaks easily.
-        //         setState(kDisconnected);
-        //         channel_->disableAll();
-        // 
-        //         TcpConnectionPtr guardThis(shared_from_this());
-        //         connectionCallback_(guardThis);
-        //         // must be the last line
-        //         closeCallback_(guardThis);
+        TcpConnectionPtr conn(shared_from_this());
+        if (connectionCallback_) {
+            connectionCallback_(conn);
+        }
+        closeCallback_(conn);// This must be the last line
     }
 
     void TCPConn::HandleError() {
@@ -107,5 +111,4 @@ namespace evpp {
         chan_->AttachToLoop();
         chan_->EnableReadEvent();
     }
-
 }
