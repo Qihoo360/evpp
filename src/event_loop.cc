@@ -136,4 +136,12 @@ namespace evpp {
         }
         calling_pending_functors_ = false;
     }
+
+    void EventLoop::AssertInLoopThread() const {
+        assert(IsInLoopThread());
+        if (!IsInLoopThread()) {
+            LOG_FATAL << __FUNCTION__ << " failed";
+        }
+    }
+
 }

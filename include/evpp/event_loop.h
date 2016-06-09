@@ -28,6 +28,7 @@ namespace evpp {
         void AddAfterLoopFunctor(const Functor& handler);
 
         bool IsInLoopThread() const;
+        void AssertInLoopThread() const;
 
     private:
         void StopInLoop();
