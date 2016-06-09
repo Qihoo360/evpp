@@ -2,6 +2,8 @@
 
 #include "evpp/inner_pre.h"
 
+#include <errno.h>
+
 #ifdef H_OS_WINDOWS
 #include <ws2tcpip.h>
 #include <WinSock2.h>
@@ -32,6 +34,9 @@ inline int readv(SOCKET sockfd, struct iovec *iov, int iovcnt) {
         return readn;
     }
 
+    int serrno = errno;
+    LOG_INFO << "WSAGetLastError=" << WSAGetLastError() << " errno=" << serrno;
+    //errno = WSAGetLastError();
     return -1;
 }
 #endif

@@ -17,18 +17,30 @@ namespace evpp {
                 int sockfd,
                 const std::string& local_addr,
                 const std::string& peer_addr);
-        void SetMesageHandler(MessageCallback cb) {
-            messageCallback_ = cb;
-        }
+        ~TCPConn();
 
         void Send(const void* d, size_t dlen);
 
-        // returns the remote network address.
         const std::string& remote_addr() const {
             return remote_addr_;
         }
 
+        const std::string& name() const {
+            return name_;
+        }
+
         void OnAttachedToLoop();
+    public:
+        void SetMesageHandler(MessageCallback cb) {
+            messageCallback_ = cb;
+        }
+        void SetConnectionHandler(ConnectionCallback cb) {
+            connectionCallback_ = cb;
+        }
+        void SetCloseCallback(CloseCallback cb) {
+            closeCallback_ = cb;
+        }
+
     private:
         void HandleRead(base::Timestamp receiveTime);
         void HandleWrite();
@@ -36,9 +48,10 @@ namespace evpp {
         void HandleError();
     private:
         EventLoop* loop_;
+        int fd_;
         std::string name_;
-        std::string local_addr_;
-        std::string remote_addr_;
+        std::string local_addr_; // ip:port
+        std::string remote_addr_; // ip:port
         xstd::shared_ptr<FdChannel> chan_;
         Buffer inputBuffer_;
         Buffer outputBuffer_;
@@ -47,5 +60,6 @@ namespace evpp {
         MessageCallback messageCallback_;
         WriteCompleteCallback writeCompleteCallback_;
         HighWaterMarkCallback highWaterMarkCallback_;
+        CloseCallback closeCallback_;
     };
 }
