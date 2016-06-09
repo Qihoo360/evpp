@@ -16,7 +16,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevpp-test", "libevpp-tes
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libglog_static", "..\3rdparty\glog-0.3.4\vsprojects\libglog_static\libglog_static_libevpp.vcxproj", "{772C2111-BBBF-49E6-B912-198A7F7A88E5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libbase", "libbase.vcxproj", "{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevppbase", "libbase.vcxproj", "{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "echo", "echo.vcxproj", "{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F} = {4877AA94-AD55-407F-9ED3-D4503FAB2A7F}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,6 +45,10 @@ Global
 		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Debug|Win32.Build.0 = Debug|Win32
 		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Release|Win32.ActiveCfg = Release|Win32
 		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Release|Win32.Build.0 = Release|Win32
+		{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE}.Debug|Win32.Build.0 = Debug|Win32
+		{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE}.Release|Win32.ActiveCfg = Release|Win32
+		{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
