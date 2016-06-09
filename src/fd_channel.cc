@@ -10,7 +10,7 @@ namespace evpp {
     static_assert(FdChannel::kWritable == EV_WRITE, "");
 
     FdChannel::FdChannel(struct event_base *event_base, int f, bool r, bool w)
-        : fd_(f) {
+        : fd_(f), evbase_(event_base) {
         events_ = (r ? kReadable : 0) | (w ? kWritable : 0) | EV_PERSIST;
         event_ = new event;
         memset(event_, 0, sizeof(struct event));
@@ -45,6 +45,11 @@ namespace evpp {
 
         if ((which & EV_WRITE) && write_fn_) {
             write_fn_();
+        }
+
+        // TEST CODE
+        {
+            LOG_INFO << __FUNCTION__ << "which=" << which;
         }
     }
 }

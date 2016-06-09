@@ -91,13 +91,24 @@
     <ClCompile Include="..\3rdparty\gtest\src\gtest-all.cc" />
     <ClCompile Include="..\3rdparty\gtest\src\gtest_main.cc" />
     <ClCompile Include="..\test\buffer_test.cc" />
-    <ClCompile Include="..\test\event_loop_test.cc" />
-    <ClCompile Include="..\test\event_loop_thread_pool_test.cc" />
-    <ClCompile Include="..\test\event_loop_thread_test.cc" />
+    <ClCompile Include="..\test\event_loop_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\test\event_loop_thread_pool_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\test\event_loop_thread_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\test\ip_address_test.cc" />
+    <ClCompile Include="..\test\tcp_server_test.cc" />
     <ClCompile Include="..\test\time_test.cc" />
-    <ClCompile Include="..\test\event_condition_test.cc" />
-    <ClCompile Include="..\test\event_watcher_test.cc" />
+    <ClCompile Include="..\test\event_condition_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\test\event_watcher_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\test\glog_test.cc" />
     <ClCompile Include="..\test\winmain.cc" />
   </ItemGroup>

@@ -22,6 +22,8 @@
     <ClCompile Include="..\src\libevent_watcher.cc" />
     <ClCompile Include="..\src\listener.cc" />
     <ClCompile Include="..\src\pch.cc" />
+    <ClCompile Include="..\src\tcp_conn.cc" />
+    <ClCompile Include="..\src\tcp_server.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\evpp\buffer.h" />
@@ -38,7 +40,10 @@
     <ClInclude Include="..\include\evpp\listener.h" />
     <ClInclude Include="..\include\evpp\platform_config.h" />
     <ClInclude Include="..\include\evpp\sockets.h" />
+    <ClInclude Include="..\include\evpp\tcp_conn.h" />
+    <ClInclude Include="..\include\evpp\tcp_server.h" />
     <ClInclude Include="..\src\invoke_timer.inl.h" />
+    <ClInclude Include="..\src\tcp_callbacks.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}</ProjectGuid>

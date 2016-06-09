@@ -9,8 +9,8 @@
 namespace evpp {
     class EVPP_EXPORT Buffer {
     public:
-        static const size_t kCheapPrepend = 8;
-        static const size_t kInitialSize = 1024;
+        static const size_t kCheapPrepend;
+        static const size_t kInitialSize;
 
         explicit Buffer(size_t initialSize = kInitialSize)
             : capacity_(kCheapPrepend + initialSize),
