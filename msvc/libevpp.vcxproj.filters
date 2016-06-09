@@ -56,6 +56,12 @@
     <ClCompile Include="..\src\listener.cc">
       <Filter>tcp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\tcp_conn.cc">
+      <Filter>tcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tcp_server.cc">
+      <Filter>tcp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\evpp\exp.h">
@@ -101,6 +107,15 @@
       <Filter>base</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\listener.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\tcp_conn.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\tcp_server.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tcp_callbacks.h">
       <Filter>tcp</Filter>
     </ClInclude>
   </ItemGroup>
