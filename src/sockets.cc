@@ -1,21 +1,21 @@
 #include "evpp/inner_pre.h"
 
+#include "evpp/libevent_headers.h"
 #include "evpp/sockets.h"
 
 namespace evpp {
     EVPP_EXPORT std::string strerror(int e) {
 #ifdef H_OS_WINDOWS
-//         LPVOID lpMsgBuf;
-//         FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(),
-//                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-//                       (LPTSTR)&lpMsgBuf, 0, NULL);
-//         std::string s = (char*)lpMsgBuf;
-//         LocalFree(lpMsgBuf);
-
         LPVOID lpMsgBuf = NULL;
-        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, e,
-                      0,
-                      (LPTSTR)&lpMsgBuf, 0, NULL);
+        ::FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            e,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPSTR)&lpMsgBuf,
+            0, NULL);
         if (lpMsgBuf) {
             std::string s = (char*)lpMsgBuf;
             LocalFree(lpMsgBuf);
@@ -26,6 +26,38 @@ namespace evpp {
         char buf[1024] = {};
         return std::string(strerror_r(e, buf, sizeof buf));
 #endif
+    }
+
+
+    int CreateNonblockingSocket() {
+        int serrno = 0;
+        int on = 1;
+
+        /* Create listen socket */
+        int fd = socket(AF_INET, SOCK_STREAM, 0);
+        serrno = errno;
+        if (fd == -1) {
+            LOG_FATAL << "socket error " << strerror(serrno);
+            return INVALID_SOCKET;
+        }
+
+        if (evutil_make_socket_nonblocking(fd) < 0)
+            goto out;
+
+#ifndef WIN32
+        if (fcntl(fd, F_SETFD, 1) == -1) {
+            serrno = errno;
+            LOG_FATAL << "fcntl(F_SETFD)" << strerror(serrno);
+            goto out;
+        }
+#endif
+
+        ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
+        ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
+        return fd;
+    out:
+        EVUTIL_CLOSESOCKET(fd);
+        return INVALID_SOCKET;
     }
 }
 

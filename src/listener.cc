@@ -56,38 +56,6 @@ namespace evpp {
         LOG_INFO << "TCPServer is running at " << addr_;
     }
 
-
-    int Listener::CreateNonblockingSocket() {
-        int serrno = 0;
-        int on = 1;
-
-        /* Create listen socket */
-        int fd = socket(AF_INET, SOCK_STREAM, 0);
-        serrno = errno;
-        if (fd == -1) {
-            LOG_FATAL << "socket error " << strerror(serrno);
-            return INVALID_SOCKET;
-        }
-
-        if (evutil_make_socket_nonblocking(fd) < 0)
-            goto out;
-
-#ifndef WIN32
-        if (fcntl(fd, F_SETFD, 1) == -1) {
-            serrno = errno;
-            LOG_FATAL << "fcntl(F_SETFD)" << strerror(serrno);
-            goto out;
-        }
-#endif
-
-        ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
-        ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
-        return fd;
-    out:
-        EVUTIL_CLOSESOCKET(fd);
-        return INVALID_SOCKET;
-    }
-
     void Listener::HandleAccept(base::Timestamp ts) {
         LOG_INFO << __FUNCTION__ << " New connections";
 
@@ -111,30 +79,30 @@ namespace evpp {
         int on = 1;
         ::setsockopt(nfd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
 
-        std::string peer_addr = GetRemoteAddr(ss);
-        if (peer_addr.empty()) {
+        std::string raddr = GetRemoteAddr(ss);
+        if (raddr.empty()) {
             EVUTIL_CLOSESOCKET(nfd);
             return;
         }
 
-        LOG_INFO << "accepted from : " << peer_addr
+        LOG_INFO << "accepted from : " << raddr
             << ", listen fd:" << fd_
             << ", client fd: " << nfd;
 
         if (new_conn_fn_) {
-            new_conn_fn_(nfd, peer_addr);
+            new_conn_fn_(nfd, raddr);
         }
     }
 
     std::string Listener::GetRemoteAddr(struct sockaddr_storage &ss) {
-        std::string peer_addr;
+        std::string raddr;
         int port = 0;
         if (ss.ss_family == AF_INET) {
             struct sockaddr_in* addr4 = (sockaddr_in*)&ss;
             char buf[INET_ADDRSTRLEN] = {};
             const char* addr = ::inet_ntop(ss.ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
             if (addr) {
-                peer_addr = addr;
+                raddr = addr;
             }
             port = ::ntohs(addr4->sin_port);
         } else if (ss.ss_family == AF_INET6) {
@@ -142,7 +110,7 @@ namespace evpp {
             char buf[INET6_ADDRSTRLEN] = {};
             const char* addr = ::inet_ntop(ss.ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
             if (addr) {
-                peer_addr = addr;
+                raddr = addr;
             }
             port = ::ntohs(addr6->sin6_port);
         } else {
@@ -150,13 +118,13 @@ namespace evpp {
             return std::string();
         }
 
-        if (!peer_addr.empty()) {
+        if (!raddr.empty()) {
             char buf[16] = {};
             snprintf(buf, sizeof(buf), "%d", port);
-            peer_addr.append(":", 1).append(buf);
+            raddr.append(":", 1).append(buf);
         }
 
-        return peer_addr;
+        return raddr;
     }
 
     void Listener::Stop() {

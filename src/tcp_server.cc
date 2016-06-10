@@ -35,7 +35,7 @@ namespace evpp {
         snprintf(buf, sizeof buf, "-%s#%lu", remote_addr.c_str(), nextConnId_++);
         std::string n = name_ + buf;
 
-        TcpConnectionPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
+        TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
         conn->SetMesageHandler(messageCallback_);
         conn->SetCloseCallback(xstd::bind(&TCPServer::RemoveConnection, this, xstd::placeholders::_1));
         io_loop->RunInLoop(xstd::bind(&TCPConn::OnAttachedToLoop, conn.get()));
@@ -55,11 +55,11 @@ namespace evpp {
         }
     }
 
-    void TCPServer::RemoveConnection(const TcpConnectionPtr& conn) {
+    void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
         loop_->RunInLoop(xstd::bind(&TCPServer::RemoveConnectionInLoop, this, conn));
     }
 
-    void TCPServer::RemoveConnectionInLoop(const TcpConnectionPtr& conn) {
+    void TCPServer::RemoveConnectionInLoop(const TCPConnPtr& conn) {
         connections_.erase(conn->name());
     }
 }

@@ -8,15 +8,15 @@ namespace evpp {
     class Buffer;
     class TCPConn;
 
-    typedef xstd::shared_ptr<TCPConn> TcpConnectionPtr;
+    typedef xstd::shared_ptr<TCPConn> TCPConnPtr;
     typedef xstd::function<void()> TimerCallback;
-    typedef xstd::function<void(const TcpConnectionPtr&)> ConnectionCallback;
-    typedef xstd::function<void(const TcpConnectionPtr&)> CloseCallback;
-    typedef xstd::function<void(const TcpConnectionPtr&)> WriteCompleteCallback;
-    typedef xstd::function<void(const TcpConnectionPtr&, size_t)> HighWaterMarkCallback;
+    typedef xstd::function<void(const TCPConnPtr&)> ConnectionCallback;
+    typedef xstd::function<void(const TCPConnPtr&)> CloseCallback;
+    typedef xstd::function<void(const TCPConnPtr&)> WriteCompleteCallback;
+    typedef xstd::function<void(const TCPConnPtr&, size_t)> HighWaterMarkCallback;
 
-    // the data has been read to (buf, len)
-    typedef xstd::function<void(const TcpConnectionPtr&,
+    // the data has been read to Buffer
+    typedef xstd::function<void(const TCPConnPtr&,
                                 Buffer*,
                                 base::Timestamp)> MessageCallback;
 }
