@@ -13,8 +13,9 @@ namespace evpp {
         Listener(EventLoop* loop, const std::string& addr/*ip:port*/);
         ~Listener();
 
-        void Start();
+        void Listen();
         void Stop();
+
         void SetNewConnectionCallback(NewConnectionCallback cb) {
             new_conn_fn_ = cb;
         }
