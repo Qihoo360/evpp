@@ -23,16 +23,16 @@ namespace evpp {
         }
     }
 
-    void EventLoop::Init(void) {
+    void EventLoop::Init() {
+        tid_ = std::this_thread::get_id(); // The default thread id
         calling_pending_functors_ = false;
         watcher_.reset(new PipeEventWatcher(event_base_, xstd::bind(&EventLoop::DoPendingFunctors, this)));
         watcher_->Init();
         watcher_->Watch(0);
     }
 
-
     void EventLoop::Run() {
-        tid_ = std::this_thread::get_id();
+        tid_ = std::this_thread::get_id(); // The actual thread id
 
         int rc = event_base_dispatch(event_base_);
         DoAfterLoopFunctors();

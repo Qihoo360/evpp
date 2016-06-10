@@ -65,6 +65,12 @@
     <ClCompile Include="..\src\sockets.cc">
       <Filter>sockets</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\tcp_client.cc">
+      <Filter>tcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\connector.cc">
+      <Filter>tcp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\evpp\exp.h">
@@ -119,6 +125,12 @@
       <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\tcp_callbacks.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\tcp_client.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\connector.h">
       <Filter>tcp</Filter>
     </ClInclude>
   </ItemGroup>

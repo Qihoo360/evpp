@@ -63,7 +63,7 @@ namespace evpp {
         int on = 1;
         ::setsockopt(nfd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
 
-        std::string raddr = GetRemoteAddr(ss);
+        std::string raddr = ToIPPort(&ss);
         if (raddr.empty()) {
             EVUTIL_CLOSESOCKET(nfd);
             return;
@@ -76,39 +76,6 @@ namespace evpp {
         if (new_conn_fn_) {
             new_conn_fn_(nfd, raddr);
         }
-    }
-
-    std::string Listener::GetRemoteAddr(struct sockaddr_storage &ss) {
-        std::string raddr;
-        int port = 0;
-        if (ss.ss_family == AF_INET) {
-            struct sockaddr_in* addr4 = (sockaddr_in*)&ss;
-            char buf[INET_ADDRSTRLEN] = {};
-            const char* addr = ::inet_ntop(ss.ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
-            if (addr) {
-                raddr = addr;
-            }
-            port = ::ntohs(addr4->sin_port);
-        } else if (ss.ss_family == AF_INET6) {
-            struct sockaddr_in6* addr6 = (sockaddr_in6*)&ss;
-            char buf[INET6_ADDRSTRLEN] = {};
-            const char* addr = ::inet_ntop(ss.ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
-            if (addr) {
-                raddr = addr;
-            }
-            port = ::ntohs(addr6->sin6_port);
-        } else {
-            LOG_ERROR << "unknown socket family connected";
-            return std::string();
-        }
-
-        if (!raddr.empty()) {
-            char buf[16] = {};
-            snprintf(buf, sizeof(buf), "%d", port);
-            raddr.append(":", 1).append(buf);
-        }
-
-        return raddr;
     }
 
     void Listener::Stop() {
