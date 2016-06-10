@@ -109,4 +109,6 @@ namespace evpp {
 
     EVPP_EXPORT std::string strerror(int e);
     EVPP_EXPORT int CreateNonblockingSocket();
+
+    EVPP_EXPORT struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/);
 }

@@ -24,7 +24,7 @@ namespace evpp {
 
         bool Start();
         void SetMesageHandler(MessageCallback cb) {
-            messageCallback_ = cb;
+            msg_fn_ = cb;
         }
         void SetThreadDispatchPolicy(ThreadDispatchPolicy v) {
             threads_dispatch_policy_ = v;
@@ -42,14 +42,14 @@ namespace evpp {
         const std::string name_;
         xstd::shared_ptr<Listener> listener_; // avoid revealing Acceptor
         xstd::shared_ptr<EventLoopThreadPool> tpool_;
-        MessageCallback messageCallback_;
-        ConnectionCallback connectionCallback_;
-        WriteCompleteCallback writeCompleteCallback_;
+        MessageCallback msg_fn_;
+        ConnectionCallback conn_fn_;
+        WriteCompleteCallback write_complete_fn_;
 
         ThreadDispatchPolicy threads_dispatch_policy_;
 
         // always in loop thread
-        uint64_t nextConnId_;
-        ConnectionMap connections_; // TODO 这个变量真的有必要存在么？
+        uint64_t next_conn_id_;
+        ConnectionMap connections_; // TODO 这个变量真的有必要存在么？由于每一个连接都会在libevent内部做好记录，这里再保存一份理论上是没必要的。但代码看起来更清晰一些。
     };
 }
