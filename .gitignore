@@ -25,6 +25,7 @@ msvc/*.suo
 
 test/evpp
 examples/echo/simple_echo
-
+examples/pingpong/client/pingpong_client
+core.*
 *.out
 

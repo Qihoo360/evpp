@@ -89,7 +89,7 @@ namespace evpp {
         std::string saddr;
         int port = 0;
         if (ss->ss_family == AF_INET) {
-            struct sockaddr_in* addr4 = (sockaddr_in*)ss;
+            struct sockaddr_in* addr4 = const_cast<struct sockaddr_in*>(sockaddr_in_cast(ss));
             char buf[INET_ADDRSTRLEN] = {};
             const char* addr = ::inet_ntop(ss->ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
             if (addr) {
@@ -97,7 +97,7 @@ namespace evpp {
             }
             port = ::ntohs(addr4->sin_port);
         } else if (ss->ss_family == AF_INET6) {
-            struct sockaddr_in6* addr6 = (sockaddr_in6*)ss;
+            struct sockaddr_in6* addr6 = const_cast<struct sockaddr_in6*>(sockaddr_in6_cast(ss));
             char buf[INET6_ADDRSTRLEN] = {};
             const char* addr = ::inet_ntop(ss->ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
             if (addr) {
