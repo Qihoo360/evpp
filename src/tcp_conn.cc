@@ -8,13 +8,13 @@
 
 namespace evpp {
     TCPConn::TCPConn(EventLoop* loop,
-                     const std::string& name,
+                     const std::string& n,
                      int sockfd,
                      const std::string& local_addr,
                      const std::string& peer_addr)
                      : loop_(loop)
                      , fd_(sockfd)
-                     , name_(name)
+                     , name_(n)
                      , local_addr_(local_addr)
                      , remote_addr_(peer_addr) {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
