@@ -11,22 +11,23 @@
 
 #include <thread>
 
-namespace {
-    static void OnMessage(const evpp::TCPConnPtr& conn,
-                   evpp::Buffer* msg,
-                   evpp::base::Timestamp ts) {
-        std::string s = msg->NextAllString();
-        LOG_INFO << "Recv a message [" << s << "]";
-        conn->Send(s.data(), s.size());
-    }
-}
+// namespace {
+//     static void OnMessage(const evpp::TCPConnPtr& conn,
+//                    evpp::Buffer* msg,
+//                    evpp::base::Timestamp ts) {
+//         std::string s = msg->NextAllString();
+//         LOG_INFO << "Recv a message [" << s << "]";
+//         conn->Send(s.data(), s.size());
+//     }
+// }
+// 
+// 
+// TEST_UNIT(testATCPServer) {
+//     evpp::EventLoop loop;
+//     evpp::TCPServer tsrv(&loop, "127.0.0.1:9099", "tcp_server", 1);
+//     tsrv.SetMesageHandler(&OnMessage);
+//     tsrv.Start();
+//     loop.Run();
+// }
 
-
-TEST_UNIT(testATCPServer) {
-    evpp::EventLoop loop;
-    evpp::TCPServer tsrv(&loop, "127.0.0.1:9099", "tcp_server", 1);
-    tsrv.SetMesageHandler(&OnMessage);
-    tsrv.Start();
-    loop.Run();
-}
 

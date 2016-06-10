@@ -18,7 +18,7 @@ namespace evpp {
     }
 
     FdChannel::~FdChannel() {
-        LOG_INFO << "FdChannel::~FdChannel()";
+        LOG_INFO << "FdChannel::~FdChannel() fd=" << fd_;
         assert(event_ == NULL);
     }
 
@@ -89,4 +89,3 @@ namespace evpp {
         }
     }
 }
-
