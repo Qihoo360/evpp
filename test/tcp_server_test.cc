@@ -12,7 +12,7 @@
 #include <thread>
 
 namespace {
-    static void OnMessage(const evpp::TcpConnectionPtr& conn,
+    static void OnMessage(const evpp::TCPConnPtr& conn,
                    evpp::Buffer* msg,
                    evpp::base::Timestamp ts) {
         std::string s = msg->NextAllString();

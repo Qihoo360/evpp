@@ -108,4 +108,5 @@ namespace evpp {
     }
 
     EVPP_EXPORT std::string strerror(int e);
+    EVPP_EXPORT int CreateNonblockingSocket();
 }
