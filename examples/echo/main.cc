@@ -12,10 +12,6 @@ void OnMessage(const evpp::TCPConnPtr& conn,
 }
 
 int main(int argc, char* argv[]) {
-#ifdef WIN32
-    LOG_INFO << "EWOULDBLOCK=" << EWOULDBLOCK << " WSAEWOULDBLOCK=" << WSAEWOULDBLOCK << " EAGAIN=" << EAGAIN;
-#endif
-
     std::string port = "9099";
     if (argc == 2) {
         port = argv[1];
@@ -29,37 +25,6 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-
-
-
-
 #ifdef WIN32
-#   ifdef _DEBUG
-#		pragma comment(lib,"libevent_d.lib")
-#   else
-#		pragma comment(lib,"libevent.lib")
-#   endif
-#	pragma comment(lib,"Ws2_32.lib")
-#	pragma comment(lib,"libglog_static.lib")
+#include "winmain-inl.h"
 #endif
-
-namespace {
-#ifdef WIN32
-    struct OnApp {
-        OnApp() {
-            // Initialize net work.
-            WSADATA wsaData;
-            // Initialize Winsock 2.2
-            int nError = WSAStartup(MAKEWORD(2, 2), &wsaData);
-
-            if (nError) {
-                std::cout << "WSAStartup() failed with error: %d" << nError;
-            }
-
-        }
-        ~OnApp() {
-            system("pause");
-        }
-    } __s_onexit_pause;
-#endif
-}

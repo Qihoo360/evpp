@@ -19,16 +19,11 @@ namespace evpp {
                      , remote_addr_(raddr) {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
 
-        chan_->SetReadCallback(
-            xstd::bind(&TCPConn::HandleRead, this, xstd::placeholders::_1));
-        chan_->SetWriteCallback(
-            xstd::bind(&TCPConn::HandleWrite, this));
-        chan_->SetCloseCallback(
-            xstd::bind(&TCPConn::HandleClose, this));
-        chan_->SetErrorCallback(
-            xstd::bind(&TCPConn::HandleError, this));
-        LOG_DEBUG << "TcpConnection::ctor[" << name_ << "] at " << this
-            << " fd=" << sockfd;
+        chan_->SetReadCallback(xstd::bind(&TCPConn::HandleRead, this, xstd::placeholders::_1));
+        chan_->SetWriteCallback(xstd::bind(&TCPConn::HandleWrite, this));
+        chan_->SetCloseCallback(xstd::bind(&TCPConn::HandleClose, this));
+        chan_->SetErrorCallback(xstd::bind(&TCPConn::HandleError, this));
+        LOG_DEBUG << "TCPConn::[" << name_ << "] at " << this << " fd=" << sockfd;
         //TODO  set KeepAlive;
     }
 
@@ -55,7 +50,6 @@ namespace evpp {
             }
         }
     }
-
 
     void TCPConn::HandleWrite() {
         loop_->AssertInLoopThread();

@@ -57,7 +57,7 @@ namespace evpp {
     }
 
     void Listener::HandleAccept(base::Timestamp ts) {
-        LOG_INFO << __FUNCTION__ << " New connections";
+        LOG_INFO << __FUNCTION__ << " New connection";
 
         struct sockaddr_storage ss;
         socklen_t addrlen = sizeof(ss);
@@ -85,9 +85,9 @@ namespace evpp {
             return;
         }
 
-        LOG_INFO << "accepted from : " << raddr
-            << ", listen fd:" << fd_
-            << ", client fd: " << nfd;
+        LOG_INFO << "accepted one connection from " << raddr
+            << ", listen fd=" << fd_
+            << ", client fd=" << nfd;
 
         if (new_conn_fn_) {
             new_conn_fn_(nfd, raddr);
