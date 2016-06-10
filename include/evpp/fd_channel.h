@@ -29,6 +29,7 @@ namespace evpp {
     public:
         FdChannel(EventLoop* loop, int fd,
                   bool watch_read_event, bool watch_write_event);
+        ~FdChannel();
 
         void Close();
 
@@ -71,6 +72,7 @@ namespace evpp {
         static void HandleEvent(int fd, short which, void *v);
 
         void Update();
+        void DetachFromLoop();
     private:
         ReadEventCallback read_fn_;
         EventCallback write_fn_;
