@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\buffer.cc" />
+    <ClCompile Include="..\src\connector.cc" />
     <ClCompile Include="..\src\event_loop.cc" />
     <ClCompile Include="..\src\event_loop_thread.cc" />
     <ClCompile Include="..\src\event_loop_thread_pool.cc" />
@@ -23,11 +24,13 @@
     <ClCompile Include="..\src\listener.cc" />
     <ClCompile Include="..\src\pch.cc" />
     <ClCompile Include="..\src\sockets.cc" />
+    <ClCompile Include="..\src\tcp_client.cc" />
     <ClCompile Include="..\src\tcp_conn.cc" />
     <ClCompile Include="..\src\tcp_server.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\evpp\buffer.h" />
+    <ClInclude Include="..\include\evpp\connector.h" />
     <ClInclude Include="..\include\evpp\event_loop.h" />
     <ClInclude Include="..\include\evpp\event_loop_thread.h" />
     <ClInclude Include="..\include\evpp\event_loop_thread_pool.h" />
@@ -42,6 +45,7 @@
     <ClInclude Include="..\include\evpp\platform_config.h" />
     <ClInclude Include="..\include\evpp\sockets.h" />
     <ClInclude Include="..\include\evpp\tcp_callbacks.h" />
+    <ClInclude Include="..\include\evpp\tcp_client.h" />
     <ClInclude Include="..\include\evpp\tcp_conn.h" />
     <ClInclude Include="..\include\evpp\tcp_server.h" />
     <ClInclude Include="..\src\invoke_timer.inl.h" />
