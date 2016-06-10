@@ -62,6 +62,9 @@
     <ClCompile Include="..\src\tcp_server.cc">
       <Filter>tcp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\sockets.cc">
+      <Filter>sockets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\evpp\exp.h">

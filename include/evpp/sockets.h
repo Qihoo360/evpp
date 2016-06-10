@@ -30,18 +30,7 @@ typedef int ssize_t;
 #endif
 
 #ifdef H_OS_WINDOWS
-inline int readv(SOCKET sockfd, struct iovec *iov, int iovcnt) {
-    DWORD readn = 0;
-    DWORD flags = 0;
-    if (::WSARecv(sockfd, iov, iovcnt, &readn, &flags, NULL, NULL) == 0) {
-        return readn;
-    }
-    
-//     int serrno = errno;
-//     LOG_INFO << "WSAGetLastError=" << WSAGetLastError() << " errno=" << serrno;
-//     //errno = WSAGetLastError();
-    return -1;
-}
+EVPP_EXPORT int readv(SOCKET sockfd, struct iovec *iov, int iovcnt);
 
 
 
@@ -116,4 +105,5 @@ namespace evpp {
         return static_cast<struct sockaddr_in*>(implicit_cast<void*>(addr));
     }
 
+    EVPP_EXPORT std::string strerror(int e);
 }
