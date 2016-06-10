@@ -12,13 +12,15 @@ void OnMessage(const evpp::TcpConnectionPtr& conn,
 }
 
 int main(int argc, char* argv[]) {
+#ifdef WIN32
     LOG_INFO << "EWOULDBLOCK=" << EWOULDBLOCK << " WSAEWOULDBLOCK=" << WSAEWOULDBLOCK << " EAGAIN=" << EAGAIN;
+#endif
 
     std::string port = "9099";
     if (argc == 2) {
         port = argv[1];
     }
-    std::string addr = std::string("127.0.0.1:") + port;
+    std::string addr = std::string("0.0.0.0:") + port;
     evpp::EventLoop loop;
     evpp::TCPServer server(&loop, addr, "TCPEcho", 1);
     server.SetMesageHandler(&OnMessage);

@@ -27,7 +27,7 @@ namespace evpp {
     }
 
     Listener::Listener(EventLoop* l, const std::string& addr)
-        : loop_(l), addr_(addr), fd_(-1) {}
+        : fd_(-1), loop_(l), addr_(addr) {}
 
     Listener::~Listener() {
         chan_.reset();
@@ -46,7 +46,7 @@ namespace evpp {
 
         ret = ::listen(fd_, SOMAXCONN);
         if (ret < 0) {
-            int serrno = errno;
+            serrno = errno;
             LOG_FATAL << "Listen failed " << strerror(serrno);
         }
 
@@ -58,7 +58,8 @@ namespace evpp {
 
 
     int Listener::CreateNonblockingSocket() {
-        int serrno;
+        int serrno = 0;
+        int on = 1;
 
         /* Create listen socket */
         int fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -79,7 +80,6 @@ namespace evpp {
         }
 #endif
 
-        int on = 1;
         ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
         ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
         return fd;
