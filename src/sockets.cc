@@ -31,14 +31,14 @@ namespace evpp {
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         serrno = errno;
         if (fd == -1) {
-            LOG_FATAL << "socket error " << strerror(serrno);
+            LOG_ERROR << "socket error " << strerror(serrno);
             return INVALID_SOCKET;
         }
 
         if (evutil_make_socket_nonblocking(fd) < 0)
             goto out;
 
-#ifndef WIN32
+#ifndef H_OS_WINDOWS
         if (fcntl(fd, F_SETFD, 1) == -1) {
             serrno = errno;
             LOG_FATAL << "fcntl(F_SETFD)" << strerror(serrno);
@@ -53,6 +53,27 @@ namespace evpp {
         EVUTIL_CLOSESOCKET(fd);
         return INVALID_SOCKET;
     }
+
+    struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
+        struct sockaddr_in addr;
+        std::string a = address;
+        size_t index = a.find_first_of(':');
+        if (index == std::string::npos) {
+            LOG_FATAL << "Address specified error [" << address << "]";
+        }
+
+        addr.sin_family = AF_INET;
+        addr.sin_port = ::htons(::atoi(&a[index + 1]));
+        a[index] = '\0';
+        if (::inet_pton(AF_INET, a.data(), &addr.sin_addr) <= 0) {
+            int serrno = errno;
+            LOG_FATAL << "sockets::fromIpPort " << strerror(serrno);
+        }
+
+        //TODO add ipv6 support
+        return addr;
+    }
+
 }
 
 #ifdef H_OS_WINDOWS
