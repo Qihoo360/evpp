@@ -33,7 +33,7 @@ namespace evpp {
     }
 
     TCPConn::~TCPConn() {
-        LOG_INFO << "TCPConn::~TCPConn close(fd=" << fd_ << ")";
+        LOG_INFO << "TCPConn::~TCPConn() close(fd=" << fd_ << ")";
         EVUTIL_CLOSESOCKET(fd_);
         fd_ = INVALID_SOCKET;
     }
@@ -47,9 +47,12 @@ namespace evpp {
         } else if (n == 0) {
             HandleClose();
         } else {
-            errno = serrno;
-            LOG_ERROR << "TCPConn::HandleRead " << strerror(serrno);
-            HandleError();
+            LOG_ERROR << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno);
+            if (serrno != EAGAIN && serrno != EINTR) {
+                HandleClose();
+            } else {
+                HandleError();
+            }
         }
     }
 
@@ -103,7 +106,7 @@ namespace evpp {
     }
 
     void TCPConn::Send(const void* d, size_t dlen) {
-        ::send(chan_->fd(), (const char*)d, dlen, 0); //TODO handler write error
+        ::send(chan_->fd(), (const char*)d, dlen, 0); //TODO handle write error, handle the case that it is not the same IO thread
     }
 
     void TCPConn::OnAttachedToLoop() {
