@@ -3,7 +3,7 @@
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>
 
-void OnMessage(const evpp::TcpConnectionPtr& conn,
+void OnMessage(const evpp::TCPConnPtr& conn,
                evpp::Buffer* msg,
                evpp::base::Timestamp ts) {
     std::string s = msg->NextAllString();

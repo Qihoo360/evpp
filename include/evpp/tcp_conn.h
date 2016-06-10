@@ -15,8 +15,8 @@ namespace evpp {
         TCPConn(EventLoop* loop,
                 const std::string& name,
                 int sockfd,
-                const std::string& local_addr,
-                const std::string& peer_addr);
+                const std::string& laddr,
+                const std::string& raddr);
         ~TCPConn();
 
         void Send(const void* d, size_t dlen);
@@ -32,13 +32,13 @@ namespace evpp {
         void OnAttachedToLoop();
     public:
         void SetMesageHandler(MessageCallback cb) {
-            messageCallback_ = cb;
+            msg_fn_ = cb;
         }
         void SetConnectionHandler(ConnectionCallback cb) {
-            connectionCallback_ = cb;
+            conn_fn_ = cb;
         }
         void SetCloseCallback(CloseCallback cb) {
-            closeCallback_ = cb;
+            close_fn_ = cb;
         }
 
     private:
@@ -53,13 +53,13 @@ namespace evpp {
         std::string local_addr_; // ip:port
         std::string remote_addr_; // ip:port
         xstd::shared_ptr<FdChannel> chan_;
-        Buffer inputBuffer_;
-        Buffer outputBuffer_;
+        Buffer input_buffer_;
+        Buffer output_buffer_;
 
-        ConnectionCallback connectionCallback_;
-        MessageCallback messageCallback_;
-        WriteCompleteCallback writeCompleteCallback_;
-        HighWaterMarkCallback highWaterMarkCallback_;
-        CloseCallback closeCallback_;
+        ConnectionCallback conn_fn_;
+        MessageCallback msg_fn_;
+        WriteCompleteCallback write_fn_;
+        HighWaterMarkCallback high_water_mark_fn_;
+        CloseCallback close_fn_;
     };
 }

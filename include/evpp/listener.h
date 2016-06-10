@@ -18,7 +18,6 @@ namespace evpp {
         void SetNewConnectionCallback(NewConnectionCallback cb) {
             new_conn_fn_ = cb;
         }
-        static int CreateNonblockingSocket();
     private:
         void HandleAccept(base::Timestamp ts);
 
