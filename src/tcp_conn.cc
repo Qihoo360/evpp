@@ -10,13 +10,13 @@ namespace evpp {
     TCPConn::TCPConn(EventLoop* loop,
                      const std::string& n,
                      int sockfd,
-                     const std::string& local_addr,
-                     const std::string& peer_addr)
+                     const std::string& laddr,
+                     const std::string& raddr)
                      : loop_(loop)
                      , fd_(sockfd)
                      , name_(n)
-                     , local_addr_(local_addr)
-                     , remote_addr_(peer_addr) {
+                     , local_addr_(laddr)
+                     , remote_addr_(raddr) {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
 
         chan_->SetReadCallback(
@@ -29,7 +29,7 @@ namespace evpp {
             xstd::bind(&TCPConn::HandleError, this));
         LOG_DEBUG << "TcpConnection::ctor[" << name_ << "] at " << this
             << " fd=" << sockfd;
-        //socket_->setKeepAlive(true);
+        //TODO  set KeepAlive;
     }
 
     TCPConn::~TCPConn() {
@@ -41,9 +41,9 @@ namespace evpp {
     void TCPConn::HandleRead(base::Timestamp receiveTime) {
         loop_->AssertInLoopThread();
         int serrno = 0;
-        ssize_t n = inputBuffer_.ReadFromFD(chan_->fd(), &serrno);
+        ssize_t n = input_buffer_.ReadFromFD(chan_->fd(), &serrno);
         if (n > 0) {
-            messageCallback_(shared_from_this(), &inputBuffer_, receiveTime);
+            msg_fn_(shared_from_this(), &input_buffer_, receiveTime);
         } else if (n == 0) {
             HandleClose();
         } else {
@@ -59,32 +59,7 @@ namespace evpp {
 
     void TCPConn::HandleWrite() {
         loop_->AssertInLoopThread();
-        //         if (channel_->isWriting()) {
-        //             ssize_t n = sockets::write(channel_->fd(),
-        //                                        outputBuffer_.peek(),
-        //                                        outputBuffer_.readableBytes());
-        //             if (n > 0) {
-        //                 outputBuffer_.retrieve(n);
-        //                 if (outputBuffer_.readableBytes() == 0) {
-        //                     channel_->disableWriting();
-        //                     if (writeCompleteCallback_) {
-        //                         loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
-        //                     }
-        //                     if (state_ == kDisconnecting) {
-        //                         shutdownInLoop();
-        //                     }
-        //                 }
-        //             } else {
-        //                 LOG_SYSERR << "TcpConnection::handleWrite";
-        //                 // if (state_ == kDisconnecting)
-        //                 // {
-        //                 //   shutdownInLoop();
-        //                 // }
-        //             }
-        //         } else {
-        //             LOG_TRACE << "Connection fd = " << channel_->fd()
-        //                 << " is down, no more writing";
-        //         }
+        //TODO
     }
 
     void TCPConn::HandleClose() {
@@ -92,21 +67,19 @@ namespace evpp {
         chan_->DisableAllEvent();
         chan_->Close();
 
-        TcpConnectionPtr conn(shared_from_this());
-        if (connectionCallback_) {
-            connectionCallback_(conn);
+        TCPConnPtr conn(shared_from_this());
+        if (conn_fn_) {
+            conn_fn_(conn);
         }
-        closeCallback_(conn);// This must be the last line
+        close_fn_(conn);// This must be the last line
     }
 
     void TCPConn::HandleError() {
-        //         int err = sockets::getSocketError(channel_->fd());
-        //         LOG_ERROR << "TcpConnection::handleError [" << name_
-        //             << "] - SO_ERROR = " << err << " " << strerror_tl(err);
     }
 
     void TCPConn::Send(const void* d, size_t dlen) {
-        ::send(chan_->fd(), (const char*)d, dlen, 0); //TODO handle write error, handle the case that it is not the same IO thread
+        //TODO handle write error, handle the case that it is not the same IO thread
+        ::send(chan_->fd(), (const char*)d, dlen, 0);
     }
 
     void TCPConn::OnAttachedToLoop() {
