@@ -24,6 +24,7 @@ msvc/*.sdf
 msvc/*.suo
 
 test/evpp
+examples/echo/simple_echo
 
 *.out
 
