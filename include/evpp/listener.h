@@ -22,8 +22,6 @@ namespace evpp {
     private:
         void HandleAccept(base::Timestamp ts);
 
-        std::string GetRemoteAddr(struct sockaddr_storage &ss);
-
     private:
         int fd_;// The listener socket fd
         xstd::shared_ptr<FdChannel> chan_;
