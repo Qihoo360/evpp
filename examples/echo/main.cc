@@ -12,6 +12,8 @@ void OnMessage(const evpp::TcpConnectionPtr& conn,
 }
 
 int main(int argc, char* argv[]) {
+    LOG_INFO << "EWOULDBLOCK=" << EWOULDBLOCK << " WSAEWOULDBLOCK=" << WSAEWOULDBLOCK << " EAGAIN=" << EAGAIN;
+
     std::string port = "9099";
     if (argc == 2) {
         port = argv[1];

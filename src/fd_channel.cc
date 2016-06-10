@@ -17,6 +17,11 @@ namespace evpp {
         memset(event_, 0, sizeof(struct event));
     }
 
+    FdChannel::~FdChannel() {
+        LOG_INFO << "FdChannel::~FdChannel()";
+        assert(event_ == NULL);
+    }
+
     void FdChannel::Close() {
         if (event_initialized(event_)) {
             event_del(event_);
@@ -24,22 +29,35 @@ namespace evpp {
             event_ = NULL;
         }
     }
-    
+
     void FdChannel::AttachToLoop() {
         loop_->AssertInLoopThread();
         event_set(event_, fd_, events_, &FdChannel::HandleEvent, this);
         event_base_set(loop_->event_base(), event_);
-        if (event_add(event_, NULL) != 0) {
-            LOG_ERROR << "fd=" << fd_ << " with event " << EventsToString() << " attach to event loop failed";
-        } else {
+        if (event_add(event_, NULL) == 0) {
             attached_to_loop_ = true;
+        } else {
+            LOG_ERROR << "fd=" << fd_ << " with event " << EventsToString() << " attach to event loop failed";
+        }
+    }
+
+    void FdChannel::DetachFromLoop() {
+        loop_->AssertInLoopThread();
+        if (event_del(event_) == 0) {
+            attached_to_loop_ = false;
+        } else {
+            LOG_ERROR << "fd=" << fd_ << " with event " << EventsToString() << " detach to event loop failed";
         }
     }
 
     void FdChannel::Update() {
         assert(attached_to_loop_);
         loop_->AssertInLoopThread();
-        AttachToLoop();
+        if (IsNoneEvent()) {
+            DetachFromLoop();
+        } else {
+            AttachToLoop();
+        }
     }
 
     std::string FdChannel::EventsToString() const {

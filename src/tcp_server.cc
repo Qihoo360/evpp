@@ -37,9 +37,9 @@ namespace evpp {
 
         TcpConnectionPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
         conn->SetMesageHandler(messageCallback_);
-        conn->SetCloseCallback(xstd::bind(&TCPServer::RemoveConnection, this, conn));
-        connections_[n] = conn; // TODO remember to remove TCPConn from this map when the connection is broken.
+        conn->SetCloseCallback(xstd::bind(&TCPServer::RemoveConnection, this, xstd::placeholders::_1));
         io_loop->RunInLoop(xstd::bind(&TCPConn::OnAttachedToLoop, conn.get()));
+        connections_[n] = conn;
     }
 
     EventLoop* TCPServer::GetNextLoop(const std::string& remote_addr) {
