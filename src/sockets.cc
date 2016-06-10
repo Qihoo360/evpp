@@ -74,6 +74,50 @@ namespace evpp {
         return addr;
     }
 
+    struct sockaddr_in GetLocalAddr(int sockfd) {
+        struct sockaddr_in laddr;
+        memset(&laddr, 0, sizeof laddr);
+        socklen_t addrlen = static_cast<socklen_t>(sizeof laddr);
+        if (::getsockname(sockfd, sockaddr_cast(&laddr), &addrlen) < 0) {
+            LOG_ERROR << "GetLocalAddr:" << strerror(errno);
+            memset(&laddr, 0, sizeof laddr);
+        }
+        return laddr;
+    }
+
+    std::string ToIPPort(const struct sockaddr_storage* ss) {
+        std::string saddr;
+        int port = 0;
+        if (ss->ss_family == AF_INET) {
+            struct sockaddr_in* addr4 = (sockaddr_in*)ss;
+            char buf[INET_ADDRSTRLEN] = {};
+            const char* addr = ::inet_ntop(ss->ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
+            if (addr) {
+                saddr = addr;
+            }
+            port = ::ntohs(addr4->sin_port);
+        } else if (ss->ss_family == AF_INET6) {
+            struct sockaddr_in6* addr6 = (sockaddr_in6*)ss;
+            char buf[INET6_ADDRSTRLEN] = {};
+            const char* addr = ::inet_ntop(ss->ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
+            if (addr) {
+                saddr = addr;
+            }
+            port = ::ntohs(addr6->sin6_port);
+        } else {
+            LOG_ERROR << "unknown socket family connected";
+            return std::string();
+        }
+
+        if (!saddr.empty()) {
+            char buf[16] = {};
+            snprintf(buf, sizeof(buf), "%d", port);
+            saddr.append(":", 1).append(buf);
+        }
+
+        return saddr;
+    }
+
 }
 
 #ifdef H_OS_WINDOWS

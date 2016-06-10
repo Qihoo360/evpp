@@ -22,7 +22,7 @@ namespace {
                 std::cout << "WSAStartup() failed with error: %d" << nError;
             }
 
-            std::cout << "EWOULDBLOCK=" << EWOULDBLOCK << " WSAEWOULDBLOCK=" << WSAEWOULDBLOCK << " EAGAIN=" << EAGAIN << std::endl;
+            std::cout << "EWOULDBLOCK=" << EWOULDBLOCK << " WSAEWOULDBLOCK=" << WSAEWOULDBLOCK << " EAGAIN=" << EAGAIN;
         }
         ~OnApp() {
             system("pause");
