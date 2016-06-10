@@ -5,7 +5,7 @@ CXX := g++
 
 CURRENT_DIR=$(shell echo `pwd`)
 SOURCE_DIR=$(CURRENT_DIR)
-EVPP_DIR=$(CURRENT_DIR)/../..
+EVPP_DIR=$(CURRENT_DIR)/../../..
 
 CPPFLAGS= -g -c -fPIC \
 		  -D_DEBUG -D_USE_GTEST \
@@ -32,7 +32,7 @@ SRCS := $(wildcard *.cc)
 OBJS := $(patsubst %.cc, %.o, $(SRCS))
 DEPS := $(patsubst %.o, %.d, $(OBJS))
 
-TARGET=simple_echo
+TARGET=pingpong_client
 
 all : $(TARGET) 
 
