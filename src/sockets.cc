@@ -8,14 +8,8 @@ namespace evpp {
 #ifdef H_OS_WINDOWS
         LPVOID lpMsgBuf = NULL;
         ::FormatMessageA(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER |
-            FORMAT_MESSAGE_FROM_SYSTEM |
-            FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL,
-            e,
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (LPSTR)&lpMsgBuf,
-            0, NULL);
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&lpMsgBuf, 0, NULL);
         if (lpMsgBuf) {
             std::string s = (char*)lpMsgBuf;
             LocalFree(lpMsgBuf);

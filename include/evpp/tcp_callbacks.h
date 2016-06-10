@@ -15,8 +15,5 @@ namespace evpp {
     typedef xstd::function<void(const TCPConnPtr&)> WriteCompleteCallback;
     typedef xstd::function<void(const TCPConnPtr&, size_t)> HighWaterMarkCallback;
 
-    // the data has been read to Buffer
-    typedef xstd::function<void(const TCPConnPtr&,
-                                Buffer*,
-                                base::Timestamp)> MessageCallback;
+    typedef xstd::function<void(const TCPConnPtr&, Buffer*, base::Timestamp)> MessageCallback;
 }
