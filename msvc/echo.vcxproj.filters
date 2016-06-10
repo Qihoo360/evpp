@@ -3,4 +3,7 @@
   <ItemGroup>
     <ClCompile Include="..\examples\echo\main.cc" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\examples\echo\winmain-inl.h" />
+  </ItemGroup>
 </Project>
