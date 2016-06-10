@@ -7,25 +7,6 @@
 #include "evpp/sockets.h"
 
 namespace evpp {
-
-    static struct sockaddr_in fromIpPort(const char* address) {
-        struct sockaddr_in addr;
-        std::string a = address;
-        size_t index = a.find_first_of(':');
-        if (index == std::string::npos) {
-            LOG_FATAL << "Address specified error [" << address << "]";
-        }
-
-        addr.sin_family = AF_INET;
-        addr.sin_port = ::htons(::atoi(&a[index + 1]));
-        a[index] = '\0';
-        if (::inet_pton(AF_INET, a.data(), &addr.sin_addr) <= 0) {
-            int serrno = errno;
-            LOG_FATAL << "sockets::fromIpPort " << strerror(serrno);
-        }
-        return addr;
-    }
-
     Listener::Listener(EventLoop* l, const std::string& addr)
         : fd_(-1), loop_(l), addr_(addr) {}
 
@@ -35,9 +16,12 @@ namespace evpp {
         fd_ = INVALID_SOCKET;
     }
 
-    void Listener::Start() {
+    void Listener::Listen() {
         fd_ = CreateNonblockingSocket();
-        struct sockaddr_in addr = fromIpPort(addr_.data());
+        if (fd_ < 0) {
+            return;
+        }
+        struct sockaddr_in addr = ParseFromIPPort(addr_.data());
         int ret = ::bind(fd_, sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
         int serrno = errno;
         if (ret < 0) {

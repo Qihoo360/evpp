@@ -12,7 +12,7 @@ namespace evpp {
                          : loop_(loop)
                          , listen_addr_(listen_addr)
                          , name_(name)
-                         , nextConnId_(0) {
+                         , next_conn_id_(0) {
         threads_dispatch_policy_ = kRoundRobin;
         tpool_.reset(new EventLoopThreadPool(loop));
         tpool_->SetThreadNum(thread_num);
@@ -20,7 +20,7 @@ namespace evpp {
 
     bool TCPServer::Start() {
         listener_.reset(new Listener(loop_, listen_addr_));
-        listener_->Start();
+        listener_->Listen();
         listener_->SetNewConnectionCallback(
             xstd::bind(&TCPServer::HandleNewConn,
             this,
@@ -32,25 +32,25 @@ namespace evpp {
     void TCPServer::HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/) {
         EventLoop* io_loop = GetNextLoop(remote_addr);
         char buf[64];
-        snprintf(buf, sizeof buf, "-%s#%lu", remote_addr.c_str(), nextConnId_++);
+        snprintf(buf, sizeof buf, "-%s#%lu", remote_addr.c_str(), next_conn_id_++);
         std::string n = name_ + buf;
 
         TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
-        conn->SetMesageHandler(messageCallback_);
+        conn->SetMesageHandler(msg_fn_);
         conn->SetCloseCallback(xstd::bind(&TCPServer::RemoveConnection, this, xstd::placeholders::_1));
         io_loop->RunInLoop(xstd::bind(&TCPConn::OnAttachedToLoop, conn.get()));
         connections_[n] = conn;
     }
 
-    EventLoop* TCPServer::GetNextLoop(const std::string& remote_addr) {
+    EventLoop* TCPServer::GetNextLoop(const std::string& raddr) {
         if (threads_dispatch_policy_ == kRoundRobin) {
             return tpool_->GetNextLoop();
         } else {
             assert(threads_dispatch_policy_ == kIPAddressHashing);
-            //TODO efficient improve. Using the sockaddr_in to calculate the hash value of the remote hash
-            auto index = remote_addr.rfind(':');
+            //TODO efficient improve. Using the sockaddr_in to calculate the hash value of the remote hash instead of std::string
+            auto index = raddr.rfind(':');
             assert(index != std::string::npos);
-            auto hash = std::hash<std::string>()(std::string(remote_addr.data(), index));
+            auto hash = std::hash<std::string>()(std::string(raddr.data(), index));
             return tpool_->GetNextLoopWithHash(hash);
         }
     }

@@ -20,15 +20,7 @@ namespace evpp {
         ~TCPConn();
 
         void Send(const void* d, size_t dlen);
-
-        const std::string& remote_addr() const {
-            return remote_addr_;
-        }
-
-        const std::string& name() const {
-            return name_;
-        }
-
+        
         void OnAttachedToLoop();
     public:
         void SetMesageHandler(MessageCallback cb) {
@@ -41,6 +33,14 @@ namespace evpp {
             close_fn_ = cb;
         }
 
+    public:
+        const std::string& remote_addr() const {
+            return remote_addr_;
+        }
+
+        const std::string& name() const {
+            return name_;
+        }
     private:
         void HandleRead(base::Timestamp receiveTime);
         void HandleWrite();
@@ -50,8 +50,8 @@ namespace evpp {
         EventLoop* loop_;
         int fd_;
         std::string name_;
-        std::string local_addr_; // ip:port
-        std::string remote_addr_; // ip:port
+        std::string local_addr_; // the local address of ip:port
+        std::string remote_addr_; // the remote address of  ip:port
         xstd::shared_ptr<FdChannel> chan_;
         Buffer input_buffer_;
         Buffer output_buffer_;
