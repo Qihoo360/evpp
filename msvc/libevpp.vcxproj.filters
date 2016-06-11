@@ -23,9 +23,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\fd_event.cc">
-      <Filter>event</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\libevent_watcher.cc">
       <Filter>event</Filter>
     </ClCompile>
@@ -87,9 +84,6 @@
     </ClInclude>
     <ClInclude Include="..\include\evpp\fd_channel.h">
       <Filter>sockets</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\fd_event.h">
-      <Filter>event</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\libevent_watcher.h">
       <Filter>event</Filter>
