@@ -30,22 +30,31 @@
   <ItemGroup>
     <ClInclude Include="..\include\evpp\buffer.h" />
     <ClInclude Include="..\include\evpp\connector.h" />
+    <ClInclude Include="..\include\evpp\duration.h" />
+    <ClInclude Include="..\include\evpp\duration.inl.h" />
     <ClInclude Include="..\include\evpp\event_loop.h" />
     <ClInclude Include="..\include\evpp\event_loop_thread.h" />
     <ClInclude Include="..\include\evpp\event_loop_thread_pool.h" />
     <ClInclude Include="..\include\evpp\evpp_export.h" />
     <ClInclude Include="..\include\evpp\exp.h" />
     <ClInclude Include="..\include\evpp\fd_channel.h" />
+    <ClInclude Include="..\include\evpp\gettimeofday.h" />
     <ClInclude Include="..\include\evpp\inner_pre.h" />
     <ClInclude Include="..\include\evpp\libevent_headers.h" />
     <ClInclude Include="..\include\evpp\libevent_watcher.h" />
     <ClInclude Include="..\include\evpp\listener.h" />
+    <ClInclude Include="..\include\evpp\log_config.h" />
     <ClInclude Include="..\include\evpp\platform_config.h" />
+    <ClInclude Include="..\include\evpp\slice.h" />
     <ClInclude Include="..\include\evpp\sockets.h" />
+    <ClInclude Include="..\include\evpp\sys_addrinfo.h" />
+    <ClInclude Include="..\include\evpp\sys_sockets.h" />
     <ClInclude Include="..\include\evpp\tcp_callbacks.h" />
     <ClInclude Include="..\include\evpp\tcp_client.h" />
     <ClInclude Include="..\include\evpp\tcp_conn.h" />
     <ClInclude Include="..\include\evpp\tcp_server.h" />
+    <ClInclude Include="..\include\evpp\timestamp.h" />
+    <ClInclude Include="..\include\evpp\timestamp.inl.h" />
     <ClInclude Include="..\src\invoke_timer.inl.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "evpp/inner_pre.h"
-#include "evpp/base/timestamp.h"
+#include "evpp/timestamp.h"
 
 namespace evpp {
     class EventLoop;
@@ -20,7 +20,7 @@ namespace evpp {
             new_conn_fn_ = cb;
         }
     private:
-        void HandleAccept(base::Timestamp ts);
+        void HandleAccept(Timestamp ts);
 
     private:
         int fd_;// The listener socket fd

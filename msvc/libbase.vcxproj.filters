@@ -10,6 +10,9 @@
     <Filter Include="include">
       <UniqueIdentifier>{75133aea-5796-4b48-8adc-feb77a9e87b9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="delete">
+      <UniqueIdentifier>{af619f19-dae6-48a0-8639-318d792bc03e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\evpp\base\duration.h">
@@ -36,22 +39,22 @@
     <ClInclude Include="..\include\evpp\base\slice.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\evppbase_export.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\base\exp.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\base\inner_pre.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\evpp\base\platform_config.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\base\evppbase_export.h">
+      <Filter>delete</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\base\exp.h">
+      <Filter>delete</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\base\inner_pre.h">
+      <Filter>delete</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\base\pch.cc">
-      <Filter>src</Filter>
+      <Filter>delete</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

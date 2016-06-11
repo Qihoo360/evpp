@@ -48,7 +48,7 @@ namespace evpp {
         Status status() const { return status_; }
         void set_status(Status s) { status_ = s; }
     private:
-        void HandleRead(base::Timestamp receiveTime);
+        void HandleRead(Timestamp receiveTime);
         void HandleWrite();
         void HandleClose();
         void HandleError();
