@@ -14,7 +14,7 @@
 // namespace {
 //     static void OnMessage(const evpp::TCPConnPtr& conn,
 //                    evpp::Buffer* msg,
-//                    evpp::base::Timestamp ts) {
+//                    evpp::Timestamp ts) {
 //         std::string s = msg->NextAllString();
 //         LOG_INFO << "Recv a message [" << s << "]";
 //         conn->Send(s.data(), s.size());

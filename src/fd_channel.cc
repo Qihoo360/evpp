@@ -81,7 +81,7 @@ namespace evpp {
 
     void FdChannel::HandleEvent(int f, short which) {
         if ((which & kReadable) && read_fn_) {
-            read_fn_(base::Timestamp::Now());
+            read_fn_(Timestamp::Now());
         }
 
         if ((which & kWritable) && write_fn_) {
