@@ -7,23 +7,11 @@
     <Filter Include="time">
       <UniqueIdentifier>{031c3c24-3083-42c0-8bb9-717b4188a59e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="base">
-      <UniqueIdentifier>{d529b9a9-275f-4b62-a2c3-aea4ef01d4ac}</UniqueIdentifier>
+    <Filter Include="include">
+      <UniqueIdentifier>{75133aea-5796-4b48-8adc-feb77a9e87b9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\evpp\base\evppbase_export.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\base\platform_config.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\base\inner_pre.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\base\exp.h">
-      <Filter>base</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\evpp\base\duration.h">
       <Filter>time</Filter>
     </ClInclude>
@@ -39,21 +27,30 @@
     <ClInclude Include="..\include\evpp\base\timestamp.inl.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\ip_address.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\base\slice.h">
-      <Filter>src</Filter>
+    <ClInclude Include="..\include\evpp\base\sys_sockets.h">
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\base\sys_addrinfo.h">
-      <Filter>src</Filter>
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\base\slice.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\base\evppbase_export.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\base\exp.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\base\inner_pre.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\base\platform_config.h">
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\base\pch.cc">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\base\ip_address.cc">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

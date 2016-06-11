@@ -51,9 +51,6 @@
     <ClCompile Include="..\test\glog_test.cc">
       <Filter>base</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\ip_address_test.cc">
-      <Filter>base</Filter>
-    </ClCompile>
     <ClCompile Include="..\test\tcp_server_test.cc">
       <Filter>src</Filter>
     </ClCompile>
