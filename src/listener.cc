@@ -40,7 +40,7 @@ namespace evpp {
         LOG_INFO << "TCPServer is running at " << addr_;
     }
 
-    void Listener::HandleAccept(base::Timestamp ts) {
+    void Listener::HandleAccept(Timestamp ts) {
         LOG_INFO << __FUNCTION__ << " New connection";
 
         struct sockaddr_storage ss;

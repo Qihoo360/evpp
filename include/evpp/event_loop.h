@@ -3,6 +3,7 @@
 #include "evpp/inner_pre.h"
 #include "evpp/libevent_watcher.h"
 
+#include <vector>
 #include <thread>
 #include <mutex>
 

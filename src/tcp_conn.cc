@@ -52,7 +52,7 @@ namespace evpp {
         return Send(d.data(), d.size());
     }
 
-    void TCPConn::HandleRead(base::Timestamp receiveTime) {
+    void TCPConn::HandleRead(Timestamp receiveTime) {
         loop_->AssertInLoopThread();
         int serrno = 0;
         ssize_t n = input_buffer_.ReadFromFD(chan_->fd(), &serrno);

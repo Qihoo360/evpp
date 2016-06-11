@@ -21,6 +21,9 @@
     <Filter Include="tcp">
       <UniqueIdentifier>{d854f834-9974-478e-b538-06390c055be3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="time">
+      <UniqueIdentifier>{db27fc34-e756-45b7-92eb-38df61f5dae1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\libevent_watcher.cc">
@@ -79,9 +82,6 @@
     <ClInclude Include="..\include\evpp\libevent_headers.h">
       <Filter>base</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\platform_config.h">
-      <Filter>base</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\evpp\fd_channel.h">
       <Filter>sockets</Filter>
     </ClInclude>
@@ -126,6 +126,36 @@
     </ClInclude>
     <ClInclude Include="..\include\evpp\connector.h">
       <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\log_config.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\slice.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\sys_addrinfo.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\sys_sockets.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\platform_config.h">
+      <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\duration.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\duration.inl.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\gettimeofday.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\timestamp.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\timestamp.inl.h">
+      <Filter>time</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
