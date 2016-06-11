@@ -71,7 +71,7 @@
  * 4800: we know we're casting ints/char*'s to bools, and we're ok with that
  * 4996: Yes, we're ok using "unsafe" functions like fopen() and strerror()
  */
-#pragma warning(disable:4244 4251 4355 4715 4800 4996)
+#pragma warning(disable:4244 4251 4355 4715 4800 4996 4005)
 
 /* file I/O */
 #define PATH_MAX 1024
