@@ -2,7 +2,7 @@
 
 #include "evpp/inner_pre.h"
 
-#include "evpp/base/timestamp.h"
+#include "evpp/timestamp.h"
 
 namespace evpp {
     class Buffer;
@@ -15,5 +15,5 @@ namespace evpp {
     typedef xstd::function<void(const TCPConnPtr&)> WriteCompleteCallback;
     typedef xstd::function<void(const TCPConnPtr&, size_t)> HighWaterMarkCallback;
 
-    typedef xstd::function<void(const TCPConnPtr&, Buffer*, base::Timestamp)> MessageCallback;
+    typedef xstd::function<void(const TCPConnPtr&, Buffer*, Timestamp)> MessageCallback;
 }

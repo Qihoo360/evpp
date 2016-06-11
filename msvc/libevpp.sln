@@ -6,7 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevpp", "libevpp.vcxproj", "{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{772C2111-BBBF-49E6-B912-198A7F7A88E5} = {772C2111-BBBF-49E6-B912-198A7F7A88E5}
-		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9} = {CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevpp-test", "libevpp-test.vcxproj", "{13C5E832-391B-47E7-9907-182553B0175E}"
@@ -15,8 +14,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevpp-test", "libevpp-tes
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libglog_static", "..\3rdparty\glog-0.3.4\vsprojects\libglog_static\libglog_static_libevpp.vcxproj", "{772C2111-BBBF-49E6-B912-198A7F7A88E5}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevppbase", "libbase.vcxproj", "{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "echo", "echo.vcxproj", "{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -33,6 +30,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pingping", "pingping", "{67DBE3BC-4CDA-4432-8E02-3CC4C04552E8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pingpong_server", "pingpong_server.vcxproj", "{50B6B513-C259-422D-A6E0-A64269D667DD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F} = {4877AA94-AD55-407F-9ED3-D4503FAB2A7F}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,10 +52,6 @@ Global
 		{772C2111-BBBF-49E6-B912-198A7F7A88E5}.Debug|Win32.Build.0 = Debug|Win32
 		{772C2111-BBBF-49E6-B912-198A7F7A88E5}.Release|Win32.ActiveCfg = Release|Win32
 		{772C2111-BBBF-49E6-B912-198A7F7A88E5}.Release|Win32.Build.0 = Release|Win32
-		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Debug|Win32.Build.0 = Debug|Win32
-		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Release|Win32.ActiveCfg = Release|Win32
-		{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}.Release|Win32.Build.0 = Release|Win32
 		{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE}.Debug|Win32.ActiveCfg = Debug|Win32
 		{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE}.Debug|Win32.Build.0 = Debug|Win32
 		{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE}.Release|Win32.ActiveCfg = Release|Win32

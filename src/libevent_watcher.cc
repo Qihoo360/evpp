@@ -89,7 +89,7 @@ namespace evpp {
         assert(pipe_[0] == 0);
 
         if (evutil_socketpair(AF_UNIX, SOCK_STREAM, 0, pipe_) < 0) {
-            LOG(ERROR) << "create socketpair ERROR";
+            LOG_ERROR << "create socketpair ERROR";
             goto failed;
         }
 

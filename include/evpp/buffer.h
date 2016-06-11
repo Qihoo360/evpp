@@ -1,7 +1,7 @@
 #pragma once
 
 #include "evpp/inner_pre.h"
-#include "evpp/base/slice.h"
+#include "evpp/slice.h"
 #include "evpp/sockets.h"
 
 #include <algorithm>

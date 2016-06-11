@@ -1,15 +1,15 @@
 
 #include "evpp/exp.h"
 #include "./test_common.h"
-#include "evpp/base/duration.h"
-#include "evpp/base/timestamp.h"
+#include "evpp/duration.h"
+#include "evpp/timestamp.h"
 
 TEST_UNIT(testDuration)
 {
-    evpp::base::Duration d0(0);
-    evpp::base::Duration d1(1);
-    evpp::base::Duration d2(2);
-    evpp::base::Duration d3(2);
+    evpp::Duration d0(0);
+    evpp::Duration d1(1);
+    evpp::Duration d2(2);
+    evpp::Duration d3(2);
     H_TEST_ASSERT(d0 < d1);
     H_TEST_ASSERT(d1 < d2);
     H_TEST_ASSERT(d2 == d3);

@@ -2,7 +2,7 @@
 
 #include "libevent_watcher.h"
 
-#include "evpp/base/timestamp.h"
+#include "evpp/timestamp.h"
 
 struct event;
 struct event_base;
@@ -24,7 +24,7 @@ namespace evpp {
             kWritable = 0x04,
         };
         typedef xstd::function<void()> EventCallback;
-        typedef xstd::function<void(base::Timestamp)> ReadEventCallback;
+        typedef xstd::function<void(Timestamp)> ReadEventCallback;
 
     public:
         FdChannel(EventLoop* loop, int fd,
