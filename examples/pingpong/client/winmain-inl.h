@@ -1,3 +1,4 @@
+#pragma once
 
 #ifdef WIN32
 #   ifdef _DEBUG
@@ -26,6 +27,7 @@ namespace {
         }
         ~OnApp() {
             system("pause");
+            WSACleanup();
         }
     } __s_onexit_pause;
 #endif

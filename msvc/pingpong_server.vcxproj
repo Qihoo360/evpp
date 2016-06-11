@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE}</ProjectGuid>
+    <ProjectGuid>{50B6B513-C259-422D-A6E0-A64269D667DD}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>echo</RootNamespace>
   </PropertyGroup>
@@ -86,10 +86,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\examples\echo\main.cc" />
+    <ClCompile Include="..\examples\pingpong\server\main.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\examples\echo\winmain-inl.h" />
+    <ClInclude Include="..\examples\pingpong\server\winmain-inl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
