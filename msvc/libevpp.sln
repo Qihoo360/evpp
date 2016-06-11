@@ -28,6 +28,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pingpong_client", "pingpong
 		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F} = {4877AA94-AD55-407F-9ED3-D4503FAB2A7F}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "example", "example", "{E8E8B2B4-69D4-4418-8E63-7BBB791472DB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pingping", "pingping", "{67DBE3BC-4CDA-4432-8E02-3CC4C04552E8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pingpong_server", "pingpong_server.vcxproj", "{50B6B513-C259-422D-A6E0-A64269D667DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -58,8 +64,18 @@ Global
 		{DEE13AF7-CE91-43A7-89A0-32FB219D4B68}.Debug|Win32.Build.0 = Debug|Win32
 		{DEE13AF7-CE91-43A7-89A0-32FB219D4B68}.Release|Win32.ActiveCfg = Release|Win32
 		{DEE13AF7-CE91-43A7-89A0-32FB219D4B68}.Release|Win32.Build.0 = Release|Win32
+		{50B6B513-C259-422D-A6E0-A64269D667DD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{50B6B513-C259-422D-A6E0-A64269D667DD}.Debug|Win32.Build.0 = Debug|Win32
+		{50B6B513-C259-422D-A6E0-A64269D667DD}.Release|Win32.ActiveCfg = Release|Win32
+		{50B6B513-C259-422D-A6E0-A64269D667DD}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{67DBE3BC-4CDA-4432-8E02-3CC4C04552E8} = {E8E8B2B4-69D4-4418-8E63-7BBB791472DB}
+		{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE} = {E8E8B2B4-69D4-4418-8E63-7BBB791472DB}
+		{DEE13AF7-CE91-43A7-89A0-32FB219D4B68} = {67DBE3BC-4CDA-4432-8E02-3CC4C04552E8}
+		{50B6B513-C259-422D-A6E0-A64269D667DD} = {67DBE3BC-4CDA-4432-8E02-3CC4C04552E8}
 	EndGlobalSection
 EndGlobal
