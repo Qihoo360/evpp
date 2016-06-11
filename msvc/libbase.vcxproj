@@ -17,15 +17,14 @@
     <ClInclude Include="..\include\evpp\base\exp.h" />
     <ClInclude Include="..\include\evpp\base\gettimeofday.h" />
     <ClInclude Include="..\include\evpp\base\inner_pre.h" />
-    <ClInclude Include="..\include\evpp\base\ip_address.h" />
     <ClInclude Include="..\include\evpp\base\platform_config.h" />
     <ClInclude Include="..\include\evpp\base\slice.h" />
     <ClInclude Include="..\include\evpp\base\sys_addrinfo.h" />
+    <ClInclude Include="..\include\evpp\base\sys_sockets.h" />
     <ClInclude Include="..\include\evpp\base\timestamp.h" />
     <ClInclude Include="..\include\evpp\base\timestamp.inl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\base\ip_address.cc" />
     <ClCompile Include="..\src\base\pch.cc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
