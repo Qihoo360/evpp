@@ -24,7 +24,7 @@ LDFLAGS= $(RTFLAGS) \
 		 -L $(EVPP_DIR)/src/base \
 		 -L $(EVPP_DIR)/src \
 		 -lpthread \
-		 -levpp -levppbase -levent -lglog 
+		 -levpp -levent -lglog
 
 DIRNAME=$(shell basename `pwd`)
 

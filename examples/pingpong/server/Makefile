@@ -24,7 +24,7 @@ LDFLAGS= $(RTFLAGS) \
 		 -L $(EVPP_DIR)/src/base \
 		 -L $(EVPP_DIR)/src \
 		 -lpthread \
-		 -levpp -levppbase -levent -lglog 
+		 -levpp -levent -lglog
 
 DIRNAME=$(shell basename `pwd`)
 
@@ -32,7 +32,7 @@ SRCS := $(wildcard *.cc)
 OBJS := $(patsubst %.cc, %.o, $(SRCS))
 DEPS := $(patsubst %.o, %.d, $(OBJS))
 
-TARGET=pingpong_client
+TARGET=pingpong_server
 
 all : $(TARGET) 
 
