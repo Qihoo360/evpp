@@ -3,6 +3,7 @@
 #include "evpp/inner_pre.h"
 #include "evpp/buffer.h"
 #include "evpp/tcp_callbacks.h"
+#include "evpp/slice.h"
 
 namespace evpp {
 
@@ -30,14 +31,18 @@ namespace evpp {
                 const std::string& raddr);
         ~TCPConn();
 
+        void Send(const char* s) { Send(s, strlen(s)); }
         void Send(const void* d, size_t dlen);
         void Send(const std::string& d);
+        void Send(const Slice& message);
+        void Send(Buffer* buf);
         void Close();
         void OnAttachedToLoop();
     public:
         void SetMesageHandler(MessageCallback cb) { msg_fn_ = cb; }
         void SetConnectionHandler(ConnectionCallback cb) { conn_fn_ = cb; }
         void SetCloseCallback(CloseCallback cb) { close_fn_ = cb; }
+        void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
     public:
         const std::string& remote_addr() const { return remote_addr_; }
         const std::string& name() const { return name_; }
@@ -52,11 +57,14 @@ namespace evpp {
         void HandleWrite();
         void HandleClose();
         void HandleError();
+        void SendInLoop(const Slice& message);
+        void SendInLoop(const void* data, size_t len);
+        void SendStringInLoop(const std::string& message);
     private:
-        friend class TCPClient;
-        void set_local_addr(const std::string& addr) { local_addr_ = addr; }
-        void set_name(const std::string& n) { name_ = n; }
-        xstd::shared_ptr<FdChannel> chan() { return chan_; }
+//         friend class TCPClient;
+//         void set_local_addr(const std::string& addr) { local_addr_ = addr; }
+//         void set_name(const std::string& n) { name_ = n; }
+//         xstd::shared_ptr<FdChannel> chan() { return chan_; }
     private:
         EventLoop* loop_;
         int fd_;
@@ -69,6 +77,7 @@ namespace evpp {
 
         Type type_;
         Status status_;
+        size_t high_water_mark_;
 
         ConnectionCallback conn_fn_;
         MessageCallback msg_fn_;

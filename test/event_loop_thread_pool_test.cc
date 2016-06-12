@@ -37,8 +37,7 @@ TEST_UNIT(testEventLoopThreadPool)
     loop.Start(true);
 
     int thread_num = 24;
-    evpp::EventLoopThreadPool pool(loop.event_loop());
-    pool.SetThreadNum(thread_num);
+    evpp::EventLoopThreadPool pool(loop.event_loop(), thread_num);
     H_TEST_ASSERT(pool.Start(true));
 
     for (int i = 0; i < thread_num; i++)
