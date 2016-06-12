@@ -12,6 +12,12 @@ namespace evpp {
         LOG_INFO << "Connector::Connector this=" << this << " raddr=" << raddr;
     }
 
+    Connector::~Connector() {
+        loop_->AssertInLoopThread();
+        chan_->Close();
+        chan_.reset();
+    }
+
     void Connector::Start() {
         loop_->AssertInLoopThread();
         int fd = CreateNonblockingSocket();
@@ -64,4 +70,5 @@ namespace evpp {
         EVUTIL_CLOSESOCKET(chan_->fd());
         loop_->RunAfter(1000, xstd::bind(&Connector::Start, this));
     }
+
 }

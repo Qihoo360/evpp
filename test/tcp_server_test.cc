@@ -50,18 +50,18 @@ namespace {
 }
 
 
-// TEST_UNIT(testATCPServer) {
-//     evpp::EventLoop loop;
-//     evpp::TCPServer tsrv(&loop, addr, "tcp_server", 2);
-//     tsrv.SetMesageHandler(&OnMessage);
-//     tsrv.Start();
-//     loop.RunAfter(1 * 1000, xstd::bind(&StopTCPServer, &tsrv));
-//     loop.RunAfter(1.1 * 1000, xstd::bind(&evpp::EventLoop::Stop, &loop));
-//     StartTCPClient();
-//     loop.Run();
-//     H_TEST_ASSERT(connected);
-//     H_TEST_ASSERT(count == 1);
-//     H_TEST_ASSERT(message_recved);
-// }
+TEST_UNIT(testATCPServer) {
+    evpp::EventLoop loop;
+    evpp::TCPServer tsrv(&loop, addr, "tcp_server", 2);
+    tsrv.SetMesageHandler(&OnMessage);
+    tsrv.Start();
+    loop.RunAfter(1 * 1000, xstd::bind(&StopTCPServer, &tsrv));
+    loop.RunAfter(1.1 * 1000, xstd::bind(&evpp::EventLoop::Stop, &loop));
+    StartTCPClient();
+    loop.Run();
+    H_TEST_ASSERT(connected);
+    H_TEST_ASSERT(count == 1);
+    H_TEST_ASSERT(message_recved);
+}
 
 

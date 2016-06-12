@@ -7,6 +7,7 @@ namespace evpp {
     public:
         typedef xstd::function<void(int sockfd, const std::string&/*local addr*/)> NewConnectionCallback;
         Connector(EventLoop* loop, const std::string& remote_addr);
+        ~Connector();
         void Start();
     public:
         void SetNewConnectionCallback(NewConnectionCallback cb) { conn_fn_ = cb; }
