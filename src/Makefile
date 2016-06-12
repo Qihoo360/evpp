@@ -15,12 +15,10 @@ CPPFLAGS= $(CFLAGS) -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords
 RTFLAGS := \
     -Wl,-rpath=. \
     -Wl,-rpath=$(GCC472_PATH)/lib64 \
-    -Wl,-rpath=$(CURRENT_DIR)/../src/base \
     -Wl,-rpath=$(CURRENT_DIR)/../src
 
 LDFLAGS= $(RTFLAGS) -lpthread \
-		 -levent -lglog -levppbase \
-		 -L $(CURRENT_DIR)/../src/base \
+		 -levent -lglog
 
 
 SRCS := $(wildcard *.cc)
