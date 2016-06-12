@@ -20,10 +20,10 @@ namespace evpp {
     }
 
     void TCPClient::Disconnect() {
+        auto_reconnect_.store(0);
         if (conn_) {
             conn_->Close();
         }
-        auto_reconnect_.store(0); //
     }
 
     void TCPClient::OnConnected(int sockfd, const std::string& laddr) {
