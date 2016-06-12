@@ -9,7 +9,7 @@ namespace evpp {
 
     EventWatcher::EventWatcher(struct event_base* evbase, const Handler& handler)
         : evbase_(evbase), handler_(handler) {
-        event_ = new event;//(struct event*)malloc(sizeof(struct event));
+        event_ = new event;
         memset(event_, 0, sizeof(struct event));
     }
 
@@ -39,13 +39,16 @@ namespace evpp {
         DoClose();
     }
 
-    bool EventWatcher::Watch(uint64_t timeout_us /*= 0*/) {
+    bool EventWatcher::Watch(uint64_t timeout_us) {
+        return Watch(Duration(int64_t(timeout_us) * Duration::kMicrosecond));
+    }
+
+    bool EventWatcher::Watch(Duration timeout) {
         struct timeval tv;
         struct timeval* timeoutval = NULL;
 
-        if (timeout_us > 0) {
-            tv.tv_sec = (long)timeout_us / 1000000;
-            tv.tv_usec = (long)timeout_us % 1000000;
+        if (!timeout.IsZero()) {
+            timeout.To(&tv);
             timeoutval = &tv;
         }
 
@@ -80,8 +83,8 @@ namespace evpp {
     //////////////////////////////////////////////////////////////////////////
 
     PipeEventWatcher::PipeEventWatcher(struct event_base *event_base,
-        const Handler& handler)
-        : EventWatcher(event_base, handler) {
+                                       const Handler& handler)
+                                       : EventWatcher(event_base, handler) {
         memset(pipe_, 0, sizeof(pipe_[0] * 2));
     }
 
@@ -99,7 +102,7 @@ namespace evpp {
         }
 
         event_set(event_, pipe_[1], EV_READ | EV_PERSIST,
-            PipeEventWatcher::HandlerFn, this);
+                  PipeEventWatcher::HandlerFn, this);
         return true;
     failed:
         Close();
@@ -137,8 +140,8 @@ namespace evpp {
     //////////////////////////////////////////////////////////////////////////
 
     TimerEventWatcher::TimerEventWatcher(struct event_base *event_base,
-        const Handler& handler)
-        : EventWatcher(event_base, handler) {}
+                                         const Handler& handler)
+                                         : EventWatcher(event_base, handler) {}
 
     bool TimerEventWatcher::DoInit() {
         event_set(event_, -1, 0, TimerEventWatcher::HandlerFn, this);
@@ -154,11 +157,11 @@ namespace evpp {
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
-#ifdef H_OS_LINUX
+#ifndef H_OS_WINDOWS
     SignalEventWatcher::SignalEventWatcher(int signo, struct event_base *event_base,
-        const Handler& handler)
-        : EventWatcher(event_base, handler)
-        , signo_(signo) {
+                                           const Handler& handler)
+                                           : EventWatcher(event_base, handler)
+                                           , signo_(signo) {
         assert(signo_);
     }
 
