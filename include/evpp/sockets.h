@@ -59,4 +59,6 @@ namespace evpp {
     EVPP_EXPORT std::string ToIPPort(const struct sockaddr_storage *ss);
 }
 
+#ifdef H_OS_WINDOWS
 EVPP_EXPORT int readv(SOCKET sockfd, struct iovec *iov, int iovcnt);
+#endif
