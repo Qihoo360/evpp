@@ -121,7 +121,7 @@ namespace evpp {
 }
 
 #ifdef H_OS_WINDOWS
-int readv(SOCKET sockfd, struct iovec *iov, int iovcnt) {
+int readv(int sockfd, struct iovec *iov, int iovcnt) {
     DWORD readn = 0;
     DWORD flags = 0;
     if (::WSARecv(sockfd, iov, iovcnt, &readn, &flags, NULL, NULL) == 0) {

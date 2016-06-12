@@ -103,6 +103,10 @@ namespace evpp {
         t->Start();
     }
 
+    void EventLoop::RunAfter(Duration delay, const Functor& f) {
+        RunAfter(delay.Milliseconds(), f);
+    }
+
     void EventLoop::RunInLoop(const Functor& functor) {
         if (IsInLoopThread()) {
             functor();

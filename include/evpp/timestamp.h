@@ -6,8 +6,8 @@ namespace evpp {
     class Timestamp {
     public:
         Timestamp();
-        Timestamp(int64_t nanoseconds);
-        Timestamp(const struct timeval& t);
+        explicit Timestamp(int64_t nanoseconds);
+        explicit Timestamp(const struct timeval& t);
 
         static Timestamp Now(); // returns the current local time.
 

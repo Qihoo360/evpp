@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\buffer.cc" />
     <ClCompile Include="..\src\connector.cc" />
+    <ClCompile Include="..\src\duration.cc" />
     <ClCompile Include="..\src\event_loop.cc" />
     <ClCompile Include="..\src\event_loop_thread.cc" />
     <ClCompile Include="..\src\event_loop_thread_pool.cc" />
