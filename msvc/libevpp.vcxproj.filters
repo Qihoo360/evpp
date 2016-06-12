@@ -71,6 +71,9 @@
     <ClCompile Include="..\src\connector.cc">
       <Filter>tcp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\duration.cc">
+      <Filter>time</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\evpp\exp.h">

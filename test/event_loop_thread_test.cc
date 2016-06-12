@@ -4,38 +4,34 @@
 #include "evpp/libevent_watcher.h"
 #include "evpp/event_loop.h"
 #include "evpp/event_loop_thread.h"
-
+#include "evpp/timestamp.h"
 #include <atomic>
 
-namespace
-{
+namespace {
     static bool g_timeout = false;
     static std::atomic<int> g_count;
-    static void OnTimeout()
-    {
+    static void OnTimeout() {
         g_timeout = true;
     }
 
-    static void OnCount()
-    {
+    static void OnCount() {
         g_count++;
     }
 }
 
 
-TEST_UNIT(testEventLoopThread)
-{
+TEST_UNIT(testEventLoopThread) {
+    evpp::Duration delay(double(1.0)); // 1s
     g_count.store(0);
     evpp::EventLoopThread t;
     t.Start();
-    uint64_t begin_us = evpp::utcmicrosecond();
-    t.event_loop()->RunAfter(1000 * 2, &OnTimeout);
-    while (!g_timeout)
-    {
+    evpp::Timestamp begin = evpp::Timestamp::Now();
+    t.event_loop()->RunAfter(delay, &OnTimeout);
+    while (!g_timeout) {
         usleep(1);
     }
-    uint64_t end_us = evpp::utcmicrosecond();
-    H_TEST_ASSERT(end_us - begin_us >= 2000 * 1000);
+    evpp::Duration cost = evpp::Timestamp::Now() - begin;
+    H_TEST_ASSERT(delay <= cost);
     t.event_loop()->RunInLoop(&OnCount);
     t.event_loop()->RunInLoop(&OnCount);
     t.event_loop()->RunInLoop(&OnCount);

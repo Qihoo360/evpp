@@ -28,6 +28,7 @@ namespace evpp {
         EventLoop* loop_;
         std::string remote_addr_;
         std::string name_;
+        std::atomic<int> auto_reconnect_;
 
         TCPConnPtr conn_;
         xstd::shared_ptr<Connector> connector_;
