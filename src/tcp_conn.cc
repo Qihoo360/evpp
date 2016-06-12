@@ -19,6 +19,7 @@ namespace evpp {
                      , remote_addr_(raddr)
                      , type_(kIncoming)
                      , status_(kDisconnected)
+                     , high_water_mark_(128 * 1024 * 1024)
     {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
 
@@ -43,14 +44,37 @@ namespace evpp {
         HandleClose();
     }
 
-    void TCPConn::Send(const void* d, size_t dlen) {
-        //TODO handle write error, handle the case that it is not the same IO thread
-        ::send(chan_->fd(), (const char*)d, dlen, 0);
-    }
-
     void TCPConn::Send(const std::string& d) {
         return Send(d.data(), d.size());
     }
+
+    void TCPConn::Send(const Slice& message) {
+        if (status_ == kConnected) {
+            if (loop_->IsInLoopThread()) {
+                SendInLoop(message);
+            } else {
+                loop_->RunInLoop(xstd::bind(&TCPConn::SendStringInLoop, shared_from_this(), message.ToString()));
+            }
+        }
+    }
+
+    void TCPConn::Send(const void* data, size_t len) {
+        Send(Slice(static_cast<const char*>(data), len));
+    }
+
+    void TCPConn::Send(Buffer* buf) {
+        if (status_ == kConnected) {
+            if (loop_->IsInLoopThread()) {
+                SendInLoop(buf->data(), buf->length());
+                buf->NextAll();
+            } else {
+                loop_->RunInLoop(xstd::bind(&TCPConn::SendStringInLoop, this, buf->NextAllString()));
+            }
+        }
+    }
+
+
+
 
     void TCPConn::HandleRead(Timestamp receiveTime) {
         loop_->AssertInLoopThread();
@@ -117,4 +141,66 @@ namespace evpp {
             conn_fn_(shared_from_this());
         }
     }
+
+    void TCPConn::SendInLoop(const Slice& message) {
+        SendInLoop(message.data(), message.size());
+    }
+
+    void TCPConn::SendStringInLoop(const std::string& message) {
+        SendInLoop(message.data(), message.size());
+    }
+
+    void TCPConn::SendInLoop(const void* data, size_t len) {
+        loop_->AssertInLoopThread();
+        ssize_t nwritten = 0;
+        size_t remaining = len;
+        bool write_error = false;
+        if (status_ == kDisconnected) {
+            LOG_WARN << "disconnected, give up writing";
+            return;
+        }
+
+        // if no data in output queue, writing directly
+        if (!chan_->IsWritable() && output_buffer_.length() == 0) {
+            nwritten = ::send(chan_->fd(), static_cast<const char*>(data), len, 0);
+            if (nwritten >= 0) {
+                remaining = len - nwritten;
+                if (remaining == 0 && write_complete_fn_) {
+                    loop_->QueueInLoop(xstd::bind(write_complete_fn_, shared_from_this()));
+                }
+            } else {
+                int serrno = errno;
+                nwritten = 0;
+                if (!EVUTIL_ERR_RW_RETRIABLE(serrno)) {
+                    LOG_ERROR << "SendInLoop write failed errno=" << serrno << " " << strerror(serrno);
+                    if (serrno == EPIPE || serrno == ECONNRESET) {
+                        write_error = true;
+                    }
+                }
+            }
+        }
+
+        assert(remaining <= len);
+        if (!write_error && remaining > 0) {
+            size_t old_len = output_buffer_.length();
+            if (old_len + remaining >= high_water_mark_
+                && old_len < high_water_mark_
+                && high_water_mark_fn_) {
+                loop_->QueueInLoop(xstd::bind(high_water_mark_fn_, shared_from_this(), old_len + remaining));
+            }
+            output_buffer_.Append(static_cast<const char*>(data)+nwritten, remaining);
+            if (!chan_->IsWritable()) {
+                chan_->EnableWriteEvent();
+            }
+        }
+    }
+
+    void TCPConn::SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark) {
+        high_water_mark_fn_ = cb;
+        high_water_mark_ = mark;
+    }
+
+
+
+
 }

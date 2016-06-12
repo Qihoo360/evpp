@@ -82,3 +82,43 @@ typedef int ssize_t;
 #endif
 
 #endif
+
+
+
+
+// Copied from libevent2.0/util-internal.h
+#ifndef H_OS_WINDOWS
+
+/* True iff e is an error that means a read/write operation can be retried. */
+#define EVUTIL_ERR_RW_RETRIABLE(e)				\
+    ((e) == EINTR || (e) == EAGAIN)
+/* True iff e is an error that means an connect can be retried. */
+#define EVUTIL_ERR_CONNECT_RETRIABLE(e)			\
+    ((e) == EINTR || (e) == EINPROGRESS)
+/* True iff e is an error that means a accept can be retried. */
+#define EVUTIL_ERR_ACCEPT_RETRIABLE(e)			\
+    ((e) == EINTR || (e) == EAGAIN || (e) == ECONNABORTED)
+
+/* True iff e is an error that means the connection was refused */
+#define EVUTIL_ERR_CONNECT_REFUSED(e)					\
+    ((e) == ECONNREFUSED)
+
+#else
+
+#define EVUTIL_ERR_RW_RETRIABLE(e)					\
+    ((e) == WSAEWOULDBLOCK || \
+    (e) == WSAEINTR)
+
+#define EVUTIL_ERR_CONNECT_RETRIABLE(e)					\
+    ((e) == WSAEWOULDBLOCK || \
+    (e) == WSAEINTR || \
+    (e) == WSAEINPROGRESS || \
+    (e) == WSAEINVAL)
+
+#define EVUTIL_ERR_ACCEPT_RETRIABLE(e)			\
+    EVUTIL_ERR_RW_RETRIABLE(e)
+
+#define EVUTIL_ERR_CONNECT_REFUSED(e)					\
+    ((e) == WSAECONNREFUSED)
+
+#endif

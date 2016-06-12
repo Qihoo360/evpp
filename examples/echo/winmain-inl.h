@@ -11,9 +11,9 @@
 #endif
 
 namespace {
-#ifdef WIN32
     struct OnApp {
         OnApp() {
+#ifdef WIN32
             // Initialize net work.
             WSADATA wsaData;
             // Initialize Winsock 2.2
@@ -22,13 +22,15 @@ namespace {
             if (nError) {
                 std::cout << "WSAStartup() failed with error: %d" << nError;
             }
-
-            std::cout << "EWOULDBLOCK=" << EWOULDBLOCK << " WSAEWOULDBLOCK=" << WSAEWOULDBLOCK << " EAGAIN=" << EAGAIN << std::endl;
+            std::cout << "WSAEWOULDBLOCK=" << WSAEWOULDBLOCK << std::endl;
+#endif
+            std::cout << "EWOULDBLOCK=" << EWOULDBLOCK << " EAGAIN=" << EAGAIN << std::endl;
         }
         ~OnApp() {
+#ifdef WIN32
             system("pause");
             WSACleanup();
+#endif
         }
     } __s_onexit_pause;
-#endif
 }
