@@ -16,6 +16,26 @@ namespace evpp {
     inline Duration::Duration(double seconds)
         : ns_((int64_t)(seconds*kSecond)) {}
 
+    inline double Duration::Seconds() const {
+        return double(ns_) / kSecond;
+    }
+
+    inline double Duration::Milliseconds() const {
+        return double(ns_) / kMillisecond;
+    }
+
+    inline double Duration::Microseconds() const {
+        return double(ns_) / kMicrosecond;
+    }
+
+    inline double Duration::Minutes() const {
+        return double(ns_) / kMinute;
+    }
+
+    inline double Duration::Hours() const {
+        return double(ns_) / kHour;
+    }
+
     inline bool Duration::IsZero() const {
         return ns_ == 0;
     }
@@ -33,6 +53,10 @@ namespace evpp {
 
     inline bool Duration::operator< (const Duration& rhs) const {
         return ns_ < rhs.ns_;
+    }
+
+    inline bool Duration::operator<= (const Duration& rhs) const {
+        return ns_ <= rhs.ns_;
     }
 
     inline bool Duration::operator==(const Duration& rhs) const {

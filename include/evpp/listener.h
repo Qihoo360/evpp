@@ -24,9 +24,9 @@ namespace evpp {
 
     private:
         int fd_;// The listener socket fd
-        xstd::shared_ptr<FdChannel> chan_;
         EventLoop* loop_;
         std::string addr_;
+        xstd::shared_ptr<FdChannel> chan_;
         NewConnectionCallback new_conn_fn_;
     };
 }

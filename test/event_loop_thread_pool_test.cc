@@ -48,7 +48,7 @@ TEST_UNIT(testEventLoopThreadPool)
     usleep(1000*1000);
     pool.Stop(true);
     loop.Stop(true);
-    usleep(2000 * 1000);
+    usleep(1000 * 1000);
     H_TEST_ASSERT((int)g_working_tids.size() == thread_num);
 }
 

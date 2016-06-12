@@ -2,10 +2,12 @@
 
 #include "evpp/inner_pre.h"
 #include "evpp/libevent_watcher.h"
+#include "evpp/duration.h"
 
 #include <vector>
 #include <thread>
 #include <mutex>
+
 
 namespace evpp {
 
@@ -22,12 +24,13 @@ namespace evpp {
         void AfterFork(); // Reinitialized the event base after a fork
 
         void RunAfter(double delay_ms, const Functor& f);
+        void RunAfter(Duration delay, const Functor& f);
 
         void RunInLoop(const Functor& handler);
         void QueueInLoop(const Functor& handler);
-        struct event_base *event_base() { return event_base_; }
         void AddAfterLoopFunctor(const Functor& handler);
 
+        struct event_base *event_base() { return event_base_; }
         bool IsInLoopThread() const;
         void AssertInLoopThread() const;
 

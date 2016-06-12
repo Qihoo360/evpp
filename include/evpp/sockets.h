@@ -60,5 +60,5 @@ namespace evpp {
 }
 
 #ifdef H_OS_WINDOWS
-EVPP_EXPORT int readv(SOCKET sockfd, struct iovec *iov, int iovcnt);
+EVPP_EXPORT int readv(int sockfd, struct iovec *iov, int iovcnt);
 #endif
