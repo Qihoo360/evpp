@@ -28,15 +28,12 @@ CPPFLAGS= -g -c -fPIC \
 RTFLAGS := \
     -Wl,-rpath=. \
     -Wl,-rpath=$(GCC472_PATH)/lib64 \
-    -Wl,-rpath=$(CURRENT_DIR)/../src/base \
     -Wl,-rpath=$(CURRENT_DIR)/../src
 
 LDFLAGS= $(RTFLAGS) \
-		 -L $(CURRENT_DIR)/../src/base \
 		 -L $(CURRENT_DIR)/../src \
 		 -lpthread \
-		 -levpp -levppbase -levent -lglog \
-		 -lboost_system-mt -lboost_filesystem-mt -lboost_thread-mt 
+		 -levpp -levent -lglog
 
 DIRNAME=$(shell basename `pwd`)
 
