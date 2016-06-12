@@ -2,6 +2,8 @@
 
 #include "inner_pre.h"
 
+#include "duration.h"
+
 #ifdef H_OS_WINDOWS
 #include <functional>
 #else
@@ -24,6 +26,7 @@ namespace evpp {
 
         // @note It MUST be called in the event thread.
         bool Watch(uint64_t timeout_us /*= 0*/);
+        bool Watch(Duration timeout);
 
         // @note It MUST be called in the event thread.
         void Cancel();
@@ -77,6 +80,7 @@ namespace evpp {
         TimerEventWatcher(struct event_base *event_base, const Handler& handler);
 
         bool AsyncWait(uint64_t timeout_us) { return Watch(timeout_us); }
+        bool AsyncWait(Duration timeout) { return Watch(timeout); }
 
     private:
         virtual bool DoInit();
@@ -86,7 +90,7 @@ namespace evpp {
     typedef TimerEventWatcher EventTimer;
 
     //////////////////////////////////////////////////////////////////////////
-#ifdef H_OS_LINUX
+#ifndef H_OS_WINDOWS
     class SignalEventWatcher : public EventWatcher {
     public:
         SignalEventWatcher(int signo, struct event_base *event_base,
