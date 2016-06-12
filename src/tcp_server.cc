@@ -14,8 +14,7 @@ namespace evpp {
                          , name_(name)
                          , next_conn_id_(0) {
         threads_dispatch_policy_ = kRoundRobin;
-        tpool_.reset(new EventLoopThreadPool(loop));
-        tpool_->SetThreadNum(thread_num);
+        tpool_.reset(new EventLoopThreadPool(loop, thread_num));
     }
 
     bool TCPServer::Start() {
