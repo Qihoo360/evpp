@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gettimeofday.h"
+
 namespace evpp {
     inline Timestamp::Timestamp()
         : ns_(0) {}
