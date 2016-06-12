@@ -40,6 +40,10 @@ namespace evpp {
     }
 
     void TCPConn::Close() {
+        loop_->RunInLoop(xstd::bind(&TCPConn::CloseInLoop, shared_from_this()));
+    }
+
+    void TCPConn::CloseInLoop() {
         loop_->AssertInLoopThread();
         HandleClose();
     }
@@ -72,9 +76,6 @@ namespace evpp {
             }
         }
     }
-
-
-
 
     void TCPConn::HandleRead(Timestamp receiveTime) {
         loop_->AssertInLoopThread();
@@ -125,6 +126,7 @@ namespace evpp {
         if (conn_fn_) {
             conn_fn_(conn);
         }
+
         close_fn_(conn);// This must be the last line
         status_ = kDisconnected;
     }

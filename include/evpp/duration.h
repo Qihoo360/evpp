@@ -7,14 +7,14 @@ namespace evpp {
     // A Duration represents the elapsed time between two instants
     // as an int64 nanosecond count.  The representation limits the
     // largest representable duration to approximately 290 years.
-    class Duration {
+    class EVPP_EXPORT Duration {
     public:
-        static const int64_t kNanosecond = 1LL;
-        static const int64_t kMicrosecond = 1000 * kNanosecond;
-        static const int64_t kMillisecond = 1000 * kMicrosecond;
-        static const int64_t kSecond = 1000 * kMillisecond;
-        static const int64_t kMinute = 60 * kSecond;
-        static const int64_t kHour = 60 * kMinute;
+        static const int64_t kNanosecond;
+        static const int64_t kMicrosecond;
+        static const int64_t kMillisecond;
+        static const int64_t kSecond;
+        static const int64_t kMinute;
+        static const int64_t kHour;
     public:
         Duration();
         Duration(const struct timeval& t);
@@ -42,6 +42,7 @@ namespace evpp {
 
         bool IsZero() const;
         bool operator< (const Duration& rhs) const;
+        bool operator<= (const Duration& rhs) const;
         bool operator==(const Duration& rhs) const;
 
         Duration operator+=(const Duration& rhs);

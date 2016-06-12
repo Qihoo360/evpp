@@ -60,11 +60,7 @@ namespace evpp {
         void SendInLoop(const Slice& message);
         void SendInLoop(const void* data, size_t len);
         void SendStringInLoop(const std::string& message);
-    private:
-//         friend class TCPClient;
-//         void set_local_addr(const std::string& addr) { local_addr_ = addr; }
-//         void set_name(const std::string& n) { name_ = n; }
-//         xstd::shared_ptr<FdChannel> chan() { return chan_; }
+        void CloseInLoop();
     private:
         EventLoop* loop_;
         int fd_;

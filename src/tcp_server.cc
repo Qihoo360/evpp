@@ -14,10 +14,11 @@ namespace evpp {
                          , name_(name)
                          , next_conn_id_(0) {
         threads_dispatch_policy_ = kRoundRobin;
-        tpool_.reset(new EventLoopThreadPool(loop, thread_num));
+        tpool_.reset(new EventLoopThreadPool(loop_, thread_num));
     }
 
     bool TCPServer::Start() {
+        tpool_->Start(true);
         listener_.reset(new Listener(loop_, listen_addr_));
         listener_->Listen();
         listener_->SetNewConnectionCallback(
@@ -26,6 +27,11 @@ namespace evpp {
             xstd::placeholders::_1,
             xstd::placeholders::_2));
         return true;
+    }
+
+    void TCPServer::Stop() {
+        tpool_->Stop(true);
+        loop_->RunInLoop(xstd::bind(&Listener::Stop, listener_));
     }
 
     void TCPServer::HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/) {
@@ -47,7 +53,7 @@ namespace evpp {
             return tpool_->GetNextLoop();
         } else {
             assert(threads_dispatch_policy_ == kIPAddressHashing);
-            //TODO efficient improve. Using the sockaddr_in to calculate the hash value of the remote hash instead of std::string
+            //TODO efficient improve. Using the sockaddr_in to calculate the hash value of the remote address instead of std::string
             auto index = raddr.rfind(':');
             assert(index != std::string::npos);
             auto hash = std::hash<std::string>()(std::string(raddr.data(), index));
@@ -62,6 +68,8 @@ namespace evpp {
     void TCPServer::RemoveConnectionInLoop(const TCPConnPtr& conn) {
         connections_.erase(conn->name());
     }
+
+
 }
 
 

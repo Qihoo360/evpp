@@ -23,6 +23,7 @@ namespace evpp {
                   int thread_num);
 
         bool Start();
+        void Stop();
         void SetMesageHandler(MessageCallback cb) {
             msg_fn_ = cb;
         }
@@ -37,10 +38,10 @@ namespace evpp {
     private:
         typedef std::map<std::string, TCPConnPtr> ConnectionMap;
 
-        EventLoop* loop_;  // the acceptor loop
+        EventLoop* loop_;  // the listener loop
         const std::string listen_addr_;
         const std::string name_;
-        xstd::shared_ptr<Listener> listener_; // avoid revealing Acceptor
+        xstd::shared_ptr<Listener> listener_;
         xstd::shared_ptr<EventLoopThreadPool> tpool_;
         MessageCallback msg_fn_;
         ConnectionCallback conn_fn_;

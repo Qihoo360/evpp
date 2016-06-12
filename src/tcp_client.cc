@@ -8,7 +8,7 @@
 
 namespace evpp {
     TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& n)
-        : loop_(l), remote_addr_(raddr), name_(n) {
+        : loop_(l), remote_addr_(raddr), name_(n), auto_reconnect_(1) {
         
     }
 
@@ -23,6 +23,7 @@ namespace evpp {
         if (conn_) {
             conn_->Close();
         }
+        auto_reconnect_.store(0); //
     }
 
     void TCPClient::OnConnected(int sockfd, const std::string& laddr) {
@@ -37,7 +38,9 @@ namespace evpp {
 
     void TCPClient::OnRemoveConnection(const TCPConnPtr& conn) {
         loop_->AssertInLoopThread();
-        Reconnect();
+        if (auto_reconnect_.load() != 0) {
+            Reconnect();
+        }
     }
 
     
