@@ -5,9 +5,8 @@
 namespace evpp {
     class EVPP_EXPORT EventLoopThreadPool {
     public:
-        EventLoopThreadPool(EventLoop* base_loop);
+        EventLoopThreadPool(EventLoop* base_loop, int thread_num);
         ~EventLoopThreadPool();
-        void SetThreadNum(int thread_num);
         bool Start(bool wait_until_thread_started = false);
         void Stop(bool wait_thread_exit = false);
 

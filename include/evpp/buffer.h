@@ -82,7 +82,7 @@ namespace evpp {
             write_index_ += len;
         }
 
-        void Append(const base::Slice& str) {
+        void Append(const Slice& str) {
             Write(str.data(), str.size());
         }
 
@@ -165,8 +165,8 @@ namespace evpp {
             return result;
         }
 
-        base::Slice ToSlice() const {
-            return base::Slice(data(), static_cast<int>(length()));
+        Slice ToSlice() const {
+            return Slice(data(), static_cast<int>(length()));
         }
 
         void Shrink(size_t reserve) {
@@ -185,9 +185,9 @@ namespace evpp {
         // advancing the buffer as if the bytes had been returned by Read.
         // If there are fewer than n bytes in the buffer, Next returns the entire buffer.
         // The slice is only valid until the next call to a read or write method.
-        base::Slice Next(size_t len) {
+        Slice Next(size_t len) {
             if (len < length()) {
-                base::Slice result(data(), len);
+                Slice result(data(), len);
                 read_index_ += len;
                 return result;
             }
@@ -196,19 +196,19 @@ namespace evpp {
 
         // NextAll returns a slice containing all the unread portion of the buffer,
         // advancing the buffer as if the bytes had been returned by Read.
-        base::Slice NextAll() {
-            base::Slice result(data(), length());
+        Slice NextAll() {
+            Slice result(data(), length());
             Reset();
             return result;
         }
 
         std::string NextString(size_t len) {
-            base::Slice s = Next(len);
+            Slice s = Next(len);
             return std::string(s.data(), s.size());
         }
 
         std::string NextAllString() {
-            base::Slice s = NextAll();
+            Slice s = NextAll();
             return std::string(s.data(), s.size());
         }
 

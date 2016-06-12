@@ -6,9 +6,8 @@
 namespace evpp {
     class EventLoopThreadPool::Impl {
     public:
-        Impl(EventLoop* base_loop);
+        Impl(EventLoop* base_loop, int thread_num);
         ~Impl();
-        void SetThreadNum(int thread_num) { threads_num_ = thread_num; }
         bool Start(bool wait_until_thread_started);
         void Stop(bool wait_thread_exit);
 
@@ -24,16 +23,16 @@ namespace evpp {
     private:
         EventLoop* base_loop_;
         bool started_;
-        int threads_num_;
+        int thread_num_;
         std::atomic<int> next_;
 
         std::vector<EventLoopThreadPtr> threads_;
     };
 
-    EventLoopThreadPool::Impl::Impl(EventLoop* base_loop)
+    EventLoopThreadPool::Impl::Impl(EventLoop* base_loop, int thread_num)
         : base_loop_(base_loop),
         started_(false),
-        threads_num_(0),
+        thread_num_(thread_num),
         next_(0) {}
 
     EventLoopThreadPool::Impl::~Impl() {}
@@ -44,7 +43,7 @@ namespace evpp {
             return true;
         }
 
-        for (int i = 0; i < threads_num_; ++i) {
+        for (int i = 0; i < thread_num_; ++i) {
             std::stringstream ss;
             ss << "EventLoopThreadPool-thread-" << i << "th";
             EventLoopThreadPtr t(new EventLoopThread());
@@ -62,7 +61,7 @@ namespace evpp {
     }
 
     void EventLoopThreadPool::Impl::Stop(bool wait_thread_exit) {
-        for (int i = 0; i < threads_num_; ++i) {
+        for (int i = 0; i < thread_num_; ++i) {
             EventLoopThreadPtr& t = threads_[i];
             t->Stop(wait_thread_exit);
         }
@@ -75,7 +74,7 @@ namespace evpp {
     }
 
     bool EventLoopThreadPool::Impl::IsRunning() const {
-        for (int i = 0; i < threads_num_; ++i) {
+        for (int i = 0; i < thread_num_; ++i) {
             const EventLoopThreadPtr& t = threads_[i];
             if (!t->IsRunning()) {
                 return false;
@@ -86,7 +85,7 @@ namespace evpp {
     }
 
     bool EventLoopThreadPool::Impl::IsStopped() const {
-        for (int i = 0; i < threads_num_; ++i) {
+        for (int i = 0; i < thread_num_; ++i) {
             const EventLoopThreadPtr& t = threads_[i];
             if (!t->IsStopped()) {
                 return false;
@@ -125,14 +124,10 @@ namespace evpp {
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
-    EventLoopThreadPool::EventLoopThreadPool(EventLoop* base_loop)
-        : impl_(new Impl(base_loop)) {}
+    EventLoopThreadPool::EventLoopThreadPool(EventLoop* base_loop, int thread_num)
+        : impl_(new Impl(base_loop, thread_num)) {}
 
     EventLoopThreadPool::~EventLoopThreadPool() {}
-
-    void EventLoopThreadPool::SetThreadNum(int thread_num) {
-        impl_->SetThreadNum(thread_num);
-    }
 
     bool EventLoopThreadPool::Start(bool wait_until_thread_started) {
         return impl_->Start(wait_until_thread_started);

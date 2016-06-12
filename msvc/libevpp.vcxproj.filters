@@ -133,12 +133,6 @@
     <ClInclude Include="..\include\evpp\slice.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\sys_addrinfo.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\sys_sockets.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\evpp\platform_config.h">
       <Filter>base</Filter>
     </ClInclude>
@@ -156,6 +150,12 @@
     </ClInclude>
     <ClInclude Include="..\include\evpp\timestamp.inl.h">
       <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\sys_sockets.h">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\sys_addrinfo.h">
+      <Filter>sockets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
