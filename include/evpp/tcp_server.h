@@ -31,6 +31,7 @@ namespace evpp {
             threads_dispatch_policy_ = v;
         }
     private:
+        void StopInLoop();
         void RemoveConnection(const TCPConnPtr& conn);
         void RemoveConnectionInLoop(const TCPConnPtr& conn); // Remove the connection in the listener EventLoop
         void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/);

@@ -38,27 +38,29 @@ namespace {
         }
     }
 
-    void StartTCPClient() {
-        evpp::EventLoop loop;
-        evpp::TCPClient client(&loop, addr, "TCPPingPongClient");
-        client.SetConnectionCallback(&OnClientConnection);
-        client.Connect();
-        loop.RunAfter(1 * 1000, xstd::bind(&evpp::TCPClient::Disconnect, &client));
-        loop.RunAfter(1.1 * 1000, xstd::bind(&evpp::EventLoop::Stop, &loop));
-        loop.Run();
+    xstd::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop) {
+        xstd::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
+        client->SetConnectionCallback(&OnClientConnection);
+        client->Connect();
+        loop->RunAfter(evpp::Duration(1.0), xstd::bind(&evpp::TCPClient::Disconnect, client));
+        loop->RunAfter(evpp::Duration(1.1), xstd::bind(&evpp::EventLoop::Stop, loop));
+        return client;
     }
 }
 
 
 TEST_UNIT(testATCPServer) {
+    evpp::EventLoopThread t;
+    t.Start();
     evpp::EventLoop loop;
     evpp::TCPServer tsrv(&loop, addr, "tcp_server", 2);
     tsrv.SetMesageHandler(&OnMessage);
     tsrv.Start();
-    loop.RunAfter(1 * 1000, xstd::bind(&StopTCPServer, &tsrv));
-    loop.RunAfter(1.1 * 1000, xstd::bind(&evpp::EventLoop::Stop, &loop));
-    StartTCPClient();
+    loop.RunAfter(evpp::Duration(0.8), xstd::bind(&StopTCPServer, &tsrv));
+    loop.RunAfter(evpp::Duration(0.9), xstd::bind(&evpp::EventLoop::Stop, &loop));
+    xstd::shared_ptr<evpp::TCPClient> client = StartTCPClient(t.event_loop());
     loop.Run();
+    t.Stop(true);
     H_TEST_ASSERT(connected);
     H_TEST_ASSERT(count == 1);
     H_TEST_ASSERT(message_recved);

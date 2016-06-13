@@ -30,8 +30,16 @@ namespace evpp {
     }
 
     void TCPServer::Stop() {
-        tpool_->Stop(true);
-        loop_->RunInLoop(xstd::bind(&Listener::Stop, listener_));
+        loop_->RunInLoop(xstd::bind(&TCPServer::StopInLoop, this));
+    }
+
+    void TCPServer::StopInLoop() {
+        listener_->Stop();
+        auto it = connections_.begin();
+        auto ite = connections_.end();
+        for (; it != ite; ++it) {
+            it->second->Close();
+        }
     }
 
     void TCPServer::HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/) {
