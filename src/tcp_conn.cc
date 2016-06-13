@@ -19,8 +19,8 @@ namespace evpp {
                      , remote_addr_(raddr)
                      , type_(kIncoming)
                      , status_(kDisconnected)
-                     , closing_delay_for_incoming_conn_(1.0)
                      , high_water_mark_(128 * 1024 * 1024)
+                     , closing_delay_for_incoming_conn_(1.0)
     {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
 
@@ -29,13 +29,13 @@ namespace evpp {
         chan_->SetCloseCallback(xstd::bind(&TCPConn::HandleClose, this));
         chan_->SetErrorCallback(xstd::bind(&TCPConn::HandleError, this));
         LOG_DEBUG << "TCPConn::[" << name_ << "] at " << this << " fd=" << sockfd;
-        SetKeepAlive(fd_);
     }
 
     TCPConn::~TCPConn() {
         LOG_INFO << "TCPConn::~TCPConn() close(fd=" << fd_ << ")";
         assert(status_ == kDisconnected);
         assert(fd_ == chan_->fd());
+        assert(chan_->IsNoneEvent());
         EVUTIL_CLOSESOCKET(fd_);
         fd_ = INVALID_SOCKET;
     }
