@@ -22,7 +22,7 @@ namespace evpp {
         void SetWriteCompleteCallback(const WriteCompleteCallback& cb) { write_complete_fn_ = cb; }
         void set_connection_timeout(Duration timeout) { connection_timeout_ = timeout; }
     private:
-        void OnConnected(int sockfd, const std::string& laddr);
+        void OnConnection(int sockfd, const std::string& laddr);
         void OnRemoveConnection(const TCPConnPtr& conn);
         void Reconnect();
     private:
