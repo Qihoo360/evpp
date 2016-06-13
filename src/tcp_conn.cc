@@ -19,6 +19,7 @@ namespace evpp {
                      , remote_addr_(raddr)
                      , type_(kIncoming)
                      , status_(kDisconnected)
+                     , closing_delay_for_incoming_conn_(1.0)
                      , high_water_mark_(128 * 1024 * 1024)
     {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
@@ -28,7 +29,7 @@ namespace evpp {
         chan_->SetCloseCallback(xstd::bind(&TCPConn::HandleClose, this));
         chan_->SetErrorCallback(xstd::bind(&TCPConn::HandleError, this));
         LOG_DEBUG << "TCPConn::[" << name_ << "] at " << this << " fd=" << sockfd;
-        //TODO  set KeepAlive;
+        SetKeepAlive(fd_);
     }
 
     TCPConn::~TCPConn() {
@@ -85,19 +86,14 @@ namespace evpp {
             msg_fn_(shared_from_this(), &input_buffer_, receiveTime);
         } else if (n == 0) {
             if (type() == kOutgoing) {
+                // This was an outgoing connection, we own it and it's done. so close it
                 HandleClose();
             } else {
-                //TODO
-                HandleClose();
-#if 0
-                // incoming connection - we need to leave the request on the
-                // connection so that we can reply to it.
+                // This was an incoming connection, we need to preserve the connection for a while so that we can reply to it.
+                // And we set a timer to close the connection eventually.
                 chan_->DisableReadEvent();
                 LOG_DEBUG << "channel (fd=" << chan_->fd() << ") DisableReadEvent";
-                loop_->RunAfter(
-                    Duration(30.0),
-                    makeWeakCallback(shared_from_this(), &TCPConn::Close));
-#endif
+                loop_->RunAfter(closing_delay_for_incoming_conn_, xstd::bind(&TCPConn::HandleClose, shared_from_this()));
             }
 
         } else {
