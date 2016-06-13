@@ -27,11 +27,7 @@ namespace evpp {
         int rc = ::connect(fd, sockaddr_cast(&raddr_), sizeof(raddr_));
         if (rc != 0) {
             int serrno = errno;
-            if (EVUTIL_ERR_CONNECT_RETRIABLE(serrno)) {
-                // do nothing here
-            } else if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
-                return;
-            } else {
+            if (!EVUTIL_ERR_CONNECT_RETRIABLE(serrno)) {
                 HandleError();
                 return;
             }
@@ -78,10 +74,16 @@ namespace evpp {
     }
 
     void Connector::HandleError() {
-        LOG_INFO << "errno=" << errno << " " << strerror(errno);
+        int serrno = errno;
+        LOG_INFO << "errno=" << serrno << " " << strerror(serrno);
+        status_ = kDisconnected;
         chan_->Close();
         timer_->Cancel();
-        loop_->RunAfter(1000, xstd::bind(&Connector::Start, this));
+        if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
+            conn_fn_(-1, "");
+        } else {
+            loop_->RunAfter(1000, xstd::bind(&Connector::Start, this));
+        }
     }
 
     void Connector::OnConnectTimeout() {
