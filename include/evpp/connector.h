@@ -14,6 +14,7 @@ namespace evpp {
     public:
         void SetNewConnectionCallback(NewConnectionCallback cb) { conn_fn_ = cb; }
         bool IsConnecting() const { return status_ == kConnecting; }
+        bool IsConnected() const { return status_ == kConnected; }
     private:
         void HandleWrite();
         void HandleError();
