@@ -20,10 +20,11 @@ namespace evpp {
         void SetConnectionCallback(const ConnectionCallback& cb) { conn_fn_ = cb; }
         void SetMesageHandler(const MessageCallback& cb) { msg_fn_ = cb; }
         void SetWriteCompleteCallback(const WriteCompleteCallback& cb) { write_complete_fn_ = cb; }
+        void set_connection_timeout(Duration timeout) { connection_timeout_ = timeout; }
     private:
         void OnConnected(int sockfd, const std::string& laddr);
         void OnRemoveConnection(const TCPConnPtr& conn);
-        void Reconnect() { return Connect(); }
+        void Reconnect();
     private:
         EventLoop* loop_;
         std::string remote_addr_;
@@ -32,6 +33,7 @@ namespace evpp {
 
         TCPConnPtr conn_;
         xstd::shared_ptr<Connector> connector_;
+        Duration connection_timeout_; // Default : 3 seconds
 
         ConnectionCallback conn_fn_;
         MessageCallback msg_fn_;

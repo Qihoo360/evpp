@@ -23,8 +23,10 @@ namespace evpp {
     }
 
     void FdChannel::Close() {
-        if (event_initialized(event_)) {
-            event_del(event_);
+        if (event_) {
+            if (event_initialized(event_)) {
+                event_del(event_);
+            }
             delete (event_);
             event_ = NULL;
         }

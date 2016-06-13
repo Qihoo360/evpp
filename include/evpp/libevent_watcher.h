@@ -25,10 +25,6 @@ namespace evpp {
         bool Init();
 
         // @note It MUST be called in the event thread.
-        bool Watch(uint64_t timeout_us /*= 0*/);
-        bool Watch(Duration timeout);
-
-        // @note It MUST be called in the event thread.
         void Cancel();
 
     public:
@@ -38,6 +34,10 @@ namespace evpp {
         void set_cancel_callback(const Handler& cb);
 
     protected:
+        // @note It MUST be called in the event thread.
+        // @param timeout the maximum amount of time to wait for the event, or 0 to wait forever
+        bool Watch(Duration timeout);
+
         void set_evbase(struct event_base* evbase) {
             evbase_ = evbase;
         }
@@ -65,6 +65,7 @@ namespace evpp {
         PipeEventWatcher(struct event_base *event_base,
             const Handler& handler);
 
+        void AsyncWait();
         void Notify();
     private:
         virtual bool DoInit();
@@ -77,14 +78,15 @@ namespace evpp {
     //////////////////////////////////////////////////////////////////////////
     class EVPP_EXPORT TimerEventWatcher : public EventWatcher {
     public:
-        TimerEventWatcher(struct event_base *event_base, const Handler& handler);
+        TimerEventWatcher(struct event_base *event_base, const Handler& handler, Duration timeout);
 
-        bool AsyncWait(uint64_t timeout_us) { return Watch(timeout_us); }
-        bool AsyncWait(Duration timeout) { return Watch(timeout); }
+        bool AsyncWait();
 
     private:
         virtual bool DoInit();
         static void HandlerFn(int fd, short which, void *v);
+    private:
+        Duration timeout_;
     };
 
     typedef TimerEventWatcher EventTimer;

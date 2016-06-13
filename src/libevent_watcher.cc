@@ -39,15 +39,11 @@ namespace evpp {
         DoClose();
     }
 
-    bool EventWatcher::Watch(uint64_t timeout_us) {
-        return Watch(Duration(int64_t(timeout_us) * Duration::kMicrosecond));
-    }
-
     bool EventWatcher::Watch(Duration timeout) {
         struct timeval tv;
         struct timeval* timeoutval = NULL;
 
-        if (!timeout.IsZero()) {
+        if (timeout.Nanoseconds() > 0) {
             timeout.To(&tv);
             timeoutval = &tv;
         }
@@ -60,8 +56,10 @@ namespace evpp {
     }
 
     void EventWatcher::Cancel() {
-        if (event_initialized(event_)) { //TODO how to do : if (event_ != NULL && !event_initialized(event_))
-            event_del(event_);
+        if (event_) {
+            if (event_initialized(event_)) {
+                event_del(event_);
+            }
             delete (event_);
             event_ = NULL;
         }
@@ -126,6 +124,10 @@ namespace evpp {
         }
     }
 
+    void PipeEventWatcher::AsyncWait() {
+        Watch(Duration());
+    }
+
     void PipeEventWatcher::Notify() {
         char buf[1] = {};
         if (::send(pipe_[0], buf, sizeof(buf), 0) < 0) {
@@ -140,8 +142,9 @@ namespace evpp {
     //////////////////////////////////////////////////////////////////////////
 
     TimerEventWatcher::TimerEventWatcher(struct event_base *event_base,
-                                         const Handler& handler)
-                                         : EventWatcher(event_base, handler) {}
+                                         const Handler& handler,
+                                         Duration timeout)
+                                         : EventWatcher(event_base, handler), timeout_(timeout) {}
 
     bool TimerEventWatcher::DoInit() {
         event_set(event_, -1, 0, TimerEventWatcher::HandlerFn, this);
@@ -151,6 +154,10 @@ namespace evpp {
     void TimerEventWatcher::HandlerFn(int fd, short which, void *v) {
         TimerEventWatcher *h = (TimerEventWatcher*)v;
         h->handler_();
+    }
+
+    bool TimerEventWatcher::AsyncWait() {
+        return Watch(timeout_);
     }
 
     //////////////////////////////////////////////////////////////////////////

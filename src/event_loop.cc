@@ -28,7 +28,7 @@ namespace evpp {
         calling_pending_functors_ = false;
         watcher_.reset(new PipeEventWatcher(event_base_, xstd::bind(&EventLoop::DoPendingFunctors, this)));
         watcher_->Init();
-        watcher_->Watch(0);
+        watcher_->AsyncWait();
     }
 
     void EventLoop::Run() {
@@ -99,12 +99,12 @@ namespace evpp {
     }
 
     void EventLoop::RunAfter(double delay_ms, const Functor& f) {
-        xstd::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, delay_ms, f);
-        t->Start();
+        RunAfter(Duration(delay_ms / 1000.0), f);
     }
 
     void EventLoop::RunAfter(Duration delay, const Functor& f) {
-        RunAfter(delay.Milliseconds(), f);
+        xstd::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, delay, f);
+        t->Start();
     }
 
     void EventLoop::RunInLoop(const Functor& functor) {
