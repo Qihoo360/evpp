@@ -118,6 +118,12 @@ namespace evpp {
         return saddr;
     }
 
+    void SetKeepAlive(int fd) {
+        int on = 1;
+        ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
+    }
+
+
 }
 
 #ifdef H_OS_WINDOWS
