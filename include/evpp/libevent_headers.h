@@ -40,4 +40,15 @@ extern "C" {
     struct event * event_new(struct event_base *base, int fd, short events, void(*cb)(int, short, void *), void *arg);
     void event_free(struct event *ev);
 }
+
+// There is a bug of event timer for libevent1.4 on windows platform.
+//   libevent1.4 use '#define evtimer_set(ev, cb, arg)  event_set(ev, -1, 0, cb, arg)' to assign a timer,
+//   but '#define event_initialized(ev) ((ev)->ev_flags & EVLIST_INIT && (ev)->ev_fd != (int)INVALID_HANDLE_VALUE)'
+//   So, if we use a event timer on windows, event_initialized(ev) will never return true.
+#ifdef event_initialized
+#undef event_initialized
+#endif
+#define event_initialized(ev) ((ev)->ev_flags & EVLIST_INIT)
+
+
 #endif

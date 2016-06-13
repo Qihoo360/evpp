@@ -2,13 +2,17 @@
 #include "evpp/exp.h"
 #include "test_common.h"
 
+#include <thread>
+
 #include "evpp/libevent_headers.h"
 #include "evpp/libevent_watcher.h"
-#include <thread>
+#include "evpp/timestamp.h"
+
+
 
 namespace evtimer
 {
-    static uint64_t g_timeout_us = 1000000;
+    static evpp::Duration g_timeout(1.0); // 1s
     static bool g_event_handler_called = false;
     static void Handle(struct event_base* base)
     {
@@ -19,7 +23,7 @@ namespace evtimer
     static void MyEventThread(struct event_base* base, evpp::TimerEventWatcher* ev)
     {
         ev->Init();
-        ev->Watch(g_timeout_us);
+        ev->AsyncWait();
         event_base_loop(base, 0);
     }
 }
@@ -28,12 +32,12 @@ TEST_UNIT(testTimerEventWatcher)
 {
     using namespace evtimer;
     struct event_base* base = event_base_new();
-    xstd::shared_ptr<evpp::TimerEventWatcher> ev(new evpp::TimerEventWatcher(base, xstd::bind(Handle, base)));
+    xstd::shared_ptr<evpp::TimerEventWatcher> ev(new evpp::TimerEventWatcher(base, xstd::bind(&Handle, base), g_timeout));
     std::thread th(MyEventThread, base, ev.get());
-    uint64_t start = evpp::utcmicrosecond();
+    evpp::Timestamp start = evpp::Timestamp::Now();
     th.join();
-    uint64_t end = evpp::utcmicrosecond();
-    H_TEST_ASSERT(end - start >= g_timeout_us);
+    evpp::Duration cost = evpp::Timestamp::Now() - start;
+    H_TEST_ASSERT(g_timeout <= cost);
     H_TEST_ASSERT(g_event_handler_called);
     ev.reset();
     event_base_free(base);
