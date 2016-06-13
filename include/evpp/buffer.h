@@ -179,7 +179,7 @@ namespace evpp {
         ///
         /// It may implement with readv(2)
         /// @return result of read(2), @c errno is saved
-        ssize_t ReadFromFD(SOCKET fd, int* savedErrno);
+        ssize_t ReadFromFD(int fd, int* savedErrno);
 
         // Next returns a slice containing the next n bytes from the buffer,
         // advancing the buffer as if the bytes had been returned by Read.
