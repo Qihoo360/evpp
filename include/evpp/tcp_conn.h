@@ -52,6 +52,7 @@ namespace evpp {
         void set_type(Type t) { type_ = t; }
         Status status() const { return status_; }
         void set_status(Status s) { status_ = s; }
+        void set_closing_delay_for_incoming_conn(Duration d) { closing_delay_for_incoming_conn_ = d; }
     private:
         void HandleRead(Timestamp receiveTime);
         void HandleWrite();
@@ -73,7 +74,11 @@ namespace evpp {
 
         Type type_;
         Status status_;
-        size_t high_water_mark_;
+        size_t high_water_mark_; // Default 128MB
+
+        // The delay time to close a incoming connection regularly.
+        // Default is 1 second.
+        Duration closing_delay_for_incoming_conn_;
 
         ConnectionCallback conn_fn_;
         MessageCallback msg_fn_;
