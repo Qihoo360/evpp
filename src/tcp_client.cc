@@ -9,20 +9,24 @@
 namespace evpp {
     TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& n)
         : loop_(l), remote_addr_(raddr), name_(n), auto_reconnect_(1), connection_timeout_(3.0) {
-        
     }
 
     void TCPClient::Connect() {
         loop_->AssertInLoopThread();
         connector_.reset(new Connector(loop_, remote_addr_, connection_timeout_));
-        connector_->SetNewConnectionCallback(xstd::bind(&TCPClient::OnConnected, this, xstd::placeholders::_1, xstd::placeholders::_2));
+        connector_->SetNewConnectionCallback(xstd::bind(&TCPClient::OnConnection, this, xstd::placeholders::_1, xstd::placeholders::_2));
         connector_->Start();
     }
 
     void TCPClient::Disconnect() {
+        loop_->AssertInLoopThread();
         auto_reconnect_.store(0);
         if (conn_) {
             conn_->Close();
+        } else {
+            // When connector_ is connecting to the remote server ...
+            assert(connector_ && !connector_->IsConnected());
+            connector_.reset();
         }
     }
 
@@ -30,7 +34,16 @@ namespace evpp {
         return Connect();
     }
 
-    void TCPClient::OnConnected(int sockfd, const std::string& laddr) {
+    void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
+        if (sockfd < 0) {
+            LOG_INFO << "Failed to connect to " << remote_addr_ << ". errno=" << errno << " " << strerror(errno);
+            if (auto_reconnect_.load() != 0) {
+                Reconnect();
+            }
+            return;
+        }
+
+        LOG_INFO << "Successfully connected to " << remote_addr_;
         loop_->AssertInLoopThread();
         conn_ = TCPConnPtr(new TCPConn(loop_, name_, sockfd, laddr, remote_addr_));
         conn_->set_type(TCPConn::kOutgoing);
