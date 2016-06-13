@@ -17,6 +17,13 @@ namespace evpp {
         tpool_.reset(new EventLoopThreadPool(loop_, thread_num));
     }
 
+    TCPServer::~TCPServer() {
+        assert(tpool_->IsStopped());
+        assert(!listener_->listening());
+        listener_.reset();
+        tpool_.reset();
+    }
+
     bool TCPServer::Start() {
         tpool_->Start(true);
         listener_.reset(new Listener(loop_, listen_addr_));
@@ -30,6 +37,7 @@ namespace evpp {
     }
 
     void TCPServer::Stop() {
+        tpool_->Stop(true);
         loop_->RunInLoop(xstd::bind(&TCPServer::StopInLoop, this));
     }
 
@@ -40,6 +48,7 @@ namespace evpp {
         for (; it != ite; ++it) {
             it->second->Close();
         }
+        connections_.clear();
     }
 
     void TCPServer::HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/) {

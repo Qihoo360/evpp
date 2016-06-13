@@ -49,21 +49,30 @@ namespace {
 }
 
 
-TEST_UNIT(testATCPServer) {
+TEST_UNIT(testTCPServer1) {
     evpp::EventLoopThread t;
     t.Start();
     evpp::EventLoop loop;
     evpp::TCPServer tsrv(&loop, addr, "tcp_server", 2);
     tsrv.SetMesageHandler(&OnMessage);
     tsrv.Start();
-    loop.RunAfter(evpp::Duration(0.8), xstd::bind(&StopTCPServer, &tsrv));
-    loop.RunAfter(evpp::Duration(0.9), xstd::bind(&evpp::EventLoop::Stop, &loop));
+    loop.RunAfter(evpp::Duration(1.2), xstd::bind(&StopTCPServer, &tsrv));
+    loop.RunAfter(evpp::Duration(1.3), xstd::bind(&evpp::EventLoop::Stop, &loop));
     xstd::shared_ptr<evpp::TCPClient> client = StartTCPClient(t.event_loop());
     loop.Run();
     t.Stop(true);
+    client.reset();
     H_TEST_ASSERT(connected);
     H_TEST_ASSERT(count == 1);
     H_TEST_ASSERT(message_recved);
 }
 
+TEST_UNIT(testTCPServerSilenceShutdown) {
+    evpp::EventLoop loop;
+    evpp::TCPServer tsrv(&loop, addr, "tcp_server", 2);
+    tsrv.Start();
+    loop.RunAfter(evpp::Duration(1.2), xstd::bind(&StopTCPServer, &tsrv));
+    loop.RunAfter(evpp::Duration(1.3), xstd::bind(&evpp::EventLoop::Stop, &loop));
+    loop.Run();
+}
 

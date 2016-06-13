@@ -21,7 +21,7 @@ namespace evpp {
                   const std::string& listen_addr/*ip:port*/,
                   const std::string& name,
                   int thread_num);
-
+        ~TCPServer();
         bool Start();
         void Stop();
         void SetMesageHandler(MessageCallback cb) {
