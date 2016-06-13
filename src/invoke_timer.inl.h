@@ -29,6 +29,7 @@ namespace evpp {
 
         void Start() {
             xstd::shared_ptr<InvokeTimer> ref = shared_from_this(); // reference count +1
+            LOG_INFO << "InvokeTimer::Start tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << ref.use_count();
             loop_->RunInLoop(xstd::bind(&InvokeTimer::AsyncWait, ref, timeout_));
         }
 
@@ -37,16 +38,15 @@ namespace evpp {
             : loop_(evloop), timeout_(timeout), functor_(f), timer_(NULL) {}
 
         void AsyncWait(Duration timeout) {
-            //LOG_INFO << "InvokeTimer::AsyncWait tid=" << std::this_thread::get_id();
             xstd::shared_ptr<InvokeTimer> ref = shared_from_this(); // reference count +1
-            timer_ = new TimerEventWatcher(loop_->event_base(),
-                                           xstd::bind(&InvokeTimer::OnTimeout, ref), timeout_);
+            LOG_INFO << "InvokeTimer::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << ref.use_count();
+            timer_ = new TimerEventWatcher(loop_->event_base(), xstd::bind(&InvokeTimer::OnTimeout, ref), timeout_);
             timer_->Init();
             timer_->AsyncWait();
         }
 
         void OnTimeout() {
-            //LOG_INFO << "InvokeTimer::OnTimeout tid=" << std::this_thread::get_id();
+            LOG_INFO << "InvokeTimer::OnTimeout tid=" << std::this_thread::get_id();
             functor_();
         }
 
