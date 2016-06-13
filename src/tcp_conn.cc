@@ -86,7 +86,7 @@ namespace evpp {
         } else if (n == 0) {
             if (type() == kOutgoing) {
                 HandleClose();
-           } else {
+            } else {
                 //TODO
                 HandleClose();
 #if 0
@@ -95,24 +95,40 @@ namespace evpp {
                 chan_->DisableReadEvent();
                 LOG_DEBUG << "channel (fd=" << chan_->fd() << ") DisableReadEvent";
                 loop_->RunAfter(
-                    30000,
-                    makeWeakCallback(shared_from_this(), &TCPConn::ForceClose));
+                    Duration(30.0),
+                    makeWeakCallback(shared_from_this(), &TCPConn::Close));
 #endif
             }
-            
+
         } else {
-            LOG_ERROR << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno);
-            if (serrno != EAGAIN && serrno != EINTR) {
-                HandleClose();
+            if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
+                LOG_WARN << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno);
             } else {
-                HandleError();
+                HandleClose();
             }
         }
     }
 
     void TCPConn::HandleWrite() {
         loop_->AssertInLoopThread();
-        //TODO
+        assert(chan_->IsWritable());
+        ssize_t n = ::send(fd_, output_buffer_.data(), output_buffer_.length(), 0);
+        if (n > 0) {
+            output_buffer_.Next(n);
+            if (output_buffer_.length() == 0) {
+                chan_->DisableWriteEvent();
+                if (write_complete_fn_) {
+                    loop_->QueueInLoop(xstd::bind(write_complete_fn_, shared_from_this()));
+                }
+            }
+        } else {
+            int serrno = errno;
+            if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
+                LOG_WARN << "TCPConn::HandleWrite errno=" << serrno << " " << strerror(serrno);
+            } else {
+                HandleClose();
+            }
+        }
     }
 
     void TCPConn::HandleClose() {
@@ -127,7 +143,7 @@ namespace evpp {
             conn_fn_(conn);
         }
 
-        close_fn_(conn);// This must be the last line
+        close_fn_(conn);
         status_ = kDisconnected;
     }
 
