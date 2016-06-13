@@ -12,6 +12,10 @@ namespace evpp {
     }
 
     void TCPClient::Connect() {
+        loop_->RunInLoop(xstd::bind(&TCPClient::ConnectInLoop, this));
+    }
+
+    void TCPClient::ConnectInLoop() {
         loop_->AssertInLoopThread();
         connector_.reset(new Connector(loop_, remote_addr_, connection_timeout_));
         connector_->SetNewConnectionCallback(xstd::bind(&TCPClient::OnConnection, this, xstd::placeholders::_1, xstd::placeholders::_2));
@@ -19,6 +23,10 @@ namespace evpp {
     }
 
     void TCPClient::Disconnect() {
+        loop_->RunInLoop(xstd::bind(&TCPClient::DisconnectInLoop, this));
+    }
+
+    void TCPClient::DisconnectInLoop() {
         loop_->AssertInLoopThread();
         auto_reconnect_.store(0);
         if (conn_) {
