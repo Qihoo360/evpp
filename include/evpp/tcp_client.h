@@ -13,7 +13,7 @@ namespace evpp {
     class EVPP_EXPORT TCPClient {
     public:
         TCPClient(EventLoop* loop, const std::string& remote_addr, const std::string& name);
-
+        ~TCPClient();
         void Connect();
         void Disconnect();
     public:
