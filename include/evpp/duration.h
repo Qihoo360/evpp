@@ -16,10 +16,10 @@ namespace evpp {
         static const int64_t kHour;   // = 60 * kMinute
     public:
         Duration();
-        Duration(const struct timeval& t);
-        Duration(int64_t nanoseconds);
-        Duration(int nanoseconds);
-        Duration(double seconds);
+        explicit Duration(const struct timeval& t);
+        explicit Duration(int64_t nanoseconds);
+        explicit Duration(int nanoseconds);
+        explicit Duration(double seconds);
 
         // Nanoseconds returns the duration as an integer nanosecond count.
         int64_t Nanoseconds() const;

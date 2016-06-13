@@ -14,8 +14,8 @@ namespace evpp {
         typedef xstd::function<void()> Functor;
 
         static xstd::shared_ptr<InvokeTimer> Create(EventLoop* evloop,
-            double timeout_ms, const Functor& f) {
-            xstd::shared_ptr<InvokeTimer> it(new InvokeTimer(evloop, timeout_ms, f));
+            Duration timeout, const Functor& f) {
+            xstd::shared_ptr<InvokeTimer> it(new InvokeTimer(evloop, timeout, f));
             return it;
         }
 
@@ -29,20 +29,20 @@ namespace evpp {
 
         void Start() {
             xstd::shared_ptr<InvokeTimer> ref = shared_from_this(); // reference count +1
-            loop_->RunInLoop(xstd::bind(&InvokeTimer::AsyncWait, ref, timeout_us_));
+            loop_->RunInLoop(xstd::bind(&InvokeTimer::AsyncWait, ref, timeout_));
         }
 
     private:
-        InvokeTimer(EventLoop* evloop, double timeout_ms, const Functor& f)
-            : loop_(evloop), timeout_us_((uint64_t)(timeout_ms * 1000)), functor_(f), timer_(NULL) {}
+        InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f)
+            : loop_(evloop), timeout_(timeout), functor_(f), timer_(NULL) {}
 
-        void AsyncWait(uint64_t timeout_us) {
+        void AsyncWait(Duration timeout) {
             //LOG_INFO << "InvokeTimer::AsyncWait tid=" << std::this_thread::get_id();
             xstd::shared_ptr<InvokeTimer> ref = shared_from_this(); // reference count +1
             timer_ = new TimerEventWatcher(loop_->event_base(),
-                xstd::bind(&InvokeTimer::OnTimeout, ref));
+                                           xstd::bind(&InvokeTimer::OnTimeout, ref), timeout_);
             timer_->Init();
-            timer_->AsyncWait(timeout_us);
+            timer_->AsyncWait();
         }
 
         void OnTimeout() {
@@ -52,7 +52,7 @@ namespace evpp {
 
     private:
         EventLoop* loop_;
-        uint64_t timeout_us_;
+        Duration timeout_;
         Functor functor_;
         TimerEventWatcher* timer_;
     };

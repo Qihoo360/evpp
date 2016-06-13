@@ -16,6 +16,10 @@ namespace evpp {
     inline Duration::Duration(double seconds)
         : ns_((int64_t)(seconds*kSecond)) {}
 
+    inline int64_t Duration::Nanoseconds() const {
+        return ns_;
+    }
+
     inline double Duration::Seconds() const {
         return double(ns_) / kSecond;
     }
