@@ -25,7 +25,7 @@ namespace evpp {
     void FdChannel::Close() {
         if (event_) {
             if (event_initialized(event_)) {
-                event_del(event_);
+                ::event_del(event_);
             }
             delete (event_);
             event_ = NULL;
@@ -34,9 +34,9 @@ namespace evpp {
 
     void FdChannel::AttachToLoop() {
         loop_->AssertInLoopThread();
-        event_set(event_, fd_, events_, &FdChannel::HandleEvent, this);
-        event_base_set(loop_->event_base(), event_);
-        if (event_add(event_, NULL) == 0) {
+        ::event_set(event_, fd_, events_, &FdChannel::HandleEvent, this);
+        ::event_base_set(loop_->event_base(), event_);
+        if (::event_add(event_, NULL) == 0) {
             attached_to_loop_ = true;
         } else {
             LOG_ERROR << "fd=" << fd_ << " with event " << EventsToString() << " attach to event loop failed";
@@ -45,7 +45,7 @@ namespace evpp {
 
     void FdChannel::DetachFromLoop() {
         loop_->AssertInLoopThread();
-        if (event_del(event_) == 0) {
+        if (::event_del(event_) == 0) {
             attached_to_loop_ = false;
         } else {
             LOG_ERROR << "fd=" << fd_ << " with event " << EventsToString() << " detach to event loop failed";

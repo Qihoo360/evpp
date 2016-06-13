@@ -28,7 +28,7 @@ namespace evpp {
         int on = 1;
 
         /* Create listen socket */
-        int fd = socket(AF_INET, SOCK_STREAM, 0);
+        int fd = ::socket(AF_INET, SOCK_STREAM, 0);
         serrno = errno;
         if (fd == -1) {
             LOG_ERROR << "socket error " << strerror(serrno);
