@@ -8,13 +8,13 @@
 
 namespace evpp {
     TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& n)
-        : loop_(l), remote_addr_(raddr), name_(n), auto_reconnect_(1) {
+        : loop_(l), remote_addr_(raddr), name_(n), auto_reconnect_(1), connection_timeout_(3.0) {
         
     }
 
     void TCPClient::Connect() {
         loop_->AssertInLoopThread();
-        connector_.reset(new Connector(loop_, remote_addr_));
+        connector_.reset(new Connector(loop_, remote_addr_, connection_timeout_));
         connector_->SetNewConnectionCallback(xstd::bind(&TCPClient::OnConnected, this, xstd::placeholders::_1, xstd::placeholders::_2));
         connector_->Start();
     }
@@ -24,6 +24,10 @@ namespace evpp {
         if (conn_) {
             conn_->Close();
         }
+    }
+
+    void TCPClient::Reconnect() {
+        return Connect();
     }
 
     void TCPClient::OnConnected(int sockfd, const std::string& laddr) {
