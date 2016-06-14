@@ -46,7 +46,7 @@ namespace evpp {
         }
 
         void OnTimeout() {
-            LOG_INFO << "InvokeTimer::OnTimeout tid=" << std::this_thread::get_id();
+            LOG_INFO << "InvokeTimer::OnTimeout tid=" << std::this_thread::get_id() << " this=" << this;
             functor_();
         }
 

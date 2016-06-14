@@ -56,7 +56,7 @@ namespace evpp {
     }
 
     void EventLoop::StopInLoop() {
-        //LOG_TRACE << "EventLoop is stopping now, tid: " << std::this_thread::get_id();
+        LOG_TRACE << "EventLoop is stopping now, tid=" << std::this_thread::get_id();
         for (;;) {
             DoPendingFunctors();
 
@@ -117,14 +117,14 @@ namespace evpp {
     }
 
     void EventLoop::QueueInLoop(const Functor& cb) {
-        LOG_INFO << "EventLoop::RunInLoop tid=" << std::this_thread::get_id() << " IsInLoopThread=" << IsInLoopThread();
+        LOG_INFO << "EventLoop::QueueInLoop tid=" << std::this_thread::get_id() << " IsInLoopThread=" << IsInLoopThread();
         {
             std::lock_guard<std::mutex> lock(mutex_);
             pending_functors_.push_back(cb);
         }
 
         if (calling_pending_functors_ || !IsInLoopThread()) {
-            LOG_INFO << "EventLoop::RunInLoop tid=" << std::this_thread::get_id() << " watcher_->Notify()";
+            LOG_INFO << "EventLoop::QueueInLoop tid=" << std::this_thread::get_id() << " watcher_->Notify()";
             watcher_->Notify();
         }
     }
