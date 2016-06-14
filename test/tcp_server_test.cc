@@ -19,8 +19,8 @@ namespace {
     static int count = 0;
     const static std::string addr = "127.0.0.1:9099";
     static void OnMessage(const evpp::TCPConnPtr& conn,
-                   evpp::Buffer* msg,
-                   evpp::Timestamp ts) {
+                          evpp::Buffer* msg,
+                          evpp::Timestamp ts) {
         message_recved = true;
         count = 1;
     }
