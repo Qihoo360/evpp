@@ -9,8 +9,7 @@
 
 #include <thread>
 
-namespace evloop
-{
+namespace evloop {
     static xstd::shared_ptr<evpp::EventLoop> loop;
     static evpp::Duration delay(1.0);
     static bool g_event_handler_called = false;
@@ -26,8 +25,7 @@ namespace evloop
     }
 }
 
-TEST_UNIT(testEventLoop)
-{
+TEST_UNIT(testEventLoop) {
     using namespace evloop;
     std::thread th(MyEventThread);
     usleep(delay.Microseconds());
