@@ -5,13 +5,14 @@
 #include "evpp/libevent_headers.h"
 #include "evpp/libevent_watcher.h"
 #include "evpp/event_loop.h"
+#include "evpp/timestamp.h"
 
 #include <thread>
 
 namespace evloop
 {
     static xstd::shared_ptr<evpp::EventLoop> loop;
-    static double delay_ms = 1000.0;
+    static evpp::Duration delay(1.0);
     static bool g_event_handler_called = false;
     static void Handle() {
         g_event_handler_called = true;
@@ -29,13 +30,12 @@ TEST_UNIT(testEventLoop)
 {
     using namespace evloop;
     std::thread th(MyEventThread);
-    usleep((uint32_t)(delay_ms * 1000));
-    uint64_t start = evpp::utcmicrosecond();
-    loop->RunAfter(delay_ms, &Handle);
-    //loop->RunInLoop(&Handle);
+    usleep(delay.Microseconds());
+    evpp::Timestamp start = evpp::Timestamp::Now();
+    loop->RunAfter(delay, &Handle);
     th.join();
-    uint64_t end = evpp::utcmicrosecond();
-    H_TEST_ASSERT(end - start >= delay_ms*1000);
+    evpp::Duration cost = evpp::Timestamp::Now() - start;
+    H_TEST_ASSERT(delay <= cost);
     H_TEST_ASSERT(g_event_handler_called);
 }
 
