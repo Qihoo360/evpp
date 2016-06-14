@@ -10,7 +10,7 @@
 #include "evpp/tcp_client.h"
 
 #include <thread>
-#include <list>
+#include <queue>
 
 namespace {
 enum PacketOpCode {
@@ -29,7 +29,7 @@ struct PacketHeader {
     PacketHeader() {
         memset(&magic, sizeof(PacketHeader), 0);
     }
-    PacketHeader(evpp::Slice & slice) {
+    PacketHeader(evpp::Slice slice) {
         memcpy(&magic, slice.data(), sizeof(PacketHeader));
     }
 //  uint16_t key_length() const {
@@ -54,7 +54,10 @@ struct PacketHeader {
 #pragma pack()
 
 typedef xstd::function<void(char*)> CommandCallback;
-typedef xstd::function<void(char*)> GetCallback;
+typedef xstd::function<void(evpp::Slice)> GetCallback;
+typedef xstd::function<void(char*)> MgetCallback;
+typedef xstd::function<void(char*)> StoreCallback;
+typedef xstd::function<void(char*)> RemoveCallback;
 
 class Command  : public xstd::enable_shared_from_this<Command> {
   public:
@@ -62,64 +65,49 @@ class Command  : public xstd::enable_shared_from_this<Command> {
     }
     PacketHeader header_;
     std::string body_;
-    CommandCallback callback_;
+
+    GetCallback get_callback_;
 
     static void OnCommandMessage(const evpp::TCPConnPtr& conn,
                evpp::Buffer* msg,
-               evpp::Timestamp ts) {
-        if (msg->size() >= sizeof(PacketHeader)) {
-            LOG_INFO << msg->NextAllString();
-            // 
-        }
-    }
+               evpp::Timestamp ts);
 
     void Run(evpp::TCPClient * client) {
-        // can't set message handler on the fly!
-        // client->SetMesageHandler(xstd::bind(&Command::OnCommandMessage, shared_from_this(), xstd::placeholders::_1, xstd::placeholders::_2, xstd::placeholders::_3));
-
         client->conn()->Send((const void*)&header_, sizeof(header_));
         client->conn()->Send((const void*)body_.c_str(), body_.size());
     }
 };
 
 typedef xstd::shared_ptr<Command> CommandPtr;
+thread_local std::queue<CommandPtr> g_command_waiting;
+thread_local std::queue<CommandPtr> g_command_running;
+thread_local evpp::TCPClient * tcp_client_;
 
-thread_local std::list<CommandPtr> g_command_queue;
-thread_local std::list<evpp::TCPClient *> g_idle_clients;
-thread_local std::list<evpp::TCPClient *> g_busy_clients;
 
-evpp::EventLoop loop;
-int thread_num = 24;
-evpp::EventLoopThreadPool pool(&loop, thread_num);
-
-class MemecheClientPool {
-  public:
-    // void AsyncSet(const char* key, const char* value, int val_len, int flags, evpp::Duration& expire, ConnectCB& callback) 
-    void AsyncGet(const char* key, GetCallback& callback);
-  private:
-    // command_queue_;
-
-    // clients_idle_;
-    // clients_in_use_;
-    evpp::EventLoopThreadPool loop_pool_;
-};
+void Command::OnCommandMessage(const evpp::TCPConnPtr& conn,
+           evpp::Buffer* msg,
+           evpp::Timestamp ts) {
+    if (msg->size() >= sizeof(PacketHeader)) { // TODO: 完整接收
+        CommandPtr command(g_command_running.front());
+        g_command_running.pop();
+        PacketHeader rsp_header(msg->Next(sizeof(PacketHeader)));
+        LOG_INFO << "response body length = " << ntohl(rsp_header.total_body_length);
+        command->get_callback_(msg->Next(ntohl(rsp_header.total_body_length)));
+    }
+}
 
 const static std::string addr = "127.0.0.1:11611";
-void OnSetMessage(const evpp::TCPConnPtr& conn,
-               evpp::Buffer* msg,
-               evpp::Timestamp ts) {
-    LOG_INFO << msg->NextAllString();
-}
 
 void OnClientConnection(const evpp::TCPConnPtr& conn, evpp::TCPClient* client) {
     if (conn->IsConnected()) {
-        if (g_command_queue.empty()) {
-            // 如何将client放到队列中
-            g_idle_clients.push_back(client);
-        } else {
-            CommandPtr command(g_command_queue.front());
-            g_command_queue.pop_front();
+        LOG_INFO << "OnClientConnection connect ok";
+        if (!g_command_waiting.empty()) {
+            CommandPtr command(g_command_waiting.front());
+            g_command_waiting.pop();
+            g_command_running.push(command);
             command->Run(client);
+
+            LOG_INFO << "OnClientConnection begin send data";
             // conn->Send("set test1 0 3600 5 \r\n12345\r\n");
         }
     } else {
@@ -127,22 +115,65 @@ void OnClientConnection(const evpp::TCPConnPtr& conn, evpp::TCPClient* client) {
     }
 }
 
-static void Execute(CommandPtr command) {
-    evpp::TCPClient * client = NULL;
-    if (g_idle_clients.empty()) {
-        // TODO : 限制最大连接数
-        client = new evpp::TCPClient(pool.GetNextLoopWithHash(100), addr, "MemcacheBinaryClient");
-        client->SetConnectionCallback(xstd::bind(&OnClientConnection, xstd::placeholders::_1, client));
-        client->SetMesageHandler(&Command::OnCommandMessage);
-        client->Connect();
-
-        g_command_queue.push_back(command);
-    } else {
-        client = g_idle_clients.front();
-        g_idle_clients.pop_front();
-        command->Run(client);
+class MemcacheClient {
+  public:
+    MemcacheClient(int thread_count) : loop_pool_(&loop_, thread_count) {
+        loop_pool_.Start(true);
     }
+    virtual ~MemcacheClient() {
+        loop_pool_.Stop(true);
+    }
+    // void AsyncSet(const char* key, const char* value, int val_len, int flags,
+    //               evpp::Duration& expire, ConnectCB& callback)
+    void AsyncGet(const char* key, GetCallback callback) {
+        CommandPtr command(new Command);
+        command->header_.magic = 0x80;
+        command->header_.op_code = OP_GET;
+
+        command->header_.key_length = htons(strlen(key));
+        command->header_.total_body_length = htonl(strlen(key));
+        command->body_ = key;
+        command->get_callback_ = callback;
+        
+        loop_pool_.GetNextLoopWithHash(100)->RunInLoop(xstd::bind(&MemcacheClient::ExecuteCommand, this, command));
+    }
+  private:
+    void ExecuteCommand(CommandPtr command) {
+        if (tcp_client_ == NULL ) {
+            // TODO : 限制最大连接数
+            tcp_client_= new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(100), addr, "MemcacheBinaryClient");
+            tcp_client_->SetConnectionCallback(xstd::bind(&OnClientConnection, xstd::placeholders::_1, tcp_client_));
+            tcp_client_->SetMesageHandler(&Command::OnCommandMessage);
+            tcp_client_->Connect();
+
+            g_command_waiting.push(command);
+            return;
+        }
+
+        command->Run(tcp_client_);
+    }
+
+    evpp::EventLoop loop_;
+    evpp::EventLoopThreadPool loop_pool_;
+
+};
+
+
+static void OnTestGetDone(evpp::Slice slice) {
+    LOG_INFO << slice.data();
 }
+
+}
+
+TEST_UNIT(testMemcacheClient) {
+    MemcacheClient memc_client(16);
+    const char * key = "test1";
+    memc_client.AsyncGet(key, &OnTestGetDone);
+
+    usleep(100*1000);
+}
+
+///////////////////////////////////////////////////////
 
 static void StartConnect(evpp::TCPClient * client) {
     client->SetConnectionCallback(xstd::bind(&OnClientConnection, xstd::placeholders::_1, client));
@@ -153,32 +184,8 @@ static void ClearConn(evpp::TCPClient * client) {
     delete client;
 }
 
-}
-
-TEST_UNIT(testMemcacheClient) {
-    H_TEST_ASSERT(pool.Start(true));
-
-    // evpp::TCPClient * client = new evpp::TCPClient(pool.GetNextLoopWithHash(100), addr, "MemcacheBinaryClient");
-    CommandPtr command(new Command);
-    command->header_.magic = 0x80;
-    command->header_.op_code = OP_GET;
-    command->header_.key_length = htons(5);
-    command->header_.total_body_length = htonl(5);
-    command->body_ = "test1";
-    // command->callback_ = xxx;
-
-    pool.GetNextLoopWithHash(100)->RunInLoop(xstd::bind(&Execute, command));
-    // client.Connect();
-
-    usleep(1000*1000);
-    pool.Stop(true);
-    // pool.GetNextLoopWithHash(100)->RunInLoop(xstd::bind(&ClearConn, client));
-    usleep(1000);
-}
-
 TEST_UNIT(testMemcacheClient2) {
     evpp::EventLoopThread loop_thread;
-    loop_thread.Start(true);
 
     evpp::TCPClient * client = new evpp::TCPClient(loop_thread.event_loop(), addr, "MemcacheBinaryClient");
     loop_thread.event_loop()->RunInLoop(xstd::bind(&StartConnect, client));
@@ -189,7 +196,5 @@ TEST_UNIT(testMemcacheClient2) {
     loop_thread.event_loop()->RunInLoop(xstd::bind(&ClearConn, client));
     usleep(1000 * 1000);
 }
-
-
 
 
