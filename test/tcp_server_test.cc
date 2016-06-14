@@ -61,10 +61,10 @@ TEST_UNIT(testTCPServer1) {
     xstd::shared_ptr<evpp::TCPClient> client = StartTCPClient(t.event_loop());
     loop.Run();
     t.Stop(true);
-    client.reset();
     H_TEST_ASSERT(connected);
     H_TEST_ASSERT(count == 1);
     H_TEST_ASSERT(message_recved);
+    ::usleep(evpp::Duration(1.0).Microseconds());
 }
 
 TEST_UNIT(testTCPServerSilenceShutdown) {
