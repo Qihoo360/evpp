@@ -4,6 +4,7 @@
 #include "evpp/buffer.h"
 #include "evpp/tcp_callbacks.h"
 #include "evpp/slice.h"
+#include "evpp/any.h"
 
 namespace evpp {
 
@@ -43,6 +44,9 @@ namespace evpp {
         void SetConnectionHandler(ConnectionCallback cb) { conn_fn_ = cb; }
         void SetCloseCallback(CloseCallback cb) { close_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
+
+        void set_context(const Any& context) { context_ = context; }
+        const Any& context() const { return context_; }
     public:
         const std::string& remote_addr() const { return remote_addr_; }
         const std::string& name() const { return name_; }
@@ -73,6 +77,7 @@ namespace evpp {
         Buffer input_buffer_;
         Buffer output_buffer_;
 
+        Any context_;
         Type type_;
         Status status_;
         size_t high_water_mark_; // Default 128MB
