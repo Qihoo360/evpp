@@ -3,6 +3,7 @@
 #include "evpp/inner_pre.h"
 #include "evpp/libevent_watcher.h"
 #include "evpp/duration.h"
+#include "evpp/any.h"
 
 #include <vector>
 #include <thread>
@@ -30,9 +31,11 @@ namespace evpp {
         void QueueInLoop(const Functor& handler);
         void AddAfterLoopFunctor(const Functor& handler);
 
-        struct event_base *event_base() { return event_base_; }
+        struct event_base* event_base() { return event_base_; }
         bool IsInLoopThread() const;
         void AssertInLoopThread() const;
+        void set_context(const Any& context) { context_ = context; }
+        const Any& context() const { return context_; }
 
     private:
         void StopInLoop();
@@ -41,8 +44,9 @@ namespace evpp {
         void DoAfterLoopFunctors();
 
     private:
-        struct event_base *event_base_;
+        struct event_base* event_base_;
         std::thread::id tid_;
+        Any context_;
 
         std::mutex mutex_;
         xstd::shared_ptr<PipeEventWatcher> watcher_;
