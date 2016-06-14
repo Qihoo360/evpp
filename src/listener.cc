@@ -11,6 +11,7 @@ namespace evpp {
         : fd_(-1), loop_(l), listening_(false), addr_(addr) {}
 
     Listener::~Listener() {
+        LOG_TRACE << "Listener::~Listener fd=" << chan_->fd();
         chan_.reset();
         EVUTIL_CLOSESOCKET(fd_);
         fd_ = INVALID_SOCKET;
