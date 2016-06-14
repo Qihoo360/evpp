@@ -32,7 +32,7 @@ namespace evpp {
     }
 
     TCPConn::~TCPConn() {
-        LOG_TRACE << "TCPConn::~TCPConn() this=" << this << " close(fd=" << fd_ << ") type=" << type() << " status=" << StatusToString();
+        LOG_TRACE << "TCPConn::~TCPConn() this=" << this << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString();
         assert(fd_ == chan_->fd());
         assert(status_ == kDisconnected);
         assert(chan_->IsNoneEvent());
