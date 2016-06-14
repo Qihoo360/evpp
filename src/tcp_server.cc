@@ -18,8 +18,11 @@ namespace evpp {
     }
 
     TCPServer::~TCPServer() {
+        LOG_TRACE << "TCPServer::~TCPServer()";
+        tpool_->Stop(true);
         assert(tpool_->IsStopped());
         assert(!listener_->listening());
+        assert(connections_.empty());
         listener_.reset();
         tpool_.reset();
     }
@@ -37,18 +40,20 @@ namespace evpp {
     }
 
     void TCPServer::Stop() {
-        tpool_->Stop(true);
         loop_->RunInLoop(xstd::bind(&TCPServer::StopInLoop, this));
     }
 
     void TCPServer::StopInLoop() {
+        LOG_TRACE << "TCPServer::StopInLoop";
         listener_->Stop();
         auto it = connections_.begin();
         auto ite = connections_.end();
         for (; it != ite; ++it) {
+            LOG_TRACE << it->first << " refcount=" << it->second.use_count() << " p=" << it->second.get();
             it->second->Close();
+            LOG_TRACE << it->first << " refcount=" << it->second.use_count() << " p=" << it->second.get();
         }
-        connections_.clear();
+        LOG_TRACE << "TCPServer::StopInLoop exited";
     }
 
     void TCPServer::HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/) {

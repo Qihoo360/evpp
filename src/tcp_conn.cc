@@ -28,13 +28,13 @@ namespace evpp {
         chan_->SetWriteCallback(xstd::bind(&TCPConn::HandleWrite, this));
         chan_->SetCloseCallback(xstd::bind(&TCPConn::HandleClose, this));
         chan_->SetErrorCallback(xstd::bind(&TCPConn::HandleError, this));
-        LOG_DEBUG << "TCPConn::[" << name_ << "] at " << this << " fd=" << sockfd;
+        LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " fd=" << sockfd;
     }
 
     TCPConn::~TCPConn() {
-        LOG_INFO << "TCPConn::~TCPConn() close(fd=" << fd_ << ")";
-        assert(status_ == kDisconnected);
+        LOG_TRACE << "TCPConn::~TCPConn() this=" << this << " close(fd=" << fd_ << ") type=" << type() << " status=" << StatusToString();
         assert(fd_ == chan_->fd());
+        assert(status_ == kDisconnected);
         assert(chan_->IsNoneEvent());
         EVUTIL_CLOSESOCKET(fd_);
         fd_ = INVALID_SOCKET;
@@ -213,6 +213,16 @@ namespace evpp {
         high_water_mark_fn_ = cb;
         high_water_mark_ = mark;
     }
+
+    std::string TCPConn::StatusToString() const {
+        H_CASE_STRING_BIGIN(status_);
+        H_CASE_STRING(kDisconnected);
+        H_CASE_STRING(kConnecting);
+        H_CASE_STRING(kConnected);
+        H_CASE_STRING(kDisconnecting);
+        H_CASE_STRING_END();
+    }
+
 
 
 

@@ -14,8 +14,8 @@ namespace evpp {
     class EVPP_EXPORT TCPConn : public xstd::enable_shared_from_this<TCPConn> {
     public:
         enum Type {
-            kIncoming, // The type of a TCPConn held by a TCPServer
-            kOutgoing, // The type of a TCPConn held by a TCPClient
+            kIncoming = 0, // The type of a TCPConn held by a TCPServer
+            kOutgoing = 1, // The type of a TCPConn held by a TCPClient
         };
         enum Status {
             kDisconnected = 0,
@@ -62,6 +62,7 @@ namespace evpp {
         void SendInLoop(const void* data, size_t len);
         void SendStringInLoop(const std::string& message);
         void CloseInLoop();
+        std::string StatusToString() const;
     private:
         EventLoop* loop_;
         int fd_;
