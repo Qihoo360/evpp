@@ -15,6 +15,12 @@ namespace evpp {
 
     Connector::~Connector() {
         loop_->AssertInLoopThread();
+        if (!IsConnected()) {
+            // A connected tcp-connection's sockfd has been transfered to TCPConn.
+            // But the sockfd of unconnected tcp-connections need to be closed by myself.
+            LOG_TRACE << "Connector::~Connector close(" << chan_->fd() << ")";
+            EVUTIL_CLOSESOCKET(chan_->fd());
+        }
         chan_->Close();
         chan_.reset();
     }

@@ -29,6 +29,7 @@
     <ClCompile Include="..\src\tcp_server.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\evpp\any.h" />
     <ClInclude Include="..\include\evpp\buffer.h" />
     <ClInclude Include="..\include\evpp\connector.h" />
     <ClInclude Include="..\include\evpp\duration.h" />
