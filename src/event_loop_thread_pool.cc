@@ -97,11 +97,8 @@ namespace evpp {
 
     EventLoop* EventLoopThreadPool::Impl::GetNextLoop() {
         EventLoop* loop = base_loop_;
-
         if (!threads_.empty()) {
-            /**
-            * No need to lock here
-            */
+            // No need to lock here
             int next = next_.fetch_add(1);
             next = next % threads_.size();
             loop = (threads_[next])->event_loop();

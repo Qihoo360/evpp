@@ -155,7 +155,7 @@
 // result has type size_t.
 //
 // This macro is not perfect as it wrongfully accepts certain
-// pointers, namely where the pointer size is divisible by the pointee
+// pointers, namely where the pointer size is divisible by the pointer
 // size.  Since all our code has to go through a 32-bit compiler,
 // where a pointer is 4 bytes, this means all pointers to a type whose
 // size is 3 or greater than 4 will be (righteously) rejected.
@@ -166,14 +166,3 @@
     ((sizeof(a) / sizeof(*(a))) / \
     static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
 
-#define H_ARRAY_SIZE H_ARRAYSIZE
-
-
-#ifndef H_OS_WINDOWS
-#ifndef SOCKET
-#	define SOCKET int		    /**< SOCKET definition */
-#endif
-#ifndef INVALID_SOCKET
-#	define INVALID_SOCKET -1	/**< invalid socket definition */
-#endif
-#endif

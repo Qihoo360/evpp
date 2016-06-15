@@ -11,7 +11,16 @@ namespace evpp {
         : loop_(l), remote_addr_(raddr), name_(n), auto_reconnect_(1), connection_timeout_(3.0) {
     }
 
+    TCPClient::~TCPClient() {
+        auto_reconnect_.store(0);
+        conn_.reset();
+    }
+
     void TCPClient::Connect() {
+        loop_->RunInLoop(xstd::bind(&TCPClient::ConnectInLoop, this));
+    }
+
+    void TCPClient::ConnectInLoop() {
         loop_->AssertInLoopThread();
         connector_.reset(new Connector(loop_, remote_addr_, connection_timeout_));
         connector_->SetNewConnectionCallback(xstd::bind(&TCPClient::OnConnection, this, xstd::placeholders::_1, xstd::placeholders::_2));
@@ -19,6 +28,10 @@ namespace evpp {
     }
 
     void TCPClient::Disconnect() {
+        loop_->RunInLoop(xstd::bind(&TCPClient::DisconnectInLoop, this));
+    }
+
+    void TCPClient::DisconnectInLoop() {
         loop_->AssertInLoopThread();
         auto_reconnect_.store(0);
         if (conn_) {
@@ -54,11 +67,13 @@ namespace evpp {
     }
 
     void TCPClient::OnRemoveConnection(const TCPConnPtr& conn) {
+        assert(conn.get() == conn_.get());
         loop_->AssertInLoopThread();
         if (auto_reconnect_.load() != 0) {
             Reconnect();
         }
     }
+
 
     
 }

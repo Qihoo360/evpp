@@ -20,6 +20,7 @@ namespace evpp {
                      , type_(kIncoming)
                      , status_(kDisconnected)
                      , high_water_mark_(128 * 1024 * 1024)
+                     , closing_delay_for_incoming_conn_(1.0)
     {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
 
@@ -27,14 +28,14 @@ namespace evpp {
         chan_->SetWriteCallback(xstd::bind(&TCPConn::HandleWrite, this));
         chan_->SetCloseCallback(xstd::bind(&TCPConn::HandleClose, this));
         chan_->SetErrorCallback(xstd::bind(&TCPConn::HandleError, this));
-        LOG_DEBUG << "TCPConn::[" << name_ << "] at " << this << " fd=" << sockfd;
-        //TODO  set KeepAlive;
+        LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " fd=" << sockfd;
     }
 
     TCPConn::~TCPConn() {
-        LOG_INFO << "TCPConn::~TCPConn() close(fd=" << fd_ << ")";
-        assert(status_ == kDisconnected);
+        LOG_TRACE << "TCPConn::~TCPConn() this=" << this << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString();
         assert(fd_ == chan_->fd());
+        assert(status_ == kDisconnected);
+        assert(chan_->IsNoneEvent());
         EVUTIL_CLOSESOCKET(fd_);
         fd_ = INVALID_SOCKET;
     }
@@ -85,19 +86,14 @@ namespace evpp {
             msg_fn_(shared_from_this(), &input_buffer_, receiveTime);
         } else if (n == 0) {
             if (type() == kOutgoing) {
+                // This was an outgoing connection, we own it and it's done. so close it
                 HandleClose();
             } else {
-                //TODO
-                HandleClose();
-#if 0
-                // incoming connection - we need to leave the request on the
-                // connection so that we can reply to it.
+                // This was an incoming connection, we need to preserve the connection for a while so that we can reply to it.
+                // And we set a timer to close the connection eventually.
                 chan_->DisableReadEvent();
                 LOG_DEBUG << "channel (fd=" << chan_->fd() << ") DisableReadEvent";
-                loop_->RunAfter(
-                    Duration(30.0),
-                    makeWeakCallback(shared_from_this(), &TCPConn::Close));
-#endif
+                loop_->RunAfter(closing_delay_for_incoming_conn_, xstd::bind(&TCPConn::HandleClose, shared_from_this()));
             }
 
         } else {
@@ -217,6 +213,16 @@ namespace evpp {
         high_water_mark_fn_ = cb;
         high_water_mark_ = mark;
     }
+
+    std::string TCPConn::StatusToString() const {
+        H_CASE_STRING_BIGIN(status_);
+        H_CASE_STRING(kDisconnected);
+        H_CASE_STRING(kConnecting);
+        H_CASE_STRING(kConnected);
+        H_CASE_STRING(kDisconnecting);
+        H_CASE_STRING_END();
+    }
+
 
 
 
