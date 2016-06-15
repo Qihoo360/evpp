@@ -8,12 +8,12 @@ namespace evpp {
     class Buffer;
     class TCPConn;
 
-    typedef xstd::shared_ptr<TCPConn> TCPConnPtr;
-    typedef xstd::function<void()> TimerCallback;
-    typedef xstd::function<void(const TCPConnPtr&)> ConnectionCallback;
-    typedef xstd::function<void(const TCPConnPtr&)> CloseCallback;
-    typedef xstd::function<void(const TCPConnPtr&)> WriteCompleteCallback;
-    typedef xstd::function<void(const TCPConnPtr&, size_t)> HighWaterMarkCallback;
+    typedef std::shared_ptr<TCPConn> TCPConnPtr;
+    typedef std::function<void()> TimerCallback;
+    typedef std::function<void(const TCPConnPtr&)> ConnectionCallback;
+    typedef std::function<void(const TCPConnPtr&)> CloseCallback;
+    typedef std::function<void(const TCPConnPtr&)> WriteCompleteCallback;
+    typedef std::function<void(const TCPConnPtr&, size_t)> HighWaterMarkCallback;
 
-    typedef xstd::function<void(const TCPConnPtr&, Buffer*, Timestamp)> MessageCallback;
+    typedef std::function<void(const TCPConnPtr&, Buffer*, Timestamp)> MessageCallback;
 }
