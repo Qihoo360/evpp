@@ -37,12 +37,12 @@ namespace {
         }
     }
 
-    xstd::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop) {
-        xstd::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
+    std::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop) {
+        std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
         client->SetConnectionCallback(&OnClientConnection);
         client->Connect();
-        loop->RunAfter(evpp::Duration(1.0), xstd::bind(&evpp::TCPClient::Disconnect, client));
-        loop->RunAfter(evpp::Duration(1.1), xstd::bind(&evpp::EventLoop::Stop, loop));
+        loop->RunAfter(evpp::Duration(1.0), std::bind(&evpp::TCPClient::Disconnect, client));
+        loop->RunAfter(evpp::Duration(1.1), std::bind(&evpp::EventLoop::Stop, loop));
         return client;
     }
 }
@@ -55,9 +55,9 @@ TEST_UNIT(testTCPServer1) {
     evpp::TCPServer tsrv(&loop, addr, "tcp_server", 2);
     tsrv.SetMesageHandler(&OnMessage);
     tsrv.Start();
-    loop.RunAfter(evpp::Duration(1.2), xstd::bind(&StopTCPServer, &tsrv));
-    loop.RunAfter(evpp::Duration(1.3), xstd::bind(&evpp::EventLoop::Stop, &loop));
-    xstd::shared_ptr<evpp::TCPClient> client = StartTCPClient(t.event_loop());
+    loop.RunAfter(evpp::Duration(1.2), std::bind(&StopTCPServer, &tsrv));
+    loop.RunAfter(evpp::Duration(1.3), std::bind(&evpp::EventLoop::Stop, &loop));
+    std::shared_ptr<evpp::TCPClient> client = StartTCPClient(t.event_loop());
     loop.Run();
     t.Stop(true);
     H_TEST_ASSERT(connected);
@@ -70,8 +70,8 @@ TEST_UNIT(testTCPServerSilenceShutdown) {
     evpp::EventLoop loop;
     evpp::TCPServer tsrv(&loop, addr, "tcp_server", 2);
     tsrv.Start();
-    loop.RunAfter(evpp::Duration(1.2), xstd::bind(&StopTCPServer, &tsrv));
-    loop.RunAfter(evpp::Duration(1.3), xstd::bind(&evpp::EventLoop::Stop, &loop));
+    loop.RunAfter(evpp::Duration(1.2), std::bind(&StopTCPServer, &tsrv));
+    loop.RunAfter(evpp::Duration(1.3), std::bind(&evpp::EventLoop::Stop, &loop));
     loop.Run();
 }
 

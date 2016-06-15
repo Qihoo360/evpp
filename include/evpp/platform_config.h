@@ -19,16 +19,16 @@
 
 #include <assert.h>
 #include <stdint.h>
+
 #include <iostream>
 
 #ifdef __cplusplus
+
+
 #include "gettimeofday.h"
 
-#ifdef H_OS_WINDOWS
+#include <memory>
 #include <functional>
-#else
-#include <tr1/functional>
-#endif
 
 //! Finds the compiler type and version.
 #if defined( _MSC_VER )
@@ -52,26 +52,6 @@
 #	endif
 #else
 #   pragma error "No known compiler. Abort! Abort!"
-#endif
-
-
-#ifdef xstd
-#error "xstd is already defined in another place. Please check it!"
-#endif
-#ifdef H_OS_WINDOWS
-#include <memory>
-#include <functional>
-#define xstd std
-#else
-#if H_COMPILER_VERSION >= 472
-#include <memory>
-#include <functional>
-#define xstd std
-#else
-#include <tr1/memory>
-#include <tr1/functional>
-#define xstd std::tr1
-#endif
 #endif
 
 #endif // end of define __cplusplus
@@ -106,7 +86,7 @@
 #define H_LINK_FILE_P( filename , sys )   H_LINK_FILE_PP( filename , sys )
 
 
-//
+
 #ifndef __MINGW32__
 #   define H_LINK_LIB( filename )           H_LINK_FILE_P( filename , H_LINK_OS_FLAG )
 #else
@@ -116,6 +96,7 @@
 #ifdef H_OS_WINDOWS
 #define usleep(us) Sleep((us)/1000);
 #define snprintf  _snprintf
+#define thread_local __declspec( thread )
 #endif
 
 #ifdef H_OS_WINDOWS
