@@ -26,7 +26,7 @@ namespace evpp {
     void EventLoop::Init() {
         tid_ = std::this_thread::get_id(); // The default thread id
         calling_pending_functors_ = false;
-        watcher_.reset(new PipeEventWatcher(event_base_, xstd::bind(&EventLoop::DoPendingFunctors, this)));
+        watcher_.reset(new PipeEventWatcher(event_base_, std::bind(&EventLoop::DoPendingFunctors, this)));
         watcher_->Init();
         watcher_->AsyncWait();
     }
@@ -52,7 +52,7 @@ namespace evpp {
     }
 
     void EventLoop::Stop() {
-        RunInLoop(xstd::bind(&EventLoop::StopInLoop, this));
+        RunInLoop(std::bind(&EventLoop::StopInLoop, this));
     }
 
     void EventLoop::StopInLoop() {
@@ -103,7 +103,7 @@ namespace evpp {
     }
 
     void EventLoop::RunAfter(Duration delay, const Functor& f) {
-        xstd::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, delay, f);
+        std::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, delay, f);
         t->Start();
     }
 

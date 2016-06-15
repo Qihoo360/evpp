@@ -32,15 +32,15 @@ namespace evpp {
         listener_.reset(new Listener(loop_, listen_addr_));
         listener_->Listen();
         listener_->SetNewConnectionCallback(
-            xstd::bind(&TCPServer::HandleNewConn,
+            std::bind(&TCPServer::HandleNewConn,
             this,
-            xstd::placeholders::_1,
-            xstd::placeholders::_2));
+            std::placeholders::_1,
+            std::placeholders::_2));
         return true;
     }
 
     void TCPServer::Stop() {
-        loop_->RunInLoop(xstd::bind(&TCPServer::StopInLoop, this));
+        loop_->RunInLoop(std::bind(&TCPServer::StopInLoop, this));
     }
 
     void TCPServer::StopInLoop() {
@@ -65,8 +65,8 @@ namespace evpp {
         TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
         assert(conn->type() == TCPConn::kIncoming);
         conn->SetMesageHandler(msg_fn_);
-        conn->SetCloseCallback(xstd::bind(&TCPServer::RemoveConnection, this, xstd::placeholders::_1));
-        io_loop->RunInLoop(xstd::bind(&TCPConn::OnAttachedToLoop, conn.get()));
+        conn->SetCloseCallback(std::bind(&TCPServer::RemoveConnection, this, std::placeholders::_1));
+        io_loop->RunInLoop(std::bind(&TCPConn::OnAttachedToLoop, conn.get()));
         connections_[n] = conn;
     }
 
@@ -84,7 +84,7 @@ namespace evpp {
     }
 
     void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
-        loop_->RunInLoop(xstd::bind(&TCPServer::RemoveConnectionInLoop, this, conn));
+        loop_->RunInLoop(std::bind(&TCPServer::RemoveConnectionInLoop, this, conn));
     }
 
     void TCPServer::RemoveConnectionInLoop(const TCPConnPtr& conn) {

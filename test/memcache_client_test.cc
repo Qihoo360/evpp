@@ -53,16 +53,16 @@ struct PacketHeader {
 };
 #pragma pack()
 
-typedef xstd::shared_ptr<evpp::EventLoop> EventLoopPtr;
+typedef std::shared_ptr<evpp::EventLoop> EventLoopPtr;
 
-typedef xstd::function<void(char*)> CommandCallback;
-typedef xstd::function<void(evpp::Slice)> GetCallback;
-typedef xstd::function<void(char*)> MgetCallback;
-typedef xstd::function<void(char*)> StoreCallback;
-typedef xstd::function<void(char*)> RemoveCallback;
+typedef std::function<void(char*)> CommandCallback;
+typedef std::function<void(evpp::Slice)> GetCallback;
+typedef std::function<void(char*)> MgetCallback;
+typedef std::function<void(char*)> StoreCallback;
+typedef std::function<void(char*)> RemoveCallback;
 
 class MemcacheClient;
-class Command  : public xstd::enable_shared_from_this<Command> {
+class Command  : public std::enable_shared_from_this<Command> {
   public:
     Command(EventLoopPtr ev_loop) : ev_loop_(ev_loop) {
     }
@@ -83,7 +83,7 @@ class Command  : public xstd::enable_shared_from_this<Command> {
     void Run(MemcacheClient * client);
 };
 
-typedef xstd::shared_ptr<Command> CommandPtr;
+typedef std::shared_ptr<Command> CommandPtr;
 
 class MemcacheClient {
   public:
@@ -113,7 +113,7 @@ void Command::OnCommandMessage(const evpp::TCPConnPtr& conn,
         PacketHeader rsp_header(msg->Next(sizeof(PacketHeader)));
         LOG_INFO << "response body length = " << ntohl(rsp_header.total_body_length);
 
-        command->ev_loop_->RunInLoop(xstd::bind(command->get_callback_, msg->Next(ntohl(rsp_header.total_body_length))));
+        command->ev_loop_->RunInLoop(std::bind(command->get_callback_, msg->Next(ntohl(rsp_header.total_body_length))));
 
         // ev_loop->RunInLoop(xstd::bind(&MemcacheClientPool::DoAsyncGet, this, command));
         // command->get_callback_(msg->Next(ntohl(rsp_header.total_body_length)));
@@ -158,7 +158,7 @@ class MemcacheClientPool {
         command->body_ = key;
         command->get_callback_ = callback;
 
-        ev_loop->RunInLoop(xstd::bind(&MemcacheClientPool::LaunchCommand, this, command));
+        ev_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
     }
   private:
     // noncopyable
@@ -169,7 +169,7 @@ class MemcacheClientPool {
         // 如何获取当前event loop ?
         // static xstd::shared_ptr<evpp::EventLoop> loop;
         
-        loop_pool_.GetNextLoopWithHash(100)->RunInLoop(xstd::bind(&MemcacheClientPool::ExecuteCommand, this, command));
+        loop_pool_.GetNextLoopWithHash(100)->RunInLoop(std::bind(&MemcacheClientPool::ExecuteCommand, this, command));
     }
 
   private:
@@ -178,9 +178,9 @@ class MemcacheClientPool {
             evpp::TCPClient * tcp_client = new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(100), command->ServerAddr(), "MemcacheBinaryClient");
             MemcacheClient * memc_client = new MemcacheClient(tcp_client);
 
-            tcp_client->SetConnectionCallback(xstd::bind(&OnClientConnection, xstd::placeholders::_1, memc_client));
-            tcp_client->SetMesageHandler(xstd::bind(&Command::OnCommandMessage, xstd::placeholders::_1,
-                                         xstd::placeholders::_2, xstd::placeholders::_3, memc_client));
+            tcp_client->SetConnectionCallback(std::bind(&OnClientConnection, std::placeholders::_1, memc_client));
+            tcp_client->SetMesageHandler(std::bind(&Command::OnCommandMessage, std::placeholders::_1,
+                                         std::placeholders::_2, std::placeholders::_3, memc_client));
             tcp_client->Connect();
 
             memc_clients[command->ServerAddr()] = memc_client;

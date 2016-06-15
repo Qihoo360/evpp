@@ -17,7 +17,7 @@ namespace evpp {
         bool IsRunning() const;
         bool IsStopped() const;
     public:
-        typedef xstd::shared_ptr<EventLoopThread> EventLoopThreadPtr;
+        typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
         std::vector<EventLoopThreadPtr>* threads() { return &threads_; }
 
     private:

@@ -42,8 +42,8 @@ namespace evpp {
         EventLoop* loop_;  // the listener loop
         const std::string listen_addr_;
         const std::string name_;
-        xstd::shared_ptr<Listener> listener_;
-        xstd::shared_ptr<EventLoopThreadPool> tpool_;
+        std::shared_ptr<Listener> listener_;
+        std::shared_ptr<EventLoopThreadPool> tpool_;
         MessageCallback msg_fn_;
         ConnectionCallback conn_fn_;
         WriteCompleteCallback write_complete_fn_;
