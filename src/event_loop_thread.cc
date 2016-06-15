@@ -35,14 +35,14 @@ namespace evpp {
         };
         State state_;
 
-        //TODO add thread name here
-        // std::string name_;
+        std::string name_;
     };
 
 
     EventLoopThread::Impl::Impl()
         : event_loop_(new EventLoop)
-        , state_(kStopped) {}
+        , state_(kStopped) {
+    }
 
     EventLoopThread::Impl::~Impl() {}
 
@@ -50,12 +50,8 @@ namespace evpp {
         const Functor& pre, const Functor& post) {
         thread_.reset(new std::thread(
             xstd::bind(&Impl::Run, this, pre, post)));
-        if (!wait_until_thread_started) {
-            return true;
-        }
-
         // waiting until the thread started
-        for (;;) {
+        while (wait_until_thread_started) {
             if (IsRunning()) {
                 break;
             }
@@ -67,6 +63,12 @@ namespace evpp {
     }
 
     void EventLoopThread::Impl::Run(const Functor& pre, const Functor& post) {
+        if (name_.empty()) {
+            std::ostringstream os;
+            os << "thread-" << std::this_thread::get_id();
+            name_ = os.str();
+        }
+
         state_ = kRunning;
         if (pre) {
             pre();
@@ -88,14 +90,11 @@ namespace evpp {
     }
 
     void EventLoopThread::Impl::SetName(const std::string& n) {
-        //TODO
+        name_ = n;
     }
 
     const std::string& EventLoopThread::Impl::name() const {
-        //TODO
-        const static std::string __s_empty;
-        return __s_empty;
-
+        return name_;
     }
 
     std::thread::id EventLoopThread::Impl::tid() const {

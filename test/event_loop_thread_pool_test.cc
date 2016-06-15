@@ -11,12 +11,10 @@
 
 #include <set>
 
-namespace
-{
+namespace {
     static std::set<std::thread::id> g_working_tids;
 
-    static void OnWorkingThread()
-    {
+    static void OnWorkingThread() {
         static std::mutex mutex;
         std::lock_guard<std::mutex> g(mutex);
         g_working_tids.insert(std::this_thread::get_id());
@@ -24,15 +22,13 @@ namespace
 
 
     static std::atomic<int> g_count;
-    static void OnCount()
-    {
+    static void OnCount() {
         g_count++;
         OnWorkingThread();
     }
 }
 
-TEST_UNIT(testEventLoopThreadPool)
-{
+TEST_UNIT(testEventLoopThreadPool) {
     evpp::EventLoopThread loop;
     loop.Start(true);
 
@@ -40,12 +36,11 @@ TEST_UNIT(testEventLoopThreadPool)
     evpp::EventLoopThreadPool pool(loop.event_loop(), thread_num);
     H_TEST_ASSERT(pool.Start(true));
 
-    for (int i = 0; i < thread_num; i++)
-    {
+    for (int i = 0; i < thread_num; i++) {
         pool.GetNextLoop()->RunInLoop(&OnCount);
     }
 
-    usleep(1000*1000);
+    usleep(1000 * 1000);
     pool.Stop(true);
     loop.Stop(true);
     usleep(1000 * 1000);

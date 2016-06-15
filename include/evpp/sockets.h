@@ -54,6 +54,7 @@ namespace evpp {
 
     EVPP_EXPORT std::string strerror(int e);
     EVPP_EXPORT int CreateNonblockingSocket();
+    EVPP_EXPORT void SetKeepAlive(int fd);
     EVPP_EXPORT struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/);
     EVPP_EXPORT struct sockaddr_in GetLocalAddr(int sockfd);
     EVPP_EXPORT std::string ToIPPort(const struct sockaddr_storage *ss);

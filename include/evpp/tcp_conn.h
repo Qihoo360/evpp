@@ -4,6 +4,7 @@
 #include "evpp/buffer.h"
 #include "evpp/tcp_callbacks.h"
 #include "evpp/slice.h"
+#include "evpp/any.h"
 
 namespace evpp {
 
@@ -14,8 +15,8 @@ namespace evpp {
     class EVPP_EXPORT TCPConn : public xstd::enable_shared_from_this<TCPConn> {
     public:
         enum Type {
-            kIncoming, // The type of a TCPConn held by a TCPServer
-            kOutgoing, // The type of a TCPConn held by a TCPClient
+            kIncoming = 0, // The type of a TCPConn held by a TCPServer
+            kOutgoing = 1, // The type of a TCPConn held by a TCPClient
         };
         enum Status {
             kDisconnected = 0,
@@ -43,6 +44,9 @@ namespace evpp {
         void SetConnectionHandler(ConnectionCallback cb) { conn_fn_ = cb; }
         void SetCloseCallback(CloseCallback cb) { close_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
+
+        void set_context(const Any& context) { context_ = context; }
+        const Any& context() const { return context_; }
     public:
         const std::string& remote_addr() const { return remote_addr_; }
         const std::string& name() const { return name_; }
@@ -52,6 +56,7 @@ namespace evpp {
         void set_type(Type t) { type_ = t; }
         Status status() const { return status_; }
         void set_status(Status s) { status_ = s; }
+        void set_closing_delay_for_incoming_conn(Duration d) { closing_delay_for_incoming_conn_ = d; }
     private:
         void HandleRead(Timestamp receiveTime);
         void HandleWrite();
@@ -61,6 +66,7 @@ namespace evpp {
         void SendInLoop(const void* data, size_t len);
         void SendStringInLoop(const std::string& message);
         void CloseInLoop();
+        std::string StatusToString() const;
     private:
         EventLoop* loop_;
         int fd_;
@@ -71,9 +77,14 @@ namespace evpp {
         Buffer input_buffer_;
         Buffer output_buffer_;
 
+        Any context_;
         Type type_;
         Status status_;
-        size_t high_water_mark_;
+        size_t high_water_mark_; // Default 128MB
+
+        // The delay time to close a incoming connection which has been shutdown by peer normally.
+        // Default is 1 second.
+        Duration closing_delay_for_incoming_conn_;
 
         ConnectionCallback conn_fn_;
         MessageCallback msg_fn_;
