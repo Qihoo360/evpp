@@ -57,6 +57,9 @@
     <ClCompile Include="..\test\any_test.cc">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\memcache_client_test.cc">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\test\test_common.h">
