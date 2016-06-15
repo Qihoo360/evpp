@@ -12,7 +12,7 @@ namespace evpp {
     class FdChannel;
     class TCPClient;
 
-    class EVPP_EXPORT TCPConn : public xstd::enable_shared_from_this<TCPConn> {
+    class EVPP_EXPORT TCPConn : public std::enable_shared_from_this<TCPConn> {
     public:
         enum Type {
             kIncoming = 0, // The type of a TCPConn held by a TCPServer
@@ -47,7 +47,7 @@ namespace evpp {
         void SetCloseCallback(CloseCallback cb) { close_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
 
-        void set_context(const Any& context) { context_ = context; }
+        void set_context(const Any& c) { context_ = c; }
         const Any& context() const { return context_; }
     public:
         const std::string& remote_addr() const { return remote_addr_; }
@@ -75,7 +75,7 @@ namespace evpp {
         std::string name_;
         std::string local_addr_; // the local address of ip:port
         std::string remote_addr_; // the remote address of  ip:port
-        xstd::shared_ptr<FdChannel> chan_;
+        std::shared_ptr<FdChannel> chan_;
         Buffer input_buffer_;
         Buffer output_buffer_;
 

@@ -9,7 +9,7 @@ namespace evpp {
 
     class EVPP_EXPORT Listener {
     public:
-        typedef xstd::function<void(int sockfd, const std::string& /*ip:port*/)> NewConnectionCallback;
+        typedef std::function<void(int sockfd, const std::string& /*ip:port*/)> NewConnectionCallback;
         Listener(EventLoop* loop, const std::string& addr/*ip:port*/);
         ~Listener();
 
@@ -29,7 +29,7 @@ namespace evpp {
         EventLoop* loop_;
         bool listening_;
         std::string addr_;
-        xstd::shared_ptr<FdChannel> chan_;
+        std::shared_ptr<FdChannel> chan_;
         NewConnectionCallback new_conn_fn_;
     };
 }

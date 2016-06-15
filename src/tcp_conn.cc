@@ -23,10 +23,10 @@ namespace evpp {
                      , closing_delay_for_incoming_conn_(1.0) {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
 
-        chan_->SetReadCallback(xstd::bind(&TCPConn::HandleRead, this, xstd::placeholders::_1));
-        chan_->SetWriteCallback(xstd::bind(&TCPConn::HandleWrite, this));
-        chan_->SetCloseCallback(xstd::bind(&TCPConn::HandleClose, this));
-        chan_->SetErrorCallback(xstd::bind(&TCPConn::HandleError, this));
+        chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this, std::placeholders::_1));
+        chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
+        chan_->SetCloseCallback(std::bind(&TCPConn::HandleClose, this));
+        chan_->SetErrorCallback(std::bind(&TCPConn::HandleError, this));
         LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " fd=" << sockfd;
     }
 
@@ -40,7 +40,7 @@ namespace evpp {
     }
 
     void TCPConn::Close() {
-        loop_->RunInLoop(xstd::bind(&TCPConn::CloseInLoop, shared_from_this()));
+        loop_->RunInLoop(std::bind(&TCPConn::CloseInLoop, shared_from_this()));
     }
 
     void TCPConn::CloseInLoop() {
@@ -57,7 +57,7 @@ namespace evpp {
             if (loop_->IsInLoopThread()) {
                 SendInLoop(message);
             } else {
-                loop_->RunInLoop(xstd::bind(&TCPConn::SendStringInLoop, shared_from_this(), message.ToString()));
+                loop_->RunInLoop(std::bind(&TCPConn::SendStringInLoop, shared_from_this(), message.ToString()));
             }
         }
     }
@@ -72,7 +72,7 @@ namespace evpp {
                 SendInLoop(buf->data(), buf->length());
                 buf->NextAll();
             } else {
-                loop_->RunInLoop(xstd::bind(&TCPConn::SendStringInLoop, this, buf->NextAllString()));
+                loop_->RunInLoop(std::bind(&TCPConn::SendStringInLoop, this, buf->NextAllString()));
             }
         }
     }
@@ -92,7 +92,7 @@ namespace evpp {
                 // And we set a timer to close the connection eventually.
                 chan_->DisableReadEvent();
                 LOG_DEBUG << "channel (fd=" << chan_->fd() << ") DisableReadEvent";
-                loop_->RunAfter(closing_delay_for_incoming_conn_, xstd::bind(&TCPConn::HandleClose, shared_from_this()));
+                loop_->RunAfter(closing_delay_for_incoming_conn_, std::bind(&TCPConn::HandleClose, shared_from_this()));
             }
         } else {
             if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
@@ -112,7 +112,7 @@ namespace evpp {
             if (output_buffer_.length() == 0) {
                 chan_->DisableWriteEvent();
                 if (write_complete_fn_) {
-                    loop_->QueueInLoop(xstd::bind(write_complete_fn_, shared_from_this()));
+                    loop_->QueueInLoop(std::bind(write_complete_fn_, shared_from_this()));
                 }
             }
         } else {
@@ -178,7 +178,7 @@ namespace evpp {
             if (nwritten >= 0) {
                 remaining = len - nwritten;
                 if (remaining == 0 && write_complete_fn_) {
-                    loop_->QueueInLoop(xstd::bind(write_complete_fn_, shared_from_this()));
+                    loop_->QueueInLoop(std::bind(write_complete_fn_, shared_from_this()));
                 }
             } else {
                 int serrno = errno;
@@ -198,7 +198,7 @@ namespace evpp {
             if (old_len + remaining >= high_water_mark_
                 && old_len < high_water_mark_
                 && high_water_mark_fn_) {
-                loop_->QueueInLoop(xstd::bind(high_water_mark_fn_, shared_from_this(), old_len + remaining));
+                loop_->QueueInLoop(std::bind(high_water_mark_fn_, shared_from_this(), old_len + remaining));
             }
             output_buffer_.Append(static_cast<const char*>(data)+nwritten, remaining);
             if (!chan_->IsWritable()) {

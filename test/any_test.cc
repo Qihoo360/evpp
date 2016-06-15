@@ -15,9 +15,9 @@ TEST_UNIT(testAny1) {
 }
 
 TEST_UNIT(testAny2) {
-    xstd::shared_ptr<evpp::Buffer> buf(new evpp::Buffer());
+    std::shared_ptr<evpp::Buffer> buf(new evpp::Buffer());
     evpp::Any any(buf);
 
-    xstd::shared_ptr<evpp::Buffer> b1 = evpp::any_cast<xstd::shared_ptr<evpp::Buffer> >(any);
+    std::shared_ptr<evpp::Buffer> b1 = evpp::any_cast<std::shared_ptr<evpp::Buffer> >(any);
     H_TEST_ASSERT(buf.get() == b1.get());
 }
