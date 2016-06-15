@@ -1,8 +1,8 @@
 #include "test_common.h"
 
 #include <evpp/exp.h>
-#include "evpp/any.h"
-#include "evpp/buffer.h"
+#include <evpp/any.h>
+#include <evpp/buffer.h>
 
 TEST_UNIT(testAny1) {
     evpp::Buffer* buf(new evpp::Buffer());

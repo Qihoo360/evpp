@@ -32,12 +32,14 @@ namespace evpp {
                 const std::string& raddr);
         ~TCPConn();
 
+        void Close();
+
         void Send(const char* s) { Send(s, strlen(s)); }
         void Send(const void* d, size_t dlen);
         void Send(const std::string& d);
         void Send(const Slice& message);
         void Send(Buffer* buf);
-        void Close();
+
         void OnAttachedToLoop();
     public:
         void SetMesageHandler(MessageCallback cb) { msg_fn_ = cb; }
@@ -58,7 +60,7 @@ namespace evpp {
         void set_status(Status s) { status_ = s; }
         void set_closing_delay_for_incoming_conn(Duration d) { closing_delay_for_incoming_conn_ = d; }
     private:
-        void HandleRead(Timestamp receiveTime);
+        void HandleRead(Timestamp recv_time);
         void HandleWrite();
         void HandleClose();
         void HandleError();
