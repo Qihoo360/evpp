@@ -41,13 +41,13 @@ namespace evpp {
 
         status_ = kConnecting;
 
-        timer_.reset(new TimerEventWatcher(loop_->event_base(), xstd::bind(&Connector::OnConnectTimeout, this), timeout_));
+        timer_.reset(new TimerEventWatcher(loop_->event_base(), std::bind(&Connector::OnConnectTimeout, this), timeout_));
         timer_->Init();
         timer_->AsyncWait();
 
         chan_.reset(new FdChannel(loop_, fd, false, true));
-        chan_->SetWriteCallback(xstd::bind(&Connector::HandleWrite, this));
-        chan_->SetErrorCallback(xstd::bind(&Connector::HandleError, this));
+        chan_->SetWriteCallback(std::bind(&Connector::HandleWrite, this));
+        chan_->SetErrorCallback(std::bind(&Connector::HandleError, this));
         chan_->AttachToLoop();
     }
 
@@ -88,7 +88,7 @@ namespace evpp {
         if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
             conn_fn_(-1, "");
         } else {
-            loop_->RunAfter(1000, xstd::bind(&Connector::Start, this));
+            loop_->RunAfter(1000, std::bind(&Connector::Start, this));
         }
     }
 

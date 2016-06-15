@@ -26,8 +26,8 @@ namespace evpp {
         void Run(const Functor& pre, const Functor& post);
 
     private:
-        xstd::shared_ptr<EventLoop> event_loop_;
-        xstd::shared_ptr<std::thread> thread_;
+        std::shared_ptr<EventLoop> event_loop_;
+        std::shared_ptr<std::thread> thread_;
         enum State {
             kRunning = 1,
             kStopping = 2,
@@ -49,7 +49,7 @@ namespace evpp {
     bool EventLoopThread::Impl::Start(bool wait_until_thread_started,
         const Functor& pre, const Functor& post) {
         thread_.reset(new std::thread(
-            xstd::bind(&Impl::Run, this, pre, post)));
+            std::bind(&Impl::Run, this, pre, post)));
         // waiting until the thread started
         while (wait_until_thread_started) {
             if (IsRunning()) {

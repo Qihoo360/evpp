@@ -10,7 +10,7 @@
 #include <thread>
 
 namespace evloop {
-    static xstd::shared_ptr<evpp::EventLoop> loop;
+    static std::shared_ptr<evpp::EventLoop> loop;
     static evpp::Duration delay(1.0);
     static bool g_event_handler_called = false;
     static void Handle() {
@@ -20,7 +20,7 @@ namespace evloop {
 
     static void MyEventThread() {
         LOG_INFO << "EventLoop is running ...";
-        loop = xstd::shared_ptr<evpp::EventLoop>(new evpp::EventLoop);
+        loop = std::shared_ptr<evpp::EventLoop>(new evpp::EventLoop);
         loop->Run();
     }
 }

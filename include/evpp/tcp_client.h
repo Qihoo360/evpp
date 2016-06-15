@@ -17,12 +17,13 @@ namespace evpp {
         ~TCPClient();
         void Connect();
         void Disconnect();
+        TCPConnPtr conn() const { return conn_; }
     public:
         void SetConnectionCallback(const ConnectionCallback& cb) { conn_fn_ = cb; }
         void SetMesageHandler(const MessageCallback& cb) { msg_fn_ = cb; }
         void SetWriteCompleteCallback(const WriteCompleteCallback& cb) { write_complete_fn_ = cb; }
         void set_connection_timeout(Duration timeout) { connection_timeout_ = timeout; }
-        void set_context(const Any& context) { context_ = context; }
+        void set_context(const Any& c) { context_ = c; }
         const Any& context() const { return context_; }
     private:
         void ConnectInLoop();
@@ -38,7 +39,7 @@ namespace evpp {
         Any context_;
 
         TCPConnPtr conn_;
-        xstd::shared_ptr<Connector> connector_;
+        std::shared_ptr<Connector> connector_;
         Duration connection_timeout_; // Default : 3 seconds
 
         ConnectionCallback conn_fn_;
