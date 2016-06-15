@@ -4,6 +4,7 @@
 #include "evpp/event_loop.h"
 #include "evpp/event_loop_thread_pool.h"
 #include "evpp/tcp_callbacks.h"
+#include "evpp/any.h"
 
 #include <map>
 #include <atomic>
@@ -13,7 +14,7 @@ namespace evpp {
     class EVPP_EXPORT TCPClient {
     public:
         TCPClient(EventLoop* loop, const std::string& remote_addr, const std::string& name);
-
+        ~TCPClient();
         void Connect();
         void Disconnect();
     public:
@@ -21,7 +22,11 @@ namespace evpp {
         void SetMesageHandler(const MessageCallback& cb) { msg_fn_ = cb; }
         void SetWriteCompleteCallback(const WriteCompleteCallback& cb) { write_complete_fn_ = cb; }
         void set_connection_timeout(Duration timeout) { connection_timeout_ = timeout; }
+        void set_context(const Any& context) { context_ = context; }
+        const Any& context() const { return context_; }
     private:
+        void ConnectInLoop();
+        void DisconnectInLoop();
         void OnConnection(int sockfd, const std::string& laddr);
         void OnRemoveConnection(const TCPConnPtr& conn);
         void Reconnect();
@@ -30,6 +35,7 @@ namespace evpp {
         std::string remote_addr_;
         std::string name_;
         std::atomic<int> auto_reconnect_;
+        Any context_;
 
         TCPConnPtr conn_;
         xstd::shared_ptr<Connector> connector_;
