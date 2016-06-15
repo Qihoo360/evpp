@@ -53,6 +53,8 @@ struct PacketHeader {
 };
 #pragma pack()
 
+typedef xstd::shared_ptr<evpp::EventLoop> EventLoopPtr;
+
 typedef xstd::function<void(char*)> CommandCallback;
 typedef xstd::function<void(evpp::Slice)> GetCallback;
 typedef xstd::function<void(char*)> MgetCallback;
@@ -62,12 +64,13 @@ typedef xstd::function<void(char*)> RemoveCallback;
 class MemcacheClient;
 class Command  : public xstd::enable_shared_from_this<Command> {
   public:
-    Command() {
+    Command(EventLoopPtr ev_loop) : ev_loop_(ev_loop) {
     }
     PacketHeader header_;
     std::string body_;
 
     GetCallback get_callback_;
+    EventLoopPtr ev_loop_;
     std::string ServerAddr() const {
         const static std::string test_addr = "127.0.0.1:11611";
         return test_addr;
@@ -109,7 +112,11 @@ void Command::OnCommandMessage(const evpp::TCPConnPtr& conn,
         memc_client->command_running_.pop();
         PacketHeader rsp_header(msg->Next(sizeof(PacketHeader)));
         LOG_INFO << "response body length = " << ntohl(rsp_header.total_body_length);
-        command->get_callback_(msg->Next(ntohl(rsp_header.total_body_length)));
+
+        command->ev_loop_->RunInLoop(xstd::bind(command->get_callback_, msg->Next(ntohl(rsp_header.total_body_length))));
+
+        // ev_loop->RunInLoop(xstd::bind(&MemcacheClientPool::DoAsyncGet, this, command));
+        // command->get_callback_(msg->Next(ntohl(rsp_header.total_body_length)));
     }
 }
 
@@ -130,7 +137,6 @@ void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClient* client) {
     }
 }
 
-thread_local std::map<std::string, MemcacheClient *> memc_clients;
 
 class MemcacheClientPool {
   public:
@@ -142,8 +148,8 @@ class MemcacheClientPool {
     }
     // void AsyncSet(const char* key, const char* value, int val_len, int flags,
     //               evpp::Duration& expire, ConnectCB& callback)
-    void AsyncGet(const char* key, GetCallback callback) {
-        CommandPtr command(new Command);
+    void AsyncGet(EventLoopPtr ev_loop, const char* key, GetCallback callback) {
+        CommandPtr command(new Command(ev_loop));
         command->header_.magic = 0x80;
         command->header_.op_code = OP_GET;
 
@@ -151,13 +157,20 @@ class MemcacheClientPool {
         command->header_.total_body_length = htonl(strlen(key));
         command->body_ = key;
         command->get_callback_ = callback;
-        
-        loop_pool_.GetNextLoopWithHash(100)->RunInLoop(xstd::bind(&MemcacheClientPool::ExecuteCommand, this, command));
+
+        ev_loop->RunInLoop(xstd::bind(&MemcacheClientPool::LaunchCommand, this, command));
     }
   private:
     // noncopyable
     MemcacheClientPool(const MemcacheClientPool&);
     const MemcacheClientPool& operator=(const MemcacheClientPool&);
+
+    void LaunchCommand(CommandPtr command) {
+        // 如何获取当前event loop ?
+        // static xstd::shared_ptr<evpp::EventLoop> loop;
+        
+        loop_pool_.GetNextLoopWithHash(100)->RunInLoop(xstd::bind(&MemcacheClientPool::ExecuteCommand, this, command));
+    }
 
   private:
     void ExecuteCommand(CommandPtr command) {
@@ -179,22 +192,43 @@ class MemcacheClientPool {
         command->Run(memc_clients[command->ServerAddr()]);
     }
 
+    thread_local static std::map<std::string, MemcacheClient *> memc_clients;
     evpp::EventLoop loop_;
     evpp::EventLoopThreadPool loop_pool_;
 };
 
+thread_local std::map<std::string, MemcacheClient *> MemcacheClientPool::memc_clients;
 
-// TODO : 回调在外部处理，thread pool 只处理网络IO时间
+
+// TODO : 回调在外部处理，thread pool 只处理网络IO时间 ?
 static void OnTestGetDone(evpp::Slice slice) {
     LOG_INFO << "OnTestGetDone " << slice.data();
 }
 
 }
 
-TEST_UNIT(testMemcacheClient) {
-    MemcacheClientPool mcp(16);
-    mcp.AsyncGet("test1", &OnTestGetDone);
+namespace evloop
+{
+    static EventLoopPtr g_loop;
+    static void StopLoop() {
+        g_loop->Stop();
+    }
 
-    usleep(100*1000);
+    static void MyEventThread() {
+        LOG_INFO << "EventLoop is running ...";
+        g_loop = EventLoopPtr(new evpp::EventLoop);
+        g_loop->Run();
+    }
+}
+
+TEST_UNIT(testMemcacheClient) {
+    std::thread th(evloop::MyEventThread);
+
+    MemcacheClientPool mcp(16);
+    mcp.AsyncGet(evloop::g_loop, "test1", &OnTestGetDone);
+
+    evloop::g_loop->RunAfter(1000.0, &evloop::StopLoop);
+    th.join();
+    // usleep(100*1000);
 }
 
