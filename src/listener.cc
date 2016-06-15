@@ -8,9 +8,10 @@
 
 namespace evpp {
     Listener::Listener(EventLoop* l, const std::string& addr)
-        : fd_(-1), loop_(l), addr_(addr) {}
+        : fd_(-1), loop_(l), listening_(false), addr_(addr) {}
 
     Listener::~Listener() {
+        LOG_TRACE << "Listener::~Listener fd=" << chan_->fd();
         chan_.reset();
         EVUTIL_CLOSESOCKET(fd_);
         fd_ = INVALID_SOCKET;
@@ -37,6 +38,7 @@ namespace evpp {
         chan_ = xstd::shared_ptr<FdChannel>(new FdChannel(loop_, fd_, true, false));
         chan_->SetReadCallback(xstd::bind(&Listener::HandleAccept, this, xstd::placeholders::_1));
         loop_->RunInLoop(xstd::bind(&FdChannel::AttachToLoop, chan_.get()));
+        listening_ = true;
         LOG_INFO << "TCPServer is running at " << addr_;
     }
 
@@ -82,5 +84,6 @@ namespace evpp {
         loop_->AssertInLoopThread();
         chan_->DisableAllEvent();
         chan_->Close();
+        listening_ = false;
     }
 }

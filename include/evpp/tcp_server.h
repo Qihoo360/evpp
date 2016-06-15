@@ -21,7 +21,7 @@ namespace evpp {
                   const std::string& listen_addr/*ip:port*/,
                   const std::string& name,
                   int thread_num);
-
+        ~TCPServer();
         bool Start();
         void Stop();
         void SetMesageHandler(MessageCallback cb) {
@@ -31,6 +31,7 @@ namespace evpp {
             threads_dispatch_policy_ = v;
         }
     private:
+        void StopInLoop();
         void RemoveConnection(const TCPConnPtr& conn);
         void RemoveConnectionInLoop(const TCPConnPtr& conn); // Remove the connection in the listener EventLoop
         void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/);
