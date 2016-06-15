@@ -1,6 +1,6 @@
 #include "test_common.h"
 
-#include "evpp/buffer.h"
+#include <evpp/buffer.h>
 
 using evpp::Buffer;
 using std::string;
