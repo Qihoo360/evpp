@@ -20,8 +20,7 @@ namespace evpp {
                      , type_(kIncoming)
                      , status_(kDisconnected)
                      , high_water_mark_(128 * 1024 * 1024)
-                     , closing_delay_for_incoming_conn_(1.0)
-    {
+                     , closing_delay_for_incoming_conn_(1.0) {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
 
         chan_->SetReadCallback(xstd::bind(&TCPConn::HandleRead, this, xstd::placeholders::_1));
@@ -32,7 +31,7 @@ namespace evpp {
     }
 
     TCPConn::~TCPConn() {
-        LOG_TRACE << "TCPConn::~TCPConn() this=" << this << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString();
+        LOG_TRACE << "TCPConn::~TCPConn() name=" << name() << " this=" << this << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString();
         assert(fd_ == chan_->fd());
         assert(status_ == kDisconnected);
         assert(chan_->IsNoneEvent());
@@ -78,24 +77,23 @@ namespace evpp {
         }
     }
 
-    void TCPConn::HandleRead(Timestamp receiveTime) {
+    void TCPConn::HandleRead(Timestamp recv_time) {
         loop_->AssertInLoopThread();
         int serrno = 0;
         ssize_t n = input_buffer_.ReadFromFD(chan_->fd(), &serrno);
         if (n > 0) {
-            msg_fn_(shared_from_this(), &input_buffer_, receiveTime);
+            msg_fn_(shared_from_this(), &input_buffer_, recv_time);
         } else if (n == 0) {
             if (type() == kOutgoing) {
-                // This was an outgoing connection, we own it and it's done. so close it
+                // This is an outgoing connection, we own it and it's done. so close it
                 HandleClose();
             } else {
-                // This was an incoming connection, we need to preserve the connection for a while so that we can reply to it.
+                // This is an incoming connection, we need to preserve the connection for a while so that we can reply to it.
                 // And we set a timer to close the connection eventually.
                 chan_->DisableReadEvent();
                 LOG_DEBUG << "channel (fd=" << chan_->fd() << ") DisableReadEvent";
                 loop_->RunAfter(closing_delay_for_incoming_conn_, xstd::bind(&TCPConn::HandleClose, shared_from_this()));
             }
-
         } else {
             if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
                 LOG_WARN << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno);
