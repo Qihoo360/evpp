@@ -18,7 +18,7 @@ namespace evpp {
 
     class EVPP_EXPORT EventWatcher {
     public:
-        typedef xstd::function<void()> Handler;
+        typedef std::function<void()> Handler;
 
         virtual ~EventWatcher();
 

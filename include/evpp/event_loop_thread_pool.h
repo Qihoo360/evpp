@@ -18,11 +18,11 @@ namespace evpp {
         bool IsStopped() const;
 
     public:
-        typedef xstd::shared_ptr<EventLoopThread> EventLoopThreadPtr;
+        typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
         std::vector<EventLoopThreadPtr>* threads();
 
     private:
         class Impl;
-        xstd::shared_ptr<Impl> impl_;
+        std::shared_ptr<Impl> impl_;
     };
 }

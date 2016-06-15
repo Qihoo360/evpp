@@ -23,8 +23,8 @@ namespace evpp {
             kReadable = 0x02,
             kWritable = 0x04,
         };
-        typedef xstd::function<void()> EventCallback;
-        typedef xstd::function<void(Timestamp)> ReadEventCallback;
+        typedef std::function<void()> EventCallback;
+        typedef std::function<void(Timestamp)> ReadEventCallback;
 
     public:
         FdChannel(EventLoop* loop, int fd,

@@ -17,18 +17,18 @@ namespace evpp {
     }
 
     void TCPClient::Connect() {
-        loop_->RunInLoop(xstd::bind(&TCPClient::ConnectInLoop, this));
+        loop_->RunInLoop(std::bind(&TCPClient::ConnectInLoop, this));
     }
 
     void TCPClient::ConnectInLoop() {
         loop_->AssertInLoopThread();
         connector_.reset(new Connector(loop_, remote_addr_, connection_timeout_));
-        connector_->SetNewConnectionCallback(xstd::bind(&TCPClient::OnConnection, this, xstd::placeholders::_1, xstd::placeholders::_2));
+        connector_->SetNewConnectionCallback(std::bind(&TCPClient::OnConnection, this, std::placeholders::_1, std::placeholders::_2));
         connector_->Start();
     }
 
     void TCPClient::Disconnect() {
-        loop_->RunInLoop(xstd::bind(&TCPClient::DisconnectInLoop, this));
+        loop_->RunInLoop(std::bind(&TCPClient::DisconnectInLoop, this));
     }
 
     void TCPClient::DisconnectInLoop() {
@@ -62,18 +62,15 @@ namespace evpp {
         conn_->set_type(TCPConn::kOutgoing);
         conn_->SetMesageHandler(msg_fn_);
         conn_->SetConnectionHandler(conn_fn_);
-        conn_->SetCloseCallback(xstd::bind(&TCPClient::OnRemoveConnection, this, xstd::placeholders::_1));
+        conn_->SetCloseCallback(std::bind(&TCPClient::OnRemoveConnection, this, std::placeholders::_1));
         conn_->OnAttachedToLoop();
     }
 
-    void TCPClient::OnRemoveConnection(const TCPConnPtr& conn) {
-        assert(conn.get() == conn_.get());
+    void TCPClient::OnRemoveConnection(const TCPConnPtr& c) {
+        assert(c.get() == conn_.get());
         loop_->AssertInLoopThread();
         if (auto_reconnect_.load() != 0) {
             Reconnect();
         }
     }
-
-
-    
 }
