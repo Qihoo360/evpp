@@ -10,26 +10,22 @@
 
 
 
-namespace evtimer
-{
+namespace evtimer {
     static evpp::Duration g_timeout(1.0); // 1s
     static bool g_event_handler_called = false;
-    static void Handle(struct event_base* base)
-    {
+    static void Handle(struct event_base* base) {
         g_event_handler_called = true;
         event_base_loopexit(base, 0);
     }
 
-    static void MyEventThread(struct event_base* base, evpp::TimerEventWatcher* ev)
-    {
+    static void MyEventThread(struct event_base* base, evpp::TimerEventWatcher* ev) {
         ev->Init();
         ev->AsyncWait();
         event_base_loop(base, 0);
     }
 }
 
-TEST_UNIT(testTimerEventWatcher)
-{
+TEST_UNIT(testTimerEventWatcher) {
     using namespace evtimer;
     struct event_base* base = event_base_new();
     xstd::shared_ptr<evpp::TimerEventWatcher> ev(new evpp::TimerEventWatcher(base, xstd::bind(&Handle, base), g_timeout));
@@ -43,8 +39,7 @@ TEST_UNIT(testTimerEventWatcher)
     event_base_free(base);
 }
 
-TEST_UNIT(testsocketpair)
-{
+TEST_UNIT(testsocketpair) {
     int sockpair[2];
     memset(sockpair, 0, sizeof(sockpair[0] * 2));
 
