@@ -90,6 +90,7 @@
   <ItemGroup>
     <ClCompile Include="..\3rdparty\gtest\src\gtest-all.cc" />
     <ClCompile Include="..\3rdparty\gtest\src\gtest_main.cc" />
+    <ClCompile Include="..\test\any_test.cc" />
     <ClCompile Include="..\test\buffer_test.cc" />
     <ClCompile Include="..\test\event_loop_test.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
