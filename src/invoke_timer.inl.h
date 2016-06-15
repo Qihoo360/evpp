@@ -9,13 +9,13 @@
 
 namespace evpp {
     class InvokeTimer
-        : public xstd::enable_shared_from_this<InvokeTimer> {
+        : public std::enable_shared_from_this<InvokeTimer> {
     public:
-        typedef xstd::function<void()> Functor;
+        typedef std::function<void()> Functor;
 
-        static xstd::shared_ptr<InvokeTimer> Create(EventLoop* evloop,
+        static std::shared_ptr<InvokeTimer> Create(EventLoop* evloop,
             Duration timeout, const Functor& f) {
-            xstd::shared_ptr<InvokeTimer> it(new InvokeTimer(evloop, timeout, f));
+            std::shared_ptr<InvokeTimer> it(new InvokeTimer(evloop, timeout, f));
             return it;
         }
 
@@ -28,9 +28,9 @@ namespace evpp {
         }
 
         void Start() {
-            xstd::shared_ptr<InvokeTimer> ref = shared_from_this(); // reference count +1
+            std::shared_ptr<InvokeTimer> ref = shared_from_this(); // reference count +1
             LOG_INFO << "InvokeTimer::Start tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << ref.use_count();
-            loop_->RunInLoop(xstd::bind(&InvokeTimer::AsyncWait, ref, timeout_));
+            loop_->RunInLoop(std::bind(&InvokeTimer::AsyncWait, ref, timeout_));
         }
 
     private:
@@ -38,9 +38,9 @@ namespace evpp {
             : loop_(evloop), timeout_(timeout), functor_(f), timer_(NULL) {}
 
         void AsyncWait(Duration timeout) {
-            xstd::shared_ptr<InvokeTimer> ref = shared_from_this(); // reference count +1
+            std::shared_ptr<InvokeTimer> ref = shared_from_this(); // reference count +1
             LOG_INFO << "InvokeTimer::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << ref.use_count();
-            timer_ = new TimerEventWatcher(loop_->event_base(), xstd::bind(&InvokeTimer::OnTimeout, ref), timeout_);
+            timer_ = new TimerEventWatcher(loop_->event_base(), std::bind(&InvokeTimer::OnTimeout, ref), timeout_);
             timer_->Init();
             timer_->AsyncWait();
         }

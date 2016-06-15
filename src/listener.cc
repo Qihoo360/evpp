@@ -35,9 +35,9 @@ namespace evpp {
             LOG_FATAL << "Listen failed " << strerror(serrno);
         }
 
-        chan_ = xstd::shared_ptr<FdChannel>(new FdChannel(loop_, fd_, true, false));
-        chan_->SetReadCallback(xstd::bind(&Listener::HandleAccept, this, xstd::placeholders::_1));
-        loop_->RunInLoop(xstd::bind(&FdChannel::AttachToLoop, chan_.get()));
+        chan_ = std::shared_ptr<FdChannel>(new FdChannel(loop_, fd_, true, false));
+        chan_->SetReadCallback(std::bind(&Listener::HandleAccept, this, std::placeholders::_1));
+        loop_->RunInLoop(std::bind(&FdChannel::AttachToLoop, chan_.get()));
         listening_ = true;
         LOG_INFO << "TCPServer is running at " << addr_;
     }

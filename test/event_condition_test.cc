@@ -23,7 +23,7 @@ namespace {
 
 TEST_UNIT(testPipeEventWatcher) {
     struct event_base* base = event_base_new();
-    evpp::PipeEventWatcher ev(base, xstd::bind(&Handle, base));
+    evpp::PipeEventWatcher ev(base, std::bind(&Handle, base));
     std::thread th(MyEventThread, base, &ev);
     ::usleep(1000 * 100);
     ev.Notify();

@@ -12,7 +12,7 @@ namespace evpp {
     class EventLoop;
     class EVPP_EXPORT EventLoopThread {
     public:
-        typedef xstd::function<void()> Functor;
+        typedef std::function<void()> Functor;
         EventLoopThread();
         ~EventLoopThread();
 
@@ -30,6 +30,6 @@ namespace evpp {
     private:
 
         class Impl;
-        xstd::shared_ptr<Impl> impl_;
+        std::shared_ptr<Impl> impl_;
     };
 }
