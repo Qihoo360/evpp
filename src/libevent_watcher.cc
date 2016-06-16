@@ -4,6 +4,7 @@
 
 #include "evpp/libevent_watcher.h"
 #include "evpp/libevent_headers.h"
+#include "evpp/event_loop.h"
 
 namespace evpp {
 
@@ -86,6 +87,12 @@ namespace evpp {
         memset(pipe_, 0, sizeof(pipe_[0] * 2));
     }
 
+    PipeEventWatcher::PipeEventWatcher(EventLoop* loop,
+                                       const Handler& handler)
+                                       : EventWatcher(loop->event_base(), handler) {
+        memset(pipe_, 0, sizeof(pipe_[0] * 2));
+    }
+
     bool PipeEventWatcher::DoInit() {
         assert(pipe_[0] == 0);
 
@@ -144,7 +151,14 @@ namespace evpp {
     TimerEventWatcher::TimerEventWatcher(struct event_base *event_base,
                                          const Handler& handler,
                                          Duration timeout)
-                                         : EventWatcher(event_base, handler), timeout_(timeout) {}
+                                         : EventWatcher(event_base, handler)
+                                         , timeout_(timeout) {}
+
+    TimerEventWatcher::TimerEventWatcher(EventLoop* loop,
+                                         const Handler& handler,
+                                         Duration timeout)
+                                         : EventWatcher(loop->event_base(), handler)
+                                         , timeout_(timeout) {}
 
     bool TimerEventWatcher::DoInit() {
         event_set(event_, -1, 0, TimerEventWatcher::HandlerFn, this);
@@ -168,6 +182,13 @@ namespace evpp {
     SignalEventWatcher::SignalEventWatcher(int signo, struct event_base *event_base,
                                            const Handler& handler)
                                            : EventWatcher(event_base, handler)
+                                           , signo_(signo) {
+        assert(signo_);
+    }
+
+    SignalEventWatcher::SignalEventWatcher(int signo, EventLoop* loop,
+                                           const Handler& handler)
+                                           : EventWatcher(loop->event_base(), handler)
                                            , signo_(signo) {
         assert(signo_);
     }
