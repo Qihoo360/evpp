@@ -8,6 +8,7 @@
 
 #include <map>
 #include <atomic>
+#include <mutex>
 
 namespace evpp {
     class Connector;
@@ -17,7 +18,7 @@ namespace evpp {
         ~TCPClient();
         void Connect();
         void Disconnect();
-        TCPConnPtr conn() const { return conn_; }
+        TCPConnPtr conn() const;
     public:
         void SetConnectionCallback(const ConnectionCallback& cb) { conn_fn_ = cb; }
         void SetMesageHandler(const MessageCallback& cb) { msg_fn_ = cb; }
@@ -38,7 +39,9 @@ namespace evpp {
         std::atomic<int> auto_reconnect_;
         Any context_;
 
+        mutable std::mutex mutex_; // The guard of conn_
         TCPConnPtr conn_;
+
         std::shared_ptr<Connector> connector_;
         Duration connection_timeout_; // Default : 3 seconds
 
