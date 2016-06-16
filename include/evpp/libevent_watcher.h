@@ -4,18 +4,11 @@
 
 #include "duration.h"
 
-#ifdef H_OS_WINDOWS
-#include <functional>
-#else
-#include <tr1/functional>
-#endif
-
 struct event;
 struct event_base;
 
 namespace evpp {
-
-
+    class EventLoop;
     class EVPP_EXPORT EventWatcher {
     public:
         typedef std::function<void()> Handler;
@@ -62,8 +55,8 @@ namespace evpp {
     //////////////////////////////////////////////////////////////////////////
     class EVPP_EXPORT PipeEventWatcher : public EventWatcher {
     public:
-        PipeEventWatcher(struct event_base *event_base,
-            const Handler& handler);
+        PipeEventWatcher(struct event_base *event_base, const Handler& handler);
+        PipeEventWatcher(EventLoop* loop, const Handler& handler);
 
         void AsyncWait();
         void Notify();
@@ -79,6 +72,7 @@ namespace evpp {
     class EVPP_EXPORT TimerEventWatcher : public EventWatcher {
     public:
         TimerEventWatcher(struct event_base *event_base, const Handler& handler, Duration timeout);
+        TimerEventWatcher(EventLoop* loop, const Handler& handler, Duration timeout);
 
         bool AsyncWait();
 
@@ -95,8 +89,8 @@ namespace evpp {
 #ifndef H_OS_WINDOWS
     class SignalEventWatcher : public EventWatcher {
     public:
-        SignalEventWatcher(int signo, struct event_base *event_base,
-            const Handler& handler);
+        SignalEventWatcher(int signo, struct event_base *event_base, const Handler& handler);
+        SignalEventWatcher(int signo, EventLoop* loop, const Handler& handler);
 
     private:
         virtual bool DoInit();
