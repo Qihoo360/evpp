@@ -26,7 +26,7 @@ namespace evpp {
     void EventLoop::Init() {
         tid_ = std::this_thread::get_id(); // The default thread id
         calling_pending_functors_ = false;
-        watcher_.reset(new PipeEventWatcher(event_base_, std::bind(&EventLoop::DoPendingFunctors, this)));
+        watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
         watcher_->Init();
         watcher_->AsyncWait();
     }

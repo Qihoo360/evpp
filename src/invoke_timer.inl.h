@@ -40,7 +40,7 @@ namespace evpp {
         void AsyncWait(Duration timeout) {
             std::shared_ptr<InvokeTimer> ref = shared_from_this(); // reference count +1
             LOG_INFO << "InvokeTimer::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << ref.use_count();
-            timer_ = new TimerEventWatcher(loop_->event_base(), std::bind(&InvokeTimer::OnTimeout, ref), timeout_);
+            timer_ = new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimeout, ref), timeout_);
             timer_->Init();
             timer_->AsyncWait();
         }
