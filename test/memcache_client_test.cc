@@ -15,26 +15,39 @@
 
 namespace {
 
+// TODO 
+// 1. pipeline
+// 2. error handling
+// 3. set/remove/mget
+// 4. server addr hash
+// 5. embeded & standalone
+
 typedef std::shared_ptr<evpp::Buffer> BufferPtr;
 typedef std::shared_ptr<evpp::EventLoop> EventLoopPtr;
 
-typedef std::function<void(char*)> CommandCallback;
-typedef std::function<void(int code, const std::string value)> GetCallback;
-typedef std::function<void(char*)> MgetCallback;
-typedef std::function<void(char*)> StoreCallback;
-typedef std::function<void(char*)> RemoveCallback;
+typedef std::function<void(int code, const std::string key, const std::string value)> GetCallback;
+typedef std::function<void(int code, const std::string key)> SetCallback;
+
+typedef std::function<void(uint32_t command_id, int memcached_response_code)> RemoveCallback;
+typedef std::function<void(uint32_t command_id, int memcached_response_code,
+                      const std::string& return_value)> MultiGetOneResponseCallback;
+typedef std::function<void(uint32_t noop_cmd_id, int memcached_response_code)> MultiGetCallback;
 
 class MemcacheClient;
 class Command  : public std::enable_shared_from_this<Command> {
   public:
-    Command(EventLoopPtr ev_loop) : ev_loop_(ev_loop) {
+    Command(EventLoopPtr ev_loop, const char* key) : ev_loop_(ev_loop), key_(key) {
     }
     virtual BufferPtr RequestBuffer() const = 0;
 
-    GetCallback get_callback_;
+    std::string key_;
     EventLoopPtr ev_loop_;
+    GetCallback get_callback_;
+    SetCallback set_callback_;
+
     std::string ServerAddr() const {
-        const static std::string test_addr = "127.0.0.1:11611";
+        // const static std::string test_addr = "127.0.0.1:11611";
+        const static std::string test_addr = "10.160.112.97:10002";
         return test_addr;
     }
 
@@ -44,19 +57,50 @@ class Command  : public std::enable_shared_from_this<Command> {
 
 typedef std::shared_ptr<Command> CommandPtr;
 
-class GetCommand  : public Command {
+class SetCommand  : public Command {
   public:
-    GetCommand(EventLoopPtr ev_loop, const char* key) : Command(ev_loop), key_(key) {}
-    std::string key_;
+    SetCommand(EventLoopPtr ev_loop, const char* key, const char * value, size_t val_len, uint32_t flags, uint32_t expire)
+           : Command(ev_loop, key), value_(value, val_len), flags_(flags), expire_(expire) {}
+    std::string value_;
+    uint32_t flags_;
+    uint32_t expire_;
 
     virtual BufferPtr RequestBuffer() const {
         protocol_binary_request_header req;
         bzero((void*)&req, sizeof(req));
 
-        req.request.magic  = 0x80;
+        req.request.magic  = PROTOCOL_BINARY_REQ;
+        req.request.opcode = PROTOCOL_BINARY_CMD_SET;
+        req.request.keylen = htons(key_.size());
+        req.request.extlen = 8;
+        req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
+
+        size_t bodylen = req.request.extlen + key_.size() + value_.size();
+        req.request.bodylen = htonl(static_cast<uint32_t>(bodylen));
+
+        BufferPtr buf(new evpp::Buffer(sizeof(protocol_binary_request_header) + key_.size()));
+        buf->Append((void*)&req, sizeof(req));
+        buf->AppendInt32(flags_);
+        buf->AppendInt32(expire_);
+        buf->Append(key_.data(), key_.size());
+        buf->Append(value_.data(), value_.size());
+
+        return buf;
+    }
+};
+
+class GetCommand  : public Command {
+  public:
+    GetCommand(EventLoopPtr ev_loop, const char* key) : Command(ev_loop, key) {}
+
+    virtual BufferPtr RequestBuffer() const {
+        protocol_binary_request_header req;
+        bzero((void*)&req, sizeof(req));
+
+        req.request.magic  = PROTOCOL_BINARY_REQ;
         req.request.opcode = PROTOCOL_BINARY_CMD_GET;
         req.request.keylen = htons(key_.size());
-        req.request.bodylen = htons(key_.size());
+        req.request.bodylen = htonl(key_.size());
 
         BufferPtr buf(new evpp::Buffer(sizeof(protocol_binary_request_header) + key_.size()));
         buf->Append((void*)&req, sizeof(req));
@@ -96,16 +140,6 @@ public:
         }
     }
 
-   // void send(muduo::net::TcpConnection* conn,
-   //             const muduo::StringPiece& message)
-   // {
-   //     muduo::net::Buffer buf;
-   //     buf.append(message.data(), message.size());
-   //     int32_t len = static_cast<int32_t>(message.size());
-   //     int32_t be32 = muduo::net::sockets::hostToNetwork32(len);
-   //     buf.prepend(&be32, sizeof be32);
-   //     conn->send(&buf);
-   // }
 private:
     // noncopyable
     BinaryCodec(const BinaryCodec&);
@@ -127,7 +161,13 @@ class MemcacheClient {
     std::queue<CommandPtr> command_running_;
     evpp::TCPConnPtr conn() { return tcp_client_->conn();}
 
-    void OnStoreCommandDone(uint32_t command_id, int memcached_response_code);
+    void AsyncGet(const char* key, GetCallback callback) {
+        CommandPtr command(new GetCommand(EventLoopPtr(), key));
+        command->get_callback_ = callback;
+        command->Launch(this);
+    }
+
+    void OnSetCommandDone(uint32_t command_id, int memcached_response_code);
     void OnRemoveCommandDone(uint32_t command_id, int memcached_response_code);
     void OnGetCommandDone(uint32_t command_id, int memcached_response_code, 
             const std::string& return_value);
@@ -141,13 +181,54 @@ class MemcacheClient {
     const MemcacheClient& operator=(const MemcacheClient&);
 };
 
+void MemcacheClient::OnSetCommandDone(uint32_t command_id, int memcached_response_code) {
+    CommandPtr command(command_running_.front());
+    command_running_.pop();
+    LOG_INFO << "OnSetCommandDone id=" << command_id << " code=" << memcached_response_code;
+    if (command->ev_loop_) {
+        command->ev_loop_->RunInLoop(std::bind(command->set_callback_, memcached_response_code,
+                                               command->key_));
+    } else {
+        command->set_callback_(memcached_response_code, command->key_);
+    }
+}
+
 void MemcacheClient::OnGetCommandDone(uint32_t command_id, int memcached_response_code, 
             const std::string& return_value) {
     CommandPtr command(command_running_.front());
     command_running_.pop();
     LOG_INFO << "OnGetCommandDone id=" << command_id << " code=" << memcached_response_code;
-    command->ev_loop_->RunInLoop(std::bind(command->get_callback_, memcached_response_code, return_value));
+    if (command->ev_loop_) {
+        command->ev_loop_->RunInLoop(std::bind(command->get_callback_, memcached_response_code,
+                         command->key_, return_value));
+    } else {
+        command->get_callback_(memcached_response_code, command->key_, return_value);
+    }
 }
+
+/*
+void MemcacheClient::OnGetCommandDone(uint32_t command_id, int memcached_response_code, 
+            const std::string& return_value) {
+    CommandPtr command(command_running_.front());
+    command_running_.pop();
+    LOG_INFO << "OnGetCommandDone id=" << command_id << " code=" << memcached_response_code;
+    if (command->ev_loop_) {
+        command->ev_loop_->RunInLoop(std::bind(command->memcached_response_code);
+    }
+}
+
+void MemcacheClient::OnGetCommandDone(uint32_t command_id, int memcached_response_code, 
+            const std::string& return_value) {
+    CommandPtr command(command_running_.front());
+    command_running_.pop();
+    LOG_INFO << "OnGetCommandDone id=" << command_id << " code=" << memcached_response_code;
+    if (command->ev_loop_) {
+        command->ev_loop_->RunInLoop(std::bind(command->, memcached_response_code, return_value));
+    } else {
+        command->get_callback_(memcached_response_code, return_value);
+    }
+}
+*/
 
 void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
             evpp::Buffer* buf) {
@@ -155,7 +236,7 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
     int      opcode = resp.response.opcode;
     switch (opcode) {
         case PROTOCOL_BINARY_CMD_SET:
-            // memc_client_->onStoreCommandDone(id, resp.response.status);
+            memc_client_->OnSetCommandDone(id, resp.response.status);
             break;
         case PROTOCOL_BINARY_CMD_DELETE:
             // memc_client_->onRemoveCommandDone(id, resp.response.status);
@@ -198,8 +279,18 @@ class MemcacheClientPool {
     virtual ~MemcacheClientPool() {
         loop_pool_.Stop(true);
     }
-    // void AsyncSet(const char* key, const char* value, int val_len, int flags,
-    //               evpp::Duration& expire, ConnectCB& callback)
+    void AsyncSet(EventLoopPtr ev_loop, const std::string& key, const std::string& value, SetCallback callback) {
+        AsyncSet(ev_loop, key.c_str(), value.c_str(), value.size(), 0, 0, callback);
+    }
+    void AsyncSet(EventLoopPtr ev_loop, const char* key, const char* value, size_t val_len, uint32_t flags,
+                  uint32_t expire, SetCallback callback) {
+        // SetCommand(EventLoopPtr ev_loop, const char* key, const char * value, size_t val_len, uint32_t flags, uint32_t expire)
+
+        CommandPtr command(new SetCommand(ev_loop, key, value, val_len , flags, expire));
+        command->set_callback_ = callback;
+
+        ev_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
+    }
     void AsyncGet(EventLoopPtr ev_loop, const char* key, GetCallback callback) {
         CommandPtr command(new GetCommand(ev_loop, key));
         command->get_callback_ = callback;
@@ -229,9 +320,6 @@ class MemcacheClientPool {
     }
 
     void LaunchCommand(CommandPtr command) {
-        // 如何获取当前event loop ?
-        // static xstd::shared_ptr<evpp::EventLoop> loop;
-        
         loop_pool_.GetNextLoopWithHash(100)->RunInLoop(std::bind(&MemcacheClientPool::DoLaunchCommand, this, command));
     }
 
@@ -263,11 +351,13 @@ class MemcacheClientPool {
 
 thread_local std::map<std::string, MemcacheClient *> MemcacheClientPool::memc_clients;
 
-
-// TODO : 回调在外部处理，thread pool 只处理网络IO时间 ?
-static void OnTestGetDone(int code, const std::string value) {
-    LOG_INFO << "OnTestGetDone " << code << " " << value;
+static void OnTestSetDone(int code, const std::string key) {
+    LOG_INFO << "OnTestSetDone " << code << " " << key;
 }
+static void OnTestGetDone(int code, const std::string key, const std::string value) {
+    LOG_INFO << "OnTestGetDone " << code << " " << key << " " << value;
+}
+
 
 }
 
@@ -289,7 +379,10 @@ TEST_UNIT(testMemcacheClient) {
     std::thread th(evloop::MyEventThread);
 
     MemcacheClientPool mcp(16);
-    mcp.AsyncGet(evloop::g_loop, "test1", &OnTestGetDone);
+    // mcp.AsyncSet(evloop::g_loop, "test1", "test1_value", &OnTestSetDone);
+    for(size_t i = 0; i < 100; ++i) {
+        mcp.AsyncGet(evloop::g_loop, "test1", &OnTestGetDone);
+    }
 
     evloop::g_loop->RunAfter(1000.0, &evloop::StopLoop);
     th.join();
