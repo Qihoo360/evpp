@@ -41,7 +41,7 @@ namespace evpp {
 
         status_ = kConnecting;
 
-        timer_.reset(new TimerEventWatcher(loop_->event_base(), std::bind(&Connector::OnConnectTimeout, this), timeout_));
+        timer_.reset(new TimerEventWatcher(loop_, std::bind(&Connector::OnConnectTimeout, this), timeout_));
         timer_->Init();
         timer_->AsyncWait();
 
