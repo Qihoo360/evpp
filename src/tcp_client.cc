@@ -13,6 +13,8 @@ namespace evpp {
 
     TCPClient::~TCPClient() {
         auto_reconnect_.store(0);
+        TCPConnPtr c = conn();
+        assert(c->IsDisconnected());
         conn_.reset();
     }
 
@@ -58,12 +60,17 @@ namespace evpp {
 
         LOG_INFO << "Successfully connected to " << remote_addr_;
         loop_->AssertInLoopThread();
-        conn_ = TCPConnPtr(new TCPConn(loop_, name_, sockfd, laddr, remote_addr_));
-        conn_->set_type(TCPConn::kOutgoing);
-        conn_->SetMesageHandler(msg_fn_);
-        conn_->SetConnectionHandler(conn_fn_);
-        conn_->SetCloseCallback(std::bind(&TCPClient::OnRemoveConnection, this, std::placeholders::_1));
-        conn_->OnAttachedToLoop();
+        TCPConnPtr c = TCPConnPtr(new TCPConn(loop_, name_, sockfd, laddr, remote_addr_));
+        c->set_type(TCPConn::kOutgoing);
+        c->SetMesageHandler(msg_fn_);
+        c->SetConnectionHandler(conn_fn_);
+        c->SetCloseCallback(std::bind(&TCPClient::OnRemoveConnection, this, std::placeholders::_1));
+        c->OnAttachedToLoop();
+
+        {
+            std::lock_guard<std::mutex> guard(mutex_);
+            conn_ = c;
+        }
     }
 
     void TCPClient::OnRemoveConnection(const TCPConnPtr& c) {
@@ -73,4 +80,16 @@ namespace evpp {
             Reconnect();
         }
     }
+
+    TCPConnPtr TCPClient::conn() const {
+        if (loop_->IsInLoopThread()) {
+            return conn_;
+        } else {
+            // If it is not in the loop thread, we should add a lock here
+            std::lock_guard<std::mutex> guard(mutex_);
+            TCPConnPtr c = conn_;
+            return c;
+        }
+    }
+
 }
