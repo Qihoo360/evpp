@@ -40,16 +40,12 @@ typedef std::function<void(MultiGetResult result)> MultiGetCallback;
 class MemcacheClient;
 class Command  : public std::enable_shared_from_this<Command> {
   public:
-    Command(EventLoopPtr ev_loop, const char* key) : ev_loop_(ev_loop), key_(key) {
+    Command(EventLoopPtr ev_loop) : ev_loop_(ev_loop) {
     }
     virtual BufferPtr RequestBuffer() const = 0;
 
     uint32_t id_; // multiget 只有一个id,这样可以避免
     EventLoopPtr ev_loop_;
-    std::string key_;
-
-    // TODO : mget_result_放到子类中
-    MultiGetResult mget_result_;
 
     GetCallback get_callback_;
     MultiGetCallback mget_callback_;
@@ -77,7 +73,8 @@ typedef std::shared_ptr<Command> CommandPtr;
 class SetCommand  : public Command {
   public:
     SetCommand(EventLoopPtr ev_loop, const char* key, const char * value, size_t val_len, uint32_t flags, uint32_t expire)
-           : Command(ev_loop, key), value_(value, val_len), flags_(flags), expire_(expire) {}
+           : Command(ev_loop), key_(key), value_(value, val_len), flags_(flags), expire_(expire) {}
+    std::string key_;
     std::string value_;
     uint32_t flags_;
     uint32_t expire_;
@@ -116,7 +113,8 @@ class SetCommand  : public Command {
 
 class GetCommand  : public Command {
   public:
-    GetCommand(EventLoopPtr ev_loop, const char* key) : Command(ev_loop, key) {}
+    GetCommand(EventLoopPtr ev_loop, const char* key) : Command(ev_loop), key_(key) {}
+    std::string key_;
 
     virtual BufferPtr RequestBuffer() const {
         protocol_binary_request_header req;
@@ -149,9 +147,10 @@ class GetCommand  : public Command {
 class MultiGetCommand  : public Command {
   public:
     MultiGetCommand(EventLoopPtr ev_loop, const std::vector<std::string>& keys)
-            : Command(ev_loop, ""), keys_(keys) {
+            : Command(ev_loop), keys_(keys) {
     }
     std::vector<std::string> keys_;
+    MultiGetResult mget_result_;
 
     virtual BufferPtr RequestBuffer() const {
         BufferPtr buf(new evpp::Buffer(50 * keys_.size()));  // 预分配长度多数情况够长
@@ -198,7 +197,8 @@ class MultiGetCommand  : public Command {
 class RemoveCommand  : public Command {
   public:
     RemoveCommand(EventLoopPtr ev_loop, const char* key)
-           : Command(ev_loop, key) {}
+           : Command(ev_loop), key_(key) {}
+    std::string key_;
 
     virtual BufferPtr RequestBuffer() const {
         protocol_binary_request_header req;
@@ -395,7 +395,7 @@ void Command::Launch(MemcacheClient * memc_client) {
     id_ = memc_client->next_id();
 
     if (!memc_client->conn()) {
-        LOG_ERROR << "Command bad memc_client " << memc_client << " key=" << key_;
+        LOG_ERROR << "Command bad memc_client " << memc_client << " id=" << id_;
         return;
     }
     BufferPtr buf = RequestBuffer();
