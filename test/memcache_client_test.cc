@@ -40,8 +40,9 @@ class Command  : public std::enable_shared_from_this<Command> {
     }
     virtual BufferPtr RequestBuffer() const = 0;
 
-    std::string key_;
     EventLoopPtr ev_loop_;
+    std::string key_;
+
     GetCallback get_callback_;
     SetCallback set_callback_;
 
@@ -159,9 +160,9 @@ class MemcacheClient {
 
     std::queue<CommandPtr> command_waiting_;
     std::queue<CommandPtr> command_running_;
-    evpp::TCPConnPtr conn() { return tcp_client_->conn();}
+    evpp::TCPConnPtr conn() const { return tcp_client_->conn();}
 
-    void AsyncGet(const char* key, GetCallback callback) {
+    void EmbededAsyncGet(const char* key, GetCallback callback) {
         CommandPtr command(new GetCommand(EventLoopPtr(), key));
         command->get_callback_ = callback;
         command->Launch(this);
@@ -267,6 +268,10 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 }
 
 void Command::Launch(MemcacheClient * memc_client) {
+    if (!memc_client->conn()) {
+        LOG_ERROR << "Command bad memc_client " << memc_client << " key=" << key_;
+        return;
+    }
     BufferPtr buf = RequestBuffer();
     memc_client->conn()->Send(buf->data(), buf->size());
 }
@@ -303,16 +308,15 @@ class MemcacheClientPool {
     const MemcacheClientPool& operator=(const MemcacheClientPool&);
 
     static void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClient* memc_client) {
+        LOG_INFO << "OnClientConnection conn=" << conn.get() << " memc_conn=" << memc_client->conn().get();
         if (conn->IsConnected()) {
             LOG_INFO << "OnClientConnection connect ok";
-            if (!memc_client->command_waiting_.empty()) {
+            while(!memc_client->command_waiting_.empty()) {
                 CommandPtr command(memc_client->command_waiting_.front());
                 memc_client->command_waiting_.pop();
+
                 memc_client->command_running_.push(command);
                 command->Launch(memc_client);
-
-                LOG_INFO << "OnClientConnection begin send data";
-                // conn->Send("set test1 0 3600 5 \r\n12345\r\n");
             }
         } else {
             LOG_INFO << "Disconnected from " << conn->remote_addr();
@@ -325,9 +329,13 @@ class MemcacheClientPool {
 
   private:
     void DoLaunchCommand(CommandPtr command) {
-        if (memc_clients.find(command->ServerAddr()) == memc_clients.end()) {
+        std::map<std::string, MemcacheClient *>::iterator it = memc_clients_.find(command->ServerAddr());
+
+        if (it == memc_clients_.end()) {
             evpp::TCPClient * tcp_client = new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(100), command->ServerAddr(), "MemcacheBinaryClient");
             MemcacheClient * memc_client = new MemcacheClient(tcp_client);
+            LOG_INFO << "DoLaunchCommand new tcp_client=" << tcp_client << " memc_client=" << memc_client;
+
             BinaryCodec* codec = new BinaryCodec(memc_client);
 
             tcp_client->SetConnectionCallback(std::bind(&MemcacheClientPool::OnClientConnection, std::placeholders::_1, memc_client));
@@ -335,21 +343,25 @@ class MemcacheClientPool {
                                          std::placeholders::_2, std::placeholders::_3));
             tcp_client->Connect();
 
-            memc_clients[command->ServerAddr()] = memc_client;
+            memc_clients_[command->ServerAddr()] = memc_client;
 
             memc_client->command_waiting_.push(command);
             return;
         }
-
-        command->Launch(memc_clients[command->ServerAddr()]);
+        if (!it->second->conn() || !it->second->conn()->IsConnected()) {
+            it->second->command_waiting_.push(command);
+            return;
+        }
+        it->second->command_running_.push(command);
+        command->Launch(it->second);
     }
 
-    thread_local static std::map<std::string, MemcacheClient *> memc_clients;
+    thread_local static std::map<std::string, MemcacheClient *> memc_clients_;
     evpp::EventLoop loop_;
     evpp::EventLoopThreadPool loop_pool_;
 };
 
-thread_local std::map<std::string, MemcacheClient *> MemcacheClientPool::memc_clients;
+thread_local std::map<std::string, MemcacheClient *> MemcacheClientPool::memc_clients_;
 
 static void OnTestSetDone(int code, const std::string key) {
     LOG_INFO << "OnTestSetDone " << code << " " << key;
@@ -375,17 +387,28 @@ namespace evloop
     }
 }
 
+// int main() {
 TEST_UNIT(testMemcacheClient) {
     std::thread th(evloop::MyEventThread);
 
     MemcacheClientPool mcp(16);
-    // mcp.AsyncSet(evloop::g_loop, "test1", "test1_value", &OnTestSetDone);
-    for(size_t i = 0; i < 100; ++i) {
-        mcp.AsyncGet(evloop::g_loop, "test1", &OnTestGetDone);
+
+    for(size_t i = 0; i < 10; i += 2) {
+        std::stringstream ss_key;
+        ss_key << "test" << i;
+        std::stringstream ss_value;
+        ss_value << "test_value" << i;
+        mcp.AsyncSet(evloop::g_loop, ss_key.str(), ss_value.str(), &OnTestSetDone);
+    }
+    for(size_t i = 0; i < 10; ++i) {
+        std::stringstream ss;
+        ss << "test" << i;
+        mcp.AsyncGet(evloop::g_loop, ss.str().c_str(), &OnTestGetDone);
     }
 
     evloop::g_loop->RunAfter(1000.0, &evloop::StopLoop);
     th.join();
     // usleep(100*1000);
+    // return 0;
 }
 
