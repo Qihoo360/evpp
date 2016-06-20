@@ -37,21 +37,87 @@ typedef std::function<void(const std::string key, int code)> SetCallback;
 typedef std::function<void(const std::string key, int code)> RemoveCallback;
 typedef std::function<void(MultiGetResult result)> MultiGetCallback;
 
+/*
+int vbucket_get_vbucket_by_key(VBUCKET_CONFIG_HANDLE vb, const void *key, size_t nkey) {
+    uint32_t digest = libhashkit_digest(key, nkey, vb->hk_algorithm);
+    return digest % vb->num_vbuckets;
+    //return digest & vb->mask;
+}
+
+
+uint32_t libhashkit_digest(const char *key, size_t key_length, hashkit_hash_algorithm_t hash_algorithm)
+{
+  switch (hash_algorithm)
+  {
+  case HASHKIT_HASH_DEFAULT:
+    return libhashkit_one_at_a_time(key, key_length);
+  case HASHKIT_HASH_MD5:
+    return libhashkit_md5(key, key_length);
+  case HASHKIT_HASH_CRC:
+    return libhashkit_crc32(key, key_length);
+  case HASHKIT_HASH_FNV1_64:
+    return libhashkit_fnv1_64(key, key_length);
+  case HASHKIT_HASH_FNV1A_64:
+    return libhashkit_fnv1a_64(key, key_length);
+  case HASHKIT_HASH_FNV1_32:
+    return libhashkit_fnv1_32(key, key_length);
+  case HASHKIT_HASH_FNV1A_32:
+    return libhashkit_fnv1a_32(key, key_length);
+  case HASHKIT_HASH_HSIEH:
+#ifdef HAVE_HSIEH_HASH
+    return libhashkit_hsieh(key, key_length);
+#else
+    return 1;
+#endif
+  case HASHKIT_HASH_MURMUR:
+    return libhashkit_murmur(key, key_length);
+  case HASHKIT_HASH_JENKINS:
+    return libhashkit_jenkins(key, key_length);
+  case HASHKIT_HASH_CUSTOM:
+  case HASHKIT_HASH_MAX:
+  default:
+#ifdef HAVE_DEBUG
+    fprintf(stderr, "hashkit_hash_t was extended but libhashkit_generate_value was not updated\n");
+    fflush(stderr);
+    assert(0);
+#endif
+    break;
+  }
+
+  return 1;
+}
+
+
+uint32_t libhashkit_md5(const char *key, size_t key_length)
+{
+  return hashkit_md5(key, key_length, NULL);
+}
+
+uint32_t hashkit_md5(const char *key, size_t key_length, void *context __attribute__((unused)))
+{
+  unsigned char results[16];
+
+  md5_signature((unsigned char*)key, (unsigned int)key_length, results); // 这一步计算MD5
+
+  return ((uint32_t) (results[3] & 0xFF) << 24)
+    | ((uint32_t) (results[2] & 0xFF) << 16)
+    | ((uint32_t) (results[1] & 0xFF) << 8)
+    | (results[0] & 0xFF);
+}
+*/
+
 class MemcacheClient;
 class Command  : public std::enable_shared_from_this<Command> {
-  public:
-    Command(EventLoopPtr ev_loop) : ev_loop_(ev_loop) {
+public:
+    Command(EventLoopPtr evloop) : ev_loop_(evloop), id_(0), thread_hash_(rand()) {
+        vbucket_id_ = 0;
     }
     virtual BufferPtr RequestBuffer() const = 0;
 
-    uint32_t id() const { return id_; }
-    uint32_t id_; // multiget 只有一个id,这样可以避免
-    EventLoopPtr ev_loop_;
-
-    GetCallback get_callback_;
-    MultiGetCallback mget_callback_;
-    SetCallback set_callback_;
-    RemoveCallback remove_callback_;
+    uint32_t id() const { return id_; }  // 并非全局id，只是各个memc_client内部的序号
+    uint32_t thread_hash() const { return thread_hash_; }
+    uint16_t vbucket_id() const { return vbucket_id_; }
+    EventLoopPtr ev_loop() const { return ev_loop_; }
 
     std::string ServerAddr() const {
         // const static std::string test_addr = "127.0.0.1:11611";
@@ -66,20 +132,30 @@ class Command  : public std::enable_shared_from_this<Command> {
     virtual void OnGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& value) {}
     virtual void OnMultiGetCommandOneResponse(uint32_t cmd_id, int memcached_response_code, const std::string& key, const std::string& value) {}
     virtual void OnMultiGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& key, const std::string& value) {}
+
+  protected:
+    GetCallback get_callback_;
+    MultiGetCallback mget_callback_;
+    SetCallback set_callback_;
+    RemoveCallback remove_callback_;
+
+private:
+    EventLoopPtr ev_loop_;
+    uint32_t id_; // multiget 只有一个id,这样可以避免
+    uint32_t thread_hash_;
+    uint16_t vbucket_id_;
 };
 
 
 typedef std::shared_ptr<Command> CommandPtr;
 
 class SetCommand  : public Command {
-  public:
-    SetCommand(EventLoopPtr ev_loop, const char* key, const char * value, size_t val_len, uint32_t flags, uint32_t expire)
-           : Command(ev_loop), key_(key), value_(value, val_len), flags_(flags), expire_(expire) {}
-    std::string key_;
-    std::string value_;
-    uint32_t flags_;
-    uint32_t expire_;
-
+public:
+    SetCommand(EventLoopPtr evloop, const char* key, const char * value, size_t val_len,
+               uint32_t flags, uint32_t expire, SetCallback callback)
+           : Command(evloop), key_(key), value_(value, val_len), flags_(flags), expire_(expire) {
+        set_callback_ = callback;
+    }
     virtual BufferPtr RequestBuffer() const {
         protocol_binary_request_header req;
         bzero((void*)&req, sizeof(req));
@@ -89,7 +165,8 @@ class SetCommand  : public Command {
         req.request.keylen = htons(key_.size());
         req.request.extlen = 8;
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-        req.request.opaque   = id_;
+        req.request.vbucket  = vbucket_id();
+        req.request.opaque   = id();
         size_t bodylen = req.request.extlen + key_.size() + value_.size();
         req.request.bodylen = htonl(static_cast<uint32_t>(bodylen));
 
@@ -103,19 +180,28 @@ class SetCommand  : public Command {
         return buf;
     }
     virtual void OnSetCommandDone(uint32_t cmd_id, int memcached_response_code) {
-        if (ev_loop_) {
-            ev_loop_->RunInLoop(std::bind(set_callback_,
+        if (ev_loop()) {
+            ev_loop()->RunInLoop(std::bind(set_callback_,
                         key_, memcached_response_code));
         } else {
             set_callback_(key_, memcached_response_code);
         }
     }
+private:
+    std::string key_;
+    std::string value_;
+    uint32_t flags_;
+    uint32_t expire_;
+
 };
 
 class GetCommand  : public Command {
-  public:
-    GetCommand(EventLoopPtr ev_loop, const char* key) : Command(ev_loop), key_(key) {}
-    std::string key_;
+public:
+    GetCommand(EventLoopPtr evloop, const char* key, GetCallback callback) 
+            : Command(evloop)
+            , key_(key) {
+        get_callback_ = callback;
+    }
 
     virtual BufferPtr RequestBuffer() const {
         protocol_binary_request_header req;
@@ -125,7 +211,8 @@ class GetCommand  : public Command {
         req.request.opcode = PROTOCOL_BINARY_CMD_GET;
         req.request.keylen = htons(key_.size());
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-        req.request.opaque   = id_;
+        req.request.vbucket  = vbucket_id();
+        req.request.opaque   = id();
         req.request.bodylen = htonl(key_.size());
 
         BufferPtr buf(new evpp::Buffer(sizeof(protocol_binary_request_header) + key_.size()));
@@ -135,23 +222,24 @@ class GetCommand  : public Command {
         return buf;
     }
     virtual void OnGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& value) {
-        if (ev_loop_) {
-            ev_loop_->RunInLoop(std::bind(get_callback_, key_,
+        if (ev_loop()) {
+            ev_loop()->RunInLoop(std::bind(get_callback_, key_,
                         GetResult(memcached_response_code, value)));
         } else {
             get_callback_(key_, GetResult(memcached_response_code, value));
         }
     }
+private:
+    std::string key_;
 };
 
 
 class MultiGetCommand  : public Command {
-  public:
-    MultiGetCommand(EventLoopPtr ev_loop, const std::vector<std::string>& keys)
-            : Command(ev_loop), keys_(keys) {
+public:
+    MultiGetCommand(EventLoopPtr evloop, const std::vector<std::string>& keys, MultiGetCallback callback)
+            : Command(evloop), keys_(keys) {
+        mget_callback_ = callback;
     }
-    std::vector<std::string> keys_;
-    MultiGetResult mget_result_;
 
     virtual BufferPtr RequestBuffer() const {
         BufferPtr buf(new evpp::Buffer(50 * keys_.size()));  // 预分配长度多数情况够长
@@ -167,7 +255,8 @@ class MultiGetCommand  : public Command {
             }
             req.request.keylen   = htons(keys_[i].size());
             req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-            req.request.opaque   = id_;
+            req.request.vbucket  = vbucket_id();
+            req.request.opaque   = id();
             req.request.bodylen  = htonl(keys_[i].size());
 
             buf->Append((void*)&req, sizeof(req));
@@ -181,8 +270,8 @@ class MultiGetCommand  : public Command {
             mget_result_[key] = GetResult(memcached_response_code, value);
         }
 
-        if (ev_loop_) {
-            ev_loop_->RunInLoop(std::bind(mget_callback_, mget_result_));
+        if (ev_loop()) {
+            ev_loop()->RunInLoop(std::bind(mget_callback_, mget_result_));
         } else {
             mget_callback_(mget_result_);
         }
@@ -193,13 +282,17 @@ class MultiGetCommand  : public Command {
             mget_result_[key] = GetResult(memcached_response_code, value);
         }
     }
+private:
+    std::vector<std::string> keys_;
+    MultiGetResult mget_result_;
 };
 
 class RemoveCommand  : public Command {
-  public:
-    RemoveCommand(EventLoopPtr ev_loop, const char* key)
-           : Command(ev_loop), key_(key) {}
-    std::string key_;
+public:
+    RemoveCommand(EventLoopPtr evloop, const char* key, RemoveCallback callback)
+           : Command(evloop), key_(key) {
+        remove_callback_ = callback;
+    }
 
     virtual BufferPtr RequestBuffer() const {
         protocol_binary_request_header req;
@@ -209,7 +302,8 @@ class RemoveCommand  : public Command {
         req.request.opcode = PROTOCOL_BINARY_CMD_DELETE;
         req.request.keylen = htons(key_.size());
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-        req.request.opaque   = id_;
+        req.request.vbucket  = vbucket_id();
+        req.request.opaque   = id();
         req.request.bodylen = htonl(static_cast<uint32_t>(key_.size()));
 
         BufferPtr buf(new evpp::Buffer(sizeof(protocol_binary_request_header) + key_.size()));
@@ -219,12 +313,14 @@ class RemoveCommand  : public Command {
         return buf;
     }
     virtual void OnRemoveCommandDone(uint32_t cmd_id, int memcached_response_code) {
-        if (ev_loop_) {
-            ev_loop_->RunInLoop(std::bind(remove_callback_, key_, memcached_response_code));
+        if (ev_loop()) {
+            ev_loop()->RunInLoop(std::bind(remove_callback_, key_, memcached_response_code));
         } else {
             remove_callback_(key_, memcached_response_code);
         }
     }
+private:
+    std::string key_;
 };
 
 
@@ -273,8 +369,9 @@ private:
 };
 
 class MemcacheClient {
-  public:
-    MemcacheClient(evpp::TCPClient * tcp_client) : tcp_client_(tcp_client) {}
+public:
+    MemcacheClient(evpp::TCPClient * tcp_client) : tcp_client_(tcp_client) {
+    }
 
     void push_running_command(CommandPtr cmd) {
         if (cmd) {
@@ -315,8 +412,7 @@ class MemcacheClient {
     evpp::TCPConnPtr conn() const { return tcp_client_->conn();}
 
     void EmbededAsyncGet(const char* key, GetCallback callback) {
-        CommandPtr command(new GetCommand(EventLoopPtr(), key));
-        command->get_callback_ = callback;
+        CommandPtr command(new GetCommand(EventLoopPtr(), key, callback));
         command->Launch(this);
     }
 
@@ -324,11 +420,11 @@ class MemcacheClient {
     uint32_t last_command_id() { return last_command_id_; }
     void set_last_command_id(uint32_t cmd_id) { last_command_id_ = cmd_id; }
 
-  private:
+private:
     // noncopyable
     MemcacheClient(const MemcacheClient&);
     const MemcacheClient& operator=(const MemcacheClient&);
-  private:
+private:
     std::atomic_uint id_seq_;
     uint32_t last_command_id_;
 
@@ -347,10 +443,12 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
         case PROTOCOL_BINARY_CMD_SET:
             cmd = memc_client_->pop_running_command();
             cmd->OnSetCommandDone(id, resp.response.status);
+            LOG_DEBUG << "DELETE, opaque=" << id;
             break;
         case PROTOCOL_BINARY_CMD_DELETE:
             cmd = memc_client_->pop_running_command();
             cmd->OnRemoveCommandDone(id, resp.response.status);
+            LOG_DEBUG << "DELETE, opaque=" << id;
             break;
         case PROTOCOL_BINARY_CMD_GET:
             {
@@ -358,6 +456,7 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
                 std::string value(pv, resp.response.bodylen - resp.response.extlen);
                 cmd = memc_client_->pop_running_command();
                 cmd->OnGetCommandDone(id, resp.response.status, value);
+                LOG_DEBUG << "GET, opaque=" << id;
             }
             break;
         case PROTOCOL_BINARY_CMD_GETK:
@@ -368,6 +467,7 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 
                 cmd = memc_client_->pop_running_command();
                 cmd->OnMultiGetCommandDone(id, resp.response.status, key, value);
+                LOG_DEBUG << "GETK, opaque=" << id << " key=" << key;
             }
             break;
         case PROTOCOL_BINARY_CMD_GETKQ:
@@ -378,7 +478,7 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 
                 cmd = memc_client_->peek_running_command();
                 cmd->OnMultiGetCommandOneResponse(id, resp.response.status, key, value);
-                //LOG_DEBUG << "GETQ, opaque=" << id << " value=" << value;
+                LOG_DEBUG << "GETKQ, opaque=" << id << " key=" << key;
             }
             break;
         case PROTOCOL_BINARY_CMD_NOOP:
@@ -394,7 +494,6 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 
 void Command::Launch(MemcacheClient * memc_client) {
     id_ = memc_client->next_id();
-
     if (!memc_client->conn()) {
         LOG_ERROR << "Command bad memc_client " << memc_client << " id=" << id_;
         return;
@@ -404,7 +503,7 @@ void Command::Launch(MemcacheClient * memc_client) {
 }
 
 class MemcacheClientPool {
-  public:
+public:
     MemcacheClientPool(int conncurrency) : loop_pool_(&loop_, conncurrency) {
         loop_pool_.Start(true);
     }
@@ -417,38 +516,34 @@ class MemcacheClientPool {
     }
     void AsyncSet(EventLoopPtr ev_loop, const char* key, const char* value, size_t val_len, uint32_t flags,
                   uint32_t expire, SetCallback callback) {
-        CommandPtr command(new SetCommand(ev_loop, key, value, val_len , flags, expire));
-        command->set_callback_ = callback;
+        CommandPtr command(new SetCommand(ev_loop, key, value, val_len , flags, expire, callback));
 
         ev_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
     }
 
     void AsyncRemove(EventLoopPtr ev_loop, const char* key, RemoveCallback callback) {
-        CommandPtr command(new RemoveCommand(ev_loop, key));
-        command->remove_callback_ = callback;
+        CommandPtr command(new RemoveCommand(ev_loop, key, callback));
 
         ev_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
     }
 
     void AsyncGet(EventLoopPtr ev_loop, const char* key, GetCallback callback) {
-        CommandPtr command(new GetCommand(ev_loop, key));
-        command->get_callback_ = callback;
+        CommandPtr command(new GetCommand(ev_loop, key, callback));
 
         ev_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
     }
 
     void AsyncMultiGet(EventLoopPtr ev_loop, const std::vector<std::string>& keys, MultiGetCallback callback) {
         LOG_INFO << "AsyncMultiGet keys=" << keys.size();
-        CommandPtr command(new MultiGetCommand(ev_loop, keys));
-        command->mget_callback_ = callback;
+        CommandPtr command(new MultiGetCommand(ev_loop, keys, callback));
         ev_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
     }
-  private:
+private:
     // noncopyable
     MemcacheClientPool(const MemcacheClientPool&);
     const MemcacheClientPool& operator=(const MemcacheClientPool&);
 
-  private:
+private:
     static void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClient* memc_client) {
         LOG_INFO << "OnClientConnection conn=" << conn.get() << " memc_conn=" << memc_client->conn().get();
         if (conn->IsConnected()) {
@@ -465,15 +560,15 @@ class MemcacheClientPool {
 
     void LaunchCommand(CommandPtr command) {
         LOG_INFO << "LaunchCommand";
-        loop_pool_.GetNextLoopWithHash(command->id())->RunInLoop(std::bind(&MemcacheClientPool::DoLaunchCommand, this, command));
+        loop_pool_.GetNextLoopWithHash(command->thread_hash())->RunInLoop(std::bind(&MemcacheClientPool::DoLaunchCommand, this, command));
     }
 
-  private:
+private:
     void DoLaunchCommand(CommandPtr command) {
         std::map<std::string, MemcacheClient *>::iterator it = memc_clients_.find(command->ServerAddr());
 
         if (it == memc_clients_.end()) {
-            evpp::TCPClient * tcp_client = new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(command->id()), command->ServerAddr(), "MemcacheBinaryClient");
+            evpp::TCPClient * tcp_client = new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(command->thread_hash()), command->ServerAddr(), "MemcacheBinaryClient");
             MemcacheClient * memc_client = new MemcacheClient(tcp_client);
             LOG_INFO << "DoLaunchCommand new tcp_client=" << tcp_client << " memc_client=" << memc_client;
 
@@ -539,10 +634,11 @@ namespace evloop
 
 // int main() {
 TEST_UNIT(testMemcacheClient) {
+    srand(time(NULL));
     std::thread th(evloop::MyEventThread);
-    MemcacheClientPool mcp(4);
+    MemcacheClientPool mcp(32);
 
-    const static int MAX_KEY = 10;
+    const static int MAX_KEY = 10000;
 
 #if 1
     for(size_t i = 0; i < MAX_KEY; i += 2) {
@@ -564,6 +660,9 @@ TEST_UNIT(testMemcacheClient) {
         std::stringstream ss;
         ss << "test" << i;
         mget_keys.push_back(ss.str());
+        if (mget_keys.size() >= 100) {
+            break;
+        }
     }
     mcp.AsyncMultiGet(evloop::g_loop, mget_keys, &OnTestMultiGetDone);
 
@@ -578,4 +677,5 @@ TEST_UNIT(testMemcacheClient) {
     th.join();
     // return 0;
 }
+
 
