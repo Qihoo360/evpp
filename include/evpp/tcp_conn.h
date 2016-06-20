@@ -42,8 +42,8 @@ namespace evpp {
 
         void OnAttachedToLoop();
     public:
-        void SetMesageHandler(MessageCallback cb) { msg_fn_ = cb; }
-        void SetConnectionHandler(ConnectionCallback cb) { conn_fn_ = cb; }
+        void SetMesageCallback(MessageCallback cb) { msg_fn_ = cb; }
+        void SetConnectionCallback(ConnectionCallback cb) { conn_fn_ = cb; }
         void SetCloseCallback(CloseCallback cb) { close_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
 

@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
     std::string addr = std::string("0.0.0.0:") + port;
     evpp::EventLoop loop;
     evpp::TCPServer server(&loop, addr, "TCPEcho", 1);
-    server.SetMesageHandler(&OnMessage);
+    server.SetMesageCallback(&OnMessage);
     server.Start();
     loop.Run();
     return 0;
