@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     }
     evpp::EventLoop loop;
     evpp::TCPServer server(&loop, addr, "TCPPingPongServer", thread_num);
-    server.SetMesageHandler(&OnMessage);
+    server.SetMesageCallback(&OnMessage);
     server.Start();
     loop.Run();
     return 0;

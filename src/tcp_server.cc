@@ -64,7 +64,7 @@ namespace evpp {
 
         TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
         assert(conn->type() == TCPConn::kIncoming);
-        conn->SetMesageHandler(msg_fn_);
+        conn->SetMesageCallback(msg_fn_);
         conn->SetCloseCallback(std::bind(&TCPServer::RemoveConnection, this, std::placeholders::_1));
         io_loop->RunInLoop(std::bind(&TCPConn::OnAttachedToLoop, conn.get()));
         connections_[n] = conn;
