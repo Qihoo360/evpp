@@ -686,7 +686,7 @@ private:
             BinaryCodec* codec = new BinaryCodec(memc_client);
 
             tcp_client->SetConnectionCallback(std::bind(&MemcacheClientPool::OnClientConnection, std::placeholders::_1, memc_client));
-            tcp_client->SetMesageHandler(std::bind(&BinaryCodec::OnCodecMessage, codec, std::placeholders::_1,
+            tcp_client->SetMesageCallback(std::bind(&BinaryCodec::OnCodecMessage, codec, std::placeholders::_1,
                                          std::placeholders::_2, std::placeholders::_3));
             tcp_client->Connect();
 
