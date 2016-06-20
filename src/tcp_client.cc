@@ -62,8 +62,8 @@ namespace evpp {
         loop_->AssertInLoopThread();
         TCPConnPtr c = TCPConnPtr(new TCPConn(loop_, name_, sockfd, laddr, remote_addr_));
         c->set_type(TCPConn::kOutgoing);
-        c->SetMesageHandler(msg_fn_);
-        c->SetConnectionHandler(conn_fn_);
+        c->SetMesageCallback(msg_fn_);
+        c->SetConnectionCallback(conn_fn_);
         c->SetCloseCallback(std::bind(&TCPClient::OnRemoveConnection, this, std::placeholders::_1));
         c->OnAttachedToLoop();
 
