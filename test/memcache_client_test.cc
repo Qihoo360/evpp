@@ -44,6 +44,7 @@ class Command  : public std::enable_shared_from_this<Command> {
     }
     virtual BufferPtr RequestBuffer() const = 0;
 
+    uint32_t id() const { return id_; }
     uint32_t id_; // multiget 只有一个id,这样可以避免
     EventLoopPtr ev_loop_;
 
@@ -60,11 +61,11 @@ class Command  : public std::enable_shared_from_this<Command> {
 
     void Launch(MemcacheClient * memc_client);
 
-    virtual void OnSetCommandDone(uint32_t id, int memcached_response_code) {}
-    virtual void OnRemoveCommandDone(uint32_t id, int memcached_response_code) {}
-    virtual void OnGetCommandDone(uint32_t id, int memcached_response_code, const std::string& value) {}
-    virtual void OnMultiGetCommandOneResponse(uint32_t id, int memcached_response_code, const std::string& key, const std::string& value) {}
-    virtual void OnMultiGetCommandDone(uint32_t id, int memcached_response_code, const std::string& key, const std::string& value) {}
+    virtual void OnSetCommandDone(uint32_t cmd_id, int memcached_response_code) {}
+    virtual void OnRemoveCommandDone(uint32_t cmd_id, int memcached_response_code) {}
+    virtual void OnGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& value) {}
+    virtual void OnMultiGetCommandOneResponse(uint32_t cmd_id, int memcached_response_code, const std::string& key, const std::string& value) {}
+    virtual void OnMultiGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& key, const std::string& value) {}
 };
 
 
@@ -101,7 +102,7 @@ class SetCommand  : public Command {
 
         return buf;
     }
-    virtual void OnSetCommandDone(uint32_t id, int memcached_response_code) {
+    virtual void OnSetCommandDone(uint32_t cmd_id, int memcached_response_code) {
         if (ev_loop_) {
             ev_loop_->RunInLoop(std::bind(set_callback_,
                         key_, memcached_response_code));
@@ -133,7 +134,7 @@ class GetCommand  : public Command {
 
         return buf;
     }
-    virtual void OnGetCommandDone(uint32_t id, int memcached_response_code, const std::string& value) {
+    virtual void OnGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& value) {
         if (ev_loop_) {
             ev_loop_->RunInLoop(std::bind(get_callback_, key_,
                         GetResult(memcached_response_code, value)));
@@ -175,7 +176,7 @@ class MultiGetCommand  : public Command {
 
         return buf;
     }
-    virtual void OnMultiGetCommandDone(uint32_t id, int memcached_response_code, const std::string& key, const std::string& value) {
+    virtual void OnMultiGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& key, const std::string& value) {
         if (memcached_response_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
             mget_result_[key] = GetResult(memcached_response_code, value);
         }
@@ -186,7 +187,7 @@ class MultiGetCommand  : public Command {
             mget_callback_(mget_result_);
         }
     }
-    virtual void OnMultiGetCommandOneResponse(uint32_t id, int memcached_response_code, const std::string& key, const std::string& value) {
+    virtual void OnMultiGetCommandOneResponse(uint32_t cmd_id, int memcached_response_code, const std::string& key, const std::string& value) {
         LOG_INFO << "OnMultiGetCommandOneResponse " << key << " " << memcached_response_code << " " << value;
         if (memcached_response_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
             mget_result_[key] = GetResult(memcached_response_code, value);
@@ -217,7 +218,7 @@ class RemoveCommand  : public Command {
 
         return buf;
     }
-    virtual void OnRemoveCommandDone(uint32_t id, int memcached_response_code) {
+    virtual void OnRemoveCommandDone(uint32_t cmd_id, int memcached_response_code) {
         if (ev_loop_) {
             ev_loop_->RunInLoop(std::bind(remove_callback_, key_, memcached_response_code));
         } else {
@@ -321,7 +322,7 @@ class MemcacheClient {
 
     uint32_t next_id() { return ++id_seq_; }
     uint32_t last_command_id() { return last_command_id_; }
-    void set_last_command_id(uint32_t id) { last_command_id_ = id; }
+    void set_last_command_id(uint32_t cmd_id) { last_command_id_ = cmd_id; }
 
   private:
     // noncopyable
@@ -464,7 +465,7 @@ class MemcacheClientPool {
 
     void LaunchCommand(CommandPtr command) {
         LOG_INFO << "LaunchCommand";
-        loop_pool_.GetNextLoopWithHash(100)->RunInLoop(std::bind(&MemcacheClientPool::DoLaunchCommand, this, command));
+        loop_pool_.GetNextLoopWithHash(command->id())->RunInLoop(std::bind(&MemcacheClientPool::DoLaunchCommand, this, command));
     }
 
   private:
@@ -472,7 +473,7 @@ class MemcacheClientPool {
         std::map<std::string, MemcacheClient *>::iterator it = memc_clients_.find(command->ServerAddr());
 
         if (it == memc_clients_.end()) {
-            evpp::TCPClient * tcp_client = new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(100), command->ServerAddr(), "MemcacheBinaryClient");
+            evpp::TCPClient * tcp_client = new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(command->id()), command->ServerAddr(), "MemcacheBinaryClient");
             MemcacheClient * memc_client = new MemcacheClient(tcp_client);
             LOG_INFO << "DoLaunchCommand new tcp_client=" << tcp_client << " memc_client=" << memc_client;
 
