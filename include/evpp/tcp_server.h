@@ -6,7 +6,6 @@
 #include "evpp/tcp_callbacks.h"
 
 #include <map>
-#include <atomic>
 
 namespace evpp {
     class Listener;
@@ -24,7 +23,7 @@ namespace evpp {
         ~TCPServer();
         bool Start();
         void Stop();
-        void SetMesageHandler(MessageCallback cb) {
+        void SetMesageCallback(MessageCallback cb) {
             msg_fn_ = cb;
         }
         void SetThreadDispatchPolicy(ThreadDispatchPolicy v) {

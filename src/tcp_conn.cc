@@ -49,16 +49,26 @@ namespace evpp {
     }
 
     void TCPConn::Send(const std::string& d) {
-        return Send(d.data(), d.size());
+        if (status_ != kConnected) {
+            return;
+        }
+
+        if (loop_->IsInLoopThread()) {
+            SendInLoop(d);
+        } else {
+            loop_->RunInLoop(std::bind(&TCPConn::SendStringInLoop, shared_from_this(), d));
+        }
     }
 
     void TCPConn::Send(const Slice& message) {
-        if (status_ == kConnected) {
-            if (loop_->IsInLoopThread()) {
-                SendInLoop(message);
-            } else {
-                loop_->RunInLoop(std::bind(&TCPConn::SendStringInLoop, shared_from_this(), message.ToString()));
-            }
+        if (status_ != kConnected) {
+            return;
+        }
+
+        if (loop_->IsInLoopThread()) {
+            SendInLoop(message);
+        } else {
+            loop_->RunInLoop(std::bind(&TCPConn::SendStringInLoop, shared_from_this(), message.ToString()));
         }
     }
 
@@ -67,13 +77,15 @@ namespace evpp {
     }
 
     void TCPConn::Send(Buffer* buf) {
-        if (status_ == kConnected) {
-            if (loop_->IsInLoopThread()) {
-                SendInLoop(buf->data(), buf->length());
-                buf->NextAll();
-            } else {
-                loop_->RunInLoop(std::bind(&TCPConn::SendStringInLoop, this, buf->NextAllString()));
-            }
+        if (status_ != kConnected) {
+            return;
+        }
+
+        if (loop_->IsInLoopThread()) {
+            SendInLoop(buf->data(), buf->length());
+            buf->NextAll();
+        } else {
+            loop_->RunInLoop(std::bind(&TCPConn::SendStringInLoop, this, buf->NextAllString()));
         }
     }
 
@@ -145,8 +157,8 @@ namespace evpp {
     }
 
     void TCPConn::OnAttachedToLoop() {
-        status_ = kConnected;
         loop_->AssertInLoopThread();
+        status_ = kConnected;
         chan_->AttachToLoop();
         chan_->EnableReadEvent();
         if (conn_fn_) {
