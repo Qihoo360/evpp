@@ -17,11 +17,12 @@ namespace {
 
 // TODO 
 // - error handling: conn, timeout
-// - server addr hash
+// - server addr hash / vbucket
 // - embeded & standalone
 
 typedef std::shared_ptr<evpp::Buffer> BufferPtr;
 typedef std::shared_ptr<evpp::EventLoop> EventLoopPtr;
+typedef std::shared_ptr<evpp::TCPClient> TcpClientPtr;
 
 struct GetResult {
     GetResult() : code(-1) {}
@@ -30,7 +31,10 @@ struct GetResult {
     std::string value;
 };
 
-typedef std::map<std::string, GetResult> MultiGetResult;
+struct MultiGetResult {
+    int code;
+    std::map<std::string, GetResult> get_result_map_;
+};
 
 typedef std::function<void(const std::string key, GetResult result)> GetCallback;
 typedef std::function<void(const std::string key, int code)> SetCallback;
@@ -114,7 +118,7 @@ public:
     }
     virtual BufferPtr RequestBuffer() const = 0;
 
-    uint32_t id() const { return id_; }  // 并非全局id，只是各个memc_client内部的序号
+    uint32_t id() const { return id_; }
     uint32_t thread_hash() const { return thread_hash_; }
     uint16_t vbucket_id() const { return vbucket_id_; }
     EventLoopPtr ev_loop() const { return ev_loop_; }
@@ -125,23 +129,17 @@ public:
         return test_addr;
     }
 
-    void Launch(MemcacheClient * memc_client);
+    void Launch(MemcacheClient* memc_client);
 
-    virtual void OnSetCommandDone(uint32_t cmd_id, int memcached_response_code) {}
-    virtual void OnRemoveCommandDone(uint32_t cmd_id, int memcached_response_code) {}
-    virtual void OnGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& value) {}
-    virtual void OnMultiGetCommandOneResponse(uint32_t cmd_id, int memcached_response_code, const std::string& key, const std::string& value) {}
-    virtual void OnMultiGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& key, const std::string& value) {}
-
-  protected:
-    GetCallback get_callback_;
-    MultiGetCallback mget_callback_;
-    SetCallback set_callback_;
-    RemoveCallback remove_callback_;
+    virtual void OnSetCommandDone(uint32_t cmd_id, int resp_code) {}
+    virtual void OnRemoveCommandDone(uint32_t cmd_id, int resp_code) {}
+    virtual void OnGetCommandDone(uint32_t cmd_id, int resp_code, const std::string& value) {}
+    virtual void OnMultiGetCommandOneResponse(uint32_t cmd_id, int resp_code, const std::string& key, const std::string& value) {}
+    virtual void OnMultiGetCommandDone(uint32_t cmd_id, int resp_code, const std::string& key, const std::string& value) {}
 
 private:
     EventLoopPtr ev_loop_;
-    uint32_t id_; // multiget 只有一个id,这样可以避免
+    uint32_t id_;               // 并非全局id，只是各个memc_client内部的序号; mget的多个命令公用一个id
     uint32_t thread_hash_;
     uint16_t vbucket_id_;
 };
@@ -153,8 +151,9 @@ class SetCommand  : public Command {
 public:
     SetCommand(EventLoopPtr evloop, const char* key, const char * value, size_t val_len,
                uint32_t flags, uint32_t expire, SetCallback callback)
-           : Command(evloop), key_(key), value_(value, val_len), flags_(flags), expire_(expire) {
-        set_callback_ = callback;
+           : Command(evloop), key_(key), value_(value, val_len),
+             flags_(flags), expire_(expire),
+             set_callback_(callback) {
     }
     virtual BufferPtr RequestBuffer() const {
         protocol_binary_request_header req;
@@ -179,12 +178,12 @@ public:
 
         return buf;
     }
-    virtual void OnSetCommandDone(uint32_t cmd_id, int memcached_response_code) {
+    virtual void OnSetCommandDone(uint32_t cmd_id, int resp_code) {
         if (ev_loop()) {
             ev_loop()->RunInLoop(std::bind(set_callback_,
-                        key_, memcached_response_code));
+                        key_, resp_code));
         } else {
-            set_callback_(key_, memcached_response_code);
+            set_callback_(key_, resp_code);
         }
     }
 private:
@@ -192,15 +191,15 @@ private:
     std::string value_;
     uint32_t flags_;
     uint32_t expire_;
-
+    SetCallback set_callback_;
 };
 
 class GetCommand  : public Command {
 public:
     GetCommand(EventLoopPtr evloop, const char* key, GetCallback callback) 
             : Command(evloop)
-            , key_(key) {
-        get_callback_ = callback;
+            , key_(key)
+            , get_callback_(callback) {
     }
 
     virtual BufferPtr RequestBuffer() const {
@@ -221,24 +220,24 @@ public:
 
         return buf;
     }
-    virtual void OnGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& value) {
+    virtual void OnGetCommandDone(uint32_t cmd_id, int resp_code, const std::string& value) {
         if (ev_loop()) {
             ev_loop()->RunInLoop(std::bind(get_callback_, key_,
-                        GetResult(memcached_response_code, value)));
+                        GetResult(resp_code, value)));
         } else {
-            get_callback_(key_, GetResult(memcached_response_code, value));
+            get_callback_(key_, GetResult(resp_code, value));
         }
     }
 private:
     std::string key_;
+    GetCallback get_callback_;
 };
 
 
 class MultiGetCommand  : public Command {
 public:
     MultiGetCommand(EventLoopPtr evloop, const std::vector<std::string>& keys, MultiGetCallback callback)
-            : Command(evloop), keys_(keys) {
-        mget_callback_ = callback;
+            : Command(evloop), keys_(keys), mget_callback_(callback) {
     }
 
     virtual BufferPtr RequestBuffer() const {
@@ -265,9 +264,9 @@ public:
 
         return buf;
     }
-    virtual void OnMultiGetCommandDone(uint32_t cmd_id, int memcached_response_code, const std::string& key, const std::string& value) {
-        if (memcached_response_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-            mget_result_[key] = GetResult(memcached_response_code, value);
+    virtual void OnMultiGetCommandDone(uint32_t cmd_id, int resp_code, const std::string& key, const std::string& value) {
+        if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
+            mget_result_.get_result_map_[key] = GetResult(resp_code, value);
         }
 
         if (ev_loop()) {
@@ -276,22 +275,23 @@ public:
             mget_callback_(mget_result_);
         }
     }
-    virtual void OnMultiGetCommandOneResponse(uint32_t cmd_id, int memcached_response_code, const std::string& key, const std::string& value) {
-        LOG_INFO << "OnMultiGetCommandOneResponse " << key << " " << memcached_response_code << " " << value;
-        if (memcached_response_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-            mget_result_[key] = GetResult(memcached_response_code, value);
+    virtual void OnMultiGetCommandOneResponse(uint32_t cmd_id, int resp_code, const std::string& key, const std::string& value) {
+        LOG_INFO << "OnMultiGetCommandOneResponse " << key << " " << resp_code << " " << value;
+        if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
+            mget_result_.get_result_map_[key] = GetResult(resp_code, value);
         }
+        mget_result_.code = resp_code;
     }
 private:
     std::vector<std::string> keys_;
+    MultiGetCallback mget_callback_;
     MultiGetResult mget_result_;
 };
 
 class RemoveCommand  : public Command {
 public:
     RemoveCommand(EventLoopPtr evloop, const char* key, RemoveCallback callback)
-           : Command(evloop), key_(key) {
-        remove_callback_ = callback;
+           : Command(evloop), key_(key), remove_callback_(callback) {
     }
 
     virtual BufferPtr RequestBuffer() const {
@@ -312,15 +312,16 @@ public:
 
         return buf;
     }
-    virtual void OnRemoveCommandDone(uint32_t cmd_id, int memcached_response_code) {
+    virtual void OnRemoveCommandDone(uint32_t cmd_id, int resp_code) {
         if (ev_loop()) {
-            ev_loop()->RunInLoop(std::bind(remove_callback_, key_, memcached_response_code));
+            ev_loop()->RunInLoop(std::bind(remove_callback_, key_, resp_code));
         } else {
-            remove_callback_(key_, memcached_response_code);
+            remove_callback_(key_, resp_code);
         }
     }
 private:
     std::string key_;
+    RemoveCallback remove_callback_;
 };
 
 
@@ -428,7 +429,7 @@ private:
     std::atomic_uint id_seq_;
     uint32_t last_command_id_;
 
-    evpp::TCPClient * tcp_client_;
+    TcpClientPtr tcp_client_;
 
     std::queue<CommandPtr> running_command_;
     std::queue<CommandPtr> waiting_command_;
@@ -442,43 +443,67 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
     switch (opcode) {
         case PROTOCOL_BINARY_CMD_SET:
             cmd = memc_client_->pop_running_command();
+            // TODO : id 不一致时候，如何处理?
+            if (id != cmd->id()) {
+                LOG_WARN << "OnResponsePacket SET bad opaque " << id << ", cmd=" << cmd->id();
+                break;
+            }
             cmd->OnSetCommandDone(id, resp.response.status);
-            LOG_DEBUG << "DELETE, opaque=" << id;
+
+            LOG_DEBUG << "OnResponsePacket SET, opaque=" << id;
             break;
         case PROTOCOL_BINARY_CMD_DELETE:
             cmd = memc_client_->pop_running_command();
+            if (id != cmd->id()) {
+                LOG_WARN << "OnResponsePacket DELETE bad opaque " << id << ", cmd=" << cmd->id();
+                break;
+            }
             cmd->OnRemoveCommandDone(id, resp.response.status);
-            LOG_DEBUG << "DELETE, opaque=" << id;
+            LOG_DEBUG << "OnResponsePacket DELETE, opaque=" << id;
             break;
         case PROTOCOL_BINARY_CMD_GET:
             {
+                cmd = memc_client_->pop_running_command();
+                if (id != cmd->id()) {
+                    LOG_WARN << "OnResponsePacket GET bad opaque " << id << ", cmd=" << cmd->id();
+                    break;
+                }
                 const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
                 std::string value(pv, resp.response.bodylen - resp.response.extlen);
-                cmd = memc_client_->pop_running_command();
                 cmd->OnGetCommandDone(id, resp.response.status, value);
-                LOG_DEBUG << "GET, opaque=" << id;
+                LOG_DEBUG << "OnResponsePacket GET, opaque=" << id;
             }
             break;
         case PROTOCOL_BINARY_CMD_GETK:
             {
+                cmd = memc_client_->pop_running_command();
+                if (id != cmd->id()) {
+                    LOG_WARN << "OnResponsePacket GETK bad opaque " << id << ", cmd=" << cmd->id();
+                    break;
+                }
+
                 const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
                 std::string key(pv, resp.response.keylen);
                 std::string value(pv, resp.response.bodylen - resp.response.keylen - resp.response.extlen);
 
-                cmd = memc_client_->pop_running_command();
                 cmd->OnMultiGetCommandDone(id, resp.response.status, key, value);
-                LOG_DEBUG << "GETK, opaque=" << id << " key=" << key;
+                LOG_DEBUG << "OnResponsePacket GETK, opaque=" << id << " key=" << key;
             }
             break;
         case PROTOCOL_BINARY_CMD_GETKQ:
             {
+                cmd = memc_client_->peek_running_command();
+                if (id != cmd->id()) {
+                    LOG_WARN << "OnResponsePacket GETKQ bad opaque " << id << ", cmd=" << cmd->id();
+                    break;
+                }
+
                 const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
                 std::string key(pv, resp.response.keylen);
                 std::string value(pv, resp.response.bodylen - resp.response.keylen - resp.response.extlen);
 
-                cmd = memc_client_->peek_running_command();
                 cmd->OnMultiGetCommandOneResponse(id, resp.response.status, key, value);
-                LOG_DEBUG << "GETKQ, opaque=" << id << " key=" << key;
+                LOG_DEBUG << "OnResponsePacket GETKQ, opaque=" << id << " key=" << key;
             }
             break;
         case PROTOCOL_BINARY_CMD_NOOP:
@@ -610,8 +635,9 @@ static void OnTestRemoveDone(const std::string key, int code) {
     LOG_INFO << "------------- OnTestRemoveDone " << code << " " << key;
 }
 static void OnTestMultiGetDone(MultiGetResult res) {
-    MultiGetResult::const_iterator it = res.begin();
-    for(; it != res.end(); ++it) {
+    LOG_INFO << ">>>>>>>>>>>>> OnTestMultiGetDone code=" << res.code;
+    std::map<std::string, GetResult>::const_iterator it = res.get_result_map_.begin();
+    for(; it != res.get_result_map_.end(); ++it) {
         LOG_INFO << ">>>>>>>>>>>>> OnTestMultiGetDone " << it->first << " " << it->second.code << " " << it->second.value;
     }
 }
