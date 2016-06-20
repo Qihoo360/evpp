@@ -39,12 +39,9 @@ namespace evpp {
         void Send(const std::string& d);
         void Send(const Slice& message);
         void Send(Buffer* buf);
-
-        void OnAttachedToLoop();
     public:
         void SetMesageCallback(MessageCallback cb) { msg_fn_ = cb; }
         void SetConnectionCallback(ConnectionCallback cb) { conn_fn_ = cb; }
-        void SetCloseCallback(CloseCallback cb) { close_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
 
         void set_context(const Any& c) { context_ = c; }
@@ -59,6 +56,13 @@ namespace evpp {
         Status status() const { return status_; }
         void set_status(Status s) { status_ = s; }
         void set_closing_delay_for_incoming_conn(Duration d) { closing_delay_for_incoming_conn_ = d; }
+    private:
+        // class TCPClient and TCPServer need to call SetCloseCallback and OnAttachedToLoop
+        // but we don't want any other users to call these two functions.
+        friend class TCPClient;
+        friend class TCPServer;
+        void SetCloseCallback(CloseCallback cb) { close_fn_ = cb; }
+        void OnAttachedToLoop();
     private:
         void HandleRead(Timestamp recv_time);
         void HandleWrite();
