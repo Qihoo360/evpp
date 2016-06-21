@@ -37,10 +37,10 @@ TEST_UNIT(testInvokerTimerCancel) {
     loop->RunAfter(delay, &Close);
     evpp::InvokeTimerPtr timer = loop->RunAfter(delay, &Handle);
     usleep(cancel_delay.Microseconds());
-    //timer->Cancel();
+    timer->Cancel();
     th.join();
     evpp::Duration cost = evpp::Timestamp::Now() - start;
     H_TEST_ASSERT(delay <= cost);
-    H_TEST_ASSERT(g_event_handler_called);
+    H_TEST_ASSERT(!g_event_handler_called);
 }
 
