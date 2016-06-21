@@ -39,6 +39,7 @@ namespace evpp {
         EventWatcher(struct event_base* evbase, const Handler& handler);
 
         void Close();
+        void FreeEvent();
 
         virtual bool DoInit() = 0;
         virtual void DoClose() {}

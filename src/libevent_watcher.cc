@@ -15,12 +15,8 @@ namespace evpp {
     }
 
     EventWatcher::~EventWatcher() {
-        Cancel();
+        FreeEvent();
         Close();
-        if (event_) {
-            delete (event_);
-            event_ = 0;
-        }
     }
 
     bool EventWatcher::Init() {
@@ -56,7 +52,7 @@ namespace evpp {
         return true;
     }
 
-    void EventWatcher::Cancel() {
+    void EventWatcher::FreeEvent() {
         if (event_) {
             if (event_initialized(event_)) {
                 event_del(event_);
@@ -64,7 +60,10 @@ namespace evpp {
             delete (event_);
             event_ = NULL;
         }
+    }
 
+    void EventWatcher::Cancel() {
+        FreeEvent();
         if (cancel_callback_) {
             cancel_callback_();
         }
@@ -73,7 +72,6 @@ namespace evpp {
     void EventWatcher::set_cancel_callback(const Handler& cb) {
         cancel_callback_ = cb;
     }
-
 
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
