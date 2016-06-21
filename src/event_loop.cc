@@ -146,10 +146,10 @@ namespace evpp {
     }
 
     void EventLoop::AssertInLoopThread() const {
-        assert(IsInLoopThread());
-        if (!IsInLoopThread()) {
+        bool b = IsInLoopThread();
+        assert(b);
+        if (!b) {
             LOG_FATAL << __FUNCTION__ << " failed";
         }
     }
-
 }
