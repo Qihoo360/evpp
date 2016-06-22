@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,6 +19,7 @@
     <ClCompile Include="..\src\event_loop_thread_pool.cc" />
     <ClCompile Include="..\src\fd_channel.cc" />
     <ClCompile Include="..\src\inner_pre.cc" />
+    <ClCompile Include="..\src\invoke_timer.cc" />
     <ClCompile Include="..\src\libevent_compact.cc" />
     <ClCompile Include="..\src\libevent_watcher.cc" />
     <ClCompile Include="..\src\listener.cc" />
@@ -42,6 +43,7 @@
     <ClInclude Include="..\include\evpp\fd_channel.h" />
     <ClInclude Include="..\include\evpp\gettimeofday.h" />
     <ClInclude Include="..\include\evpp\inner_pre.h" />
+    <ClInclude Include="..\include\evpp\invoke_timer.h" />
     <ClInclude Include="..\include\evpp\libevent_headers.h" />
     <ClInclude Include="..\include\evpp\libevent_watcher.h" />
     <ClInclude Include="..\include\evpp\listener.h" />
@@ -57,7 +59,6 @@
     <ClInclude Include="..\include\evpp\tcp_server.h" />
     <ClInclude Include="..\include\evpp\timestamp.h" />
     <ClInclude Include="..\include\evpp\timestamp.inl.h" />
-    <ClInclude Include="..\src\invoke_timer.inl.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}</ProjectGuid>
@@ -68,13 +69,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -110,6 +111,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir);d:\cppworkspace\boost_1_58_0\output\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

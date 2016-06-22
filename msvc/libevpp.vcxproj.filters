@@ -74,6 +74,9 @@
     <ClCompile Include="..\src\duration.cc">
       <Filter>time</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\invoke_timer.cc">
+      <Filter>evloop</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\evpp\exp.h">
@@ -92,9 +95,6 @@
       <Filter>event</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\event_loop.h">
-      <Filter>evloop</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\invoke_timer.inl.h">
       <Filter>evloop</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\event_loop_thread.h">
@@ -162,6 +162,9 @@
     </ClInclude>
     <ClInclude Include="..\include\evpp\any.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\invoke_timer.h">
+      <Filter>evloop</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
