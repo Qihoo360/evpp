@@ -74,7 +74,7 @@
 #endif
 
 //#define H_LINK_FILE_DEBUG_1( filename )	__pragma ( comment( lib , filename##"_d"##".lib" ))
-#define H_LINK_FILE_DEBUG_1( filename )	__pragma ( comment( lib , filename##".lib" ))
+#define H_LINK_FILE_DEBUG_1( filename )	__pragma (comment( lib , filename##".lib" ))
 #define H_LINK_FILE_DEBUG_0( filename )	__pragma (comment( lib , filename##".lib" ))
 
 #define H_LINK_FILE_DEBUG_P(filename,y)   H_LINK_FILE_DEBUG_##y(filename)
@@ -85,25 +85,19 @@
 #define H_LINK_FILE_PP( filename , sys )  H_LINK_FILE_##sys( filename , H_LINK_FILE_DEBUG_FLAG )
 #define H_LINK_FILE_P( filename , sys )   H_LINK_FILE_PP( filename , sys )
 
+#define H_LINK_LIB( filename )           H_LINK_FILE_P( filename , H_LINK_OS_FLAG )
 
-
-#ifndef __MINGW32__
-#   define H_LINK_LIB( filename )           H_LINK_FILE_P( filename , H_LINK_OS_FLAG )
-#else
-#   define H_LINK_LIB( filename )
+#ifdef H_OS_WINDOWS
+    #define usleep(us) Sleep((us)/1000);
+    #define snprintf  _snprintf
+    #define thread_local __declspec( thread )
 #endif
 
 #ifdef H_OS_WINDOWS
-#define usleep(us) Sleep((us)/1000);
-#define snprintf  _snprintf
-#define thread_local __declspec( thread )
-#endif
-
-#ifdef H_OS_WINDOWS
-#pragma warning( disable: 4005 ) // warning C4005 : 'va_copy' : macro redefinition
-#pragma warning( disable: 4251 )
-#pragma warning( disable: 4996 ) // warning C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-#pragma warning( disable: 4244 4251 4355 4715 4800 4996 4005)
+    #pragma warning( disable: 4005 ) // warning C4005 : 'va_copy' : macro redefinition
+    #pragma warning( disable: 4251 )
+    #pragma warning( disable: 4996 ) // warning C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+    #pragma warning( disable: 4244 4251 4355 4715 4800 4996 4005)
 #endif
 
 
