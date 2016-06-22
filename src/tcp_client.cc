@@ -41,8 +41,8 @@ namespace evpp {
         } else {
             // When connector_ is connecting to the remote server ...
             assert(connector_ && !connector_->IsConnected());
-            connector_.reset();
         }
+        connector_.reset(); // Free connector_ in loop thread immediately
     }
 
     void TCPClient::Reconnect() {
