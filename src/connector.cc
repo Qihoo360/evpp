@@ -66,6 +66,7 @@ namespace evpp {
         }
 
         if (err != 0) {
+            EVUTIL_SET_SOCKET_ERROR(err);
             HandleError();
             return;
         }
@@ -88,7 +89,7 @@ namespace evpp {
         if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
             conn_fn_(-1, "");
         } else {
-            loop_->RunAfter(1000, std::bind(&Connector::Start, this));
+            loop_->RunAfter(1000, std::bind(&Connector::Start, this));//TODO Add retry times.
         }
     }
 
