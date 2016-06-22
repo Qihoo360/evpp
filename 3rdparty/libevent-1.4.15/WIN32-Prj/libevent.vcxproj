@@ -46,7 +46,7 @@
     <OutDir>$(SolutionDir)bin/$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)</IntDir>
     <TargetExt>.lib</TargetExt>
-    <TargetName>$(ProjectName)_d</TargetName>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin/$(Configuration)</OutDir>
