@@ -1,14 +1,14 @@
 #pragma once
 
-#ifdef WIN32
-#   ifdef _DEBUG
-#		pragma comment(lib,"libevent_d.lib")
-#   else
-#		pragma comment(lib,"libevent.lib")
-#   endif
-#	pragma comment(lib,"Ws2_32.lib")
-#	pragma comment(lib,"libglog_static.lib")
-#endif
+// #ifdef WIN32
+// #   ifdef _DEBUG
+// #		pragma comment(lib,"libevent.lib")
+// #   else
+// #		pragma comment(lib,"libevent.lib")
+// #   endif
+// #	pragma comment(lib,"Ws2_32.lib")
+// #	pragma comment(lib,"libglog_static.lib")
+// #endif
 
 namespace {
     struct OnApp {

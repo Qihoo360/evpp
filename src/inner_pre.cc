@@ -3,21 +3,9 @@
 #include "evpp/libevent_headers.h"
 
 #ifdef H_WINDOWS_API
-
-#if _EVENT_NUMERIC_VERSION >= 0x02001500
-#pragma comment(lib,"libevent.lib")
-// #pragma comment(lib,"libevent_core.lib")
-// #pragma comment(lib,"libevent_extras.lib")
-#else
-#	ifdef H_DEBUG_MODE
-#		pragma comment(lib,"libevent_d.lib")
-#	else
-#		pragma comment(lib,"libevent.lib")
-#	endif
-#endif
-
-#	pragma comment(lib,"Ws2_32.lib")
-#	pragma comment(lib,"libglog_static.lib")
+    #pragma comment(lib,"libevent.lib")
+    #pragma comment(lib,"Ws2_32.lib")
+    #pragma comment(lib,"libglog_static.lib")
 #endif
 
 

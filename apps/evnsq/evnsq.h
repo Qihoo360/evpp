@@ -4,6 +4,7 @@
 #include <memory>
 
 #include <evpp/exp.h>
+#include <evpp/tcp_callbacks.h>
 
 #include "evnsq_export.h"
 
@@ -18,6 +19,8 @@ namespace evnsq {
         NSQClient(evpp::EventLoop* loop, const std::string& raddr);
         ~NSQClient();
         bool Connect();
+    private:
+        void OnConnection(const evpp::TCPConnPtr& conn);
     private:
         evpp::EventLoop* loop_;
         std::shared_ptr<evpp::TCPClient> tcpc_;
