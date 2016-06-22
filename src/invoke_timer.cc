@@ -31,7 +31,7 @@ namespace evpp {
 
     void InvokeTimer::Cancel() {
         if (timer_) {
-            loop_->RunInLoop(std::tr1::bind(&TimerEventWatcher::Cancel, timer_));
+            loop_->RunInLoop(std::bind(&TimerEventWatcher::Cancel, timer_));
         }
     }
 
