@@ -39,7 +39,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevent", "..\3rdparty\lib
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rdparty", "3rdparty", "{343D8BB4-8FF3-45AD-8F2B-6888CF913258}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app", "app", "{D16132BF-EE83-4D96-8941-B8B771E05CB3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{D16132BF-EE83-4D96-8941-B8B771E05CB3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevnsq", "libevnsq.vcxproj", "{88DAC3B3-597B-4523-B747-81FD02C93B64}"
 	ProjectSection(ProjectDependencies) = postProject
