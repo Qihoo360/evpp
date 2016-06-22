@@ -14,6 +14,11 @@ namespace evpp {
     class Connector;
     class EVPP_EXPORT TCPClient {
     public:
+        //! \brief
+        //! \param[in] - EventLoop * loop
+        //! \param[in] - const std::string & remote_addr The remote server address of the form "host:port"
+        //! \param[in] - const std::string & name
+        //! \return - 
         TCPClient(EventLoop* loop, const std::string& remote_addr, const std::string& name);
         ~TCPClient();
         void Connect();
