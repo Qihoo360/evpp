@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevpp", "libevpp.vcxproj", "{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -34,6 +34,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pingpong_server", "pingpong
 		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F} = {4877AA94-AD55-407F-9ED3-D4503FAB2A7F}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevent", "..\3rdparty\libevent-1.4.15\WIN32-Prj\libevent.vcxproj", "{B98ABFCE-24D4-4B70-94DE-EF7F1E0662F9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rdparty", "3rdparty", "{343D8BB4-8FF3-45AD-8F2B-6888CF913258}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -64,14 +68,20 @@ Global
 		{50B6B513-C259-422D-A6E0-A64269D667DD}.Debug|Win32.Build.0 = Debug|Win32
 		{50B6B513-C259-422D-A6E0-A64269D667DD}.Release|Win32.ActiveCfg = Release|Win32
 		{50B6B513-C259-422D-A6E0-A64269D667DD}.Release|Win32.Build.0 = Release|Win32
+		{B98ABFCE-24D4-4B70-94DE-EF7F1E0662F9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B98ABFCE-24D4-4B70-94DE-EF7F1E0662F9}.Debug|Win32.Build.0 = Debug|Win32
+		{B98ABFCE-24D4-4B70-94DE-EF7F1E0662F9}.Release|Win32.ActiveCfg = Release|Win32
+		{B98ABFCE-24D4-4B70-94DE-EF7F1E0662F9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{67DBE3BC-4CDA-4432-8E02-3CC4C04552E8} = {E8E8B2B4-69D4-4418-8E63-7BBB791472DB}
+		{772C2111-BBBF-49E6-B912-198A7F7A88E5} = {343D8BB4-8FF3-45AD-8F2B-6888CF913258}
 		{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE} = {E8E8B2B4-69D4-4418-8E63-7BBB791472DB}
 		{DEE13AF7-CE91-43A7-89A0-32FB219D4B68} = {67DBE3BC-4CDA-4432-8E02-3CC4C04552E8}
+		{67DBE3BC-4CDA-4432-8E02-3CC4C04552E8} = {E8E8B2B4-69D4-4418-8E63-7BBB791472DB}
 		{50B6B513-C259-422D-A6E0-A64269D667DD} = {67DBE3BC-4CDA-4432-8E02-3CC4C04552E8}
+		{B98ABFCE-24D4-4B70-94DE-EF7F1E0662F9} = {343D8BB4-8FF3-45AD-8F2B-6888CF913258}
 	EndGlobalSection
 EndGlobal
