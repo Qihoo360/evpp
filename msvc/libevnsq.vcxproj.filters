@@ -15,6 +15,9 @@
     <ClInclude Include="..\apps\evnsq\evnsq_export.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\apps\evnsq\exp.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\apps\evnsq\evnsq.cc">
