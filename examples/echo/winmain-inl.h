@@ -1,15 +1,5 @@
 #pragma once
 
-// #ifdef WIN32
-// #   ifdef _DEBUG
-// #		pragma comment(lib,"libevent.lib")
-// #   else
-// #		pragma comment(lib,"libevent.lib")
-// #   endif
-// #	pragma comment(lib,"Ws2_32.lib")
-// #	pragma comment(lib,"libglog_static.lib")
-// #endif
-
 namespace {
     struct OnApp {
         OnApp() {
@@ -17,10 +7,10 @@ namespace {
             // Initialize net work.
             WSADATA wsaData;
             // Initialize Winsock 2.2
-            int nError = WSAStartup(MAKEWORD(2, 2), &wsaData);
+            int err = WSAStartup(MAKEWORD(2, 2), &wsaData);
 
-            if (nError) {
-                std::cout << "WSAStartup() failed with error: %d" << nError;
+            if (err) {
+                std::cout << "WSAStartup() failed with error: %d" << err;
             }
             std::cout << "WSAEWOULDBLOCK=" << WSAEWOULDBLOCK << std::endl;
 #endif
@@ -34,5 +24,3 @@ namespace {
         }
     } __s_onexit_pause;
 }
-evutil_snprintf()
-event_log

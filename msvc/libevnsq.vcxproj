@@ -24,6 +24,7 @@
   <ItemGroup>
     <ClInclude Include="..\apps\evnsq\evnsq.h" />
     <ClInclude Include="..\apps\evnsq\evnsq_export.h" />
+    <ClInclude Include="..\apps\evnsq\exp.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{88DAC3B3-597B-4523-B747-81FD02C93B64}</ProjectGuid>
