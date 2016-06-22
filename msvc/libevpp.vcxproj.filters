@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="base">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="evloop">
       <UniqueIdentifier>{6a94d149-6f7b-47af-94e3-19d9eab3d441}</UniqueIdentifier>
     </Filter>
@@ -15,14 +11,15 @@
     <Filter Include="sockets">
       <UniqueIdentifier>{eee53411-c7a0-4552-85ab-81e36a0b66cc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="common">
-      <UniqueIdentifier>{1c4d9814-0cfc-4b4c-a095-ffe63e2c5779}</UniqueIdentifier>
-    </Filter>
     <Filter Include="tcp">
       <UniqueIdentifier>{d854f834-9974-478e-b538-06390c055be3}</UniqueIdentifier>
     </Filter>
     <Filter Include="time">
       <UniqueIdentifier>{db27fc34-e756-45b7-92eb-38df61f5dae1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -30,13 +27,13 @@
       <Filter>event</Filter>
     </ClCompile>
     <ClCompile Include="..\src\inner_pre.cc">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\src\libevent_compact.cc">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\src\pch.cc">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\src\fd_channel.cc">
       <Filter>sockets</Filter>
@@ -49,9 +46,6 @@
     </ClCompile>
     <ClCompile Include="..\src\event_loop_thread_pool.cc">
       <Filter>evloop</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\buffer.cc">
-      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\src\listener.cc">
       <Filter>tcp</Filter>
@@ -77,16 +71,19 @@
     <ClCompile Include="..\src\invoke_timer.cc">
       <Filter>evloop</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\buffer.cc">
+      <Filter>common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\evpp\exp.h">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\inner_pre.h">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\libevent_headers.h">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\fd_channel.h">
       <Filter>sockets</Filter>
@@ -103,14 +100,11 @@
     <ClInclude Include="..\include\evpp\event_loop_thread_pool.h">
       <Filter>evloop</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\buffer.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\evpp\sockets.h">
       <Filter>sockets</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\evpp_export.h">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\listener.h">
       <Filter>tcp</Filter>
@@ -131,13 +125,10 @@
       <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\log_config.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\slice.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\platform_config.h">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\duration.h">
       <Filter>time</Filter>
@@ -160,11 +151,17 @@
     <ClInclude Include="..\include\evpp\sys_addrinfo.h">
       <Filter>sockets</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\evpp\invoke_timer.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\evpp\any.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\invoke_timer.h">
-      <Filter>evloop</Filter>
+    <ClInclude Include="..\include\evpp\buffer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\slice.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
