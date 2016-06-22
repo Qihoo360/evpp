@@ -13,6 +13,15 @@
 #include <queue>
 #include <memcached/protocol_binary.h>
 
+void createdump() {
+    if(!fork()) { //child process
+        // Crash the app
+        int * p = NULL;
+        (*p = 42);
+    }
+}
+
+
 namespace {
 
 // TODO 
@@ -27,6 +36,7 @@ typedef std::shared_ptr<evpp::TimerEventWatcher> TimerEventPtr;
 
 const int ERR_CODE_TIMEOUT = -1;
 const int ERR_CODE_NETWORK = -2;
+const int ERR_CODE_DISCONNECT = -3;
 
 struct GetResult {
     GetResult() : code(-1) {}
@@ -40,6 +50,7 @@ struct MultiGetResult {
     std::map<std::string, GetResult> get_result_map_;
 };
 
+// TODO : use reference type ?
 typedef std::function<void(const std::string key, GetResult result)> GetCallback;
 typedef std::function<void(const std::string key, int code)> SetCallback;
 typedef std::function<void(const std::string key, int code)> RemoveCallback;
@@ -127,8 +138,10 @@ public:
     EventLoopPtr caller_loop() const { return caller_loop_; }
 
     std::string ServerAddr() const {
-        // const static std::string test_addr = "127.0.0.1:11611";
-        const static std::string test_addr = "10.160.112.97:10002";
+        // static std::string test_addr = "127.0.0.1:11611";
+        const static std::string test_addr = "10.16.15.138:11611";
+        // const static std::string test_addr = "10.160.112.97:10002";
+        // const static std::string test_addr = "10.160.112.97:20002";
         return test_addr;
     }
 
@@ -368,7 +381,7 @@ private:
 class BinaryCodec
 {
 public:
-    BinaryCodec(MemcacheClient * memc_client) : memc_client_(memc_client) {}
+    explicit BinaryCodec(MemcacheClient * memc_client) : memc_client_(memc_client) {}
 
     void OnCodecMessage(const evpp::TCPConnPtr& conn,
            evpp::Buffer* buf,
@@ -411,8 +424,12 @@ private:
 
 class MemcacheClient {
 public:
-    MemcacheClient(evpp::EventLoop * evloop, evpp::TCPClient * tcp_client, int timeout_ms = 300) : id_seq_(0),
-        exec_loop_(evloop), tcp_client_(tcp_client), timeout_(timeout_ms / 1000.0) {
+    MemcacheClient(evpp::EventLoop * evloop, evpp::TCPClient * tcp_client, int timeout_ms = 249) : id_seq_(0),
+        exec_loop_(evloop), tcp_client_(tcp_client), timeout_(timeout_ms / 1000.0), codec_(NULL) {
+    }
+    virtual ~MemcacheClient() {
+        tcp_client_->Disconnect();
+        delete codec_;
     }
 
     EventLoopPtr exec_loop() const { return exec_loop_; }
@@ -424,14 +441,16 @@ public:
         }
         running_command_.push(cmd);
 
-        // TODO: 权衡 caller_loop_ 是否要用 shared_ptr
-        TimerEventPtr timer(new evpp::TimerEventWatcher(exec_loop_.get(), std::bind(&MemcacheClient::OnPacketTimeout, this, cmd->id()), timeout_));
-        timer->Init();
-        timer->AsyncWait();
-        if (cmd_timer_) {
-            cmd_timer_->Cancel();
+        if (!timeout_.IsZero()) {
+            // TODO: 权衡 caller_loop_ 是否要用 shared_ptr
+            TimerEventPtr timer(new evpp::TimerEventWatcher(exec_loop_.get(), std::bind(&MemcacheClient::OnPacketTimeout, this, cmd->id()), timeout_));
+            timer->Init();
+            timer->AsyncWait();
+            if (cmd_timer_) {
+                cmd_timer_->Cancel();
+            }
+            cmd_timer_ = timer;
         }
-        cmd_timer_ = timer;
     }
 
     CommandPtr PopRunningCommand() {
@@ -441,7 +460,7 @@ public:
         CommandPtr command(running_command_.front());
         running_command_.pop();
 
-        if (running_command_.empty()) {
+        if (!timeout_.IsZero() && running_command_.empty()) {
             cmd_timer_->Cancel();
             cmd_timer_.reset();
         }
@@ -478,7 +497,17 @@ public:
         command->Launch(this);
     }
 
+    void OnResponseData(const evpp::TCPConnPtr& tcp_conn,
+           evpp::Buffer* buf,
+           evpp::Timestamp ts) {
+        if (!codec_) {
+            codec_ = new BinaryCodec(this);
+        }
+        codec_->OnCodecMessage(tcp_conn, buf, ts);
+    }
+
     void OnPacketTimeout(uint32_t cmd_id) {
+        LOG_WARN << "OnPacketTimeout cmd_id=" << cmd_id;
         while(!running_command_.empty()) {
             CommandPtr cmd(running_command_.front());
             running_command_.pop();
@@ -505,6 +534,8 @@ private:
 
     TimerEventPtr cmd_timer_;
 
+    BinaryCodec * codec_;
+
     std::queue<CommandPtr> running_command_;
     std::queue<CommandPtr> waiting_command_;
 };
@@ -514,41 +545,28 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
     uint32_t id  = resp.response.opaque;  // no need to call ntohl
     int      opcode = resp.response.opcode;
     CommandPtr cmd = memc_client_->peek_running_command();
-    if (!cmd) {
-        // memc_client_->set_last_command_id(id);
+    if (!cmd || id != cmd->id()) {
+        // TODO : id 不一致时候，如何处理?
         buf->Retrieve(kHeaderLen + resp.response.bodylen);
-        LOG_WARN << "OnResponsePacket NULL cmd";
+        LOG_WARN << "OnResponsePacket cmd/message mismatch.";
         return;
     }
 
     switch (opcode) {
         case PROTOCOL_BINARY_CMD_SET:
             cmd = memc_client_->PopRunningCommand();
-            // TODO : id 不一致时候，如何处理?
-            if (id != cmd->id()) {
-                LOG_WARN << "OnResponsePacket SET bad opaque " << id << ", cmd=" << cmd->id();
-                break;
-            }
             cmd->OnSetCommandDone(resp.response.status);
 
             LOG_DEBUG << "OnResponsePacket SET, opaque=" << id;
             break;
         case PROTOCOL_BINARY_CMD_DELETE:
             cmd = memc_client_->PopRunningCommand();
-            if (id != cmd->id()) {
-                LOG_WARN << "OnResponsePacket DELETE bad opaque " << id << ", cmd=" << cmd->id();
-                break;
-            }
             cmd->OnRemoveCommandDone(resp.response.status);
             LOG_DEBUG << "OnResponsePacket DELETE, opaque=" << id;
             break;
         case PROTOCOL_BINARY_CMD_GET:
             {
                 cmd = memc_client_->PopRunningCommand();
-                if (id != cmd->id()) {
-                    LOG_WARN << "OnResponsePacket GET bad opaque " << id << ", cmd=" << cmd->id();
-                    break;
-                }
                 const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
                 std::string value(pv, resp.response.bodylen - resp.response.extlen);
                 cmd->OnGetCommandDone(resp.response.status, value);
@@ -558,10 +576,6 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
         case PROTOCOL_BINARY_CMD_GETK:
             {
                 cmd = memc_client_->PopRunningCommand();
-                if (id != cmd->id()) {
-                    LOG_WARN << "OnResponsePacket GETK bad opaque " << id << ", cmd=" << cmd->id();
-                    break;
-                }
 
                 const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
                 std::string key(pv, resp.response.keylen);
@@ -574,11 +588,6 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
         case PROTOCOL_BINARY_CMD_GETKQ:
             {
                 cmd = memc_client_->peek_running_command();
-                if (id != cmd->id()) {
-                    LOG_WARN << "OnResponsePacket GETKQ bad opaque " << id << ", cmd=" << cmd->id();
-                    break;
-                }
-
                 const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
                 std::string key(pv, resp.response.keylen);
                 std::string value(pv, resp.response.bodylen - resp.response.keylen - resp.response.extlen);
@@ -612,7 +621,7 @@ void Command::Launch(MemcacheClient * memc_client) {
 
 class MemcacheClientPool {
 public:
-    MemcacheClientPool(int conncurrency) : loop_pool_(&loop_, conncurrency) {
+    MemcacheClientPool(int concurrency, int timeout_ms) : loop_pool_(&loop_, concurrency), timeout_ms_(timeout_ms) {
         loop_pool_.Start(true);
     }
     virtual ~MemcacheClientPool() {
@@ -654,7 +663,7 @@ private:
 private:
     static void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClient* memc_client) {
         LOG_INFO << "OnClientConnection conn=" << conn.get() << " memc_conn=" << memc_client->conn().get();
-        if (conn->IsConnected()) {
+        if (conn && conn->IsConnected()) {
             LOG_INFO << "OnClientConnection connect ok";
             CommandPtr command;
             while(command = memc_client->pop_waiting_command()) {
@@ -664,7 +673,23 @@ private:
             }
         } else {
             // TODO : 处理连接出错的情况
-            LOG_INFO << "Disconnected from " << conn->remote_addr();
+            if (conn) {
+                LOG_INFO << "Disconnected from " << conn->remote_addr();
+            } else {
+                LOG_INFO << "Connect init error";
+            }
+
+            CommandPtr command;
+            while(command = memc_client->PopRunningCommand()) {
+                command->OnError(ERR_CODE_NETWORK);
+            }
+
+            while(command = memc_client->pop_waiting_command()) {
+                command->OnError(ERR_CODE_NETWORK);
+            }
+            memc_clients_.erase(command->ServerAddr());
+
+            // delete memc_client; // TODO : 销毁已断开的tcp_client
         }
     }
 
@@ -679,14 +704,11 @@ private:
 
         if (it == memc_clients_.end()) {
             evpp::TCPClient * tcp_client = new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(command->thread_hash()), command->ServerAddr(), "MemcacheBinaryClient");
-            MemcacheClient * memc_client = new MemcacheClient(loop_pool_.GetNextLoopWithHash(command->thread_hash()), tcp_client);
+            MemcacheClient * memc_client = new MemcacheClient(loop_pool_.GetNextLoopWithHash(command->thread_hash()), tcp_client, timeout_ms_);
             LOG_INFO << "DoLaunchCommand new tcp_client=" << tcp_client << " memc_client=" << memc_client;
 
-            // TODO : mem leak fix
-            BinaryCodec* codec = new BinaryCodec(memc_client);
-
             tcp_client->SetConnectionCallback(std::bind(&MemcacheClientPool::OnClientConnection, std::placeholders::_1, memc_client));
-            tcp_client->SetMesageCallback(std::bind(&BinaryCodec::OnCodecMessage, codec, std::placeholders::_1,
+            tcp_client->SetMesageCallback(std::bind(&MemcacheClient::OnResponseData, memc_client, std::placeholders::_1,
                                          std::placeholders::_2, std::placeholders::_3));
             tcp_client->Connect();
 
@@ -695,29 +717,33 @@ private:
             memc_client->push_waiting_command(command);
             return;
         }
-        if (!it->second->conn() || !it->second->conn()->IsConnected()) {
+
+        if (!it->second->conn() || it->second->conn()->status() == evpp::TCPConn::kConnecting) {
             it->second->push_waiting_command(command);
-            return;
+        } else if (it->second->conn()->IsConnected()) {
+            it->second->PushRunningCommand(command);
+            command->Launch(it->second);
+        } else {
+            command->OnError(ERR_CODE_DISCONNECT);
         }
-        it->second->PushRunningCommand(command);
-        command->Launch(it->second);
     }
 
     thread_local static std::map<std::string, MemcacheClient *> memc_clients_;
     evpp::EventLoop loop_;
     evpp::EventLoopThreadPool loop_pool_;
+    int timeout_ms_;
 };
 
 thread_local std::map<std::string, MemcacheClient *> MemcacheClientPool::memc_clients_;
 
 static void OnTestSetDone(const std::string key, int code) {
-    LOG_INFO << "+++++++++++++ OnTestSetDone " << code << " " << key;
+    LOG_INFO << "+++++++++++++ OnTestSetDone code=" << code << " " << key;
 }
 static void OnTestGetDone(const std::string key, GetResult res) {
-    LOG_INFO << "============= OnTestGetDone " << key << " " << res.code << " " << res.value;
+    LOG_INFO << "============= OnTestGetDone " << key << " code=" << res.code << " " << res.value;
 }
 static void OnTestRemoveDone(const std::string key, int code) {
-    LOG_INFO << "------------- OnTestRemoveDone " << code << " " << key;
+    LOG_INFO << "------------- OnTestRemoveDone code=" << code << " " << key;
 }
 static void OnTestMultiGetDone(MultiGetResult res) {
     LOG_INFO << ">>>>>>>>>>>>> OnTestMultiGetDone code=" << res.code;
@@ -747,21 +773,21 @@ namespace evloop
 TEST_UNIT(testMemcacheClient) {
     srand(time(NULL));
     std::thread th(evloop::MyEventThread);
-    MemcacheClientPool mcp(8);
+    MemcacheClientPool mcp(32, 200);
 
-    const static int MAX_KEY = 1000;
-
+    const static int MAX_KEY = 1000000;
     evpp::Duration g_timeout(0.30); // 300ms
 
-#if 1
     for(size_t i = 0; i < MAX_KEY; i += 2) {
         std::stringstream ss_key;
         ss_key << "test" << i;
         std::stringstream ss_value;
         ss_value << "test_value" << i;
+        // usleep(10000);
         mcp.Set(evloop::g_loop, ss_key.str(), ss_value.str(), &OnTestSetDone);
     }
 
+#if 1
     for(size_t i = 0; i < MAX_KEY; ++i) {
         std::stringstream ss;
         ss << "test" << i;
