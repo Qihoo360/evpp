@@ -100,7 +100,12 @@
     #pragma warning( disable: 4244 4251 4355 4715 4800 4996 4005)
 #endif
 
-
+// get rid of Windows/Linux inconsistencies
+#ifdef H_OS_WINDOWS
+# define PRIu64     "I64u"
+#else
+# define PRIu64     "lu"
+#endif
 
 // from google3/base/basictypes.h
 // The H_ARRAYSIZE(arr) macro returns the # of elements in an array arr.
