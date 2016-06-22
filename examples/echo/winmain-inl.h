@@ -34,3 +34,5 @@ namespace {
         }
     } __s_onexit_pause;
 }
+evutil_snprintf()
+event_log

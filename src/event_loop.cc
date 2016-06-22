@@ -3,7 +3,7 @@
 #include "evpp/libevent_headers.h"
 #include "evpp/libevent_watcher.h"
 #include "evpp/event_loop.h"
-#include "invoke_timer.inl.h"
+#include "evpp/invoke_timer.h"
 
 namespace evpp {
     EventLoop::EventLoop() {
@@ -98,13 +98,14 @@ namespace evpp {
         //CHECK(rc == 0) << "event_reinit" << rc;
     }
 
-    void EventLoop::RunAfter(double delay_ms, const Functor& f) {
-        RunAfter(Duration(delay_ms / 1000.0), f);
+    InvokeTimerPtr EventLoop::RunAfter(double delay_ms, const Functor& f) {
+        return RunAfter(Duration(delay_ms / 1000.0), f);
     }
 
-    void EventLoop::RunAfter(Duration delay, const Functor& f) {
+    InvokeTimerPtr EventLoop::RunAfter(Duration delay, const Functor& f) {
         std::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, delay, f);
         t->Start();
+        return t;
     }
 
     void EventLoop::RunInLoop(const Functor& functor) {
@@ -145,10 +146,10 @@ namespace evpp {
     }
 
     void EventLoop::AssertInLoopThread() const {
-        assert(IsInLoopThread());
-        if (!IsInLoopThread()) {
+        bool b = IsInLoopThread();
+        assert(b);
+        if (!b) {
             LOG_FATAL << __FUNCTION__ << " failed";
         }
     }
-
 }
