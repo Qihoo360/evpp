@@ -59,7 +59,7 @@ namespace evpp {
     void TCPServer::HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/) {
         EventLoop* io_loop = GetNextLoop(remote_addr);
         char buf[64];
-        snprintf(buf, sizeof buf, "-%s#%lu", remote_addr.c_str(), next_conn_id_++);
+        snprintf(buf, sizeof buf, "-%s#%llu", remote_addr.c_str(), next_conn_id_++);
         std::string n = name_ + buf;
 
         TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));

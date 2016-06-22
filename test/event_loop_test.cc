@@ -37,3 +37,4 @@ TEST_UNIT(testEventLoop) {
     H_TEST_ASSERT(g_event_handler_called);
 }
 
+
