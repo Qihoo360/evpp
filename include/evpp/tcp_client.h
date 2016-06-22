@@ -31,6 +31,8 @@ namespace evpp {
         void set_context(const Any& c) { context_ = c; }
         const Any& context() const { return context_; }
         TCPConnPtr conn() const;
+        const std::string& remote_addr() const { return remote_addr_; }
+        const std::string& name() const { return name_; }
     private:
         void ConnectInLoop();
         void DisconnectInLoop();
