@@ -22,6 +22,9 @@ msvc/bin/
 msvc/*.opensdf
 msvc/*.sdf
 msvc/*.suo
+msvc/.vs/
+msvc/libevpp.VC.VC.opendb
+msvc/libevpp.VC.db
 
 test/evpp
 examples/echo/simple_echo
@@ -29,4 +32,5 @@ examples/pingpong/client/pingpong_client
 examples/pingpong/server/pingpong_server
 core.*
 *.out
+
 
