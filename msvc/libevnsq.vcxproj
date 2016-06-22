@@ -18,6 +18,13 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\apps\evnsq\evnsq.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\apps\evnsq\evnsq.h" />
+    <ClInclude Include="..\apps\evnsq\evnsq_export.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{88DAC3B3-597B-4523-B747-81FD02C93B64}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -149,13 +156,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\app\evnsq\evnsq.h" />
-    <ClInclude Include="..\app\evnsq\evnsq_export.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\app\evnsq\evnsq.cc" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
