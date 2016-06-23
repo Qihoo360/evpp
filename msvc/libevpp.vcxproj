@@ -59,6 +59,7 @@
     <ClInclude Include="..\include\evpp\tcp_server.h" />
     <ClInclude Include="..\include\evpp\timestamp.h" />
     <ClInclude Include="..\include\evpp\timestamp.inl.h" />
+    <ClInclude Include="..\include\evpp\utility.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}</ProjectGuid>
