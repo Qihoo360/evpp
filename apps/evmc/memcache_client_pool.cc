@@ -66,7 +66,6 @@ void MemcacheClientPool::OnClientConnection(const evpp::TCPConnPtr& conn, Memcac
             // command->caller_loop()->AssertInLoopThread();
         }
     } else {
-        // TODO : 处理连接出错的情况
         if (conn) {
             LOG_INFO << "Disconnected from " << conn->remote_addr();
         } else {
@@ -81,8 +80,6 @@ void MemcacheClientPool::OnClientConnection(const evpp::TCPConnPtr& conn, Memcac
         while(command = memc_client->pop_waiting_command()) {
             command->OnError(ERR_CODE_NETWORK);
         }
-        memc_clients_.erase(command->ServerAddr());
-        // delete memc_client; // TODO : 销毁已断开的tcp_client
     }
 }
 
