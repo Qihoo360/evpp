@@ -83,9 +83,62 @@ namespace evpp {
 
         if (loop_->IsInLoopThread()) {
             SendInLoop(buf->data(), buf->length());
-            buf->NextAll();
+            buf->Reset();
         } else {
             loop_->RunInLoop(std::bind(&TCPConn::SendStringInLoop, this, buf->NextAllString()));
+        }
+    }
+
+    void TCPConn::SendInLoop(const Slice& message) {
+        SendInLoop(message.data(), message.size());
+    }
+
+    void TCPConn::SendStringInLoop(const std::string& message) {
+        SendInLoop(message.data(), message.size());
+    }
+
+    void TCPConn::SendInLoop(const void* data, size_t len) {
+        loop_->AssertInLoopThread();
+        ssize_t nwritten = 0;
+        size_t remaining = len;
+        bool write_error = false;
+        if (status_ == kDisconnected) {
+            LOG_WARN << "disconnected, give up writing";
+            return;
+        }
+
+        // if no data in output queue, writing directly
+        if (!chan_->IsWritable() && output_buffer_.length() == 0) {
+            nwritten = ::send(chan_->fd(), static_cast<const char*>(data), len, 0);
+            if (nwritten >= 0) {
+                remaining = len - nwritten;
+                if (remaining == 0 && write_complete_fn_) {
+                    loop_->QueueInLoop(std::bind(write_complete_fn_, shared_from_this()));
+                }
+            } else {
+                int serrno = errno;
+                nwritten = 0;
+                if (!EVUTIL_ERR_RW_RETRIABLE(serrno)) {
+                    LOG_ERROR << "SendInLoop write failed errno=" << serrno << " " << strerror(serrno);
+                    if (serrno == EPIPE || serrno == ECONNRESET) {
+                        write_error = true;
+                    }
+                }
+            }
+        }
+
+        assert(remaining <= len);
+        if (!write_error && remaining > 0) {
+            size_t old_len = output_buffer_.length();
+            if (old_len + remaining >= high_water_mark_
+                && old_len < high_water_mark_
+                && high_water_mark_fn_) {
+                loop_->QueueInLoop(std::bind(high_water_mark_fn_, shared_from_this(), old_len + remaining));
+            }
+            output_buffer_.Append(static_cast<const char*>(data) + nwritten, remaining);
+            if (!chan_->IsWritable()) {
+                chan_->EnableWriteEvent();
+            }
         }
     }
 
@@ -163,59 +216,6 @@ namespace evpp {
         chan_->EnableReadEvent();
         if (conn_fn_) {
             conn_fn_(shared_from_this());
-        }
-    }
-
-    void TCPConn::SendInLoop(const Slice& message) {
-        SendInLoop(message.data(), message.size());
-    }
-
-    void TCPConn::SendStringInLoop(const std::string& message) {
-        SendInLoop(message.data(), message.size());
-    }
-
-    void TCPConn::SendInLoop(const void* data, size_t len) {
-        loop_->AssertInLoopThread();
-        ssize_t nwritten = 0;
-        size_t remaining = len;
-        bool write_error = false;
-        if (status_ == kDisconnected) {
-            LOG_WARN << "disconnected, give up writing";
-            return;
-        }
-
-        // if no data in output queue, writing directly
-        if (!chan_->IsWritable() && output_buffer_.length() == 0) {
-            nwritten = ::send(chan_->fd(), static_cast<const char*>(data), len, 0);
-            if (nwritten >= 0) {
-                remaining = len - nwritten;
-                if (remaining == 0 && write_complete_fn_) {
-                    loop_->QueueInLoop(std::bind(write_complete_fn_, shared_from_this()));
-                }
-            } else {
-                int serrno = errno;
-                nwritten = 0;
-                if (!EVUTIL_ERR_RW_RETRIABLE(serrno)) {
-                    LOG_ERROR << "SendInLoop write failed errno=" << serrno << " " << strerror(serrno);
-                    if (serrno == EPIPE || serrno == ECONNRESET) {
-                        write_error = true;
-                    }
-                }
-            }
-        }
-
-        assert(remaining <= len);
-        if (!write_error && remaining > 0) {
-            size_t old_len = output_buffer_.length();
-            if (old_len + remaining >= high_water_mark_
-                && old_len < high_water_mark_
-                && high_water_mark_fn_) {
-                loop_->QueueInLoop(std::bind(high_water_mark_fn_, shared_from_this(), old_len + remaining));
-            }
-            output_buffer_.Append(static_cast<const char*>(data)+nwritten, remaining);
-            if (!chan_->IsWritable()) {
-                chan_->EnableWriteEvent();
-            }
         }
     }
 
