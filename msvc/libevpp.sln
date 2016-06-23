@@ -46,7 +46,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevnsq", "libevnsq.vcxpro
 		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F} = {4877AA94-AD55-407F-9ED3-D4503FAB2A7F}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "evnsqtofile", "evnsqtofile.vcxproj", "{F6ED85D5-98C9-4803-A52E-7303294DFDC1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "evnsqtail", "evnsqtail.vcxproj", "{F6ED85D5-98C9-4803-A52E-7303294DFDC1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{88DAC3B3-597B-4523-B747-81FD02C93B64} = {88DAC3B3-597B-4523-B747-81FD02C93B64}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
