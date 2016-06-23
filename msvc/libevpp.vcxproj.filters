@@ -163,5 +163,8 @@
     <ClInclude Include="..\include\evpp\slice.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\evpp\utility.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
