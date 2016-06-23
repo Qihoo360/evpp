@@ -1,16 +1,5 @@
-
-#include "evpp/libevent_headers.h"
-#include "evpp/libevent_watcher.h"
-#include "evpp/event_loop.h"
-#include "evpp/event_loop_thread.h"
-#include "evpp/buffer.h"
-#include "evpp/tcp_conn.h"
-#include "evpp/tcp_client.h"
-
-#include <thread>
-
-#include "mctypes.h"
 #include "memcache_client_pool.h"
+#include <thread>
 
 namespace {
 
@@ -52,6 +41,7 @@ int main() {
 
     MemcacheClientPool mcp("./kill_storage_cluster.json", 32, 200);
     assert(mcp.Start());
+
 
     const static int MAX_KEY = 1000000;
 
