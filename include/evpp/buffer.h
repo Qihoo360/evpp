@@ -139,29 +139,31 @@ namespace evpp {
             write_index_ -= n;
         }
 
+
         //Read
     public:
-        // Read int32_t from network endian
-        // Require: buf->size() >= sizeof(int32_t)
-        int32_t ReadInt32() {
-            assert(size() >= sizeof(int32_t));
-            int32_t result = PeekInt32();
-            Next(sizeof result);
+        // Peek int64_t/int32_t/int16_t/int8_t with network endian
+        int64_t ReadInt64() {
+            int64_t result = PeekInt64();
+            Skip(sizeof result);
             return result;
         }
 
-        // Read int16_t from network endian
-        // Require: buf->size() >= sizeof(int16_t)
+        int32_t ReadInt32() {
+            int32_t result = PeekInt32();
+            Skip(sizeof result);
+            return result;
+        }
+
         int16_t ReadInt16() {
-            assert(size() >= sizeof(int16_t));
             int16_t result = PeekInt16();
-            Next(sizeof result);
+            Skip(sizeof result);
             return result;
         }
 
         int8_t ReadInt8() {
             int8_t result = PeekInt8();
-            Next(sizeof result);
+            Skip(sizeof result);
             return result;
         }
 
@@ -181,6 +183,15 @@ namespace evpp {
         /// @return result of read(2), @c errno is saved
         ssize_t ReadFromFD(int fd, int* savedErrno);
 
+        // Skip advances the reading index of the buffer
+        void Skip(size_t len) {
+            if (len < length()) {
+                read_index_ += len;
+            } else {
+                Reset();
+            }
+        }
+
         // Next returns a slice containing the next n bytes from the buffer,
         // advancing the buffer as if the bytes had been returned by Read.
         // If there are fewer than n bytes in the buffer, Next returns the entire buffer.
@@ -193,6 +204,7 @@ namespace evpp {
             }
             return NextAll();
         }
+
 
         // NextAll returns a slice containing all the unread portion of the buffer,
         // advancing the buffer as if the bytes had been returned by Read.
@@ -231,8 +243,25 @@ namespace evpp {
 
         // Peek
     public:
-        // Peek int32_t from network endian
-        // Require: buf->size() >= sizeof(int32_t)
+        // Peek int64_t/int32_t/int16_t/int8_t with network endian
+
+#   define bswap_64(x) \
+            ((((x) & 0xff00000000000000ull) >> 56)                   \
+            | (((x) & 0x00ff000000000000ull) >> 40)                     \
+            | (((x) & 0x0000ff0000000000ull) >> 24)                     \
+            | (((x) & 0x000000ff00000000ull) >> 8)                      \
+            | (((x) & 0x00000000ff000000ull) << 8)                      \
+            | (((x) & 0x0000000000ff0000ull) << 24)                     \
+            | (((x) & 0x000000000000ff00ull) << 40)                     \
+            | (((x) & 0x00000000000000ffull) << 56))
+
+        int64_t PeekInt64() const {
+            assert(length() >= sizeof(int64_t));
+            int64_t be64 = 0;
+            ::memcpy(&be64, data(), sizeof be64);
+            return bswap_64(be64);
+        }
+
         int32_t PeekInt32() const {
             assert(length() >= sizeof(int32_t));
             int32_t be32 = 0;
