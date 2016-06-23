@@ -4,15 +4,13 @@
 #include <evpp/tcp_conn.h>
 
 #include <evnsq/exp.h>
+
 #include <evnsq/evnsq.h>
 
-void OnMessage(const evpp::TCPConnPtr& conn,
-               evpp::Buffer* msg,
-               evpp::Timestamp ts) {
-    std::string s = msg->NextAllString();
-    LOG_INFO << "Received a message [" << s << "]";
-    conn->Send(s.data(), s.size());
-    usleep(1*1000000);
+
+
+void OnMessage(const evnsq::Message* msg) {
+    LOG_INFO << "Received a message, id=" << std::string(msg->id, evnsq::kMessageIDLen) << " message=[" << std::string(msg->body, msg->body_len) << "]";
 }
 
 void OnConnection(const evpp::TCPConnPtr& conn) {
@@ -24,15 +22,15 @@ void OnConnection(const evpp::TCPConnPtr& conn) {
 }
 
 int main(int argc, char* argv[]) {
-    std::string addr = "127.0.0.1:9099";
+    std::string addr = "127.0.0.1:4150";
     if (argc == 2) {
         addr = argv[1];
     }
     evpp::EventLoop loop;
-    evnsq::NSQClient client(&loop, addr);
-//     client.SetMesageCallback(&OnMessage);
+    evnsq::Consumer client(&loop, "test", "ch1", evnsq::Option());
+    client.SetMessageCallback(&OnMessage);
 //     client.SetConnectionCallback(&OnConnection);
-    client.Connect();
+    client.ConnectToNSQD(addr);
     loop.Run();
     return 0;
 }
