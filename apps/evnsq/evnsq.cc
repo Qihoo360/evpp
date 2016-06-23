@@ -12,17 +12,17 @@ namespace evnsq {
     }
 
     NSQClient::~NSQClient() {
-
     }
 
     bool NSQClient::Connect() {
-
+        tcpc_->Connect();
         return false;
     }
 
     void NSQClient::OnConnection(const evpp::TCPConnPtr& conn) {
         if (conn->IsConnected()) {
-
+            static const std::string nsq_magic = "  V2";
+            conn->Send(nsq_magic);
         } else {
             //TODO
             LOG_ERROR << "Connect to " << tcpc_->remote_addr() << " failed.";
