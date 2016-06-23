@@ -58,7 +58,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../include;../3rdparty/wininclude/event;../3rdparty/glog-0.3.4/src/windows;../apps</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include;../3rdparty;../3rdparty/wininclude/event;../3rdparty/glog-0.3.4/src/windows;../apps</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -76,7 +76,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../include;../3rdparty/wininclude/event;../3rdparty/glog-0.3.4/src/windows;../apps</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include;../3rdparty;../3rdparty/wininclude/event;../3rdparty/glog-0.3.4/src/windows;../apps</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
