@@ -65,12 +65,13 @@ namespace evpp {
         c->SetMesageCallback(msg_fn_);
         c->SetConnectionCallback(conn_fn_);
         c->SetCloseCallback(std::bind(&TCPClient::OnRemoveConnection, this, std::placeholders::_1));
-        c->OnAttachedToLoop();
 
         {
             std::lock_guard<std::mutex> guard(mutex_);
             conn_ = c;
         }
+
+        c->OnAttachedToLoop();
     }
 
     void TCPClient::OnRemoveConnection(const TCPConnPtr& c) {
