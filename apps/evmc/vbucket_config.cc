@@ -30,7 +30,6 @@ static hashkit_hash_algorithm_t algorithm(const std::string& alg) {
     return HASHKIT_HASH_MD5;
 }
 
-
 uint16_t VbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
     uint32_t digest = libhashkit_digest(key, nkey, algorithm(algorithm_));
     return digest % vbucket_map_.size();
