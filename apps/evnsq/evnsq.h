@@ -26,3 +26,4 @@ namespace evnsq {
         std::shared_ptr<evpp::TCPClient> tcpc_;
     };
 }
+
