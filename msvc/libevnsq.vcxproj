@@ -19,12 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\apps\evnsq\command.cc" />
     <ClCompile Include="..\apps\evnsq\evnsq.cc" />
+    <ClCompile Include="..\apps\evnsq\option.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\apps\evnsq\command.h" />
     <ClInclude Include="..\apps\evnsq\evnsq.h" />
     <ClInclude Include="..\apps\evnsq\evnsq_export.h" />
     <ClInclude Include="..\apps\evnsq\exp.h" />
+    <ClInclude Include="..\apps\evnsq\message.h" />
+    <ClInclude Include="..\apps\evnsq\option.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{88DAC3B3-597B-4523-B747-81FD02C93B64}</ProjectGuid>
@@ -80,7 +85,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin/$(Configuration)/</OutDir>
-    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)</IntDir>
+    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)/</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -88,7 +93,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin/$(Configuration)/</OutDir>
-    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)</IntDir>
+    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)/</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -100,7 +105,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EVNSQ_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../include/;../3rdparty/glog-0.3.4/src/windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include/;../3rdparty/;../3rdparty/glog-0.3.4/src/windows</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -130,7 +135,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EVNSQ_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../include/;../3rdparty/glog-0.3.4/src/windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include/;../3rdparty/;../3rdparty/glog-0.3.4/src/windows</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
