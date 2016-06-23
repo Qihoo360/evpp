@@ -19,8 +19,9 @@ class BinaryCodec;
 
 class MemcacheClient : public std::enable_shared_from_this<MemcacheClient> {
 public:
-    MemcacheClient(evpp::EventLoop * evloop, evpp::TCPClient * tcp_client, int timeout_ms = 249) : id_seq_(0),
-        exec_loop_(evloop), tcp_client_(tcp_client), timeout_(timeout_ms / 1000.0), codec_(NULL) {
+    MemcacheClient(evpp::EventLoop * evloop, evpp::TCPClient * tcp_client, int timeout_ms = 249)
+            : id_seq_(0), exec_loop_(evloop), tcp_client_(tcp_client)
+            , timeout_(timeout_ms / 1000.0), codec_(NULL) {
     }
     virtual ~MemcacheClient();
 
@@ -66,7 +67,7 @@ private:
     uint32_t id_seq_;
 
     EventLoopPtr exec_loop_;
-    TcpClientPtr tcp_client_;
+    evpp::TCPClient* tcp_client_;
     evpp::Duration timeout_;
 
     TimerEventPtr cmd_timer_;
