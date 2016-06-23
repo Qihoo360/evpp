@@ -39,6 +39,9 @@ RAPIDJSON_DIAG_OFF(effc++)
 #else
 #define RAPIDJSON_HAS_STDSTRING 0 // no std::string support by default
 #endif
+
+#define RAPIDJSON_HAS_STDSTRING 1 // force to support std::string, evpp
+
 /*! \def RAPIDJSON_HAS_STDSTRING
     \ingroup RAPIDJSON_CONFIG
     \brief Enable RapidJSON support for \c std::string
