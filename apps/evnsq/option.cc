@@ -28,6 +28,13 @@ namespace evnsq {
         doc.AddMember("hostname", rapidjson::Value(hostname, doc.GetAllocator()), doc.GetAllocator());
         doc.AddMember("user_agent", rapidjson::Value(user_agent, doc.GetAllocator()), doc.GetAllocator());
         doc.AddMember("heartbeat_interval", rapidjson::Value(int64_t(heartbeat_interval.Milliseconds())), doc.GetAllocator());
+
+        doc.AddMember("deflate", rapidjson::Value(false), doc.GetAllocator());
+        doc.AddMember("feature_negotiation", rapidjson::Value(false), doc.GetAllocator());
+        doc.AddMember("long_id", rapidjson::Value(hostname, doc.GetAllocator()), doc.GetAllocator());
+        doc.AddMember("output_buffer_size", rapidjson::Value(int64_t(16384)), doc.GetAllocator());
+        doc.AddMember("output_buffer_timeout", rapidjson::Value(int64_t(250)), doc.GetAllocator());
+
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         doc.Accept(writer);
