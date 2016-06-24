@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     }
     evpp::EventLoop loop;
     evpp::TCPClient client(&loop, addr, "TCPPingPongClient");
-    client.SetMesageCallback(&OnMessage);
+    client.SetMessageCallback(&OnMessage);
     client.SetConnectionCallback(&OnConnection);
     client.Connect();
     loop.Run();
