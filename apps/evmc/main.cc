@@ -43,7 +43,7 @@ int main() {
     assert(mcp.Start());
 
 
-    const static int MAX_KEY = 1000000;
+    const static int MAX_KEY = 100;
 
     for(size_t i = 0; i < MAX_KEY; i += 2) {
         std::stringstream ss_key;
