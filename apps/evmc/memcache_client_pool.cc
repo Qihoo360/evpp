@@ -46,12 +46,23 @@ void MemcacheClientPool::Get(EventLoopPtr caller_loop, const char* key, GetCallb
     caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
 }
 
+class MultiGetCollector {
+    void operator()(const MultiGetResult& res) {
+    }
+  //LOG_INFO << ">>>>>>>>>>>>> OnTestMultiGetDone code=" << res.code;
+  //std::map<std::string, GetResult>::const_iterator it = res.get_result_map_.begin();
+  //for(; it != res.get_result_map_.end(); ++it) {
+  //    LOG_INFO << ">>>>>>>>>>>>> OnTestMultiGetDone " << it->first << " " << it->second.code << " " << it->second.value;
+  //}
+};
+
 void MemcacheClientPool::MultiGet(EventLoopPtr caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback) {
     if (keys.size() <= 0) {
         return;
     }
+    uint32_t thread_hash = rand();
     uint16_t vbucket = vbucket_config_->GetVbucketByKey(keys[0].c_str(), keys[0].size());
-    CommandPtr command(new MultiGetCommand(caller_loop, vbucket, keys, callback));
+    CommandPtr command(new MultiGetCommand(caller_loop, vbucket, thread_hash, keys, callback));
     caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
 }
 
@@ -90,11 +101,13 @@ void MemcacheClientPool::LaunchCommand(CommandPtr command) {
 }
 
 void MemcacheClientPool::DoLaunchCommand(CommandPtr command) {
-    auto it = memc_clients_.find(command->ServerAddr());
+    uint32_t vbucket = command->vbucket_id();
+    std::string server_addr = vbucket_config_->GetServerAddr(vbucket);
+    auto it = memc_clients_.find(server_addr);
 
     if (it == memc_clients_.end()) {
         evpp::TCPClient * tcp_client = new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(command->thread_hash()),
-                command->ServerAddr(), "MemcacheBinaryClient");
+                server_addr, "MemcacheBinaryClient");
         MemcacheClientPtr memc_client(new MemcacheClient(loop_pool_.GetNextLoopWithHash(command->thread_hash()),
                 tcp_client, timeout_ms_));
         LOG_INFO << "DoLaunchCommand new tcp_client=" << tcp_client << " memc_client=" << memc_client;
@@ -105,7 +118,7 @@ void MemcacheClientPool::DoLaunchCommand(CommandPtr command) {
                     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         tcp_client->Connect();
 
-        memc_clients_[command->ServerAddr()] = memc_client;
+        memc_clients_[server_addr] = memc_client;
 
         memc_client->push_waiting_command(command);
         return;

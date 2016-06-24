@@ -19,7 +19,13 @@ static uint32_t hashkit_md5(const char *key, size_t key_length, void *context __
 
 std::string VbucketConfig::GetServerAddr(const char* key, size_t nkey) const {
     uint16_t vb = GetVbucketByKey(key, nkey);
-    int index = vbucket_map_[vb][0]; // TOTO : 多个互备主机，如何选定?
+    int index = vbucket_map_[vb][rand() % vbucket_map_[vb].size()];
+    return server_list_[index];
+}
+
+std::string VbucketConfig::GetServerAddr(uint16_t vbucket) const {
+    uint16_t vb = vbucket % vbucket_map_.size();
+    int index = vbucket_map_[vb][rand() % vbucket_map_[vb].size()];
     return server_list_[index];
 }
 
