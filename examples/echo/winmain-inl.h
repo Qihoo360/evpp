@@ -12,9 +12,9 @@ namespace {
             if (err) {
                 std::cout << "WSAStartup() failed with error: %d" << err;
             }
-            std::cout << "WSAEWOULDBLOCK=" << WSAEWOULDBLOCK << std::endl;
+            //std::cout << "WSAEWOULDBLOCK=" << WSAEWOULDBLOCK << std::endl;
 #endif
-            std::cout << "EWOULDBLOCK=" << EWOULDBLOCK << " EAGAIN=" << EAGAIN << std::endl;
+            //std::cout << "EWOULDBLOCK=" << EWOULDBLOCK << " EAGAIN=" << EAGAIN << std::endl;
         }
         ~OnApp() {
 #ifdef WIN32

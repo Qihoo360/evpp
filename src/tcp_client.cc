@@ -71,6 +71,7 @@ namespace evpp {
             std::lock_guard<std::mutex> guard(mutex_);
             conn_ = c;
         }
+
         c->OnAttachedToLoop();
     }
 
