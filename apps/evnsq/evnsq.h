@@ -23,10 +23,9 @@ namespace evnsq {
         enum Status {
             kDisconnected = 0,
             kConnecting = 1,
-            kSendingMagic = 2,
-            kIdentifying = 3,
-            kSubscribing = 4,
-            kConnected = 5,
+            kIdentifying = 2,
+            kSubscribing = 3,
+            kConnected = 4,
         };
         typedef std::function<void(const Message*)> MessageCallback;
     public:
@@ -40,6 +39,7 @@ namespace evnsq {
     private:
         void OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf);
         void WriteCommand(const Command& c);
+    private:
         void Identify();
         void Subscribe();
         void UpdateReady(int count);
