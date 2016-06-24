@@ -4,16 +4,16 @@
 namespace {
 
 using namespace evmc;
-static void OnTestSetDone(const std::string key, int code) {
+static void OnTestSetDone(const std::string& key, int code) {
     LOG_INFO << "+++++++++++++ OnTestSetDone code=" << code << " " << key;
 }
-static void OnTestGetDone(const std::string key, GetResult res) {
+static void OnTestGetDone(const std::string& key, const GetResult& res) {
     LOG_INFO << "============= OnTestGetDone " << key << " code=" << res.code << " " << res.value;
 }
-static void OnTestRemoveDone(const std::string key, int code) {
+static void OnTestRemoveDone(const std::string& key, int code) {
     LOG_INFO << "------------- OnTestRemoveDone code=" << code << " " << key;
 }
-static void OnTestMultiGetDone(MultiGetResult res) {
+static void OnTestMultiGetDone(const MultiGetResult& res) {
     LOG_INFO << ">>>>>>>>>>>>> OnTestMultiGetDone code=" << res.code;
     std::map<std::string, GetResult>::const_iterator it = res.get_result_map_.begin();
     for(; it != res.get_result_map_.end(); ++it) {
