@@ -8,6 +8,7 @@ namespace evmc {
 class VbucketConfig {
 public:
     std::string GetServerAddr(const char* key, size_t nkey) const;
+    std::string GetServerAddr(uint16_t vbucket) const;
     uint16_t GetVbucketByKey(const char* key, size_t nkey) const;
 
     bool Load(const char * json_file);
