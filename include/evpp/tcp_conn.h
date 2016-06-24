@@ -40,7 +40,7 @@ namespace evpp {
         void Send(const Slice& message);
         void Send(Buffer* buf);
     public:
-        void SetMesageCallback(MessageCallback cb) { msg_fn_ = cb; }
+        void SetMessageCallback(MessageCallback cb) { msg_fn_ = cb; }
         void SetConnectionCallback(ConnectionCallback cb) { conn_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
 

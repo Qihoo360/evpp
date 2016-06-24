@@ -785,7 +785,7 @@ private:
 
             tcp_client->SetConnectionCallback(std::bind(&MemcacheClientPool::OnClientConnection,
                     std::placeholders::_1, memc_client));
-            tcp_client->SetMesageCallback(std::bind(&MemcacheClient::OnResponseData, memc_client,
+            tcp_client->SetMessageCallback(std::bind(&MemcacheClient::OnResponseData, memc_client,
                     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
             tcp_client->Connect();
 

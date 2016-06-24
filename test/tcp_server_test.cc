@@ -53,7 +53,7 @@ TEST_UNIT(testTCPServer1) {
     t.Start();
     evpp::EventLoop loop;
     evpp::TCPServer tsrv(&loop, addr, "tcp_server", 2);
-    tsrv.SetMesageCallback(&OnMessage);
+    tsrv.SetMessageCallback(&OnMessage);
     tsrv.Start();
     loop.RunAfter(evpp::Duration(1.2), std::bind(&StopTCPServer, &tsrv));
     loop.RunAfter(evpp::Duration(1.3), std::bind(&evpp::EventLoop::Stop, &loop));
