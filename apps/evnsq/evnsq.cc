@@ -18,7 +18,7 @@ namespace evnsq {
     bool Consumer::ConnectToNSQD(const std::string& addr) {
         tcpc_.reset(new evpp::TCPClient(loop_, addr, "NSQClient"));
         tcpc_->SetConnectionCallback(std::bind(&Consumer::OnConnection, this, std::placeholders::_1));
-        tcpc_->SetMesageCallback(std::bind(&Consumer::OnRecv, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        tcpc_->SetMessageCallback(std::bind(&Consumer::OnRecv, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         tcpc_->Connect();
         status_ = kConnecting;
         return false;
