@@ -65,6 +65,7 @@ void MultiGetCommand::OnMultiGetCommandDone(int resp_code, const std::string& ke
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
         mget_result_.get_result_map_[key] = GetResult(resp_code, value);
     }
+    mget_result_.code = resp_code;
 
     if (caller_loop()) {
         caller_loop()->RunInLoop(std::bind(mget_callback_, mget_result_));
