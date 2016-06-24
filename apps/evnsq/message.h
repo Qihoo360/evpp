@@ -10,7 +10,7 @@ namespace evnsq {
     struct Message {
         int64_t timestamp;
         uint16_t attempts;
-        const char* id; // with length equal to kMessageIDLen
+        std::string id; // with length equal to kMessageIDLen
         const char* body;
         size_t body_len;
 
@@ -18,10 +18,10 @@ namespace evnsq {
             assert(buf->size() >= message_len);
             timestamp = buf->ReadInt64();
             attempts = buf->ReadInt16();
-            id = buf->data(); // No copy
+            id = buf->NextString(kMessageIDLen);
             body_len = message_len - sizeof(timestamp) - sizeof(attempts) - kMessageIDLen;
-            body = buf->data() + kMessageIDLen; // No copy
-            buf->Skip(body_len + kMessageIDLen);
+            body = buf->data(); // No copy
+            buf->Skip(body_len);
         }
     };
 }

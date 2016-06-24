@@ -27,7 +27,16 @@ namespace evnsq {
             kSubscribing = 3,
             kConnected = 4,
         };
-        typedef std::function<void(const Message*)> MessageCallback;
+
+        // MessageCallback is the message processing interface for Consumer
+        //
+        // Implement this interface for handlers that return whether or not message
+        // processing completed successfully.
+        //
+        // When the return value is 0 Consumer will automatically handle FINishing.
+        //
+        // When the returned value is non-zero Consumer will automatically handle REQueing.
+        typedef std::function<int(const Message*)> MessageCallback;
     public:
         Consumer(evpp::EventLoop* loop, const std::string& topic, const std::string& channel, const Option& ops);
         ~Consumer();
@@ -43,6 +52,8 @@ namespace evnsq {
         void Identify();
         void Subscribe();
         void UpdateReady(int count);
+        void Finish(const std::string& id);
+        void Requeue(const std::string& id);
     private:
         evpp::EventLoop* loop_;
         Option option_;
