@@ -23,7 +23,7 @@ namespace evpp {
         ~TCPServer();
         bool Start();
         void Stop();
-        void SetMesageCallback(MessageCallback cb) {
+        void SetMessageCallback(MessageCallback cb) {
             msg_fn_ = cb;
         }
         void SetThreadDispatchPolicy(ThreadDispatchPolicy v) {

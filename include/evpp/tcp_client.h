@@ -25,7 +25,7 @@ namespace evpp {
         void Disconnect();
     public:
         void SetConnectionCallback(const ConnectionCallback& cb) { conn_fn_ = cb; }
-        void SetMesageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
+        void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
         void SetWriteCompleteCallback(const WriteCompleteCallback& cb) { write_complete_fn_ = cb; }
         void set_connection_timeout(Duration timeout) { connection_timeout_ = timeout; }
         void set_context(const Any& c) { context_ = c; }
