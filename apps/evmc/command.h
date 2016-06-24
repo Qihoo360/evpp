@@ -6,21 +6,15 @@ namespace evmc {
 
 class Command  : public std::enable_shared_from_this<Command> {
 public:
-    Command(EventLoopPtr evloop, uint16_t vbucket) : caller_loop_(evloop), id_(0), thread_hash_(rand()), vbucket_id_(vbucket) {
+    Command(EventLoopPtr evloop, uint16_t vbucket, uint32_t th_hash)
+            : caller_loop_(evloop), id_(0)
+            , vbucket_id_(vbucket), thread_hash_(th_hash) {
     }
 
     uint32_t id() const { return id_; }
     uint32_t thread_hash() const { return thread_hash_; }
     uint16_t vbucket_id() const { return vbucket_id_; }
     EventLoopPtr caller_loop() const { return caller_loop_; }
-
-    std::string ServerAddr() const {
-        // static std::string test_addr = "127.0.0.1:11611";
-        const static std::string test_addr = "10.16.15.138:11611";
-        // const static std::string test_addr = "10.160.112.97:10002";
-        // const static std::string test_addr = "10.160.112.97:20002";
-        return test_addr;
-    }
 
     void Launch(MemcacheClientPtr memc_client);
 
@@ -35,8 +29,8 @@ private:
     virtual BufferPtr RequestBuffer() const = 0;
     EventLoopPtr caller_loop_;
     uint32_t id_;               // 并非全局id，只是各个memc_client内部的序号; mget的多个命令公用一个id
-    uint32_t thread_hash_;
     uint16_t vbucket_id_;
+    uint32_t thread_hash_;
 };
 typedef std::shared_ptr<Command> CommandPtr;
 
@@ -44,7 +38,7 @@ class SetCommand  : public Command {
 public:
     SetCommand(EventLoopPtr evloop, uint16_t vbucket, const char* key, const char * value, size_t val_len,
                uint32_t flags, uint32_t expire, SetCallback callback)
-           : Command(evloop, vbucket), key_(key), value_(value, val_len),
+           : Command(evloop, vbucket, rand()), key_(key), value_(value, val_len),
              flags_(flags), expire_(expire),
              set_callback_(callback) {
     }
@@ -78,7 +72,7 @@ private:
 class GetCommand  : public Command {
 public:
     GetCommand(EventLoopPtr evloop, uint16_t vbucket, const char* key, GetCallback callback) 
-            : Command(evloop, vbucket)
+            : Command(evloop, vbucket, rand())
             , key_(key)
             , get_callback_(callback) {
     }
@@ -109,8 +103,8 @@ private:
 
 class MultiGetCommand  : public Command {
 public:
-    MultiGetCommand(EventLoopPtr evloop, uint16_t vbucket, const std::vector<std::string>& keys, MultiGetCallback callback)
-            : Command(evloop, vbucket), keys_(keys), mget_callback_(callback) {
+    MultiGetCommand(EventLoopPtr evloop, uint16_t vbucket, uint32_t th_hash, const std::vector<std::string>& keys, MultiGetCallback callback)
+            : Command(evloop, vbucket, th_hash), keys_(keys), mget_callback_(callback) {
     }
 
     virtual void OnError(int err_code) {
@@ -134,7 +128,7 @@ private:
 class RemoveCommand  : public Command {
 public:
     RemoveCommand(EventLoopPtr evloop, uint16_t vbucket, const char* key, RemoveCallback callback)
-           : Command(evloop, vbucket), key_(key), remove_callback_(callback) {
+           : Command(evloop, vbucket, rand()), key_(key), remove_callback_(callback) {
     }
     virtual void OnError(int err_code) {
         if (caller_loop()) {
