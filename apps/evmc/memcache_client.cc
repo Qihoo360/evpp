@@ -16,7 +16,6 @@ void MemcacheClient::PushRunningCommand(CommandPtr cmd) {
     running_command_.push(cmd);
 
     if (!timeout_.IsZero()) {
-        // TODO: 权衡 caller_loop_ 是否要用 shared_ptr
         TimerEventPtr timer(new evpp::TimerEventWatcher(exec_loop_.get(),
                 std::bind(&MemcacheClient::OnPacketTimeout, shared_from_this(), cmd->id()), timeout_));
         timer->Init();
