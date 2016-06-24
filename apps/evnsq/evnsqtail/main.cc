@@ -9,8 +9,9 @@
 
 
 
-void OnMessage(const evnsq::Message* msg) {
-    LOG_INFO << "Received a message, id=" << std::string(msg->id, evnsq::kMessageIDLen) << " message=[" << std::string(msg->body, msg->body_len) << "]";
+int OnMessage(const evnsq::Message* msg) {
+    LOG_INFO << "Received a message, id=" << msg->id << " message=[" << std::string(msg->body, msg->body_len) << "]";
+    return 0;
 }
 
 void OnConnection(const evpp::TCPConnPtr& conn) {

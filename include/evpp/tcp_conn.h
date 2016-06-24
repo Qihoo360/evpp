@@ -50,7 +50,9 @@ namespace evpp {
         const std::string& remote_addr() const { return remote_addr_; }
         const std::string& name() const { return name_; }
         bool IsConnected() const { return status_ == kConnected; }
+        bool IsConnecting() const { return status_ == kConnecting; }
         bool IsDisconnected() const { return status_ == kDisconnected; }
+        bool IsDisconnecting() const { return status_ == kDisconnecting; }
         Type type() const { return type_; }
         void set_type(Type t) { type_ = t; }
         Status status() const { return status_; }
