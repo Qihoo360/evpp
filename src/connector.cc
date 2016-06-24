@@ -63,6 +63,8 @@ namespace evpp {
         if (getsockopt(chan_->fd(), SOL_SOCKET, SO_ERROR, (char*)&err, (socklen_t *)&len) != 0) {
             err = errno;
             LOG_ERROR << "getsockopt failed err=" << err << " " << strerror(err);
+        } else {
+            EVUTIL_SET_SOCKET_ERROR(err);
         }
 
         if (err != 0) {
