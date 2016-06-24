@@ -6,6 +6,7 @@
 
 namespace evnsq {
     enum { kMessageIDLen = 16 };
+    enum { kFrameTypeResponse = 0, kFrameTypeError = 1, kFrameTypeMessage = 2, };
     struct Message {
         int64_t timestamp;
         uint16_t attempts;
