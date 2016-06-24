@@ -52,6 +52,7 @@ namespace evpp {
     void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
         if (sockfd < 0) {
             LOG_INFO << "Failed to connect to " << remote_addr_ << ". errno=" << errno << " " << strerror(errno);
+            conn_fn_(TCPConnPtr());
             if (auto_reconnect_.load() != 0) {
                 Reconnect();
             }
@@ -70,7 +71,6 @@ namespace evpp {
             std::lock_guard<std::mutex> guard(mutex_);
             conn_ = c;
         }
-
         c->OnAttachedToLoop();
     }
 
