@@ -27,8 +27,7 @@ namespace evnsq {
     void Consumer::OnConnection(const evpp::TCPConnPtr& conn) {
         if (conn->IsConnected()) {
             assert(kConnecting);
-            status_ = kSendingMagic;
-            conn->Send(kNSQMagic);
+            Identify();
         } else {
             //TODO
             LOG_ERROR << "Connect to " << tcpc_->remote_addr() << " failed.";
@@ -41,23 +40,17 @@ namespace evnsq {
         }
 
         size_t size = buf->PeekInt32();
-        if (size > buf->size()) {
+        if (buf->size() < size) {
             // need to read more data
             return;
         }
         buf->Skip(sizeof int32_t);
+        //LOG_INFO << "Recv a data from NSQD msg body len=" << size - 4 << " body=[" << std::string(buf->data(), size - 4) << "]";
         int32_t frame_type = buf->ReadInt32();
         switch (status_) {
         case evnsq::Consumer::kDisconnected:
             break;
         case evnsq::Consumer::kConnecting:
-            break;
-        case evnsq::Consumer::kSendingMagic:
-            if (buf->NextString(size - sizeof(frame_type)) == kOK) {
-                Identify();
-            } else {
-                //TODO
-            }
             break;
         case evnsq::Consumer::kIdentifying:
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
@@ -69,7 +62,7 @@ namespace evnsq {
         case evnsq::Consumer::kSubscribing:
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 status_ = kConnected;
-                UpdateReady(1);
+                UpdateReady(3); //TODO RDY count
             } else {
                 //TODO
             }
@@ -83,10 +76,25 @@ namespace evnsq {
     }
 
     void Consumer::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) {
-        Message msg;
-        msg.Decode(message_len, buf);
-        if (msg_fn_) {
-            msg_fn_(&msg);
+        if (frame_type == kFrameTypeResponse) {
+            if (strncmp(buf->data(), "_heartbeat_", 11) == 0) {
+                Command c;
+                c.Nop();
+                WriteCommand(c);
+            } else {
+                LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
+            }
+            buf->Skip(message_len);
+            return;
+        }
+
+        if (frame_type == kFrameTypeMessage) {
+            Message msg;
+            msg.Decode(message_len, buf);
+            if (msg_fn_) {
+                msg_fn_(&msg);
+            }
+            return;
         }
     }
 
@@ -97,6 +105,7 @@ namespace evnsq {
     }
 
     void Consumer::Identify() {
+        tcpc_->conn()->Send(kNSQMagic);
         Command c;
         c.Identify(option_.ToJSON());
         WriteCommand(c);
