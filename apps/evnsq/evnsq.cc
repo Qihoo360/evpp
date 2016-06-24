@@ -29,8 +29,11 @@ namespace evnsq {
             assert(kConnecting);
             Identify();
         } else {
-            //TODO
-            LOG_ERROR << "Connect to " << tcpc_->remote_addr() << " failed.";
+            if (conn->IsDisconnecting()) {
+                LOG_ERROR << "Connection to " << tcpc_->remote_addr() << " was closed by remote server.";
+            } else {
+                LOG_ERROR << "Connect to " << tcpc_->remote_addr() << " failed.";
+            }
         }
     }
 
@@ -78,6 +81,7 @@ namespace evnsq {
     void Consumer::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) {
         if (frame_type == kFrameTypeResponse) {
             if (strncmp(buf->data(), "_heartbeat_", 11) == 0) {
+                LOG_TRACE << "recv heartbeat";
                 Command c;
                 c.Nop();
                 WriteCommand(c);
@@ -92,7 +96,11 @@ namespace evnsq {
             Message msg;
             msg.Decode(message_len, buf);
             if (msg_fn_) {
-                msg_fn_(&msg);
+                if (msg_fn_(&msg) == 0) {
+                    Finish(msg.id);
+                } else {
+                    Requeue(msg.id);
+                }
             }
             return;
         }
@@ -125,4 +133,16 @@ namespace evnsq {
         WriteCommand(c);
     }
 
+
+    void Consumer::Finish(const std::string& id) {
+        Command c;
+        c.Finish(id);
+        WriteCommand(c);
+    }
+
+    void Consumer::Requeue(const std::string& id) {
+        Command c;
+        c.Requeue(id, evpp::Duration(0));
+        WriteCommand(c);
+    }
 }

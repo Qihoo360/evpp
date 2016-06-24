@@ -161,8 +161,9 @@ namespace evpp {
             }
         } else {
             if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
-                LOG_WARN << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno);
+                LOG_DEBUG << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno);
             } else {
+                LOG_DEBUG << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno) << " We are closing this connection now.";
                 HandleClose();
             }
         }
