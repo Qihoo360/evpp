@@ -38,7 +38,6 @@ struct MultiGetResult {
     std::map<std::string, GetResult> get_result_map_;
 };
 
-// TODO : use reference type ?
 typedef std::function<void(const std::string& key, const GetResult& result)> GetCallback;
 typedef std::function<void(const std::string& key, int code)> SetCallback;
 typedef std::function<void(const std::string& key, int code)> RemoveCallback;
