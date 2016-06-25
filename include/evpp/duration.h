@@ -41,13 +41,15 @@ namespace evpp {
 
         bool IsZero() const;
         bool operator< (const Duration& rhs) const;
-        bool operator<= (const Duration& rhs) const;
+        bool operator<=(const Duration& rhs) const;
+        bool operator> (const Duration& rhs) const;
+        bool operator>=(const Duration& rhs) const;
         bool operator==(const Duration& rhs) const;
 
         Duration operator+=(const Duration& rhs);
         Duration operator-=(const Duration& rhs);
-        Duration operator*=(int n);
-        Duration operator/=(int n);
+        Duration operator*=(int ns);
+        Duration operator/=(int ns);
 
     private:
         int64_t ns_; // nanoseconds
