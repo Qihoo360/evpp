@@ -101,6 +101,7 @@
     <ClCompile Include="..\test\event_loop_thread_test.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\test\evhttp_client_sample.cc" />
     <ClCompile Include="..\test\invoke_timer_test.cc" />
     <ClCompile Include="..\test\memcache_client_test.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

@@ -14,6 +14,14 @@ TEST_UNIT(testDuration)
     H_TEST_ASSERT(d1 < d2);
     H_TEST_ASSERT(d2 == d3);
     H_TEST_ASSERT(d0.IsZero());
+    H_TEST_ASSERT(d0 <= d1);
+    H_TEST_ASSERT(d1 <= d2);
+    H_TEST_ASSERT(d2 <= d3);
+    H_TEST_ASSERT(d2 >= d3);
+    H_TEST_ASSERT(d1 > d0);
+    H_TEST_ASSERT(d2 > d1);
+    H_TEST_ASSERT(d1 >= d0);
+    H_TEST_ASSERT(d2 >= d1);
 }
 
 TEST_UNIT(testTimestamp)
