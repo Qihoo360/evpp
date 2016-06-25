@@ -13,7 +13,7 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="base">
+    <Filter Include="common">
       <UniqueIdentifier>{6ca2fb00-be15-47fe-9feb-f1d90072f75e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -46,10 +46,10 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\test\time_test.cc">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\test\glog_test.cc">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\test\tcp_server_test.cc">
       <Filter>src</Filter>
@@ -60,14 +60,14 @@
     <ClCompile Include="..\test\invoke_timer_test.cc">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\evhttp_client_sample.cc">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\test\any_test.cc">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\test\utility_test.cc">
-      <Filter>base</Filter>
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\evhttp_client_test.cc">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
