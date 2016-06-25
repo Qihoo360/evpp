@@ -18,6 +18,10 @@
     <ClCompile Include="..\src\event_loop_thread.cc" />
     <ClCompile Include="..\src\event_loop_thread_pool.cc" />
     <ClCompile Include="..\src\fd_channel.cc" />
+    <ClCompile Include="..\src\httpc\conn.cc" />
+    <ClCompile Include="..\src\httpc\request.cc" />
+    <ClCompile Include="..\src\httpc\response.cc" />
+    <ClCompile Include="..\src\httpc\pool.cc" />
     <ClCompile Include="..\src\inner_pre.cc" />
     <ClCompile Include="..\src\invoke_timer.cc" />
     <ClCompile Include="..\src\libevent_compact.cc" />
@@ -42,6 +46,10 @@
     <ClInclude Include="..\include\evpp\exp.h" />
     <ClInclude Include="..\include\evpp\fd_channel.h" />
     <ClInclude Include="..\include\evpp\gettimeofday.h" />
+    <ClInclude Include="..\include\evpp\httpc\conn.h" />
+    <ClInclude Include="..\include\evpp\httpc\request.h" />
+    <ClInclude Include="..\include\evpp\httpc\response.h" />
+    <ClInclude Include="..\include\evpp\httpc\pool.h" />
     <ClInclude Include="..\include\evpp\inner_pre.h" />
     <ClInclude Include="..\include\evpp\invoke_timer.h" />
     <ClInclude Include="..\include\evpp\libevent_headers.h" />
