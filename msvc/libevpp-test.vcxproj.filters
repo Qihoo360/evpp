@@ -63,6 +63,9 @@
     <ClCompile Include="..\test\invoke_timer_test.cc">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\utility_test.cc">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\test\test_common.h">
