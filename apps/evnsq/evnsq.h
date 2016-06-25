@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <atomic>
+#include <map>
 
 #include <evpp/exp.h>
 #include <evpp/tcp_callbacks.h>
@@ -14,6 +15,7 @@
 namespace evpp {
     class EventLoop;
     class TCPClient;
+    typedef std::shared_ptr<evpp::TCPClient> TCPClientPtr;
 }
 
 namespace evnsq {
@@ -37,30 +39,37 @@ namespace evnsq {
         //
         // When the returned value is non-zero Consumer will automatically handle REQueing.
         typedef std::function<int(const Message*)> MessageCallback;
+        struct NSQTCPClient {
+            evpp::TCPClientPtr c;
+            Status s;
+            NSQTCPClient() : s(kDisconnected) {}
+            NSQTCPClient(const evpp::TCPClientPtr& client) : c(client), s(kDisconnected) {}
+            NSQTCPClient(const evpp::TCPClientPtr& client, Status status) : c(client), s(status) {}
+        };
     public:
         Consumer(evpp::EventLoop* loop, const std::string& topic, const std::string& channel, const Option& ops);
         ~Consumer();
-        bool ConnectToNSQD(const std::string& addr);
+        void ConnectToNSQD(const std::string& addr/*host:port*/);
+        void ConnectToNSQDs(const std::string& addrs/*host1:port1,host2:port2*/);
         void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
     private:
         void OnConnection(const evpp::TCPConnPtr& conn);
         void OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp ts);
     private:
-        void OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf);
-        void WriteCommand(const Command& c);
+        void OnMessage(const NSQTCPClient& tc, size_t message_len, int32_t frame_type, evpp::Buffer* buf);
+        void WriteCommand(const NSQTCPClient& tc, const Command& c);
     private:
-        void Identify();
-        void Subscribe();
-        void UpdateReady(int count);
-        void Finish(const std::string& id);
-        void Requeue(const std::string& id);
+        void Identify(NSQTCPClient& tc);
+        void Subscribe(NSQTCPClient& tc);
+        void UpdateReady(const NSQTCPClient& tc, int count);
+        void Finish(const NSQTCPClient& tc, const std::string& id);
+        void Requeue(const NSQTCPClient& tc, const std::string& id);
     private:
         evpp::EventLoop* loop_;
         Option option_;
-        Status status_;
         std::string topic_;
         std::string channel_;
-        std::shared_ptr<evpp::TCPClient> tcpc_;
+        std::map<std::string, NSQTCPClient> conns_;
         MessageCallback msg_fn_;
 
 //         int64_t messagesInFlight
