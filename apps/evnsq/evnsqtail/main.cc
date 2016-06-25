@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
     evnsq::Consumer client(&loop, "test", "ch1", evnsq::Option());
     client.SetMessageCallback(&OnMessage);
 //     client.SetConnectionCallback(&OnConnection);
-    client.ConnectToNSQD(addr);
+    client.ConnectToNSQDs(addr);
     loop.Run();
     return 0;
 }
