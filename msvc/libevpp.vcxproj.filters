@@ -4,15 +4,8 @@
     <Filter Include="evloop">
       <UniqueIdentifier>{6a94d149-6f7b-47af-94e3-19d9eab3d441}</UniqueIdentifier>
     </Filter>
-    <Filter Include="event">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="sockets">
       <UniqueIdentifier>{eee53411-c7a0-4552-85ab-81e36a0b66cc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="tcp">
-      <UniqueIdentifier>{d854f834-9974-478e-b538-06390c055be3}</UniqueIdentifier>
     </Filter>
     <Filter Include="time">
       <UniqueIdentifier>{db27fc34-e756-45b7-92eb-38df61f5dae1}</UniqueIdentifier>
@@ -21,11 +14,11 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="httpclient">
+      <UniqueIdentifier>{864b010e-26b9-4613-93ed-6283fa419625}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\libevent_watcher.cc">
-      <Filter>event</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\inner_pre.cc">
       <Filter>common</Filter>
     </ClCompile>
@@ -47,23 +40,8 @@
     <ClCompile Include="..\src\event_loop_thread_pool.cc">
       <Filter>evloop</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\listener.cc">
-      <Filter>tcp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tcp_conn.cc">
-      <Filter>tcp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tcp_server.cc">
-      <Filter>tcp</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\sockets.cc">
       <Filter>sockets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\tcp_client.cc">
-      <Filter>tcp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\connector.cc">
-      <Filter>tcp</Filter>
     </ClCompile>
     <ClCompile Include="..\src\duration.cc">
       <Filter>time</Filter>
@@ -73,6 +51,36 @@
     </ClCompile>
     <ClCompile Include="..\src\buffer.cc">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\libevent_watcher.cc">
+      <Filter>evloop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\connector.cc">
+      <Filter>sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\listener.cc">
+      <Filter>sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tcp_client.cc">
+      <Filter>sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tcp_conn.cc">
+      <Filter>sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tcp_server.cc">
+      <Filter>sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\httpc\pool.cc">
+      <Filter>httpclient</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\httpc\response.cc">
+      <Filter>httpclient</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\httpc\request.cc">
+      <Filter>httpclient</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\httpc\conn.cc">
+      <Filter>httpclient</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -88,9 +96,6 @@
     <ClInclude Include="..\include\evpp\fd_channel.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\libevent_watcher.h">
-      <Filter>event</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\evpp\event_loop.h">
       <Filter>evloop</Filter>
     </ClInclude>
@@ -105,24 +110,6 @@
     </ClInclude>
     <ClInclude Include="..\include\evpp\evpp_export.h">
       <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\listener.h">
-      <Filter>tcp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\tcp_conn.h">
-      <Filter>tcp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\tcp_server.h">
-      <Filter>tcp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\tcp_callbacks.h">
-      <Filter>tcp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\tcp_client.h">
-      <Filter>tcp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\evpp\connector.h">
-      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\log_config.h">
       <Filter>common</Filter>
@@ -165,6 +152,39 @@
     </ClInclude>
     <ClInclude Include="..\include\evpp\utility.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\libevent_watcher.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\tcp_server.h">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\connector.h">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\listener.h">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\tcp_callbacks.h">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\tcp_client.h">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\tcp_conn.h">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\httpc\pool.h">
+      <Filter>httpclient</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\httpc\response.h">
+      <Filter>httpclient</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\httpc\request.h">
+      <Filter>httpclient</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\httpc\conn.h">
+      <Filter>httpclient</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

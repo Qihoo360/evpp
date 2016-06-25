@@ -13,6 +13,7 @@
 	#include <event/event.h>
 	#include <event/evhttp.h>
     #include <event/evutil.h>
+    //#include <event/compat/sys/queue.h>
     #define _LIBEVENT14 1
 #else
 	#include <sys/queue.h>
