@@ -55,12 +55,20 @@ namespace evpp {
         t->tv_usec = (long)(ns_ % kSecond) / kMicrosecond;
     }
 
-    inline bool Duration::operator< (const Duration& rhs) const {
+    inline bool Duration::operator<(const Duration& rhs) const {
         return ns_ < rhs.ns_;
     }
 
-    inline bool Duration::operator<= (const Duration& rhs) const {
+    inline bool Duration::operator<=(const Duration& rhs) const {
         return ns_ <= rhs.ns_;
+    }
+
+    inline bool Duration::operator>(const Duration& rhs) const {
+        return ns_ > rhs.ns_;
+    }
+
+    inline bool Duration::operator>=(const Duration& rhs) const {
+        return ns_ >= rhs.ns_;
     }
 
     inline bool Duration::operator==(const Duration& rhs) const {

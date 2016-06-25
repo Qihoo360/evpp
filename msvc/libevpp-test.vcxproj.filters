@@ -54,17 +54,20 @@
     <ClCompile Include="..\test\tcp_server_test.cc">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\any_test.cc">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\test\memcache_client_test.cc">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\test\invoke_timer_test.cc">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\utility_test.cc">
+    <ClCompile Include="..\test\evhttp_client_sample.cc">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\any_test.cc">
+      <Filter>base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\utility_test.cc">
+      <Filter>base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
