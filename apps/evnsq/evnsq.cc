@@ -62,7 +62,7 @@ namespace evnsq {
         }
         auto it = conns_.find(conn->remote_addr());
         assert(it != conns_.end());
-        buf->Skip(sizeof int32_t);
+        buf->Skip(4); // 4 bytes of size
         //LOG_INFO << "Recv a data from NSQD msg body len=" << size - 4 << " body=[" << std::string(buf->data(), size - 4) << "]";
         int32_t frame_type = buf->ReadInt32();
         switch (it->second.s) {
