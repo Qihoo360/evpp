@@ -112,6 +112,7 @@ namespace evnsq {
             Message msg;
             msg.Decode(message_len, buf);
             if (msg_fn_) {
+                //TODO dispatch msg to a working thread pool
                 if (msg_fn_(&msg) == 0) {
                     Finish(tc, msg.id);
                 } else {
@@ -119,6 +120,10 @@ namespace evnsq {
                 }
             }
             return;
+        }
+
+        if (frame_type == kFrameTypeError) {
+            //TODO add error processing logic
         }
     }
 
