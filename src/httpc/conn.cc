@@ -13,11 +13,11 @@ namespace evpp {
             , evhttp_conn_(NULL) {
         }
 
-        Conn::Conn(EventLoop* l, const std::string& host, int port, Duration timeout)
+        Conn::Conn(EventLoop* l, const std::string& h, int p, Duration t)
             : loop_(l), pool_(NULL)
-            , host_(host)
-            , port_(port)
-            , timeout_(timeout)
+            , host_(h)
+            , port_(p)
+            , timeout_(t)
             , evhttp_conn_(NULL) {
         }
 
