@@ -19,7 +19,6 @@ namespace evpp {
             //! \param[in] - EventLoop * loop
             //! \param[in] - const std::string & uri The URI of the HTTP request
             //! \param[in] - const std::string & body
-            //! \return - 
             Request(ConnPool* pool, EventLoop* loop, const std::string& uri, const std::string& body);
             
             //! \brief Create a HTTP Request and create Conn myself
@@ -27,8 +26,6 @@ namespace evpp {
             //! \param[in] - const std::string & url The URL of the HTTP request
             //! \param[in] - const std::string & body
             //! \param[in] - Duration timeout
-            //! \return - 
-            //! \return - 
             Request(EventLoop* loop, const std::string& url, const std::string& body, Duration timeout);
             ~Request();
 
