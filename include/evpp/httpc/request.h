@@ -36,6 +36,9 @@ namespace evpp {
 
             //ConnPool* pool() { return pool_; }
             //EventLoop* loop() { return loop_; }
+
+            const std::shared_ptr<Conn>& conn() const { return conn_; }
+            struct evhttp_connection* evhttp_conn() const { return conn_->evhttp_conn(); }
         private:
             static void Request::HandleResponse(struct evhttp_request* r, void *v);
             void ExecuteInLoop(const Handler& h);
