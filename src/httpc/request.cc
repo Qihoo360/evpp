@@ -94,7 +94,7 @@ namespace evpp {
             std::shared_ptr<Response> response;
             if (rsp) {
                 //ec = kOK;
-                response.reset(new Response(rsp));
+                response.reset(new Response(thiz, rsp));
                 if (thiz->pool_) {
                     thiz->pool_->Put(thiz->conn_);
                 }
