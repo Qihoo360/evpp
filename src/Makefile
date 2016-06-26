@@ -21,7 +21,7 @@ LDFLAGS= $(RTFLAGS) -lpthread \
 		 -levent -lglog
 
 
-SRCS := $(wildcard *.cc)
+SRCS := $(wildcard *.cc) $(wildcard httpc/*.cc)
 OBJS := $(patsubst %.cc, %.o, $(SRCS)) $(CCOBJS)
 DEPS := $(patsubst %.o, %.d, $(OBJS))
 

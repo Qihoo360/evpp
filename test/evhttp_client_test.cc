@@ -52,6 +52,7 @@ TEST_UNIT(testHTTPRequest1) {
     t.Start(true);
     std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("qup.f.360.cn", 80, evpp::Duration(2.0)));
     evpp::httpc::Request r(pool.get(), t.event_loop(), "/status.html", "");
+    LOG_INFO << "Do http request";
     r.Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
     while (!responsed) {
         usleep(1);
@@ -67,6 +68,7 @@ TEST_UNIT(testHTTPRequest2) {
     evpp::EventLoopThread t;
     t.Start(true);
     evpp::httpc::Request r(t.event_loop(), "http://qup.f.360.cn/status.html?a=1", "", evpp::Duration(2.0));
+    LOG_INFO << "Do http request";
     r.Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
     while (!responsed) {
         usleep(1);
