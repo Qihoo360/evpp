@@ -1,7 +1,7 @@
 
 #include "evpp/libevent_headers.h"
 #include "evpp/httpc/conn.h"
-#include "evpp/httpc/pool.h"
+#include "evpp/httpc/conn_pool.h"
 #include "evpp/httpc/response.h"
 
 namespace evpp {

@@ -118,6 +118,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\test\glog_test.cc" />
+    <ClCompile Include="..\test\url_parser_test.cc" />
     <ClCompile Include="..\test\utility_test.cc" />
     <ClCompile Include="..\test\winmain.cc" />
   </ItemGroup>

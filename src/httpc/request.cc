@@ -1,19 +1,26 @@
 
 #include "evpp/libevent_headers.h"
 #include "evpp/httpc/conn.h"
-#include "evpp/httpc/pool.h"
+#include "evpp/httpc/conn_pool.h"
 #include "evpp/httpc/response.h"
 #include "evpp/httpc/request.h"
+#include "evpp/httpc/url_parser.h"
 
 namespace evpp {
     namespace httpc {
-        Request::Request(Pool* pool, EventLoop* loop, const std::string& uri, const std::string& body) 
+        Request::Request(ConnPool* pool, EventLoop* loop, const std::string& uri, const std::string& body) 
             : pool_(pool), loop_(loop), uri_(uri), body_(body) {
 
         }
 
-        Request::~Request() {
+        Request::Request(EventLoop* loop, const std::string& url, const std::string& body, Duration timeout)
+            : pool_(NULL), loop_(loop), body_(body) {
+            URLParser p(url);
+            conn_.reset(new Conn(loop, p.host, atoi(p.port.data()), timeout));
+            uri_ = p.path;
+        }
 
+        Request::~Request() {
         }
 
         void Request::Execute(const Handler& h) {
@@ -28,13 +35,21 @@ namespace evpp {
             handler_ = h;
 
             std::string errmsg;
-            struct evhttp_request *req = NULL;
-            std::shared_ptr<Conn> conn = pool_->Get(loop_);
-            if (!conn->Init()) {
-                errmsg = "conn init fail";
-                goto failed;
+            struct evhttp_request* req = NULL;
+            if (conn_) {
+                assert(pool_ == NULL);
+                if (!conn_->Init()) {
+                    errmsg = "conn init fail";
+                    goto failed;
+                }
+            } else {
+                assert(pool_);
+                conn_ = pool_->Get(loop_);
+                if (!conn_->Init()) {
+                    errmsg = "conn init fail";
+                    goto failed;
+                }
             }
-            conn_ = conn;
 
             req = evhttp_request_new(&Request::HandleResponse, this);
             if (!req) {
@@ -42,7 +57,7 @@ namespace evpp {
                 goto failed;
             }
 
-            if (evhttp_add_header(req->output_headers, "host", pool_->host().c_str())) {
+            if (evhttp_add_header(req->output_headers, "host", conn_->host().c_str())) {
                 evhttp_request_free(req);
                 errmsg = "evhttp_add_header failed";
                 goto failed;
@@ -58,7 +73,7 @@ namespace evpp {
                 }
             }
 
-            if (evhttp_make_request(conn->evhttp_conn(), req, req_type, uri_.c_str())) {
+            if (evhttp_make_request(conn_->evhttp_conn(), req, req_type, uri_.c_str())) {
                 // here the conn has own the req, so don't free it twice.
                 errmsg = "evhttp_make_request fail";
                 goto failed;
@@ -75,14 +90,16 @@ namespace evpp {
             Request* thiz = (Request*)v;
             assert(thiz);
 
-            //ErrCode ec = OK;
+            //ErrCode ec = kOK;
             std::shared_ptr<Response> response;
             if (rsp) {
-                //ec = OK;
+                //ec = kOK;
                 response.reset(new Response(rsp));
-                thiz->pool_->Put(thiz->conn_);
+                if (thiz->pool_) {
+                    thiz->pool_->Put(thiz->conn_);
+                }
             } else {
-                //ec = E_CONN_FAILED;
+                //ec = kConnFaild;
             }
             thiz->handler_(response);
         }
