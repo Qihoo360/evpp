@@ -11,13 +11,13 @@
 namespace evpp {
     namespace httpc {
         class Conn;
-        typedef std::shared_ptr<Conn> HTTPConnPtr;
-        class EVPP_EXPORT Pool {
+        typedef std::shared_ptr<Conn> ConnPtr;
+        class EVPP_EXPORT ConnPool {
         public:
-            Pool(const std::string& host, int port, Duration timeout, size_t max_pool_size = 1024);
+            ConnPool(const std::string& host, int port, Duration timeout, size_t max_pool_size = 1024);
 
-            HTTPConnPtr Get(EventLoop* loop);
-            void Put(const HTTPConnPtr& c);
+            ConnPtr Get(EventLoop* loop);
+            void Put(const ConnPtr& c);
 
             const std::string& host() const { return host_; }
             int port() const { return port_; }
@@ -29,7 +29,7 @@ namespace evpp {
             size_t max_pool_size_; // The max size of the pool per EventLoop
 
             std::mutex mutex_; // The guard of pools_
-            std::map<EventLoop*, std::vector<HTTPConnPtr> > pools_;
+            std::map<EventLoop*, std::vector<ConnPtr> > pools_; // TODO make sure Conn release in EventLoop
         };
     } // httpc
 } // evpp
