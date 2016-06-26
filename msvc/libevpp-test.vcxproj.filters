@@ -16,6 +16,9 @@
     <Filter Include="common">
       <UniqueIdentifier>{6ca2fb00-be15-47fe-9feb-f1d90072f75e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="http">
+      <UniqueIdentifier>{9d3887da-b6a3-4955-a8c7-a51e691960a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\3rdparty\gtest\src\gtest_main.cc">
@@ -67,7 +70,10 @@
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\test\evhttp_client_test.cc">
-      <Filter>src</Filter>
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\url_parser_test.cc">
+      <Filter>http</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

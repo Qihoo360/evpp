@@ -1,23 +1,24 @@
-#include "evpp/httpc/pool.h"
+#include "evpp/httpc/conn_pool.h"
 #include "evpp/httpc/conn.h"
 
 namespace evpp {
     namespace httpc {
-        Pool::Pool(const std::string& h, int p, Duration t, size_t size)
+        ConnPool::ConnPool(const std::string& h, int p, Duration t, size_t size)
             : host_(h), port_(p), timeout_(t), max_pool_size_(size) {
         }
 
-        HTTPConnPtr Pool::Get(EventLoop* loop) {
+        ConnPtr ConnPool::Get(EventLoop* loop) {
+            loop->AssertInLoopThread();
             auto it = pools_.find(loop);
             if (it == pools_.end()) {
                 std::lock_guard<std::mutex> guard(mutex_);
-                pools_[loop] = std::vector<HTTPConnPtr>();
+                pools_[loop] = std::vector<ConnPtr>();
             }
 
             it = pools_.find(loop);
             assert(it != pools_.end());
 
-            HTTPConnPtr c;
+            ConnPtr c;
             if (it->second.empty()) {
                 c.reset(new Conn(this, loop));
                 return c;
@@ -27,7 +28,7 @@ namespace evpp {
             return c;
         }
 
-        void Pool::Put(const HTTPConnPtr& c) {
+        void ConnPool::Put(const ConnPtr& c) {
             EventLoop* loop = c->loop();
             loop->AssertInLoopThread();
             auto it = pools_.find(loop);
