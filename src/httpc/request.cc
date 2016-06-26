@@ -1,6 +1,5 @@
 
 #include "evpp/libevent_headers.h"
-#include "evpp/httpc/conn.h"
 #include "evpp/httpc/conn_pool.h"
 #include "evpp/httpc/response.h"
 #include "evpp/httpc/request.h"
@@ -34,6 +33,8 @@ namespace evpp {
         void Request::ExecuteInLoop(const Handler& h) {
             handler_ = h;
 
+            evhttp_cmd_type req_type = EVHTTP_REQ_GET;
+
             std::string errmsg;
             struct evhttp_request* req = NULL;
             if (conn_) {
@@ -63,7 +64,6 @@ namespace evpp {
                 goto failed;
             }
 
-            evhttp_cmd_type req_type = EVHTTP_REQ_GET;
             if (!body_.empty()) {
                 req_type = EVHTTP_REQ_POST;
                 if (evbuffer_add(req->output_buffer, body_.c_str(), body_.size())) {
