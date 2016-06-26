@@ -70,9 +70,6 @@
     <ClCompile Include="..\src\tcp_server.cc">
       <Filter>sockets</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\httpc\pool.cc">
-      <Filter>httpclient</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\httpc\response.cc">
       <Filter>httpclient</Filter>
     </ClCompile>
@@ -80,6 +77,12 @@
       <Filter>httpclient</Filter>
     </ClCompile>
     <ClCompile Include="..\src\httpc\conn.cc">
+      <Filter>httpclient</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\httpc\conn_pool.cc">
+      <Filter>httpclient</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\httpc\url_parser.cc">
       <Filter>httpclient</Filter>
     </ClCompile>
   </ItemGroup>
@@ -174,9 +177,6 @@
     <ClInclude Include="..\include\evpp\tcp_conn.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\httpc\pool.h">
-      <Filter>httpclient</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\evpp\httpc\response.h">
       <Filter>httpclient</Filter>
     </ClInclude>
@@ -184,6 +184,12 @@
       <Filter>httpclient</Filter>
     </ClInclude>
     <ClInclude Include="..\include\evpp\httpc\conn.h">
+      <Filter>httpclient</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\httpc\conn_pool.h">
+      <Filter>httpclient</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\evpp\httpc\url_parser.h">
       <Filter>httpclient</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,11 +1,24 @@
 #include "evpp/httpc/conn.h"
-#include "evpp/httpc/pool.h"
+#include "evpp/httpc/conn_pool.h"
 
 #include "evpp/libevent_headers.h"
 
 namespace evpp {
     namespace httpc {
-        Conn::Conn(Pool* p, EventLoop* l) : pool_(p), loop_(l), evhttp_conn_(NULL) {
+        Conn::Conn(ConnPool* p, EventLoop* l) 
+            : loop_(l), pool_(p)
+            , host_(p->host())
+            , port_(p->port())
+            , timeout_(p->timeout())
+            , evhttp_conn_(NULL) {
+        }
+
+        Conn::Conn(EventLoop* l, const std::string& host, int port, Duration timeout)
+            : loop_(l), pool_(NULL)
+            , host_(host)
+            , port_(port)
+            , timeout_(timeout)
+            , evhttp_conn_(NULL) {
         }
 
         Conn::~Conn() {
@@ -17,7 +30,7 @@ namespace evpp {
                 return true;
             }
 
-            evhttp_conn_ = evhttp_connection_new(pool_->host().c_str(), pool_->port());
+            evhttp_conn_ = evhttp_connection_new(host_.c_str(), port_);
             if (!evhttp_conn_) {
                 LOG_ERROR << "evhttp_connection_new failed.";
                 return false;
@@ -25,18 +38,19 @@ namespace evpp {
 
             evhttp_connection_set_base(evhttp_conn_, loop_->event_base());
 
-            if (!pool_->timeout().IsZero()) {
+            if (timeout_.IsZero()) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02010500
-                struct timeval tv = pool_->timeout().TimeVal();
+                struct timeval tv = timeout_.TimeVal();
                 evhttp_connection_set_timeout_tv(evhttp_conn_, &tv);
 #else
-                double timeout_sec = pool_->timeout().Seconds();
+                double timeout_sec = timeout_.Seconds();
                 if (timeout_sec < 1.0) {
                     timeout_sec = 1.0;
                 }
                 evhttp_connection_set_timeout(evhttp_conn_, int(timeout_sec));
 #endif
             }
+            return true;
         }
 
         void Conn::Close() {
@@ -45,6 +59,5 @@ namespace evpp {
                 evhttp_conn_ = NULL;
             }
         }
-
 } // httpc
 } // evpp
