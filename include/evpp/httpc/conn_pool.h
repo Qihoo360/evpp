@@ -29,7 +29,7 @@ namespace evpp {
             size_t max_pool_size_; // The max size of the pool per EventLoop
 
             std::mutex mutex_; // The guard of pools_
-            std::map<EventLoop*, std::vector<ConnPtr> > pools_; // TODO make sure Conn release in EventLoop
+            std::map<EventLoop*, std::vector<ConnPtr> > pool_; // TODO make sure all Conn released in EventLoop
         };
     } // httpc
 } // evpp
