@@ -34,11 +34,11 @@ RAPIDJSON_DIAG_OFF(effc++)
 // RAPIDJSON_HAS_STDSTRING
 
 #ifndef RAPIDJSON_HAS_STDSTRING
-#ifdef RAPIDJSON_DOXYGEN_RUNNING
-#define RAPIDJSON_HAS_STDSTRING 1 // force generation of documentation
-#else
-#define RAPIDJSON_HAS_STDSTRING 0 // no std::string support by default
-#endif
+//#ifdef RAPIDJSON_DOXYGEN_RUNNING
+//#define RAPIDJSON_HAS_STDSTRING 1 // force generation of documentation
+//#else
+//#define RAPIDJSON_HAS_STDSTRING 0 // no std::string support by default
+//#endif
 
 #define RAPIDJSON_HAS_STDSTRING 1 // force to support std::string, evpp
 
