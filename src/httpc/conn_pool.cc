@@ -9,14 +9,14 @@ namespace evpp {
 
         ConnPtr ConnPool::Get(EventLoop* loop) {
             loop->AssertInLoopThread();
-            auto it = pools_.find(loop);
-            if (it == pools_.end()) {
+            auto it = pool_.find(loop);
+            if (it == pool_.end()) {
                 std::lock_guard<std::mutex> guard(mutex_);
-                pools_[loop] = std::vector<ConnPtr>();
+                pool_[loop] = std::vector<ConnPtr>();
             }
 
-            it = pools_.find(loop);
-            assert(it != pools_.end());
+            it = pool_.find(loop);
+            assert(it != pool_.end());
 
             ConnPtr c;
             if (it->second.empty()) {
@@ -31,8 +31,8 @@ namespace evpp {
         void ConnPool::Put(const ConnPtr& c) {
             EventLoop* loop = c->loop();
             loop->AssertInLoopThread();
-            auto it = pools_.find(loop);
-            assert(it != pools_.end());
+            auto it = pool_.find(loop);
+            assert(it != pool_.end());
             if (it->second.size() >= max_pool_size_) {
                 return;
             }

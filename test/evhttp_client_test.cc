@@ -32,6 +32,11 @@ TEST_UNIT(evhttpClientSample) {
     event_base_dispatch(base);
 }
 
+
+
+
+
+
 namespace httpc {
     static bool responsed = false;
     static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& r, evpp::EventLoopThread* t) {
