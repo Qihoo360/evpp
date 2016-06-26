@@ -3,6 +3,8 @@
 #include "evpp/inner_pre.h"
 #include "evpp/event_loop.h"
 
+#include "evpp/httpc/conn.h"
+
 struct evhttp_connection;
 namespace evpp {
     namespace httpc {
@@ -37,7 +39,7 @@ namespace evpp {
             const std::shared_ptr<Conn>& conn() const { return conn_; }
             struct evhttp_connection* evhttp_conn() const { return conn_->evhttp_conn(); }
         private:
-            static void Request::HandleResponse(struct evhttp_request* r, void *v);
+            static void HandleResponse(struct evhttp_request* r, void *v);
             void ExecuteInLoop(const Handler& h);
         private:
             ConnPool* pool_;
