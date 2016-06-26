@@ -39,9 +39,11 @@ namespace evnsq {
         //
         // When the returned value is non-zero Consumer will automatically handle REQueing.
         typedef std::function<int(const Message*)> MessageCallback;
+
         struct NSQTCPClient {
             evpp::TCPClientPtr c;
             Status s;
+
             NSQTCPClient() : s(kDisconnected) {}
             NSQTCPClient(const evpp::TCPClientPtr& client) : c(client), s(kDisconnected) {}
             NSQTCPClient(const evpp::TCPClientPtr& client, Status status) : c(client), s(status) {}
