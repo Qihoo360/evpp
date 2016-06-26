@@ -33,4 +33,4 @@ examples/pingpong/server/pingpong_server
 core.*
 *.out
 
-
+apps/evnsq/evnsqtail/evnsqtail
