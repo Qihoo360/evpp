@@ -3,20 +3,21 @@
 #include "evpp/httpc/conn.h"
 #include "evpp/httpc/conn_pool.h"
 #include "evpp/httpc/response.h"
+#include "evpp/httpc/request.h"
 
 namespace evpp {
     namespace httpc {
-        Response::Response(struct evhttp_request* r) 
-            : evhttp_request_(r), http_code_(r->response_code) {
+        Response::Response(Request* r, struct evhttp_request* evreq)
+            : request_(r), evreq_(evreq), http_code_(evreq->response_code) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
-            struct evbuffer* evbuf = evhttp_request_get_input_buffer(r);
+            struct evbuffer* evbuf = evhttp_request_get_input_buffer(evreq);
             size_t buffer_size = evbuffer_get_length(evbuf);
             if (buffer_size > 0) {
                 this->body_ = evpp::Slice((char*)evbuffer_pullup(evbuf, -1), buffer_size);
             }
 #else
-            if (r->input_buffer->off > 0) {
-                this->body_ = evpp::Slice((char*)r->input_buffer->buffer, r->input_buffer->off);
+            if (evreq->input_buffer->off > 0) {
+                this->body_ = evpp::Slice((char*)evreq->input_buffer->buffer, evreq->input_buffer->off);
             }
 #endif
 
