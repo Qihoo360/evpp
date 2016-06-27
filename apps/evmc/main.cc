@@ -1,6 +1,8 @@
 #include "memcache_client_pool.h"
 #include <thread>
 
+#include "vbucket_config.h"
+
 namespace {
 
 using namespace evmc;
@@ -32,10 +34,36 @@ static void MyEventThread() {
     g_loop->Run();
 }
 
+static const char * keys[] =
+{
+    "hello",
+    "doctor",
+    "name",
+    "continue",
+    "yesterday",
+    "tomorrow",
+    "another key"
+};
+
+void VbucketConfTest() {
+    VbucketConfig * conf = new VbucketConfig();
+    if (!conf->Load("./test_kill_storage_cluster.json")) {
+        LOG_ERROR << "VbucketConfTest load error";
+        return;
+    }
+    for(size_t i = 0; i < sizeof(keys)/sizeof(keys[0]); ++i) {
+        uint16_t vbucket = conf->GetVbucketByKey(keys[i], strlen(keys[i]));
+        LOG_INFO << "VbucketConfTest key=" << keys[i] << " vbucket=" << vbucket;
+    }
+}
+
 }
 
 int main() {
 // TEST_UNIT(testMemcacheClient) {
+    VbucketConfTest();
+    return 0;
+
     srand(time(NULL));
     std::thread th(MyEventThread);
 
