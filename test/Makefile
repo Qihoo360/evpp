@@ -12,7 +12,6 @@ CXX := g++
 CURRENT_DIR=$(shell echo `pwd`)
 PARENT_DIRNAME=$(shell basename $(shell dirname $(CURRENT_DIR)))
 SOURCE_DIR=$(CURRENT_DIR)
-PREFIX=$(CURRENT_DIR)/../install
 
 GTESTDIR = ../3rdparty/gtest
 
@@ -22,18 +21,18 @@ CPPFLAGS= -g -c -fPIC \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
 		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11\
 		  -I ./$(GTESTDIR) \
-		  -I ../include\
+		  -I .. \
 		  -I $(SOURCE_DIR)/../3rdparty \
 
 RTFLAGS := \
     -Wl,-rpath=. \
     -Wl,-rpath=$(GCC472_PATH)/lib64 \
-    -Wl,-rpath=$(CURRENT_DIR)/../src
+    -Wl,-rpath=$(CURRENT_DIR)/../evpp
 
 LDFLAGS= $(RTFLAGS) \
-		 -L $(CURRENT_DIR)/../src \
-		 -lpthread \
-		 -levpp -levent -lglog
+	 -L $(CURRENT_DIR)/../evpp \
+	 -lpthread \
+	 -levpp -levent -lglog
 
 DIRNAME=$(shell basename `pwd`)
 
