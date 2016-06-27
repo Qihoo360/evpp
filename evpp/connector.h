@@ -1,3 +1,5 @@
+#pragma once
+
 #include "evpp/inner_pre.h"
 #include "duration.h"
 
