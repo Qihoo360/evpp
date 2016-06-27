@@ -80,7 +80,7 @@ namespace evnsq {
         case evnsq::Consumer::kSubscribing:
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 it->second.s = kConnected;
-                LOG_INFO << "Successfully connected to NSQ : " << conn->remote_addr();
+                LOG_INFO << "Successfully connected to nsqd " << conn->remote_addr();
                 UpdateReady(it->second, 3); //TODO RDY count
             } else {
                 //TODO
@@ -97,7 +97,7 @@ namespace evnsq {
     void Consumer::OnMessage(const NSQTCPClient& tc, size_t message_len, int32_t frame_type, evpp::Buffer* buf) {
         if (frame_type == kFrameTypeResponse) {
             if (strncmp(buf->data(), "_heartbeat_", 11) == 0) {
-                LOG_TRACE << "recv heartbeat";
+                LOG_TRACE << "recv heartbeat from nsqd " << tc.c->remote_addr();
                 Command c;
                 c.Nop();
                 WriteCommand(tc, c);
