@@ -57,7 +57,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../include;../3rdparty;../3rdparty/gtest;..;../3rdparty/wininclude;../3rdparty/wininclude/event;d:/cppworkspace/boost_1_58_0;../3rdparty/glog-0.3.4/src/windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../3rdparty;../3rdparty/gtest;..;../3rdparty/wininclude;../3rdparty/wininclude/event;d:/cppworkspace/boost_1_58_0;../3rdparty/glog-0.3.4/src/windows</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -76,7 +76,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../include;../3rdparty;../3rdparty/gtest;..;../3rdparty/wininclude;../3rdparty/wininclude/event;d:/cppworkspace/boost_1_58_0;../3rdparty/glog-0.3.4/src/windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../3rdparty;../3rdparty/gtest;..;../3rdparty/wininclude;../3rdparty/wininclude/event;d:/cppworkspace/boost_1_58_0;../3rdparty/glog-0.3.4/src/windows</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -88,8 +88,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\3rdparty\gtest\src\gtest-all.cc" />
-    <ClCompile Include="..\3rdparty\gtest\src\gtest_main.cc" />
+    <ClCompile Include="..\3rdparty\gte..\evpp\gtest-all.cc" />
+    <ClCompile Include="..\3rdparty\gte..\evpp\gtest_main.cc" />
     <ClCompile Include="..\test\any_test.cc" />
     <ClCompile Include="..\test\buffer_test.cc" />
     <ClCompile Include="..\test\event_loop_test.cc">

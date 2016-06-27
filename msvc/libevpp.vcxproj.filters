@@ -19,177 +19,177 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\inner_pre.cc">
+    <ClCompile Include="..\evpp\inner_pre.cc">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libevent_compact.cc">
+    <ClCompile Include="..\evpp\libevent_compact.cc">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\pch.cc">
+    <ClCompile Include="..\evpp\pch.cc">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\fd_channel.cc">
+    <ClCompile Include="..\evpp\fd_channel.cc">
       <Filter>sockets</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\event_loop.cc">
+    <ClCompile Include="..\evpp\event_loop.cc">
       <Filter>evloop</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\event_loop_thread.cc">
+    <ClCompile Include="..\evpp\event_loop_thread.cc">
       <Filter>evloop</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\event_loop_thread_pool.cc">
+    <ClCompile Include="..\evpp\event_loop_thread_pool.cc">
       <Filter>evloop</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\sockets.cc">
+    <ClCompile Include="..\evpp\sockets.cc">
       <Filter>sockets</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\duration.cc">
+    <ClCompile Include="..\evpp\duration.cc">
       <Filter>time</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\invoke_timer.cc">
+    <ClCompile Include="..\evpp\invoke_timer.cc">
       <Filter>evloop</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\buffer.cc">
+    <ClCompile Include="..\evpp\buffer.cc">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\libevent_watcher.cc">
+    <ClCompile Include="..\evpp\libevent_watcher.cc">
       <Filter>evloop</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\connector.cc">
+    <ClCompile Include="..\evpp\connector.cc">
       <Filter>sockets</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\listener.cc">
+    <ClCompile Include="..\evpp\listener.cc">
       <Filter>sockets</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\tcp_client.cc">
+    <ClCompile Include="..\evpp\tcp_client.cc">
       <Filter>sockets</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\tcp_conn.cc">
+    <ClCompile Include="..\evpp\tcp_conn.cc">
       <Filter>sockets</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\tcp_server.cc">
+    <ClCompile Include="..\evpp\tcp_server.cc">
       <Filter>sockets</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\httpc\response.cc">
+    <ClCompile Include="..\evpp\httpc\response.cc">
       <Filter>httpclient</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\httpc\request.cc">
+    <ClCompile Include="..\evpp\httpc\request.cc">
       <Filter>httpclient</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\httpc\conn.cc">
+    <ClCompile Include="..\evpp\httpc\conn.cc">
       <Filter>httpclient</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\httpc\conn_pool.cc">
+    <ClCompile Include="..\evpp\httpc\conn_pool.cc">
       <Filter>httpclient</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\httpc\url_parser.cc">
+    <ClCompile Include="..\evpp\httpc\url_parser.cc">
       <Filter>httpclient</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\evpp\exp.h">
+    <ClInclude Include="..\evpp\exp.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\inner_pre.h">
+    <ClInclude Include="..\evpp\inner_pre.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\libevent_headers.h">
+    <ClInclude Include="..\evpp\libevent_headers.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\fd_channel.h">
+    <ClInclude Include="..\evpp\fd_channel.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\event_loop.h">
+    <ClInclude Include="..\evpp\event_loop.h">
       <Filter>evloop</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\event_loop_thread.h">
+    <ClInclude Include="..\evpp\event_loop_thread.h">
       <Filter>evloop</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\event_loop_thread_pool.h">
+    <ClInclude Include="..\evpp\event_loop_thread_pool.h">
       <Filter>evloop</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\sockets.h">
+    <ClInclude Include="..\evpp\sockets.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\evpp_export.h">
+    <ClInclude Include="..\evpp\evpp_export.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\log_config.h">
+    <ClInclude Include="..\evpp\log_config.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\platform_config.h">
+    <ClInclude Include="..\evpp\platform_config.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\duration.h">
+    <ClInclude Include="..\evpp\duration.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\duration.inl.h">
+    <ClInclude Include="..\evpp\duration.inl.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\gettimeofday.h">
+    <ClInclude Include="..\evpp\gettimeofday.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\timestamp.h">
+    <ClInclude Include="..\evpp\timestamp.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\timestamp.inl.h">
+    <ClInclude Include="..\evpp\timestamp.inl.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\sys_sockets.h">
+    <ClInclude Include="..\evpp\sys_sockets.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\sys_addrinfo.h">
+    <ClInclude Include="..\evpp\sys_addrinfo.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\invoke_timer.h">
+    <ClInclude Include="..\evpp\invoke_timer.h">
       <Filter>evloop</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\any.h">
+    <ClInclude Include="..\evpp\any.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\buffer.h">
+    <ClInclude Include="..\evpp\buffer.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\slice.h">
+    <ClInclude Include="..\evpp\slice.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\utility.h">
+    <ClInclude Include="..\evpp\utility.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\libevent_watcher.h">
+    <ClInclude Include="..\evpp\libevent_watcher.h">
       <Filter>evloop</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\tcp_server.h">
+    <ClInclude Include="..\evpp\tcp_server.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\connector.h">
+    <ClInclude Include="..\evpp\connector.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\listener.h">
+    <ClInclude Include="..\evpp\listener.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\tcp_callbacks.h">
+    <ClInclude Include="..\evpp\tcp_callbacks.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\tcp_client.h">
+    <ClInclude Include="..\evpp\tcp_client.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\tcp_conn.h">
+    <ClInclude Include="..\evpp\tcp_conn.h">
       <Filter>sockets</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\httpc\response.h">
+    <ClInclude Include="..\evpp\httpc\response.h">
       <Filter>httpclient</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\httpc\request.h">
+    <ClInclude Include="..\evpp\httpc\request.h">
       <Filter>httpclient</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\httpc\conn.h">
+    <ClInclude Include="..\evpp\httpc\conn.h">
       <Filter>httpclient</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\httpc\conn_pool.h">
+    <ClInclude Include="..\evpp\httpc\conn_pool.h">
       <Filter>httpclient</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\httpc\url_parser.h">
+    <ClInclude Include="..\evpp\httpc\url_parser.h">
       <Filter>httpclient</Filter>
     </ClInclude>
   </ItemGroup>
