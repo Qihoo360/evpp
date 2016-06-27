@@ -21,12 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\3rdparty\gte..\evpp\gtest_main.cc">
-      <Filter>gtest</Filter>
-    </ClCompile>
-    <ClCompile Include="..\3rdparty\gte..\evpp\gtest-all.cc">
-      <Filter>gtest</Filter>
-    </ClCompile>
     <ClCompile Include="..\test\event_watcher_test.cc">
       <Filter>src</Filter>
     </ClCompile>
@@ -74,6 +68,12 @@
     </ClCompile>
     <ClCompile Include="..\test\url_parser_test.cc">
       <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\gtest\src\gtest_main.cc">
+      <Filter>gtest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\gtest\src\gtest-all.cc">
+      <Filter>gtest</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
