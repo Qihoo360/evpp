@@ -12,8 +12,8 @@
 
 namespace evmc {
 
-static uint32_t libhashkit_digest2(const char *key, size_t key_length, hashkit_hash_algorithm_t hash_algorithm);
 /*
+static uint32_t libhashkit_digest(const char *key, size_t key_length, hashkit_hash_algorithm_t hash_algorithm);
 static uint32_t hashkit_md5(const char *key, size_t key_length, void *context __attribute__((unused)));
 */
 
@@ -33,11 +33,12 @@ static hashkit_hash_algorithm_t algorithm(const std::string& alg) {
     if (alg == "MD5") {
         return HASHKIT_HASH_MD5;
     }
-    return HASHKIT_HASH_MD5;
+    return HASHKIT_HASH_MAX;
 }
 
 uint16_t VbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
-    uint32_t digest = libhashkit_digest2(key, nkey, algorithm(algorithm_));
+    uint32_t digest = libhashkit_digest(key, nkey, algorithm(algorithm_));
+    LOG_DEBUG << "GetVbucketByKey key=" << key << " hash=" << digest << " bucket=" << digest % vbucket_map_.size();
     return digest % vbucket_map_.size();
 }
 
@@ -77,7 +78,8 @@ bool VbucketConfig::Load(const char * json_file) {
     return true;
 }
 
-uint32_t libhashkit_digest2(const char *key, size_t key_length, hashkit_hash_algorithm_t hash_algorithm) {
+/*
+uint32_t libhashkit_digest(const char *key, size_t key_length, hashkit_hash_algorithm_t hash_algorithm) {
     switch (hash_algorithm)
     {
         case HASHKIT_HASH_DEFAULT:
@@ -118,7 +120,6 @@ uint32_t libhashkit_digest2(const char *key, size_t key_length, hashkit_hash_alg
     return 1;
 }
 
-/*
 uint32_t hashkit_md5_2(const char *key, size_t key_length, void *context __attribute__((unused))) {
     unsigned char results[16];
 
