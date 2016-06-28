@@ -6,7 +6,7 @@
 
 namespace evpp {
     DNSResolver::DNSResolver(EventLoop* evloop, const std::string& host, Duration timeout, const Functor& f)
-        : loop_(evloop), host_(host), timeout_(timeout_), functor_(f), timer_(NULL) {}
+        : loop_(evloop), host_(host), timeout_(timeout), functor_(f), timer_(NULL) {}
 
     DNSResolver::~DNSResolver() {
         LOG_INFO << "DNSResolver::~DNSResolver tid=" << std::this_thread::get_id() << " this=" << this;
@@ -143,6 +143,8 @@ namespace evpp {
         }
 
         dns_ok = type;
+        (void)dns_ok;
+        (void)dns_err;
     out:
         this->functor_(this->addrs_);
         evdns_shutdown(0);
