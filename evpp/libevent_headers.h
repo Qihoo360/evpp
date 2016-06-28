@@ -13,6 +13,7 @@
 	#include <event/event.h>
 	#include <event/evhttp.h>
     #include <event/evutil.h>
+    #include <event/evdns.h>
     //#include <event/compat/sys/queue.h>
     #define _LIBEVENT14 1
 #else
@@ -21,6 +22,7 @@
         #include <event.h>
         #include <evhttp.h>
         #include <event/evutil.h>
+        #include <event/evdns.h>
     #else
         #include <event2/event.h>
         #include <event2/event_struct.h>
@@ -30,6 +32,9 @@
         #include <event2/http_compat.h>
         #include <event2/http_struct.h>
         #include <event2/event_compat.h>
+        #include <event2/dns.h>
+        #include <event2/dns_compat.h>
+        #include <event2/dns_struct.h>
 	#endif
 #endif
 

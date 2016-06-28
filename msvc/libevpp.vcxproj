@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="..\evpp\buffer.cc" />
     <ClCompile Include="..\evpp\connector.cc" />
+    <ClCompile Include="..\evpp\dns_resolver.cc" />
     <ClCompile Include="..\evpp\duration.cc" />
     <ClCompile Include="..\evpp\event_loop.cc" />
     <ClCompile Include="..\evpp\event_loop_thread.cc" />
@@ -38,6 +39,7 @@
     <ClInclude Include="..\evpp\any.h" />
     <ClInclude Include="..\evpp\buffer.h" />
     <ClInclude Include="..\evpp\connector.h" />
+    <ClInclude Include="..\evpp\dns_resolver.h" />
     <ClInclude Include="..\evpp\duration.h" />
     <ClInclude Include="..\evpp\duration.inl.h" />
     <ClInclude Include="..\evpp\event_loop.h" />
@@ -75,6 +77,7 @@
     <ProjectGuid>{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libevent</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -101,12 +104,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)bin/$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)</IntDir>
+    <OutDir>$(SolutionDir)bin/$(Configuration)/</OutDir>
+    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)/</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)bin/$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)</IntDir>
+    <OutDir>$(SolutionDir)bin/$(Configuration)/</OutDir>
+    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)/</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
