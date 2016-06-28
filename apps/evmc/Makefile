@@ -21,7 +21,7 @@ CPPFLAGS= -g -c -fPIC \
 		  -D_DEBUG -D_USE_GTEST \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
-		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11\
+		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 \
 		  -I ./$(GTESTDIR) \
 		  -I ../include\
 		  -I ../.. \
