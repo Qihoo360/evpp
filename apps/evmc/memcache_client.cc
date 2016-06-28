@@ -1,6 +1,7 @@
 #include "memcache_client.h"
 
 #include "binary_codec.h"
+#include "memcache_client_pool.h"
 
 namespace evmc {
 
@@ -68,7 +69,11 @@ void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
         running_command_.pop();
 
         LOG_WARN << "OnPacketTimeout cmd=" << cmd->id();
-        cmd->OnError(ERR_CODE_TIMEOUT);
+        if (mc_pool_ && cmd->ShouldRetry()) {
+            mc_pool_->LaunchCommand(cmd); 
+        } else {
+            cmd->OnError(ERR_CODE_TIMEOUT);
+        }
         if (cmd->id() == cmd_id) { // 不比大小比相等, 以绕过uint溢出的问题
             break;
         }
