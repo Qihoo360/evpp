@@ -12,17 +12,15 @@ CPPFLAGS= -g -c -fPIC \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
 		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11\
-		  -I $(EVPP_DIR)/include\
+		  -I $(EVPP_DIR)\
 		  -I $(EVPP_DIR)/3rdparty \
 
 RTFLAGS := \
     -Wl,-rpath=. \
-    -Wl,-rpath=$(EVPP_DIR)/src/base \
-    -Wl,-rpath=$(EVPP_DIR)/src
+    -Wl,-rpath=$(EVPP_DIR)/evpp
 
 LDFLAGS= $(RTFLAGS) \
-		 -L $(EVPP_DIR)/src/base \
-		 -L $(EVPP_DIR)/src \
+		 -L $(EVPP_DIR)/evpp \
 		 -lpthread \
 		 -levpp -levent -lglog
 
