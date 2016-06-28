@@ -8,7 +8,7 @@
 namespace evmc {
 
 void Command::Launch(MemcacheClientPtr memc_client) {
-    id_ = memc_client->next_id();
+    // id_ = memc_client->next_id();
     if (!memc_client->conn()) {
         // TODO : 触发网络错误回调
         LOG_ERROR << "Command bad memc_client " << memc_client << " id=" << id_;
@@ -30,8 +30,8 @@ bool Command::ShouldRetry() const {
     LOG_INFO << "ShouldRetry vbucket=" << vbucket_id()
              << " server_id=" << server_id()
              << " len=" << server_id_history_.size();
+    return false;
     return server_id_history_.size() < 2;
-    // return false;
 }
 
 BufferPtr SetCommand::RequestBuffer() const {
