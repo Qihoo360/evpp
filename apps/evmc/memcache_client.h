@@ -16,12 +16,13 @@
 
 namespace evmc {
 class BinaryCodec;
+class MemcacheClientPool;
 
 class MemcacheClient : public std::enable_shared_from_this<MemcacheClient> {
 public:
-    MemcacheClient(evpp::EventLoop * evloop, evpp::TCPClient * tcp_client, int timeout_ms = 249)
+    MemcacheClient(evpp::EventLoop* evloop, evpp::TCPClient* tcp_client, MemcacheClientPool* mcpool = NULL, int timeout_ms = 249)
             : id_seq_(0), exec_loop_(evloop), tcp_client_(tcp_client)
-            , timeout_(timeout_ms / 1000.0), codec_(NULL) {
+            , mc_pool_(mcpool), timeout_(timeout_ms / 1000.0), codec_(NULL) {
     }
     virtual ~MemcacheClient();
 
@@ -68,6 +69,7 @@ private:
 
     EventLoopPtr exec_loop_;
     evpp::TCPClient* tcp_client_;
+    MemcacheClientPool* mc_pool_;
     evpp::Duration timeout_;
 
     TimerEventPtr cmd_timer_;

@@ -24,7 +24,7 @@ CPPFLAGS= -g -c -fPIC \
 		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11\
 		  -I ./$(GTESTDIR) \
 		  -I ../include\
-		  -I ../../include\
+		  -I ../.. \
 		  -I $(SOURCE_DIR)/../3rdparty \
 		  -I /home/muyuwei/3rd/include
 
