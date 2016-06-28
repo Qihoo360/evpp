@@ -51,7 +51,8 @@ uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const
             if (server_ids[i] == last_id) {
                 continue;
             }
-            total_weight += server_health_[server_ids[i]];
+            // total_weight += server_health_[server_ids[i]];
+            total_weight += 1000; // for test only
             weighted_items[total_weight] = server_ids[i];
         }
         if (total_weight > 0) {
