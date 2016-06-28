@@ -7,18 +7,62 @@ namespace evmc {
 thread_local std::map<std::string, MemcacheClientPtr> MemcacheClientPool::memc_clients_;
 
 MemcacheClientPool::~MemcacheClientPool() {
+    loop_.Stop();
     loop_pool_.Stop(true);
-    if (vbucket_config_) {
-        delete vbucket_config_;
+}
+
+static evpp::Duration reload_delay(1.0);
+void MemcacheClientPool::OnReloadConfTimer() {
+    // DoReloadConf();
+    LOG_INFO << "MemcacheClientPool OnReloadConfTimer";
+
+    // evpp::InvokeTimerPtr timer = loop_.RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
+ 
+    loop_pool_.GetNextLoopWithHash(rand())->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
+  //TimerEventPtr timer(new evpp::TimerEventWatcher(loop_pool_.GetNextLoopWithHash(rand()),
+  //        , evpp::Duration(0.1)));
+  //timer->Init();
+  //timer->AsyncWait();
+}
+
+bool MemcacheClientPool::DoReloadConf() {
+    // atomic set
+    VbucketConfigPtr vbconf = std::make_shared<VbucketConfig>();
+    bool success = vbconf->Load(vbucket_conf_file_.c_str());
+
+    if (success) {
+        // std::atomic_store(&vbucket_config_, vbconf);
+        {
+            // std::lock_guard<std::mutex> lock(vbucket_config_mutex_);
+            vbucket_config_ = vbconf;
+        }
+        LOG_DEBUG << "DoReloadConf load ok, file=" << vbucket_conf_file_;
+    } else {
+        LOG_WARN << "DoReloadConf load err, file=" << vbucket_conf_file_;
     }
+
+    return success;
+}
+
+
+VbucketConfigPtr MemcacheClientPool::vbucket_config() {
+    // return std::atomic_load(&vbucket_config_);
+
+    // std::lock_guard<std::mutex> lock(vbucket_config_mutex_);
+    return vbucket_config_;
 }
 
 bool MemcacheClientPool::Start() {
-    vbucket_config_ = new VbucketConfig();
-    if (!vbucket_config_->Load(vbucket_conf_file_.c_str())) {
+    if (!DoReloadConf()) {
         return false;
     }
-    return loop_pool_.Start(true);
+
+    bool ok = loop_pool_.Start(true);
+    if (ok) {
+        loop_pool_.GetNextLoopWithHash(rand())->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
+    }
+
+    return ok;
 }
 
 void MemcacheClientPool::Set(EventLoopPtr caller_loop, const std::string& key, const std::string& value, SetCallback callback) {
@@ -26,21 +70,21 @@ void MemcacheClientPool::Set(EventLoopPtr caller_loop, const std::string& key, c
 }
 void MemcacheClientPool::Set(EventLoopPtr caller_loop, const char* key, const char* value, size_t val_len, uint32_t flags,
               uint32_t expire, SetCallback callback) {
-    uint16_t vbucket = vbucket_config_->GetVbucketByKey(key, strlen(key));
+    uint16_t vbucket = vbucket_config()->GetVbucketByKey(key, strlen(key));
     CommandPtr command(new SetCommand(caller_loop, vbucket, key, value, val_len, flags, expire, callback));
 
     caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
 }
 
 void MemcacheClientPool::Remove(EventLoopPtr caller_loop, const char* key, RemoveCallback callback) {
-    uint16_t vbucket = vbucket_config_->GetVbucketByKey(key, strlen(key));
+    uint16_t vbucket = vbucket_config()->GetVbucketByKey(key, strlen(key));
     CommandPtr command(new RemoveCommand(caller_loop, vbucket, key, callback));
 
     caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
 }
 
 void MemcacheClientPool::Get(EventLoopPtr caller_loop, const char* key, GetCallback callback) {
-    uint16_t vbucket = vbucket_config_->GetVbucketByKey(key, strlen(key));
+    uint16_t vbucket = vbucket_config()->GetVbucketByKey(key, strlen(key));
     CommandPtr command(new GetCommand(caller_loop, vbucket, key, callback));
 
     caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
@@ -79,8 +123,9 @@ void MemcacheClientPool::MultiGet(EventLoopPtr caller_loop, const std::vector<st
     uint32_t thread_hash = rand();
     std::map<uint16_t, std::vector<std::string> > vbucket_keys;
 
+    VbucketConfigPtr vbconf = vbucket_config();
     for(size_t i = 0; i < keys.size(); ++i) {
-        uint16_t vbucket = vbucket_config_->GetVbucketByKey(keys[i].c_str(), keys[i].size());
+        uint16_t vbucket = vbconf->GetVbucketByKey(keys[i].c_str(), keys[i].size());
         vbucket_keys[vbucket].push_back(keys[i]);
     }
     MultiGetCollectorPtr collector(new MultiGetCollector(caller_loop, vbucket_keys.size(), callback));
@@ -113,7 +158,8 @@ void MemcacheClientPool::OnClientConnection(const evpp::TCPConnPtr& conn, Memcac
         while(command = memc_client->PopRunningCommand()) {
             if (command->ShouldRetry()) {
                 LOG_INFO << "OnClientConnection running retry";
-                LaunchCommand(command);
+                // LaunchCommand(command);
+                command->caller_loop()->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
             } else {
                 command->OnError(ERR_CODE_NETWORK);
             }
@@ -122,7 +168,8 @@ void MemcacheClientPool::OnClientConnection(const evpp::TCPConnPtr& conn, Memcac
         while(command = memc_client->pop_waiting_command()) {
             if (command->ShouldRetry()) {
                 LOG_INFO << "OnClientConnection waiting retry";
-                LaunchCommand(command);
+                // LaunchCommand(command);
+                command->caller_loop()->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
             } else {
                 command->OnError(ERR_CODE_NETWORK);
             }
@@ -138,13 +185,14 @@ void MemcacheClientPool::LaunchCommand(CommandPtr command) {
 
 void MemcacheClientPool::DoLaunchCommand(CommandPtr command) {
     uint16_t vbucket = command->vbucket_id();
-    uint16_t server_id = vbucket_config_->SelectServerId(vbucket, command->server_id());
+    VbucketConfigPtr vbconf = vbucket_config();
+    uint16_t server_id = vbconf->SelectServerId(vbucket, command->server_id());
     if (server_id == BAD_SERVER_ID) {
          command->OnError(ERR_CODE_DISCONNECT);
          return;
     }
     command->set_server_id(server_id);
-    std::string server_addr = vbucket_config_->GetServerAddrById(server_id);
+    std::string server_addr = vbconf->GetServerAddrById(server_id);
     auto it = memc_clients_.find(server_addr);
 
     if (it == memc_clients_.end()) {
