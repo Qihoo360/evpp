@@ -61,8 +61,8 @@ void VbucketConfTest() {
 
 int main() {
 // TEST_UNIT(testMemcacheClient) {
-    VbucketConfTest();
-    return 0;
+  //VbucketConfTest();
+  //return 0;
 
     srand(time(NULL));
     std::thread th(MyEventThread);
