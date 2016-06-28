@@ -12,6 +12,7 @@ public:
     }
 
     uint32_t id() const { return id_; }
+    void set_id(uint32_t v) { id_ = v; }
     uint32_t thread_hash() const { return thread_hash_; }
     uint16_t vbucket_id() const { return vbucket_id_; }
 
@@ -51,6 +52,7 @@ public:
     }
 
     virtual void OnError(int err_code) {
+        LOG_INFO << "SetCommand OnError id=" << id();
         if (caller_loop()) {
             caller_loop()->RunInLoop(std::bind(set_callback_,
                         key_, err_code));
@@ -85,6 +87,7 @@ public:
     }
 
     virtual void OnError(int err_code) {
+        LOG_INFO << "GetCommand OnError id=" << id();
         if (caller_loop()) {
             caller_loop()->RunInLoop(std::bind(get_callback_, key_,
                         GetResult(err_code, std::string())));
@@ -115,6 +118,7 @@ public:
     }
 
     virtual void OnError(int err_code) {
+        LOG_INFO << "MultiGetCommand OnError id=" << id();
         mget_result_.code = err_code;
         if (caller_loop()) {
             caller_loop()->RunInLoop(std::bind(mget_callback_, mget_result_));
@@ -138,6 +142,7 @@ public:
            : Command(evloop, vbucket, rand()), key_(key), remove_callback_(callback) {
     }
     virtual void OnError(int err_code) {
+        LOG_INFO << "RemoveCommand OnError id=" << id();
         if (caller_loop()) {
             caller_loop()->RunInLoop(std::bind(remove_callback_, key_, err_code));
         } else {

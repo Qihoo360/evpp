@@ -41,6 +41,7 @@ public:
 
     void push_waiting_command(CommandPtr cmd) {
         if (cmd) {
+            cmd->set_id(next_id());
             waiting_command_.push(cmd);
         }
     }
@@ -72,7 +73,9 @@ private:
     MemcacheClientPool* mc_pool_;
     evpp::Duration timeout_;
 
-    TimerEventPtr cmd_timer_;
+    // TimerEventPtr cmd_timer_;
+    evpp::InvokeTimerPtr cmd_timer_; // timer的管理
+    uint32_t timer_cmd_id_;
 
     BinaryCodec * codec_;
 
