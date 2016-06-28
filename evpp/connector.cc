@@ -5,6 +5,7 @@
 #include "evpp/fd_channel.h"
 #include "evpp/sockets.h"
 #include "evpp/libevent_headers.h"
+#include "evpp/dns_resolver.h"
 
 namespace evpp {
     Connector::Connector(EventLoop* l, const std::string& raddr, Duration timeout)
@@ -26,8 +27,19 @@ namespace evpp {
     }
 
     void Connector::Start() {
-        LOG_INFO << "Try to connect " << remote_addr_;
+        LOG_INFO << "Try to connect " << remote_addr_ << " status=" << StatusToString();
         loop_->AssertInLoopThread();
+
+        if (raddr_.sin_addr.s_addr == 0) {
+            status_ = kDNSResolving;
+            auto index = remote_addr_.rfind(':');
+            assert(index != std::string::npos);
+            auto host = std::string(remote_addr_.data(), index);
+            dns_resolver_.reset(new DNSResolver(loop_, host, timeout_, std::bind(&Connector::OnDNSResolved, this, std::placeholders::_1)));
+            dns_resolver_->Start();
+            return;
+        }
+
         int fd = CreateNonblockingSocket();
         assert(fd >= 0);
         int rc = ::connect(fd, sockaddr_cast(&raddr_), sizeof(raddr_));
@@ -99,4 +111,26 @@ namespace evpp {
         HandleError();
     }
 
+
+    void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
+        if (addrs.empty()) {
+            //TODO how to p
+            LOG_ERROR << "DNS Resolve failed. host=" << remote_addr_;
+            return;
+        }
+        raddr_.sin_addr = addrs[0]; // TODO random index
+        status_ = kDNSResolved;
+        Start();
+    }
+
+
+    std::string Connector::StatusToString() const {
+        H_CASE_STRING_BIGIN(status_);
+        H_CASE_STRING(kDisconnected);
+        H_CASE_STRING(kDNSResolving);
+        H_CASE_STRING(kDNSResolved);
+        H_CASE_STRING(kConnecting);
+        H_CASE_STRING(kConnected);
+        H_CASE_STRING_END();
+    }
 }
