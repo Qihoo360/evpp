@@ -32,7 +32,9 @@
         #include <event2/http_compat.h>
         #include <event2/http_struct.h>
         #include <event2/event_compat.h>
-        #include <event2/evdns.h>
+        #include <event2/dns.h>
+        #include <event2/dns_compat.h>
+        #include <event2/dns_struct.h>
 	#endif
 #endif
 
