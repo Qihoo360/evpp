@@ -1,7 +1,9 @@
 #include "command.h"
 
 #include <memcached/protocol_binary.h>
+
 #include "memcache_client.h"
+#include "vbucket_config.h"
 
 namespace evmc {
 
@@ -17,6 +19,20 @@ void Command::Launch(MemcacheClientPtr memc_client) {
     memc_client->conn()->Send(buf->data(), buf->size());
 }
 
+uint16_t Command::server_id() const {
+    if (server_id_history_.empty()) {
+        return BAD_SERVER_ID;
+    } 
+    return server_id_history_.back(); 
+}
+
+bool Command::ShouldRetry() const {
+    LOG_INFO << "ShouldRetry vbucket=" << vbucket_id()
+             << " server_id=" << server_id()
+             << " len=" << server_id_history_.size();
+    return server_id_history_.size() < 2;
+    // return false;
+}
 
 BufferPtr SetCommand::RequestBuffer() const {
     protocol_binary_request_header req;
