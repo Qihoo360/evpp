@@ -67,13 +67,12 @@ int main() {
     srand(time(NULL));
     std::thread th(MyEventThread);
 
-    MemcacheClientPool mcp("./kill_storage_cluster.json", 32, 200);
+    MemcacheClientPool mcp("./kill_storage_cluster.json", 4, 200);
     assert(mcp.Start());
 
+    const static int MAX_KEY = 10000;
 
-    const static int MAX_KEY = 100;
-
-    for(size_t i = 0; i < MAX_KEY; i += 2) {
+    for(size_t i = 0; i < MAX_KEY; ++i) {
         std::stringstream ss_key;
         ss_key << "test" << i;
         std::stringstream ss_value;
@@ -89,25 +88,25 @@ int main() {
         mcp.Get(g_loop, ss.str().c_str(), &OnTestGetDone);
     }
 
-    std::vector<std::string> mget_keys;
-    for(size_t i = 0; i < MAX_KEY; ++i) {
-        std::stringstream ss;
-        ss << "test" << i;
-        mget_keys.push_back(ss.str());
-        if (mget_keys.size() >= 100) {
-            break;
-        }
-    }
-    mcp.MultiGet(g_loop, mget_keys, &OnTestMultiGetDone);
+//  std::vector<std::string> mget_keys;
+//  for(size_t i = 0; i < MAX_KEY; ++i) {
+//      std::stringstream ss;
+//      ss << "test" << i;
+//      mget_keys.push_back(ss.str());
+//      if (mget_keys.size() >= 100) {
+//          break;
+//      }
+//  }
+//  mcp.MultiGet(g_loop, mget_keys, &OnTestMultiGetDone);
 
-    for(size_t i = 0; i < MAX_KEY/2; ++i) {
+    for(size_t i = 0; i < MAX_KEY; ++i) {
         std::stringstream ss_key;
         ss_key << "test" << i;
         mcp.Remove(g_loop, ss_key.str().c_str(), &OnTestRemoveDone);
     }
 #endif
 
-    g_loop->RunAfter(1000.0, &StopLoop);
+    g_loop->RunAfter(50000.0, &StopLoop);
     th.join();
     return 0;
 }
