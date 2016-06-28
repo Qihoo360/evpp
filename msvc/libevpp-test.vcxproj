@@ -14,6 +14,7 @@
     <ProjectGuid>{13C5E832-391B-47E7-9907-182553B0175E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libeventtest</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -41,13 +42,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)bin/$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)</IntDir>
+    <OutDir>$(SolutionDir)bin/$(Configuration)/</OutDir>
+    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)/</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)bin/$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)</IntDir>
+    <OutDir>$(SolutionDir)bin/$(Configuration)/</OutDir>
+    <IntDir>$(SolutionDir)bin/obj/$(Configuration)/$(ProjectName)/</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -92,6 +93,7 @@
     <ClCompile Include="..\3rdparty\gtest\src\gtest_main.cc" />
     <ClCompile Include="..\test\any_test.cc" />
     <ClCompile Include="..\test\buffer_test.cc" />
+    <ClCompile Include="..\test\dns_resolver_test.cc" />
     <ClCompile Include="..\test\event_loop_test.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
