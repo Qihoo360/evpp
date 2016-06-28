@@ -56,8 +56,9 @@ namespace evpp {
 
     struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
         struct sockaddr_in addr;
+        memset(&addr, 0, sizeof(addr));
         std::string a = address;
-        size_t index = a.find_first_of(':');
+        size_t index = a.rfind(':');
         if (index == std::string::npos) {
             LOG_FATAL << "Address specified error [" << address << "]";
         }
@@ -67,10 +68,11 @@ namespace evpp {
         a[index] = '\0';
         if (::inet_pton(AF_INET, a.data(), &addr.sin_addr) <= 0) {
             int serrno = errno;
-            LOG_FATAL << "sockets::fromIpPort " << strerror(serrno);
+            LOG_ERROR << "ParseFromIPPort " << strerror(serrno);
         }
 
         //TODO add ipv6 support
+
         return addr;
     }
 
@@ -120,10 +122,9 @@ namespace evpp {
 
     void SetKeepAlive(int fd) {
         int on = 1;
-        ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
+        int rc = ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
+        assert(rc == 0);
     }
-
-
 }
 
 #ifdef H_OS_WINDOWS
