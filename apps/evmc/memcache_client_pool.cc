@@ -111,11 +111,21 @@ void MemcacheClientPool::OnClientConnection(const evpp::TCPConnPtr& conn, Memcac
 
         CommandPtr command;
         while(command = memc_client->PopRunningCommand()) {
-            command->OnError(ERR_CODE_NETWORK);
+            if (command->ShouldRetry()) {
+                LOG_INFO << "OnClientConnection running retry";
+                LaunchCommand(command);
+            } else {
+                command->OnError(ERR_CODE_NETWORK);
+            }
         }
 
         while(command = memc_client->pop_waiting_command()) {
-            command->OnError(ERR_CODE_NETWORK);
+            if (command->ShouldRetry()) {
+                LOG_INFO << "OnClientConnection waiting retry";
+                LaunchCommand(command);
+            } else {
+                command->OnError(ERR_CODE_NETWORK);
+            }
         }
     }
 }
@@ -127,18 +137,24 @@ void MemcacheClientPool::LaunchCommand(CommandPtr command) {
 }
 
 void MemcacheClientPool::DoLaunchCommand(CommandPtr command) {
-    uint32_t vbucket = command->vbucket_id();
-    std::string server_addr = vbucket_config_->GetServerAddr(vbucket);
+    uint16_t vbucket = command->vbucket_id();
+    uint16_t server_id = vbucket_config_->SelectServerId(vbucket, command->server_id());
+    if (server_id == BAD_SERVER_ID) {
+         command->OnError(ERR_CODE_DISCONNECT);
+         return;
+    }
+    command->set_server_id(server_id);
+    std::string server_addr = vbucket_config_->GetServerAddrById(server_id);
     auto it = memc_clients_.find(server_addr);
 
     if (it == memc_clients_.end()) {
         evpp::TCPClient * tcp_client = new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(command->thread_hash()),
                 server_addr, "MemcacheBinaryClient");
         MemcacheClientPtr memc_client(new MemcacheClient(loop_pool_.GetNextLoopWithHash(command->thread_hash()),
-                tcp_client, timeout_ms_));
+                tcp_client, this, timeout_ms_));
         LOG_INFO << "DoLaunchCommand new tcp_client=" << tcp_client << " memc_client=" << memc_client;
 
-        tcp_client->SetConnectionCallback(std::bind(&MemcacheClientPool::OnClientConnection,
+        tcp_client->SetConnectionCallback(std::bind(&MemcacheClientPool::OnClientConnection, this,
                     std::placeholders::_1, memc_client));
         tcp_client->SetMessageCallback(std::bind(&MemcacheClient::OnResponseData, memc_client,
                     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
@@ -156,7 +172,12 @@ void MemcacheClientPool::DoLaunchCommand(CommandPtr command) {
         it->second->PushRunningCommand(command);
         command->Launch(it->second);
     } else {
-        command->OnError(ERR_CODE_DISCONNECT);
+        if (command->ShouldRetry()) {
+            LOG_INFO << "OnClientConnection disconnect retry";
+            LaunchCommand(command);
+        } else {
+            command->OnError(ERR_CODE_DISCONNECT);
+        }
     }
 }
 
