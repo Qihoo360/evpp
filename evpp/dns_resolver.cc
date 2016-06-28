@@ -45,6 +45,9 @@ namespace evpp {
         } else {
             for (struct addrinfo* rp = answer; rp != NULL; rp = rp->ai_next) {
                 struct sockaddr_in* a = (struct sockaddr_in*)(rp->ai_addr);
+                if (a->sin_addr.s_addr == 0) {
+                    continue;
+                }
                 addrs_.push_back(a->sin_addr);
                 LOG_TRACE << "ip=" << inet_ntoa(a->sin_addr);
             }
