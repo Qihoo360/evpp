@@ -15,45 +15,45 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\evpp\base\duration.h">
+    <ClInclude Include="..\evpp\base\duration.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\duration.inl.h">
+    <ClInclude Include="..\evpp\base\duration.inl.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\gettimeofday.h">
+    <ClInclude Include="..\evpp\base\gettimeofday.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\timestamp.h">
+    <ClInclude Include="..\evpp\base\timestamp.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\timestamp.inl.h">
+    <ClInclude Include="..\evpp\base\timestamp.inl.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\sys_sockets.h">
+    <ClInclude Include="..\evpp\base\sys_sockets.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\sys_addrinfo.h">
+    <ClInclude Include="..\evpp\base\sys_addrinfo.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\slice.h">
+    <ClInclude Include="..\evpp\base\slice.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\platform_config.h">
+    <ClInclude Include="..\evpp\base\platform_config.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\evppbase_export.h">
+    <ClInclude Include="..\evpp\base\evppbase_export.h">
       <Filter>delete</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\exp.h">
+    <ClInclude Include="..\evpp\base\exp.h">
       <Filter>delete</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\evpp\base\inner_pre.h">
+    <ClInclude Include="..\evpp\base\inner_pre.h">
       <Filter>delete</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\base\pch.cc">
+    <ClCompile Include="..\evpp\base\pch.cc">
       <Filter>delete</Filter>
     </ClCompile>
   </ItemGroup>

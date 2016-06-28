@@ -11,19 +11,19 @@ CFLAGS=$(TOP_CFLAGS) -g -c -fPIC \
 	   -Wall -Wno-unused-parameter -Wno-unused-function -Wunused-variable -Wunused-value \
 	   -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings -Wsign-compare \
 	   -MMD -Winvalid-pch -fms-extensions -Wfloat-equal -Wextra -std=c++11\
-	   -I $(EVPP_DIR)/include \
+	   -I $(EVPP_DIR) \
 	   -I $(EVPP_DIR)/3rdparty 
 
 CPPFLAGS= $(CFLAGS) -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords
 
 RTFLAGS := \
     -Wl,-rpath=. \
-    -Wl,-rpath=$(EVPP_DIR)/src
+    -Wl,-rpath=$(EVPP_DIR)/evpp
 
 LDFLAGS= $(RTFLAGS) \
-		 -L $(EVPP_DIR)/src \
-		 -lpthread \
-		 -levent -levpp -lglog
+	 -L$(EVPP_DIR)/evpp \
+	 -lpthread \
+	 -levent -levpp -lglog
 
 
 SRCS := $(wildcard *.cc) $(wildcard httpc/*.cc)
