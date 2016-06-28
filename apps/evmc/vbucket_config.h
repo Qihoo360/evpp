@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace evmc {
 
@@ -24,6 +25,8 @@ private:
 
     std::vector<std::vector<int> > vbucket_map_;
 };
+
+typedef std::shared_ptr<VbucketConfig> VbucketConfigPtr;
 
 }
 
