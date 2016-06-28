@@ -4,9 +4,6 @@
     <Filter Include="evloop">
       <UniqueIdentifier>{6a94d149-6f7b-47af-94e3-19d9eab3d441}</UniqueIdentifier>
     </Filter>
-    <Filter Include="sockets">
-      <UniqueIdentifier>{eee53411-c7a0-4552-85ab-81e36a0b66cc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="time">
       <UniqueIdentifier>{db27fc34-e756-45b7-92eb-38df61f5dae1}</UniqueIdentifier>
     </Filter>
@@ -14,8 +11,14 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="httpclient">
+    <Filter Include="http">
+      <UniqueIdentifier>{b3a2686a-0917-475e-bcda-86bdcd370b6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="http\client">
       <UniqueIdentifier>{864b010e-26b9-4613-93ed-6283fa419625}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tcp">
+      <UniqueIdentifier>{eee53411-c7a0-4552-85ab-81e36a0b66cc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -29,7 +32,7 @@
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\fd_channel.cc">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\event_loop.cc">
       <Filter>evloop</Filter>
@@ -41,7 +44,7 @@
       <Filter>evloop</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\sockets.cc">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\duration.cc">
       <Filter>time</Filter>
@@ -56,37 +59,37 @@
       <Filter>evloop</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\connector.cc">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\listener.cc">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\tcp_client.cc">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\tcp_conn.cc">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\tcp_server.cc">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\httpc\response.cc">
-      <Filter>httpclient</Filter>
+      <Filter>http\client</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\httpc\request.cc">
-      <Filter>httpclient</Filter>
+      <Filter>http\client</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\httpc\conn.cc">
-      <Filter>httpclient</Filter>
+      <Filter>http\client</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\httpc\conn_pool.cc">
-      <Filter>httpclient</Filter>
+      <Filter>http\client</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\httpc\url_parser.cc">
-      <Filter>httpclient</Filter>
+      <Filter>http\client</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\dns_resolver.cc">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -100,7 +103,7 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\fd_channel.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\event_loop.h">
       <Filter>evloop</Filter>
@@ -112,7 +115,7 @@
       <Filter>evloop</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\sockets.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\evpp_export.h">
       <Filter>common</Filter>
@@ -139,10 +142,10 @@
       <Filter>time</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\sys_sockets.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\sys_addrinfo.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\invoke_timer.h">
       <Filter>evloop</Filter>
@@ -163,40 +166,40 @@
       <Filter>evloop</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\tcp_server.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\connector.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\listener.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\tcp_callbacks.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\tcp_client.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\tcp_conn.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\httpc\response.h">
-      <Filter>httpclient</Filter>
+      <Filter>http\client</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\httpc\request.h">
-      <Filter>httpclient</Filter>
+      <Filter>http\client</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\httpc\conn.h">
-      <Filter>httpclient</Filter>
+      <Filter>http\client</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\httpc\conn_pool.h">
-      <Filter>httpclient</Filter>
+      <Filter>http\client</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\httpc\url_parser.h">
-      <Filter>httpclient</Filter>
+      <Filter>http\client</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\dns_resolver.h">
-      <Filter>sockets</Filter>
+      <Filter>tcp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
