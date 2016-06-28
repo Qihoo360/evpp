@@ -1,6 +1,6 @@
 
 all : 
-	$(MAKE) -C src
+	$(MAKE) -C evpp
 
 test : all
 	$(MAKE) -C test
@@ -13,7 +13,7 @@ check : all
 	$(MAKE) check -C test
 
 clean:
-	$(MAKE) clean -C src
+	$(MAKE) clean -C evpp
 	$(MAKE) clean -C test
 	$(MAKE) clean -C examples
 	$(MAKE) clean -C apps
