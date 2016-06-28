@@ -21,7 +21,8 @@ void OnConnection(const evpp::TCPConnPtr& conn) {
 }
 
 int main(int argc, char* argv[]) {
-    std::string addr = "10.16.29.131:9099";
+    //std::string addr = "10.16.29.131:9099";
+    std::string addr = "build15v.kill.corp.qihoo.net:9099";
     if (argc == 2) {
         addr = argv[1];
     }
