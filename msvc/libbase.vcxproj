@@ -11,21 +11,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\evpp\base\duration.h" />
-    <ClInclude Include="..\include\evpp\base\duration.inl.h" />
-    <ClInclude Include="..\include\evpp\base\evppbase_export.h" />
-    <ClInclude Include="..\include\evpp\base\exp.h" />
-    <ClInclude Include="..\include\evpp\base\gettimeofday.h" />
-    <ClInclude Include="..\include\evpp\base\inner_pre.h" />
-    <ClInclude Include="..\include\evpp\base\platform_config.h" />
-    <ClInclude Include="..\include\evpp\base\slice.h" />
-    <ClInclude Include="..\include\evpp\base\sys_addrinfo.h" />
-    <ClInclude Include="..\include\evpp\base\sys_sockets.h" />
-    <ClInclude Include="..\include\evpp\base\timestamp.h" />
-    <ClInclude Include="..\include\evpp\base\timestamp.inl.h" />
+    <ClInclude Include="..\evpp\base\duration.h" />
+    <ClInclude Include="..\evpp\base\duration.inl.h" />
+    <ClInclude Include="..\evpp\base\evppbase_export.h" />
+    <ClInclude Include="..\evpp\base\exp.h" />
+    <ClInclude Include="..\evpp\base\gettimeofday.h" />
+    <ClInclude Include="..\evpp\base\inner_pre.h" />
+    <ClInclude Include="..\evpp\base\platform_config.h" />
+    <ClInclude Include="..\evpp\base\slice.h" />
+    <ClInclude Include="..\evpp\base\sys_addrinfo.h" />
+    <ClInclude Include="..\evpp\base\sys_sockets.h" />
+    <ClInclude Include="..\evpp\base\timestamp.h" />
+    <ClInclude Include="..\evpp\base\timestamp.inl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\base\pch.cc" />
+    <ClCompile Include="..\evpp\base\pch.cc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CF25FD77-891D-470E-AF11-DEBDDA8FB2F9}</ProjectGuid>
@@ -72,7 +72,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);H_WINDOWS_API;H_LIBEVENTPP_BASE_EXPORTS</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../include/;../3rdparty/wininclude;../3rdparty/wininclude/event;../3rdparty/glog-0.3.4/src/windows;d:/cppworkspace/boost_1_58_0;..</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../3rdparty/wininclude;../3rdparty/wininclude/event;../3rdparty/glog-0.3.4/src/windows;d:/cppworkspace/boost_1_58_0;..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -90,7 +90,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);H_WINDOWS_API;H_LIBEVENTPP_BASE_EXPORTS</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../include;../3rdparty/wininclude;../3rdparty/wininclude/event;../3rdparty/glog-0.3.4/src/windows;d:/cppworkspace/boost_1_58_0;..</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../3rdparty/wininclude;../3rdparty/wininclude/event;../3rdparty/glog-0.3.4/src/windows;d:/cppworkspace/boost_1_58_0;..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
