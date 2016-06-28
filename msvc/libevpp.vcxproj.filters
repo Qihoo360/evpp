@@ -85,6 +85,9 @@
     <ClCompile Include="..\evpp\httpc\url_parser.cc">
       <Filter>httpclient</Filter>
     </ClCompile>
+    <ClCompile Include="..\evpp\dns_resolver.cc">
+      <Filter>sockets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\evpp\exp.h">
@@ -191,6 +194,9 @@
     </ClInclude>
     <ClInclude Include="..\evpp\httpc\url_parser.h">
       <Filter>httpclient</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\dns_resolver.h">
+      <Filter>sockets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
