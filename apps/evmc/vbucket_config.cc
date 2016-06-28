@@ -1,5 +1,7 @@
 #include "vbucket_config.h"
 
+#include <map>
+
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -12,21 +14,71 @@
 
 namespace evmc {
 
+const uint16_t BAD_SERVER_ID = 65535;
+
+const int INIT_WEIGHT = 1000;
+const int MAX_WEIGHT  = 1000000;
+const int MIN_WEIGHT  = 100;
+
 /*
 static uint32_t libhashkit_digest(const char *key, size_t key_length, hashkit_hash_algorithm_t hash_algorithm);
 static uint32_t hashkit_md5(const char *key, size_t key_length, void *context __attribute__((unused)));
 */
 
-std::string VbucketConfig::GetServerAddr(const char* key, size_t nkey) const {
-    uint16_t vb = GetVbucketByKey(key, nkey);
-    int index = vbucket_map_[vb][rand() % vbucket_map_[vb].size()];
-    return server_list_[index];
+void VbucketConfig::OnVbucketResult(uint16_t vbucket, bool success) {
+    // 捎带更新健康值，不专门更新. 这样该函数就是多余的
+
+    // 详细策略:
+    // 1. 健康值
+    // 2. N个replica，全部重试一遍，还是只重试一次？
+    // 3. 更新健康值时，要兼顾线程安全和性能
+    return;
 }
 
-std::string VbucketConfig::GetServerAddr(uint16_t vbucket) const {
+uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const {
+    // TODO : 排除failed_id对应的server
     uint16_t vb = vbucket % vbucket_map_.size();
-    int index = vbucket_map_[vb][rand() % vbucket_map_[vb].size()];
-    return server_list_[index];
+
+    const std::vector<int>& server_ids = vbucket_map_[vb];
+
+    // int server_id = ids[rand() % vbucket_map_[vb].size()];
+    uint16_t server_id = BAD_SERVER_ID;
+    {
+        // 按健康权重选定server id
+        std::map<int64_t, uint16_t> weighted_items;
+        int64_t total_weight = 0;
+        for(size_t i = 0 ; i < server_ids.size(); ++i) {
+            if (server_ids[i] == last_id) {
+                continue;
+            }
+            total_weight += server_health_[server_ids[i]];
+            weighted_items[total_weight] = server_ids[i];
+        }
+        if (total_weight > 0) {
+            server_id = weighted_items.upper_bound(rand() % total_weight)->second;
+            LOG_DEBUG << "SelectServerId selected_server_id=" << server_id << " last_id=" << last_id;
+        } else {
+            return BAD_SERVER_ID;
+        }
+    }
+
+    // 捎带更新健康值，不专门更新
+    server_health_[server_id] += 1000;
+    if (server_health_[server_id] > MAX_WEIGHT) {
+        server_health_[server_id] = MAX_WEIGHT;
+    }
+    if (last_id < server_health_.size()) {
+        server_health_[last_id] /= 2;
+        if (server_health_[last_id] <= MIN_WEIGHT) {
+            server_health_[last_id] = 100;
+        }
+    }
+
+    return server_id;
+}
+
+std::string VbucketConfig::GetServerAddrById(uint16_t server_id) const {
+    return server_list_[server_id];
 }
 
 static hashkit_hash_algorithm_t algorithm(const std::string& alg) {
@@ -42,6 +94,7 @@ uint16_t VbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
     return digest % vbucket_map_.size();
 }
 
+// TODO : double buffering
 bool VbucketConfig::Load(const char * json_file) {
     rapidjson::Document d;
     {
@@ -62,6 +115,7 @@ bool VbucketConfig::Load(const char * json_file) {
     LOG_DEBUG << "server count = " << servers.Size();
     for (rapidjson::SizeType i = 0; i < servers.Size(); i++) {
         server_list_.push_back(servers[i].GetString());
+        server_health_.push_back(INIT_WEIGHT);
     }
 
 
