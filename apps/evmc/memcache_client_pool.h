@@ -9,6 +9,7 @@ class VbucketConfig;
 
 class MemcacheClientPool {
 public:
+    friend MemcacheClient;
     MemcacheClientPool(const char* vbucket_conf, int concurrency, int timeout_ms) 
             : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, concurrency)
             , timeout_ms_(timeout_ms), vbucket_config_(NULL) {
@@ -30,7 +31,7 @@ private:
     const MemcacheClientPool& operator=(const MemcacheClientPool&);
 
 private:
-    static void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClientPtr memc_client);
+    void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClientPtr memc_client);
     void LaunchCommand(CommandPtr command);
 
 private:
