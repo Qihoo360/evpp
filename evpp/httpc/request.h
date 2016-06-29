@@ -24,11 +24,13 @@ namespace evpp {
             Request(ConnPool* pool, EventLoop* loop, const std::string& uri, const std::string& body);
             
             //! \brief Create a HTTP Request and create Conn myself
+            //! Do a HTTP GET request if body is empty or HTTP POST request if body is not empty.
             //! \param[in] - EventLoop * loop
             //! \param[in] - const std::string & url The URL of the HTTP request
             //! \param[in] - const std::string & body
             //! \param[in] - Duration timeout
             Request(EventLoop* loop, const std::string& url, const std::string& body, Duration timeout);
+
             ~Request();
 
             void Execute(const Handler& h);
@@ -38,6 +40,7 @@ namespace evpp {
 
             const std::shared_ptr<Conn>& conn() const { return conn_; }
             struct evhttp_connection* evhttp_conn() const { return conn_->evhttp_conn(); }
+            const std::string& uri() const { return uri_; }
         private:
             static void HandleResponse(struct evhttp_request* r, void *v);
             void ExecuteInLoop(const Handler& h);
@@ -49,5 +52,6 @@ namespace evpp {
             std::shared_ptr<Conn> conn_;
             Handler handler_;
         };
+        typedef std::shared_ptr<Request> RequestPtr;
     } // httpc
 } // evpp
