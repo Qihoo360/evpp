@@ -32,7 +32,8 @@
 #  define HASHKIT_API __global
 #  define HASHKIT_LOCAL __hidden
 # elif defined(_MSC_VER)
-#  define HASHKIT_API extern __declspec(dllexport) 
+//#  define HASHKIT_API extern __declspec(dllexport) 
+#  define HASHKIT_API // static link
 #  define HASHKIT_LOCAL
 # else
 #  define HASHKIT_API
@@ -40,7 +41,8 @@
 # endif /* defined(HAVE_VISIBILITY) */
 #else  /* defined(BUILDING_HASHKIT) */
 # if defined(_MSC_VER)
-#  define HASHKIT_API extern __declspec(dllimport) 
+//#  define HASHKIT_API extern __declspec(dllimport) 
+#  define HASHKIT_API // static link
 #  define HASHKIT_LOCAL
 # else
 #  define HASHKIT_API
