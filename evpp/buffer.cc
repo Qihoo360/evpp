@@ -5,7 +5,7 @@
 namespace evpp {
     const char Buffer::kCRLF[] = "\r\n";
 
-    const size_t Buffer::kCheapPrepend = 8;
+    const size_t Buffer::kCheapPrependSize = 8;
     const size_t Buffer::kInitialSize  = 1024;
 
     ssize_t Buffer::ReadFromFD(int fd, int* savedErrno) {
