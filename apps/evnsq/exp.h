@@ -2,6 +2,7 @@
 
 #include <evpp/exp.h>
 #include "evnsq_export.h"
+#include "evnsq.h"
 
 #ifdef H_OS_WINDOWS
 H_LINK_LIB("libevnsq")
