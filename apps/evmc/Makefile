@@ -40,10 +40,14 @@ OBJS := $(patsubst %.cc, %.o, $(SRCS))
 DEPS := $(patsubst %.o, %.d, $(OBJS))
 TARGET := libevmc.a
 
-all : $(TARGET) 
+all : $(TARGET) test
 
 check : $(TARGET)
 	./$^
+
+test :
+	make -C test
+
 
 $(TARGET) : $(OBJS)
 	# $(CXX) $(OBJS) $(LDFLAGS) -o $@
@@ -57,4 +61,6 @@ $(TARGET) : $(OBJS)
 
 clean:
 	rm -rf *.o *.d $(OBJS) $(DEPS) $(TARGET) *.tmp decoded.txt log
+	make clean -C test
 
+.PHONY : test
