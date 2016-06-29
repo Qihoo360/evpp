@@ -7,7 +7,6 @@
 #include "evpp/tcp_conn.h"
 #include "evpp/tcp_client.h"
 
-#include "evpp/libevent_headers.h"
 #include "evpp/libevent_watcher.h"
 #include "evpp/event_loop.h"
 #include "evpp/event_loop_thread_pool.h"
@@ -28,7 +27,6 @@ public:
 
     EventLoopPtr exec_loop() const { return exec_loop_; }
 
-    // 注意必须在event线程内执行
     void PushRunningCommand(CommandPtr cmd);
 
     CommandPtr PopRunningCommand();
@@ -74,7 +72,7 @@ private:
     evpp::Duration timeout_;
 
     // TimerEventPtr cmd_timer_;
-    evpp::InvokeTimerPtr cmd_timer_; // timer的管理
+    evpp::InvokeTimerPtr cmd_timer_;
     uint32_t timer_cmd_id_;
 
     BinaryCodec * codec_;

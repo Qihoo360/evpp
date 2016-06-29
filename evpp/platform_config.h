@@ -97,7 +97,7 @@
     #pragma warning( disable: 4005 ) // warning C4005 : 'va_copy' : macro redefinition
     #pragma warning( disable: 4251 )
     #pragma warning( disable: 4996 ) // warning C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-    #pragma warning( disable: 4244 4251 4355 4715 4800 4996 4005)
+    #pragma warning( disable: 4244 4251 4355 4715 4800 4996 4005 4819)
 #endif
 
 // get rid of Windows/Linux inconsistencies
