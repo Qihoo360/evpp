@@ -2,29 +2,37 @@ PLATFORM := $(shell uname)
 PLATFORM_VERSION := $(shell uname -r| awk -F 'el' '{printf("el%d", substr($$2,1,1))}')
 
 CXX := g++
+#ifeq ($(PLATFORM_VERSION),el6)
+#GCC472_PATH=/home/s/gcc-4.9.2
+#CXX := env LD_LIBRARY_PATH=$(GCC472_PATH)/lib $(GCC472_PATH)/bin/g++
+#else
+#CXX := g++
+#endif
 
 CURRENT_DIR=.
-PROJECT_ROOT_DIR=./../..
-THIRD_PARTY_DIR=$(PROJECT_ROOT_DIR)/3rdparty
+ROOT_DIR=./../../..
+PREFIX=$(CURRENT_DIR)/../install
 
 CPPFLAGS= -g -c -fPIC \
 		  -D_DEBUG -D_USE_GTEST \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
 		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 \
-		  -I . \
-		  -I $(PROJECT_ROOT_DIR) \
-		  -I $(THIRD_PARTY_DIR)
+		  -I ../include\
+		  -I .. \
+		  -I $(ROOT_DIR) \
+		  -I $(ROOT_DIR)/3rdparty
 
 RTFLAGS := \
-		   -Wl,-rpath=. \
-		   -Wl,-rpath=$(PROJECT_ROOT_DIR)/evpp \
-		   -Wl,-rpath=$(THIRD_PARTY_DIR)
+    -Wl,-rpath=. \
+    -Wl,-rpath=$(GCC472_PATH)/lib64 \
+    -Wl,-rpath=$(ROOT_DIR)/evpp
 
 LDFLAGS= $(RTFLAGS) \
-		 -L$(PROJECT_ROOT_DIR)/evpp \
-		 -L$(THIRD_PARTY_DIR) \
-		 -lpthread \
+		 -L $(ROOT_DIR)/evpp \
+		 -L $(ROOT_DIR)/3rdparty/libhashkit \
+		 -L .. \
+		 -lpthread -levmc \
 		 -levpp -levent -lglog -lhashkit
 
 DIRNAME=$(shell basename `pwd`)
@@ -32,25 +40,15 @@ DIRNAME=$(shell basename `pwd`)
 SRCS := $(wildcard *.cc)
 OBJS := $(patsubst %.cc, %.o, $(SRCS))
 DEPS := $(patsubst %.o, %.d, $(OBJS))
+TARGET := test_evmc
 
-TARGET := libevmc.a
-
-all : dependency $(TARGET) test
+all : $(TARGET) test
 
 check : $(TARGET)
 	./$^
 
-test :
-	$(MAKE) -C test
-
-dependency :
-	$(MAKE) -C $(THIRD_PARTY_DIR)/libhashkit
-	$(MAKE) -C $(PROJECT_ROOT_DIR)/evpp
-
 $(TARGET) : $(OBJS)
-	# $(CXX) $(OBJS) $(LDFLAGS) -o $@
-	ar cru $@ $(OBJS)
-	ranlib $@
+	$(CXX) $(OBJS) $(LDFLAGS) -o $@
 
 -include $(DEPS)
 
@@ -58,7 +56,6 @@ $(TARGET) : $(OBJS)
 	$(CXX) $(CFLAGS) $(CPPFLAGS) $< -o $@
 
 clean:
-	rm -rf *.o *.d $(OBJS) $(DEPS) $(TARGET) *.tmp decoded.txt log
-	$(MAKE) clean -C test
+	rm -rf *.o *.d $(OBJS) $(DEPS) $(TARGET) *.tmp
 
-.PHONY : test dependency
+.PHONY : test
