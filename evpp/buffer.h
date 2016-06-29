@@ -9,17 +9,18 @@
 namespace evpp {
     class EVPP_EXPORT Buffer {
     public:
-        static const size_t kCheapPrepend;
+        static const size_t kCheapPrependSize;
         static const size_t kInitialSize;
 
-        explicit Buffer(size_t initial_size = kInitialSize)
-            : capacity_(kCheapPrepend + initial_size),
-            read_index_(kCheapPrepend),
-            write_index_(kCheapPrepend) {
+        explicit Buffer(size_t initial_size = kInitialSize, size_t reserved_prepend_size = kCheapPrependSize)
+            : capacity_(reserved_prepend_size + initial_size)
+            , read_index_(reserved_prepend_size)
+            , write_index_(reserved_prepend_size)
+            , reserved_prepend_size_(reserved_prepend_size) {
             buffer_ = new char[capacity_];
             assert(length() == 0);
             assert(WritableBytes() == initial_size);
-            assert(PrependableBytes() == kCheapPrepend);
+            assert(PrependableBytes() == reserved_prepend_size);
         }
 
         ~Buffer() {
@@ -33,6 +34,7 @@ namespace evpp {
             std::swap(capacity_, rhs.capacity_);
             std::swap(read_index_, rhs.read_index_);
             std::swap(write_index_, rhs.write_index_);
+            std::swap(reserved_prepend_size_, rhs.reserved_prepend_size_);
         }
 
         // Skip advances the reading index of the buffer
@@ -55,8 +57,8 @@ namespace evpp {
         // It does nothing if n is greater than the length of the buffer.
         void Truncate(size_t n) {
             if (n == 0) {
-                read_index_ = kCheapPrepend;
-                write_index_ = kCheapPrepend;
+                read_index_ = reserved_prepend_size_;
+                write_index_ = reserved_prepend_size_;
             } else if (write_index_ > read_index_ + n) {
                 write_index_ = read_index_ + n;
             }
@@ -73,12 +75,12 @@ namespace evpp {
         // or equal to len. If len is greater than the current capacity(),
         // new storage is allocated, otherwise the method does nothing.
         void Reserve(size_t len) {
-            if (capacity_ >= len + kCheapPrepend) {
+            if (capacity_ >= len + reserved_prepend_size_) {
                 return;
             }
 
             // TODO add the implementation logic here
-            grow(len + kCheapPrepend);
+            grow(len + reserved_prepend_size_);
         }
 
 
@@ -379,23 +381,23 @@ namespace evpp {
         }
 
         void grow(size_t len) {
-            if (WritableBytes() + PrependableBytes() < len + kCheapPrepend) {
+            if (WritableBytes() + PrependableBytes() < len + reserved_prepend_size_) {
                 //grow the capacity
                 size_t n = (capacity_ << 1) + len;
                 size_t m = length();
                 char* d = new char[n];
-                memcpy(d + kCheapPrepend, begin() + read_index_, m);
-                write_index_ = m + kCheapPrepend;
-                read_index_ = kCheapPrepend;
+                memcpy(d + reserved_prepend_size_, begin() + read_index_, m);
+                write_index_ = m + reserved_prepend_size_;
+                read_index_ = reserved_prepend_size_;
                 capacity_ = n;
                 delete[] buffer_;
                 buffer_ = d;
             } else {
                 // move readable data to the front, make space inside buffer
-                assert(kCheapPrepend < read_index_);
+                assert(reserved_prepend_size_ < read_index_);
                 size_t readable = length();
-                memcpy(begin() + kCheapPrepend, begin() + read_index_, length());
-                read_index_ = kCheapPrepend;
+                memcpy(begin() + reserved_prepend_size_, begin() + read_index_, length());
+                read_index_ = reserved_prepend_size_;
                 write_index_ = read_index_ + readable;
                 assert(readable == length());
                 assert(WritableBytes() >= len);
@@ -407,7 +409,7 @@ namespace evpp {
         size_t capacity_;
         size_t read_index_;
         size_t write_index_;
-
+        size_t reserved_prepend_size_;
         static const char kCRLF[];
     };
 
