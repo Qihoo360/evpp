@@ -7,16 +7,21 @@
 
 namespace evpp {
     namespace httpc {
-        Request::Request(ConnPool* pool, EventLoop* loop, const std::string& uri, const std::string& body) 
-            : pool_(pool), loop_(loop), uri_(uri), body_(body) {
+        Request::Request(ConnPool* pool, EventLoop* loop, const std::string& http_uri, const std::string& body) 
+            : pool_(pool), loop_(loop), uri_(http_uri), body_(body) {
 
         }
 
-        Request::Request(EventLoop* loop, const std::string& url, const std::string& body, Duration timeout)
+        Request::Request(EventLoop* loop, const std::string& http_url, const std::string& body, Duration timeout)
             : pool_(NULL), loop_(loop), body_(body) {
-            URLParser p(url);
+            //TODO effective improve
+            URLParser p(http_url);
             conn_.reset(new Conn(loop, p.host, atoi(p.port.data()), timeout));
-            uri_ = p.path;
+            if (p.query.empty()) {
+                uri_ = p.path;
+            } else {
+                uri_ = p.path + "?" + p.query;
+            }
         }
 
         Request::~Request() {

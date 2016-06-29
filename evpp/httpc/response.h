@@ -17,7 +17,7 @@ namespace evpp {
             ~Response();
 
             int http_code() const { return http_code_; }
-            const evpp::Slice& body() { return body_; }
+            const evpp::Slice& body() const { return body_; }
             const Request* request() const { return request_; }
             const Headers& header() const { return headers_; }
         private:
