@@ -25,7 +25,7 @@ CPPFLAGS= -g -c -fPIC \
 RTFLAGS := \
     -Wl,-rpath=. \
     -Wl,-rpath=$(GCC472_PATH)/lib64 \
-    -Wl,-rpath=$(CURRENT_DIR)/../../evpp
+    -Wl,-rpath=$(ROOT_DIR)/evpp
 
 LDFLAGS= $(RTFLAGS) \
 		 -L $(ROOT_DIR)/evpp \
@@ -38,7 +38,7 @@ DIRNAME=$(shell basename `pwd`)
 SRCS := $(wildcard *.cc)
 OBJS := $(patsubst %.cc, %.o, $(SRCS))
 DEPS := $(patsubst %.o, %.d, $(OBJS))
-TARGET := evmc
+TARGET := libevmc.a
 
 all : $(TARGET) 
 
@@ -46,7 +46,9 @@ check : $(TARGET)
 	./$^
 
 $(TARGET) : $(OBJS)
-	$(CXX) $(OBJS) $(LDFLAGS) -o $@
+	# $(CXX) $(OBJS) $(LDFLAGS) -o $@
+	ar cru $@ $(OBJS)
+	ranlib $@
 
 -include $(DEPS)
 
