@@ -83,6 +83,12 @@ namespace evpp {
             grow(len + reserved_prepend_size_);
         }
 
+        // ToText appends char '\0' to buffer to convert the underlying data to a c string text.
+        // It will not change the length of buffer.
+        void ToText() {
+            AppendInt8('0');
+            UnwriteBytes(1);
+        }
 
         // TODO XXX Little-Endian/Big-Endian problem.
 #define bswap_64(x)                                     \
