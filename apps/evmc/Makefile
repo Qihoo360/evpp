@@ -25,10 +25,10 @@ CPPFLAGS= -g -c -fPIC \
 RTFLAGS := \
     -Wl,-rpath=. \
     -Wl,-rpath=$(GCC472_PATH)/lib64 \
-    -Wl,-rpath=$(CURRENT_DIR)/../../src
+    -Wl,-rpath=$(CURRENT_DIR)/../../evpp
 
 LDFLAGS= $(RTFLAGS) \
-		 -L $(ROOT_DIR)/src \
+		 -L $(ROOT_DIR)/evpp \
 		 -L $(ROOT_DIR)/3rdparty/libhashkit \
 		 -lpthread \
 		 -levpp -levent -lglog -lhashkit
