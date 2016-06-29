@@ -21,7 +21,7 @@ namespace evnsq {
             id = buf->NextString(kMessageIDLen);
             body_len = message_len - sizeof(timestamp) - sizeof(attempts) - kMessageIDLen;
             body = buf->data(); // No copy
-            buf->Skip(body_len);
+            buf->Retrieve(body_len);
         }
     };
 }
