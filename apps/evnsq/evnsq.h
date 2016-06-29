@@ -16,6 +16,11 @@ namespace evpp {
     class EventLoop;
     class TCPClient;
     typedef std::shared_ptr<evpp::TCPClient> TCPClientPtr;
+
+    namespace httpc {
+        class Request;
+        class Response;
+    }
 }
 
 namespace evnsq {
@@ -53,6 +58,8 @@ namespace evnsq {
         ~Consumer();
         void ConnectToNSQD(const std::string& addr/*host:port*/);
         void ConnectToNSQDs(const std::string& addrs/*host1:port1,host2:port2*/);
+        void ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/);
+        void ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/);
         void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
     private:
         void OnConnection(const evpp::TCPConnPtr& conn);
@@ -60,6 +67,9 @@ namespace evnsq {
     private:
         void OnMessage(const NSQTCPClient& tc, size_t message_len, int32_t frame_type, evpp::Buffer* buf);
         void WriteCommand(const NSQTCPClient& tc, const Command& c);
+        void HandleLoopkupdHTTPResponse(
+            const std::shared_ptr<evpp::httpc::Response>& response,
+            const std::shared_ptr<evpp::httpc::Request>& request);
     private:
         void Identify(NSQTCPClient& tc);
         void Subscribe(NSQTCPClient& tc);
@@ -71,7 +81,7 @@ namespace evnsq {
         Option option_;
         std::string topic_;
         std::string channel_;
-        std::map<std::string, NSQTCPClient> conns_;
+        std::map<std::string/*host:port*/, NSQTCPClient> conns_;
         MessageCallback msg_fn_;
 
 //         int64_t messagesInFlight
