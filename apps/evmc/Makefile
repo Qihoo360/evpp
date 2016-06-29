@@ -9,35 +9,27 @@ CXX := g++
 #CXX := g++
 #endif
 
-CURRENT_DIR=$(shell echo `pwd`)
-PARENT_DIRNAME=$(shell basename $(shell dirname $(CURRENT_DIR)))
-ROOT_DIRNAME=$(shell basename $(shell dirname $(PARENT_DIRNAME)))
-SOURCE_DIR=$(CURRENT_DIR)
+CURRENT_DIR=.
+ROOT_DIR=./../..
 PREFIX=$(CURRENT_DIR)/../install
-
-GTESTDIR = $(ROOT_DIRNAME)/3rdparty/gtest
 
 CPPFLAGS= -g -c -fPIC \
 		  -D_DEBUG -D_USE_GTEST \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
 		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 \
-		  -I ./$(GTESTDIR) \
 		  -I ../include\
-		  -I ../.. \
-		  -I $(SOURCE_DIR)/../3rdparty \
-		  -I /home/muyuwei/3rd/include
+		  -I $(ROOT_DIR) \
+		  -I $(ROOT_DIR)/3rdparty
 
 RTFLAGS := \
     -Wl,-rpath=. \
     -Wl,-rpath=$(GCC472_PATH)/lib64 \
-    -Wl,-rpath=$(CURRENT_DIR)/../../src \
-    -Wl,-rpath=/home/muyuwei/3rd/lib
+    -Wl,-rpath=$(CURRENT_DIR)/../../src
 
 LDFLAGS= $(RTFLAGS) \
-		 -L $(CURRENT_DIR)/../src \
-		 -L $(CURRENT_DIR)/../../src \
-    	 -L /home/muyuwei/3rd/lib \
+		 -L $(ROOT_DIR)/src \
+		 -L $(ROOT_DIR)/3rdparty/libhashkit \
 		 -lpthread \
 		 -levpp -levent -lglog -lhashkit
 
