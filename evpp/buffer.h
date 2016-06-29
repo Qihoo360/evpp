@@ -12,13 +12,13 @@ namespace evpp {
         static const size_t kCheapPrepend;
         static const size_t kInitialSize;
 
-        explicit Buffer(size_t initialSize = kInitialSize)
-            : capacity_(kCheapPrepend + initialSize),
+        explicit Buffer(size_t initial_size = kInitialSize)
+            : capacity_(kCheapPrepend + initial_size),
             read_index_(kCheapPrepend),
             write_index_(kCheapPrepend) {
             buffer_ = new char[capacity_];
             assert(length() == 0);
-            assert(WritableBytes() == initialSize);
+            assert(WritableBytes() == initial_size);
             assert(PrependableBytes() == kCheapPrepend);
         }
 
@@ -35,11 +35,19 @@ namespace evpp {
             std::swap(write_index_, rhs.write_index_);
         }
 
-        // Retrieve returns void, to prevent
-        // string str(retrieve(readableBytes()), readableBytes());
-        // the evaluation of two functions are unspecified
+        // Skip advances the reading index of the buffer
+        void Skip(size_t len) {
+            if (len < length()) {
+                read_index_ += len;
+            } else {
+                Reset();
+            }
+        }
+
+        // Retrieve advances the reading index of the buffer
+        // Retrieve it the same as Skip.
         void Retrieve(size_t len) {
-            Next(len);
+            Skip(len);
         }
 
         // Truncate discards all but the first n unread bytes from the buffer
@@ -73,6 +81,18 @@ namespace evpp {
             grow(len + kCheapPrepend);
         }
 
+
+        // TODO XXX Little-Endian/Big-Endian problem.
+#define bswap_64(x)                                     \
+            ((((x) & 0xff00000000000000ull) >> 56)      \
+            | (((x) & 0x00ff000000000000ull) >> 40)     \
+            | (((x) & 0x0000ff0000000000ull) >> 24)     \
+            | (((x) & 0x000000ff00000000ull) >> 8)      \
+            | (((x) & 0x00000000ff000000ull) << 8)      \
+            | (((x) & 0x0000000000ff0000ull) << 24)     \
+            | (((x) & 0x000000000000ff00ull) << 40)     \
+            | (((x) & 0x00000000000000ffull) << 56))
+
         // Write
     public:
         void Write(const void* /*restrict*/ d, size_t len) {
@@ -94,13 +114,17 @@ namespace evpp {
             Write(d, len);
         }
 
-        // Append int32_t using network endian
+        // Append int64_t/int32_t/int16_t with network endian
+        void AppendInt64(int64_t x) {
+            int64_t be = bswap_64(x);
+            Write(&be, sizeof be);
+        }
+
         void AppendInt32(int32_t x) {
             int32_t be32 = ::htonl(x);
             Write(&be32, sizeof be32);
         }
 
-        // Append int16_t using network endian
         void AppendInt16(int16_t x) {
             int16_t be16 = ::htons(x);
             Write(&be16, sizeof be16);
@@ -110,13 +134,17 @@ namespace evpp {
             Write(&x, sizeof x);
         }
 
-        // Prepend int32_t using network endian
+        // Prepend int64_t/int32_t/int16_t with network endian
+        void PrependInt64(int64_t x) {
+            int64_t be = bswap_64(x);
+            Prepend(&be, sizeof be);
+        }
+
         void PrependInt32(int32_t x) {
             int32_t be32 = ::htonl(x);
             Prepend(&be32, sizeof be32);
         }
 
-        // Prepend int16_t using network endian
         void PrependInt16(int16_t x) {
             int16_t be16 = ::htons(x);
             Prepend(&be16, sizeof be16);
@@ -183,15 +211,6 @@ namespace evpp {
         /// @return result of read(2), @c errno is saved
         ssize_t ReadFromFD(int fd, int* savedErrno);
 
-        // Skip advances the reading index of the buffer
-        void Skip(size_t len) {
-            if (len < length()) {
-                read_index_ += len;
-            } else {
-                Reset();
-            }
-        }
-
         // Next returns a slice containing the next n bytes from the buffer,
         // advancing the buffer as if the bytes had been returned by Read.
         // If there are fewer than n bytes in the buffer, Next returns the entire buffer.
@@ -244,16 +263,6 @@ namespace evpp {
         // Peek
     public:
         // Peek int64_t/int32_t/int16_t/int8_t with network endian
-
-#   define bswap_64(x) \
-            ((((x) & 0xff00000000000000ull) >> 56)                   \
-            | (((x) & 0x00ff000000000000ull) >> 40)                     \
-            | (((x) & 0x0000ff0000000000ull) >> 24)                     \
-            | (((x) & 0x000000ff00000000ull) >> 8)                      \
-            | (((x) & 0x00000000ff000000ull) << 8)                      \
-            | (((x) & 0x0000000000ff0000ull) << 24)                     \
-            | (((x) & 0x000000000000ff00ull) << 40)                     \
-            | (((x) & 0x00000000000000ffull) << 56))
 
         int64_t PeekInt64() const {
             assert(length() >= sizeof(int64_t));
