@@ -2,34 +2,28 @@ PLATFORM := $(shell uname)
 PLATFORM_VERSION := $(shell uname -r| awk -F 'el' '{printf("el%d", substr($$2,1,1))}')
 
 CXX := g++
-#ifeq ($(PLATFORM_VERSION),el6)
-#GCC472_PATH=/home/s/gcc-4.9.2
-#CXX := env LD_LIBRARY_PATH=$(GCC472_PATH)/lib $(GCC472_PATH)/bin/g++
-#else
-#CXX := g++
-#endif
 
 CURRENT_DIR=.
-ROOT_DIR=./../..
-PREFIX=$(CURRENT_DIR)/../install
+PROJECT_ROOT_DIR=./../..
+THIRD_PARTY_DIR=$(PROJECT_ROOT_DIR)/3rdparty
 
 CPPFLAGS= -g -c -fPIC \
 		  -D_DEBUG -D_USE_GTEST \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
 		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 \
-		  -I ../include\
-		  -I $(ROOT_DIR) \
-		  -I $(ROOT_DIR)/3rdparty
+		  -I . \
+		  -I $(PROJECT_ROOT_DIR) \
+		  -I $(THIRD_PARTY_DIR)
 
 RTFLAGS := \
-    -Wl,-rpath=. \
-    -Wl,-rpath=$(GCC472_PATH)/lib64 \
-    -Wl,-rpath=$(ROOT_DIR)/evpp
+		   -Wl,-rpath=. \
+		   -Wl,-rpath=$(PROJECT_ROOT_DIR)/evpp \
+		   -Wl,-rpath=$(THIRD_PARTY_DIR)
 
 LDFLAGS= $(RTFLAGS) \
-		 -L $(ROOT_DIR)/evpp \
-		 -L $(ROOT_DIR)/3rdparty/libhashkit \
+		 -L$(PROJECT_ROOT_DIR)/evpp \
+		 -L$(THIRD_PARTY_DIR) \
 		 -lpthread \
 		 -levpp -levent -lglog -lhashkit
 
@@ -38,16 +32,20 @@ DIRNAME=$(shell basename `pwd`)
 SRCS := $(wildcard *.cc)
 OBJS := $(patsubst %.cc, %.o, $(SRCS))
 DEPS := $(patsubst %.o, %.d, $(OBJS))
+
 TARGET := libevmc.a
 
-all : $(TARGET) test
+all : dependency $(TARGET) test
 
 check : $(TARGET)
 	./$^
 
 test :
-	make -C test
+	$(MAKE) -C test
 
+dependency :
+	$(MAKE) -C $(THIRD_PARTY_DIR)/libhashkit
+	$(MAKE) -C $(PROJECT_ROOT_DIR)/evpp
 
 $(TARGET) : $(OBJS)
 	# $(CXX) $(OBJS) $(LDFLAGS) -o $@
@@ -61,6 +59,6 @@ $(TARGET) : $(OBJS)
 
 clean:
 	rm -rf *.o *.d $(OBJS) $(DEPS) $(TARGET) *.tmp decoded.txt log
-	make clean -C test
+	$(MAKE) clean -C test
 
-.PHONY : test
+.PHONY : test dependency
