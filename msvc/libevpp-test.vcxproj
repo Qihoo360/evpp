@@ -105,10 +105,6 @@
     </ClCompile>
     <ClCompile Include="..\test\evhttp_client_test.cc" />
     <ClCompile Include="..\test\invoke_timer_test.cc" />
-    <ClCompile Include="..\test\memcache_client_test.cc">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\test\tcp_server_test.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
