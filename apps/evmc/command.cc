@@ -36,11 +36,11 @@ bool Command::ShouldRetry() const {
 
 BufferPtr SetCommand::RequestBuffer() const {
     protocol_binary_request_header req;
-    bzero((void*)&req, sizeof(req));
+    memset((void*)&req, 0, sizeof(req));
 
     req.request.magic  = PROTOCOL_BINARY_REQ;
     req.request.opcode = PROTOCOL_BINARY_CMD_SET;
-    req.request.keylen = htons(key_.size());
+    req.request.keylen = htons(uint16_t(key_.size()));
     req.request.extlen = 8;
     req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
     req.request.vbucket  = vbucket_id();
@@ -60,11 +60,11 @@ BufferPtr SetCommand::RequestBuffer() const {
 
 BufferPtr GetCommand::RequestBuffer() const {
     protocol_binary_request_header req;
-    bzero((void*)&req, sizeof(req));
+    memset((void*)&req, 0, sizeof(req));
 
     req.request.magic  = PROTOCOL_BINARY_REQ;
     req.request.opcode = PROTOCOL_BINARY_CMD_GET;
-    req.request.keylen = htons(key_.size());
+    req.request.keylen = htons(uint16_t(key_.size()));
     req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
     req.request.vbucket  = vbucket_id();
     req.request.opaque   = id();
@@ -103,14 +103,14 @@ BufferPtr MultiGetCommand::RequestBuffer() const {
 
     for(size_t i = 0; i < keys_.size(); ++i) {
         protocol_binary_request_header req;
-        bzero((void*)&req, sizeof(req));
+        memset((void*)&req, 0, sizeof(req));
         req.request.magic    = PROTOCOL_BINARY_REQ;
         if (i < keys_.size() - 1) {
             req.request.opcode   = PROTOCOL_BINARY_CMD_GETKQ;
         } else {
             req.request.opcode   = PROTOCOL_BINARY_CMD_GETK;
         }
-        req.request.keylen   = htons(keys_[i].size());
+        req.request.keylen = htons(uint16_t(keys_[i].size()));
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
         req.request.vbucket  = vbucket_id();
         req.request.opaque   = id();
@@ -126,11 +126,11 @@ BufferPtr MultiGetCommand::RequestBuffer() const {
 
 BufferPtr RemoveCommand::RequestBuffer() const {
     protocol_binary_request_header req;
-    bzero((void*)&req, sizeof(req));
+    memset((void*)&req, 0, sizeof(req));
 
     req.request.magic  = PROTOCOL_BINARY_REQ;
     req.request.opcode = PROTOCOL_BINARY_CMD_DELETE;
-    req.request.keylen = htons(key_.size());
+    req.request.keylen = htons(uint16_t(key_.size()));
     req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
     req.request.vbucket  = vbucket_id();
     req.request.opaque   = id();
