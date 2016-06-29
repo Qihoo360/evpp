@@ -2,7 +2,6 @@
 
 #include "evpp/exp.h"
 
-#include "evpp/libevent_headers.h"
 #include "evpp/libevent_watcher.h"
 #include "evpp/event_loop.h"
 #include "evpp/event_loop_thread.h"
@@ -10,20 +9,22 @@
 #include "evpp/tcp_conn.h"
 #include "evpp/tcp_client.h"
 
-
 namespace evmc {
 
 // TODO 
-// - embeded & standalone
+// - embedded & standalone
 
 typedef std::shared_ptr<evpp::Buffer> BufferPtr;
 typedef std::shared_ptr<evpp::EventLoop> EventLoopPtr;
 typedef std::shared_ptr<evpp::TimerEventWatcher> TimerEventPtr;
 
-const int ERR_CODE_TIMEOUT    = -1;
-const int ERR_CODE_NETWORK    = -2;
-const int ERR_CODE_DISCONNECT = -3;
-const int ERR_CODE_UNDEFINED  = -100;
+enum {
+    ERR_CODE_TIMEOUT = -1,
+    ERR_CODE_NETWORK = -2,
+    ERR_CODE_DISCONNECT = -3,
+    ERR_CODE_UNDEFINED = -100,
+};
+
 
 struct GetResult {
     GetResult() : code(ERR_CODE_UNDEFINED) {}
@@ -45,6 +46,7 @@ typedef std::function<void(const MultiGetResult& result)> MultiGetCallback;
 
 class MemcacheClient;
 typedef std::shared_ptr<MemcacheClient> MemcacheClientPtr;
+
 
 }
 
