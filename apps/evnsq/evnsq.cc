@@ -3,6 +3,12 @@
 #include <evpp/event_loop.h>
 #include <evpp/tcp_client.h>
 #include <evpp/tcp_conn.h>
+#include <evpp/httpc/request.h>
+#include <evpp/httpc/response.h>
+#include <evpp/httpc/conn.h>
+
+#include <rapidjson/document.h>
+
 #include "command.h"
 #include "option.h"
 
@@ -31,6 +37,49 @@ namespace evnsq {
         auto ite = v.end();
         for (; it !=ite; ++it) {
             ConnectToNSQD(*it);
+        }
+    }
+
+    void Consumer::ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/) {
+        std::shared_ptr<evpp::httpc::Request> r(new evpp::httpc::Request(loop_, lookupd_url, "", evpp::Duration(1.0)));
+        r->Execute(std::bind(&Consumer::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
+        //TODO Add a timer to query lookupd periodically
+    }
+
+    void Consumer::ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/) {
+        std::vector<std::string> v;
+        evpp::StringSplit(lookupd_urls, ",", 0, v);
+        auto it = v.begin();
+        auto ite = v.end();
+        for (; it != ite; ++it) {
+            ConnectToLoopupd(*it);
+        }
+    }
+
+    void Consumer::HandleLoopkupdHTTPResponse(
+        const std::shared_ptr<evpp::httpc::Response>& response,
+        const std::shared_ptr<evpp::httpc::Request>& request) {
+        std::string body = response->body().ToString();
+        rapidjson::Document doc;
+        doc.Parse(body.c_str());
+        int status_code = doc["status_code"].GetInt();
+        if (status_code != 200) {
+            LOG_ERROR << "lookupd http://" << request->conn()->host() << ":" << request->conn()->port() << request->uri() << " response failed: " << body;
+            //TODO retry??
+            return;
+        } else {
+            LOG_INFO << "lookupd response OK. http://" << request->conn()->host() << ":" << request->conn()->port() << request->uri() << " : " << body;
+        }
+
+        rapidjson::Value& producers = doc["data"]["producers"];
+        for (rapidjson::SizeType i = 0; i < producers.Size(); ++i) {
+            rapidjson::Value& producer = producers[i];
+            std::string broadcast_address = producer["broadcast_address"].GetString();
+            int tcp_port = producer["tcp_port"].GetInt();
+            std::string addr = broadcast_address + ":" + evpp::cast(tcp_port);
+            if (conns_.find(addr) == conns_.end()) {
+                ConnectToNSQD(addr);
+            }
         }
     }
 
