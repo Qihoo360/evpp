@@ -16,9 +16,11 @@ namespace evmc {
 
 const uint16_t BAD_SERVER_ID = 65535;
 
-const int INIT_WEIGHT = 1000;
-const int MAX_WEIGHT  = 1000000;
-const int MIN_WEIGHT  = 100;
+enum {
+    INIT_WEIGHT = 1000,
+    MAX_WEIGHT = 1000000,
+    MIN_WEIGHT = 100,
+};
 
 /*
 static uint32_t libhashkit_digest(const char *key, size_t key_length, hashkit_hash_algorithm_t hash_algorithm);
@@ -98,16 +100,16 @@ uint16_t VbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
 // TODO : double buffering
 bool VbucketConfig::Load(const char * json_file) {
     rapidjson::Document d;
-    {
-        // FILE* fp = fopen("./kill_storage_cluster.json", "r");
-        FILE* fp = fopen(json_file, "r");
-        if (!fp) {
-            return false;
-        }
-        char buf[2048];
-        rapidjson::FileReadStream is(fp, buf, sizeof(buf));
-        d.ParseStream(is);
+
+    // read vbucket config file and parse it with rapidjson
+    FILE* fp = fopen(json_file, "r");
+    if (!fp) {
+        return false;
     }
+    char buf[2048];
+    rapidjson::FileReadStream is(fp, buf, sizeof(buf));
+    d.ParseStream(is);
+    fclose(fp);
 
     replicas_ = d["numReplicas"].GetInt();
     algorithm_ = d["hashAlgorithm"].GetString();
@@ -118,7 +120,6 @@ bool VbucketConfig::Load(const char * json_file) {
         server_list_.push_back(servers[i].GetString());
         server_health_.push_back(INIT_WEIGHT);
     }
-
 
     rapidjson::Value& vbuckets = d["vBucketMap"];
     for (rapidjson::SizeType i = 0; i < vbuckets.Size(); i++) {
