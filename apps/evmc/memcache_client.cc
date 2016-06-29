@@ -10,7 +10,6 @@ MemcacheClient::~MemcacheClient() {
     delete codec_;
 }
 
-// 必须在本线程内
 void MemcacheClient::PushRunningCommand(CommandPtr cmd) {
     exec_loop_->AssertInLoopThread();
     if (cmd->id() == 0) {
@@ -90,12 +89,12 @@ void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
         LOG_WARN << "OnPacketTimeout cmd=" << cmd->id();
         if (mc_pool_ && cmd->ShouldRetry()) {
             // mc_pool_->LaunchCommand(cmd); 
-            cmd->set_id(0); // 须重新置为0
+            cmd->set_id(0); 
             cmd->caller_loop()->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, mc_pool_, cmd));
         } else {
             cmd->OnError(ERR_CODE_TIMEOUT);
         }
-        if (cmd->id() == cmd_id) { // 不比大小比相等, 以绕过uint溢出的问题
+        if (cmd->id() == cmd_id) {
             break;
         }
     }
