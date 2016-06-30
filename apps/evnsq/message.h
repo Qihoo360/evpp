@@ -5,8 +5,10 @@
 #include <evpp/buffer.h>
 
 namespace evnsq {
+
     enum { kMessageIDLen = 16 };
     enum { kFrameTypeResponse = 0, kFrameTypeError = 1, kFrameTypeMessage = 2, };
+
     struct Message {
         int64_t timestamp;
         uint16_t attempts;
@@ -24,4 +26,15 @@ namespace evnsq {
             buf->Retrieve(body_len);
         }
     };
+
+
+    // MessageCallback is the message processing interface for Consumer
+    //
+    // Implement this interface for handlers that return whether or not message
+    // processing completed successfully.
+    //
+    // When the return value is 0 Consumer will automatically handle FINishing.
+    //
+    // When the returned value is non-zero Consumer will automatically handle REQueing.
+    typedef std::function<int(const Message*)> MessageCallback;
 }
