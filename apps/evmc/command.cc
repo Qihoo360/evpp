@@ -43,7 +43,7 @@ BufferPtr SetCommand::RequestBuffer() const {
     req.request.keylen = htons(uint16_t(key_.size()));
     req.request.extlen = 8;
     req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-    req.request.vbucket  = vbucket_id();
+    req.request.vbucket  = htons(vbucket_id());
     req.request.opaque   = id();
     size_t bodylen = req.request.extlen + key_.size() + value_.size();
     req.request.bodylen = htonl(static_cast<uint32_t>(bodylen));
@@ -66,7 +66,7 @@ BufferPtr GetCommand::RequestBuffer() const {
     req.request.opcode = PROTOCOL_BINARY_CMD_GET;
     req.request.keylen = htons(uint16_t(key_.size()));
     req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-    req.request.vbucket  = vbucket_id();
+    req.request.vbucket  = htons(vbucket_id());
     req.request.opaque   = id();
     req.request.bodylen = htonl(key_.size());
 
@@ -112,7 +112,7 @@ BufferPtr MultiGetCommand::RequestBuffer() const {
         }
         req.request.keylen = htons(uint16_t(keys_[i].size()));
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-        req.request.vbucket  = vbucket_id();
+        req.request.vbucket  = htons(vbucket_id());
         req.request.opaque   = id();
         req.request.bodylen  = htonl(keys_[i].size());
 
@@ -132,7 +132,7 @@ BufferPtr RemoveCommand::RequestBuffer() const {
     req.request.opcode = PROTOCOL_BINARY_CMD_DELETE;
     req.request.keylen = htons(uint16_t(key_.size()));
     req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-    req.request.vbucket  = vbucket_id();
+    req.request.vbucket  = htons(vbucket_id());
     req.request.opaque   = id();
     req.request.bodylen = htonl(static_cast<uint32_t>(key_.size()));
 
