@@ -27,6 +27,9 @@
     <ClInclude Include="..\apps\evnsq\consumer.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\apps\evnsq\conn.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\apps\evnsq\command.cc">
@@ -36,6 +39,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\apps\evnsq\consumer.cc">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\apps\evnsq\conn.cc">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
