@@ -5,9 +5,22 @@
 #include <atomic>
 #include <map>
 
+#include "evnsq_export.h"
+#include "option.h"
+#include "message.h"
 #include "conn.h"
 
+namespace evpp {
+    namespace httpc {
+        class Request;
+        class Response;
+    }
+}
+
 namespace evnsq {
+    class Conn;
+    typedef std::shared_ptr<Conn> ConnPtr;
+
     class EVNSQ_EXPORT Client {
     public:
         enum Type {
@@ -15,19 +28,18 @@ namespace evnsq {
             kConsumer = 1,
             kProducer = 2,
         };
+        
+        // When the connection to NSQD is ready, this callback will be called.
+        typedef std::function<void()> ReadyCallback;
+
         Client(evpp::EventLoop* loop, Type t, const std::string& topic, const std::string& channel, const Option& ops);
-        ~Client();
+        virtual ~Client();
         void ConnectToNSQD(const std::string& tcp_addr/*host:port*/);
         void ConnectToNSQDs(const std::string& tcp_addrs/*host1:port1,host2:port2*/);
         void ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/);
         void ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/);
         void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
-//     private:
-//         void OnConnection(const evpp::TCPConnPtr& conn);
-//         void OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp ts);
-//     private:
-//         void OnMessage(const NSQTCPClient& tc, size_t message_len, int32_t frame_type, evpp::Buffer* buf);
-//         void WriteCommand(const NSQTCPClient& tc, const Command& c);
+        void SetReadyCallback(const ReadyCallback& cb) { ready_fn_ = cb; }
     protected:
         void HandleLoopkupdHTTPResponse(
             const std::shared_ptr<evpp::httpc::Response>& response,
@@ -43,12 +55,7 @@ namespace evnsq {
         std::string channel_;
         std::map<std::string/*host:port*/, ConnPtr> conns_; // The TCP connections with NSQD
         MessageCallback msg_fn_;
-
-        //         int64_t messagesInFlight
-        //             maxRdyCount      int64
-        //             rdyCount         int64
-        //             lastRdyCount     int64
-        //             lastMsgTimestamp int64
+        ReadyCallback ready_fn_;
     };
 }
 
