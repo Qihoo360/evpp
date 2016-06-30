@@ -68,7 +68,11 @@ namespace evpp {
         a[index] = '\0';
         if (::inet_pton(AF_INET, a.data(), &addr.sin_addr) <= 0) {
             int serrno = errno;
-            LOG_ERROR << "ParseFromIPPort " << strerror(serrno);
+            if (serrno == 0) {
+                LOG_INFO << "[" << a.data() << "] is not a IP address. Maybe it is a hostname.";
+            } else {
+                LOG_ERROR << "ParseFromIPPort " << strerror(serrno);
+            }
         }
 
         //TODO add ipv6 support
