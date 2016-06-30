@@ -20,12 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\apps\evnsq\command.cc" />
-    <ClCompile Include="..\apps\evnsq\evnsq.cc" />
+    <ClCompile Include="..\apps\evnsq\consumer.cc" />
     <ClCompile Include="..\apps\evnsq\option.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\apps\evnsq\command.h" />
-    <ClInclude Include="..\apps\evnsq\evnsq.h" />
+    <ClInclude Include="..\apps\evnsq\consumer.h" />
     <ClInclude Include="..\apps\evnsq\evnsq_export.h" />
     <ClInclude Include="..\apps\evnsq\exp.h" />
     <ClInclude Include="..\apps\evnsq\message.h" />

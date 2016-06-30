@@ -9,9 +9,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\apps\evnsq\evnsq.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\apps\evnsq\evnsq_export.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -27,15 +24,18 @@
     <ClInclude Include="..\apps\evnsq\message.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\apps\evnsq\consumer.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\apps\evnsq\evnsq.cc">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\apps\evnsq\command.cc">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\apps\evnsq\option.cc">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\apps\evnsq\consumer.cc">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
