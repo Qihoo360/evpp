@@ -71,6 +71,7 @@ namespace evpp {
         tv.tv_usec = 500 * 1000; //500ms
         event_base_loopexit(event_base_, &tv);
     }
+
     void EventLoop::AddAfterLoopFunctor(const Functor& cb) {
         std::lock_guard<std::mutex> lock(mutex_);
         after_loop_functors_.push_back(cb);
@@ -103,7 +104,13 @@ namespace evpp {
     }
 
     InvokeTimerPtr EventLoop::RunAfter(Duration delay, const Functor& f) {
-        std::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, delay, f);
+        std::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, delay, f, false);
+        t->Start();
+        return t;
+    }
+
+    evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, const Functor& f) {
+        std::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, interval, f, true);
         t->Start();
         return t;
     }
