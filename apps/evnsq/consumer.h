@@ -84,11 +84,11 @@ namespace evnsq {
         std::map<std::string/*host:port*/, NSQTCPClient> conns_;
         MessageCallback msg_fn_;
 
-//         int64_t messagesInFlight
-//             maxRdyCount      int64
-//             rdyCount         int64
-//             lastRdyCount     int64
-//             lastMsgTimestamp int64
+        //         int64_t messagesInFlight
+        //             maxRdyCount      int64
+        //             rdyCount         int64
+        //             lastRdyCount     int64
+        //             lastMsgTimestamp int64
     };
 }
 
