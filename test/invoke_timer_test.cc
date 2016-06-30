@@ -13,13 +13,13 @@ namespace evloop {
     static std::shared_ptr<evpp::EventLoop> loop;
     static evpp::Duration delay(1.0);
     static evpp::Duration cancel_delay(0.5);
-    static bool g_event_handler_called = false;
+    static bool event_handler_called = false;
     static void Close() {
         loop->Stop();
     }
 
     static void Handle() {
-        g_event_handler_called = true;
+        event_handler_called = true;
     }
 
     static void MyEventThread() {
@@ -41,6 +41,6 @@ TEST_UNIT(testInvokerTimerCancel) {
     th.join();
     evpp::Duration cost = evpp::Timestamp::Now() - start;
     H_TEST_ASSERT(delay <= cost);
-    H_TEST_ASSERT(!g_event_handler_called);
+    H_TEST_ASSERT(!event_handler_called);
 }
 
