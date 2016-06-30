@@ -204,7 +204,11 @@ namespace evpp {
         }
 
         Slice ToSlice() const {
-            return Slice(data(), static_cast<int>(length()));
+            return Slice(data(), length());
+        }
+
+        std::string ToString() const {
+            return std::string(data(), length());
         }
 
         void Shrink(size_t reserve) {
@@ -213,11 +217,9 @@ namespace evpp {
             Swap(other);
         }
 
-        /// Read data directly into buffer.
-        ///
-        /// It may implement with readv(2)
-        /// @return result of read(2), @c errno is saved
-        ssize_t ReadFromFD(int fd, int* savedErrno);
+        // ReadFromFD reads data from a fd directly into buffer,
+        // and return result of readv, errno is saved into saved_errno
+        ssize_t ReadFromFD(int fd, int* saved_errno);
 
         // Next returns a slice containing the next n bytes from the buffer,
         // advancing the buffer as if the bytes had been returned by Read.
@@ -231,7 +233,6 @@ namespace evpp {
             }
             return NextAll();
         }
-
 
         // NextAll returns a slice containing all the unread portion of the buffer,
         // advancing the buffer as if the bytes had been returned by Read.
