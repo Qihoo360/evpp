@@ -1,13 +1,12 @@
 #include "client.h"
 
+#include <rapidjson/document.h>
 #include <evpp/event_loop.h>
 #include <evpp/tcp_client.h>
 #include <evpp/tcp_conn.h>
 #include <evpp/httpc/request.h>
 #include <evpp/httpc/response.h>
 #include <evpp/httpc/conn.h>
-
-#include <rapidjson/document.h>
 
 #include "command.h"
 #include "option.h"
@@ -25,7 +24,8 @@ namespace evnsq {
         auto c = ConnPtr(new Conn(loop_, option_));
         conns_[addr] = c;
         c->SetMessageCallback(msg_fn_);
-        c->ConnectToNSQD(addr);
+        c->SetConnectionCallback(std::bind(&Client::OnConnection, this, std::placeholders::_1));
+        c->Connect(addr);
     }
 
     void Client::ConnectToNSQDs(const std::string& addrs/*host1:port1,host2:port2*/) {
@@ -81,12 +81,16 @@ namespace evnsq {
         }
     }
 
-
     void Client::OnConnection(Conn* conn) {
+        assert(conn->IsConnected());
         if (type_ == kConsumer) {
             conn->Subscribe(topic_, channel_);
         } else {
+            conn->set_status(Conn::kReady);
+        }
 
+        if (ready_fn_) {
+            ready_fn_();
         }
     }
 

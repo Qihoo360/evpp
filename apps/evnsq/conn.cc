@@ -21,7 +21,7 @@ namespace evnsq {
 
     Conn::~Conn() {}
 
-    void Conn::ConnectToNSQD(const std::string& addr) {
+    void Conn::Connect(const std::string& addr) {
         tcp_client_ = evpp::TCPClientPtr(new evpp::TCPClient(loop_, addr, std::string("NSQClient-") + addr));
         status_ = kConnecting;
         tcp_client_->SetConnectionCallback(std::bind(&Conn::OnConnection, this, std::placeholders::_1));
@@ -29,6 +29,10 @@ namespace evnsq {
         tcp_client_->Connect();
     }
 
+    void Conn::Reconnect() {
+        tcp_client_->Disconnect();
+        Connect(tcp_client_->remote_addr());
+    }
 
     void Conn::OnConnection(const evpp::TCPConnPtr& conn) {
         if (conn->IsConnected()) {
@@ -41,6 +45,7 @@ namespace evnsq {
             } else {
                 LOG_ERROR << "Connect to " << conn->remote_addr() << " failed.";
             }
+            status_ = kConnecting; // tcp_client_ will reconnect again automatically
         }
     }
 
@@ -65,15 +70,16 @@ namespace evnsq {
         case evnsq::Conn::kIdentifying:
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 status_ = kConnected;
+                if (conn_fn_) {
+                    conn_fn_(this);
+                }
             } else {
-                LOG_ERROR << "Identify ERROR"; // TODO close the connection?
-            }
-            if (conn_fn_) {
-                conn_fn_(this);
+                LOG_ERROR << "Identify ERROR";
+                Reconnect();
             }
             break;
         case evnsq::Conn::kConnected:
-            //TODO how to process the response of SUB command
+            assert(false && "It should never come here.");
             break;
         case evnsq::Conn::kSubscribing:
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
