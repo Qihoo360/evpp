@@ -5,13 +5,13 @@
 
 namespace evpp {
 
-    InvokeTimer::InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f) 
-        : loop_(evloop), timeout_(timeout), functor_(f), timer_(NULL) {
+    InvokeTimer::InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic)
+        : loop_(evloop), timeout_(timeout), functor_(f), timer_(NULL), periodic_(periodic) {
         LOG_INFO << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this;
     }
 
-    std::shared_ptr<InvokeTimer> InvokeTimer::Create(EventLoop* evloop, Duration timeout, const Functor& f) {
-        std::shared_ptr<InvokeTimer> it(new InvokeTimer(evloop, timeout, f));
+    std::shared_ptr<InvokeTimer> InvokeTimer::Create(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic) {
+        std::shared_ptr<InvokeTimer> it(new InvokeTimer(evloop, timeout, f, periodic));
         it->self_ = it;
         return it;
     }
@@ -46,7 +46,11 @@ namespace evpp {
     void InvokeTimer::OnTimeout() {
         LOG_INFO << "InvokeTimer::OnTimeout tid=" << std::this_thread::get_id() << " this=" << this;
         functor_();
-        self_.reset();
+        if (periodic_) {
+            timer_->AsyncWait();
+        } else {
+            self_.reset();
+        }
     }
 
     void InvokeTimer::OnCanceled() {

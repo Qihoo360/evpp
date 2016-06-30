@@ -27,6 +27,9 @@ namespace evpp {
         InvokeTimerPtr RunAfter(double delay_ms, const Functor& f);
         InvokeTimerPtr RunAfter(Duration delay, const Functor& f);
 
+        // RunEvery executes Functor f every period interval time.
+        InvokeTimerPtr RunEvery(Duration interval, const Functor& f);
+
         void RunInLoop(const Functor& handler);
         void QueueInLoop(const Functor& handler);
         void AddAfterLoopFunctor(const Functor& handler);
