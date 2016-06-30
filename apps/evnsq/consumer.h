@@ -56,8 +56,8 @@ namespace evnsq {
     public:
         Consumer(evpp::EventLoop* loop, const std::string& topic, const std::string& channel, const Option& ops);
         ~Consumer();
-        void ConnectToNSQD(const std::string& addr/*host:port*/);
-        void ConnectToNSQDs(const std::string& addrs/*host1:port1,host2:port2*/);
+        void ConnectToNSQD(const std::string& tcp_addr/*host:port*/);
+        void ConnectToNSQDs(const std::string& tcp_addrs/*host1:port1,host2:port2*/);
         void ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/);
         void ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/);
         void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
