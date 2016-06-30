@@ -11,12 +11,13 @@ namespace evpp {
         typedef std::function<void()> Functor;
         static std::shared_ptr<InvokeTimer> Create(EventLoop* evloop,
                                                    Duration timeout,
-                                                   const Functor& f);
+                                                   const Functor& f,
+                                                   bool periodic);
         ~InvokeTimer();
         void Start();
         void Cancel();
     private:
-        InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f);
+        InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic);
         void AsyncWait(Duration timeout);
         void OnTimeout();
         void OnCanceled();
@@ -25,6 +26,7 @@ namespace evpp {
         Duration timeout_;
         Functor functor_;
         TimerEventWatcher* timer_;
+        bool periodic_;
         std::shared_ptr<InvokeTimer> self_; // Hold myself
     };
 
