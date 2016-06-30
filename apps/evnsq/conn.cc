@@ -66,10 +66,25 @@ namespace evnsq {
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 status_ = kConnected;
             } else {
-                LOG_ERROR << "Identify ERROR"; // TODO close the connetion?
+                LOG_ERROR << "Identify ERROR"; // TODO close the connection?
+            }
+            if (conn_fn_) {
+                conn_fn_(this);
             }
             break;
         case evnsq::Conn::kConnected:
+            //TODO how to process the response of SUB command
+            break;
+        case evnsq::Conn::kSubscribing:
+            if (buf->NextString(size - sizeof(frame_type)) == kOK) {
+                status_ = kReady;
+                LOG_INFO << "Successfully connected to nsqd " << conn->remote_addr();
+                UpdateReady(3); //TODO RDY count
+            } else {
+                //TODO
+            }
+            break;
+        case evnsq::Conn::kReady:
             OnMessage(size - sizeof(frame_type), frame_type, buf);
             break;
         default:
@@ -116,6 +131,14 @@ namespace evnsq {
         tcp_client_->conn()->Send(&buf);
     }
 
+
+    void Conn::Subscribe(const std::string& topic, const std::string& channel) {
+        Command c;
+        c.Subscribe(topic, channel);
+        WriteCommand(c);
+        status_ = kSubscribing;
+    }
+
     void Conn::Identify() {
         tcp_client_->conn()->Send(kNSQMagic);
         Command c;
@@ -135,4 +158,11 @@ namespace evnsq {
         c.Requeue(id, evpp::Duration(0));
         WriteCommand(c);
     }
+
+    void Conn::UpdateReady(int count) {
+        Command c;
+        c.Ready(count);
+        WriteCommand(c);
+    }
+
 }
