@@ -32,7 +32,6 @@ namespace evnsq {
         // When the connection to NSQD is ready, this callback will be called.
         typedef std::function<void()> ReadyCallback;
 
-        Client(evpp::EventLoop* loop, Type t, const std::string& topic, const std::string& channel, const Option& ops);
         virtual ~Client();
         void ConnectToNSQD(const std::string& tcp_addr/*host:port*/);
         void ConnectToNSQDs(const std::string& tcp_addrs/*host1:port1,host2:port2*/);
@@ -41,6 +40,7 @@ namespace evnsq {
         void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
         void SetReadyCallback(const ReadyCallback& cb) { ready_fn_ = cb; }
     protected:
+        Client(evpp::EventLoop* loop, Type t, const std::string& topic, const std::string& channel, const Option& ops);
         void HandleLoopkupdHTTPResponse(
             const std::shared_ptr<evpp::httpc::Response>& response,
             const std::shared_ptr<evpp::httpc::Request>& request);
