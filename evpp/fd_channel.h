@@ -39,7 +39,7 @@ namespace evpp {
     public:
         bool IsReadable() const { return (events_ & kReadable) != 0; }
         bool IsWritable() const { return (events_ & kWritable) != 0; }
-        bool IsNoneEvent() const { return events_ == kNone; }
+        bool IsNoneEvent() const { return events_ == kNone; } //TODO Fix error EV_PERSIST
 
         void EnableReadEvent() { events_ |= kReadable; Update(); }
         void EnableWriteEvent() { events_ |= kWritable; Update(); }
