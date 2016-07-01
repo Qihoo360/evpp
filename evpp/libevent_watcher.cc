@@ -9,7 +9,7 @@
 namespace evpp {
 
     EventWatcher::EventWatcher(struct event_base* evbase, const Handler& handler)
-        : evbase_(evbase), handler_(handler), attached_to_loop_(false) {
+        : evbase_(evbase), attached_to_loop_(false), handler_(handler) {
         event_ = new event;
         memset(event_, 0, sizeof(struct event));
     }
