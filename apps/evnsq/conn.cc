@@ -105,14 +105,17 @@ namespace evnsq {
                 Command c;
                 c.Nop();
                 WriteCommand(c);
-            } else {
-                LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
+                buf->Skip(message_len);
+                return;
             }
-            buf->Skip(message_len);
-            return;
         }
 
-        if (frame_type == kFrameTypeMessage) {
+        switch (frame_type) {
+        case kFrameTypeResponse:
+            LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
+            break;
+        case kFrameTypeMessage:
+        {
             Message msg;
             msg.Decode(message_len, buf);
             if (msg_fn_) {
@@ -125,9 +128,10 @@ namespace evnsq {
             }
             return;
         }
-
-        if (frame_type == kFrameTypeError) {
-            //TODO add error processing logic
+        case kFrameTypeError:
+            break;
+        default:
+            break;
         }
     }
 
