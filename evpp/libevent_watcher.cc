@@ -9,7 +9,7 @@
 namespace evpp {
 
     EventWatcher::EventWatcher(struct event_base* evbase, const Handler& handler)
-        : evbase_(evbase), handler_(handler) {
+        : evbase_(evbase), handler_(handler), attached_to_loop_(false) {
         event_ = new event;
         memset(event_, 0, sizeof(struct event));
     }
@@ -23,7 +23,7 @@ namespace evpp {
         if (!DoInit()) {
             goto failed;
         }
-        event_base_set(evbase_, event_);
+        ::event_base_set(evbase_, event_);
         return true;
 
     failed:
@@ -45,17 +45,23 @@ namespace evpp {
             timeoutval = &tv;
         }
 
-        if (event_add(event_, timeoutval) != 0) {
-            return false;
+        if (attached_to_loop_) {
+            // 在周期性的InvokerTimer中，EventWatcher::Watch 会被调用多次，这样就可以避免 event_add 被调用多次。
+            ::event_del(event_);
+            attached_to_loop_ = false;
         }
 
+        if (::event_add(event_, timeoutval) != 0) {
+            return false;
+        }
+        attached_to_loop_ = true;
         return true;
     }
 
     void EventWatcher::FreeEvent() {
         if (event_) {
             if (event_initialized(event_)) {
-                event_del(event_);
+                ::event_del(event_);
             }
             delete (event_);
             event_ = NULL;
@@ -104,7 +110,7 @@ namespace evpp {
             goto failed;
         }
 
-        event_set(event_, pipe_[1], EV_READ | EV_PERSIST,
+        ::event_set(event_, pipe_[1], EV_READ | EV_PERSIST,
                   PipeEventWatcher::HandlerFn, this);
         return true;
     failed:
@@ -149,17 +155,17 @@ namespace evpp {
     TimerEventWatcher::TimerEventWatcher(struct event_base *event_base,
                                          const Handler& handler,
                                          Duration timeout)
-                                         : EventWatcher(event_base, handler)
-                                         , timeout_(timeout) {}
+        : EventWatcher(event_base, handler)
+        , timeout_(timeout) {}
 
     TimerEventWatcher::TimerEventWatcher(EventLoop* loop,
                                          const Handler& handler,
                                          Duration timeout)
-                                         : EventWatcher(loop->event_base(), handler)
-                                         , timeout_(timeout) {}
+        : EventWatcher(loop->event_base(), handler)
+        , timeout_(timeout) {}
 
     bool TimerEventWatcher::DoInit() {
-        event_set(event_, -1, 0, TimerEventWatcher::HandlerFn, this);
+        ::event_set(event_, -1, 0, TimerEventWatcher::HandlerFn, this);
         return true;
     }
 

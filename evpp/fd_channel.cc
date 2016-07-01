@@ -34,9 +34,16 @@ namespace evpp {
 
     void FdChannel::AttachToLoop() {
         loop_->AssertInLoopThread();
+        if (attached_to_loop_) {
+            // FdChannel::Update 可能会被多次调用，这样处理可以避免 event_add 被多次调用
+            ::event_del(event_);
+            attached_to_loop_ = false;
+        }
+
         ::event_set(event_, fd_, events_, &FdChannel::HandleEvent, this);
         ::event_base_set(loop_->event_base(), event_);
         if (::event_add(event_, NULL) == 0) {
+            LOG_TRACE << "fd=" << fd_ << " watching event " << EventsToString();
             attached_to_loop_ = true;
         } else {
             LOG_ERROR << "fd=" << fd_ << " with event " << EventsToString() << " attach to event loop failed";
@@ -65,23 +72,27 @@ namespace evpp {
     std::string FdChannel::EventsToString() const {
         std::string s;
         if (events_ & kReadable) {
-            s = "kReadable|";
+            s = "kReadable";
         }
 
         if (events_ & kWritable) {
+            if (!s.empty()) {
+                s += "|";
+            }
             s += "kWritable";
         }
 
         return s;
     }
 
-
-    void FdChannel::HandleEvent(int fd, short which, void *v) {
+    void FdChannel::HandleEvent(int sockfd, short which, void *v) {
         FdChannel *c = (FdChannel*)v;
-        c->HandleEvent(fd, which);
+        c->HandleEvent(sockfd, which);
     }
 
-    void FdChannel::HandleEvent(int f, short which) {
+    void FdChannel::HandleEvent(int sockfd, short which) {
+        assert(sockfd == fd_);
+        LOG_TRACE << "HandleEvent fd=" << sockfd << " " << EventsToString();
         if ((which & kReadable) && read_fn_) {
             read_fn_(Timestamp::Now());
         }
