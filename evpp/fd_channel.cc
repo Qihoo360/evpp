@@ -61,7 +61,6 @@ namespace evpp {
     }
 
     void FdChannel::Update() {
-        assert(attached_to_loop_);
         assert(loop_->IsInLoopThread());
         if (IsNoneEvent()) {
             DetachFromLoop();
