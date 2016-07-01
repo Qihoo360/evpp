@@ -213,7 +213,6 @@ namespace evpp {
     void TCPConn::OnAttachedToLoop() {
         loop_->AssertInLoopThread();
         status_ = kConnected;
-        chan_->AttachToLoop();
         chan_->EnableReadEvent();
         if (conn_fn_) {
             conn_fn_(shared_from_this());
