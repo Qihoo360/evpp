@@ -18,7 +18,7 @@ namespace evpp {
     }
 
     FdChannel::~FdChannel() {
-        LOG_INFO << "FdChannel::~FdChannel() fd=" << fd_;
+        LOG_INFO << "FdChannel::~FdChannel() this=" << this << " fd=" << fd_;
         assert(event_ == NULL);
     }
 
@@ -43,10 +43,10 @@ namespace evpp {
         ::event_set(event_, fd_, events_ | EV_PERSIST, &FdChannel::HandleEvent, this);
         ::event_base_set(loop_->event_base(), event_);
         if (::event_add(event_, NULL) == 0) {
-            LOG_TRACE << "fd=" << fd_ << " watching event " << EventsToString();
+            LOG_TRACE << "this=" << this << " fd=" << fd_ << " watching event " << EventsToString();
             attached_to_loop_ = true;
         } else {
-            LOG_ERROR << "fd=" << fd_ << " with event " << EventsToString() << " attach to event loop failed";
+            LOG_ERROR << "this=" << this << " fd=" << fd_ << " with event " << EventsToString() << " attach to event loop failed";
         }
     }
 
@@ -55,8 +55,9 @@ namespace evpp {
         assert(attached_to_loop_);
         if (::event_del(event_) == 0) {
             attached_to_loop_ = false;
+            LOG_TRACE << "DetachFromLoop this=" << this << " fd=" << fd_ << " detach from event loop";
         } else {
-            LOG_ERROR << "fd=" << fd_ << " with event " << EventsToString() << " detach to event loop failed";
+            LOG_ERROR << "DetachFromLoop this=" << this << "fd=" << fd_ << " with event " << EventsToString() << " detach from event loop failed";
         }
     }
 

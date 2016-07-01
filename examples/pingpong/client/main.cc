@@ -3,18 +3,20 @@
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>
 
+std::string message(128, 'x');
+
 void OnMessage(const evpp::TCPConnPtr& conn,
                evpp::Buffer* msg,
                evpp::Timestamp ts) {
     std::string s = msg->NextAllString();
-    LOG_INFO << "Received a message [" << s << "]";
+    LOG_INFO << "Received a message size=" << s.size() << " [" << s << "]";
     conn->Send(s.data(), s.size());
-    usleep(1*1000000);
+    //usleep(1*1000000);
 }
 
 void OnConnection(const evpp::TCPConnPtr& conn) {
     if (conn->IsConnected()) {
-        conn->Send("hello");
+        conn->Send(message);
     } else {
         LOG_INFO << "Disconnected from " << conn->remote_addr();
     }
