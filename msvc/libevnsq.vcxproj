@@ -19,17 +19,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\apps\evnsq\client.cc" />
     <ClCompile Include="..\apps\evnsq\command.cc" />
+    <ClCompile Include="..\apps\evnsq\conn.cc" />
     <ClCompile Include="..\apps\evnsq\consumer.cc" />
     <ClCompile Include="..\apps\evnsq\option.cc" />
+    <ClCompile Include="..\apps\evnsq\producer.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\apps\evnsq\client.h" />
     <ClInclude Include="..\apps\evnsq\command.h" />
+    <ClInclude Include="..\apps\evnsq\conn.h" />
     <ClInclude Include="..\apps\evnsq\consumer.h" />
     <ClInclude Include="..\apps\evnsq\evnsq_export.h" />
     <ClInclude Include="..\apps\evnsq\exp.h" />
     <ClInclude Include="..\apps\evnsq\message.h" />
     <ClInclude Include="..\apps\evnsq\option.h" />
+    <ClInclude Include="..\apps\evnsq\producer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{88DAC3B3-597B-4523-B747-81FD02C93B64}</ProjectGuid>
