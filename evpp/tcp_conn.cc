@@ -27,11 +27,11 @@ namespace evpp {
         chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
         chan_->SetCloseCallback(std::bind(&TCPConn::HandleClose, this));
         chan_->SetErrorCallback(std::bind(&TCPConn::HandleError, this));
-        LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " fd=" << sockfd;
+        LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " channel=" << chan_.get() << " fd=" << sockfd;
     }
 
     TCPConn::~TCPConn() {
-        LOG_TRACE << "TCPConn::~TCPConn() name=" << name() << " this=" << this << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString();
+        LOG_TRACE << "TCPConn::~TCPConn() name=" << name() << " this=" << this << " channel=" << chan_.get() << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString();
         assert(fd_ == chan_->fd());
         assert(status_ == kDisconnected);
         assert(chan_->IsNoneEvent());
