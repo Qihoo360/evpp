@@ -13,7 +13,7 @@ void Publish(evnsq::Producer* producer) {
     std::stringstream ss;
     ss << "a NSQ message, index=" << i++;
     std::string msg = ss.str();
-    producer->Publish(msg);
+    producer->Publish("test", msg);
     LOG_INFO << "Publish : [" << msg << "]";
 }
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
     }
 
     evpp::EventLoop loop;
-    evnsq::Producer client(&loop, "test", "ch1", evnsq::Option());
+    evnsq::Producer client(&loop, evnsq::Option());
     client.SetMessageCallback(&OnMessage);
     client.SetReadyCallback(std::bind(&OnReady, &loop, &client));
     if (!nsqd_tcp_addr.empty()) {
