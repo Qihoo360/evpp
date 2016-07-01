@@ -12,7 +12,7 @@ namespace evpp {
 
     FdChannel::FdChannel(EventLoop* l, int f, bool r, bool w)
         : loop_(l), attached_to_loop_(false), event_(NULL), fd_(f) {
-        events_ = (r ? kReadable : 0) | (w ? kWritable : 0) | EV_PERSIST;
+        events_ = (r ? kReadable : 0) | (w ? kWritable : 0);
         event_ = new event;
         memset(event_, 0, sizeof(struct event));
     }
@@ -40,7 +40,7 @@ namespace evpp {
             attached_to_loop_ = false;
         }
 
-        ::event_set(event_, fd_, events_, &FdChannel::HandleEvent, this);
+        ::event_set(event_, fd_, events_ | EV_PERSIST, &FdChannel::HandleEvent, this);
         ::event_base_set(loop_->event_base(), event_);
         if (::event_add(event_, NULL) == 0) {
             LOG_TRACE << "fd=" << fd_ << " watching event " << EventsToString();
