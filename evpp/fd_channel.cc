@@ -33,11 +33,11 @@ namespace evpp {
     }
 
     void FdChannel::AttachToLoop() {
-        loop_->AssertInLoopThread();
+        assert(!IsNoneEvent());
+        assert(loop_->IsInLoopThread());
         if (attached_to_loop_) {
             // FdChannel::Update 可能会被多次调用，这样处理可以避免 event_add 被多次调用
-            ::event_del(event_);
-            attached_to_loop_ = false;
+            DetachFromLoop();
         }
 
         ::event_set(event_, fd_, events_ | EV_PERSIST, &FdChannel::HandleEvent, this);
@@ -48,6 +48,46 @@ namespace evpp {
         } else {
             LOG_ERROR << "this=" << this << " fd=" << fd_ << " with event " << EventsToString() << " attach to event loop failed";
         }
+    }
+
+    void FdChannel::EnableReadEvent() {
+        int events = events_;
+        events_ |= kReadable;
+        if (events_ != events) {
+            Update();
+        }
+    }
+
+    void FdChannel::EnableWriteEvent() {
+        int events = events_;
+        events_ |= kWritable;
+        if (events_ != events) {
+            Update();
+        }
+    }
+
+    void FdChannel::DisableReadEvent() {
+        int events = events_;
+        events_ &= (~kReadable);
+        if (events_ != events) {
+            Update();
+        }
+    }
+
+    void FdChannel::DisableWriteEvent() {
+        int events = events_;
+        events_ &= (~kWritable);
+        if (events_ != events) {
+            Update();
+        }
+    }
+
+    void FdChannel::DisableAllEvent() {
+        if (events_ == kNone) {
+            return;
+        }
+        events_ = kNone;
+        Update();
     }
 
     void FdChannel::DetachFromLoop() {
