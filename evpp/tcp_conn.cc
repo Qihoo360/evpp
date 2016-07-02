@@ -20,7 +20,7 @@ namespace evpp {
                      , type_(kIncoming)
                      , status_(kDisconnected)
                      , high_water_mark_(128 * 1024 * 1024)
-                     , closing_delay_for_incoming_conn_(1.0) {
+                     , closing_delay_for_incoming_conn_(3.000001) {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
 
         chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this, std::placeholders::_1));
