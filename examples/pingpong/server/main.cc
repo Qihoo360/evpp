@@ -8,6 +8,7 @@ void OnMessage(const evpp::TCPConnPtr& conn,
                evpp::Timestamp ts) {
     //LOG_INFO << "Received a message len=" << msg->size();
     conn->Send(msg->data(), msg->size());
+    msg->Reset();
 }
 
 int main(int argc, char* argv[]) {
