@@ -44,6 +44,7 @@ namespace evpp {
         void SetConnectionCallback(ConnectionCallback cb) { conn_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
 
+        EventLoop* loop() const { return loop_; }
         void set_context(const Any& c) { context_ = c; }
         const Any& context() const { return context_; }
     public:
