@@ -92,7 +92,7 @@ namespace evpp {
         size_t high_water_mark_; // Default 128MB
 
         // The delay time to close a incoming connection which has been shutdown by peer normally.
-        // Default is 1 second.
+        // Default is 3 second.
         Duration closing_delay_for_incoming_conn_;
 
         ConnectionCallback conn_fn_;
