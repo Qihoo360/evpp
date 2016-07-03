@@ -208,6 +208,7 @@ namespace evpp {
     }
 
     void TCPConn::HandleError() {
+        //TODO how?
     }
 
     void TCPConn::OnAttachedToLoop() {
