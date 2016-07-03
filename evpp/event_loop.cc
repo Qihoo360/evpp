@@ -8,7 +8,6 @@
 namespace evpp {
     EventLoop::EventLoop() {
         event_base_ = event_base_new();
-
         Init();
     }
 
@@ -20,6 +19,7 @@ namespace evpp {
     EventLoop::~EventLoop() {
         if (event_base_ != NULL) {
             event_base_free(event_base_);
+            event_base_ = NULL;
         }
     }
 
@@ -66,6 +66,7 @@ namespace evpp {
             }
         }
 
+        //TODO temporary logic 
         timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 500 * 1000; //500ms
@@ -86,7 +87,6 @@ namespace evpp {
         for (size_t i = 0; i < functors.size(); ++i) {
             functors[i]();
         }
-
     }
 
     void EventLoop::AfterFork() {
@@ -116,7 +116,7 @@ namespace evpp {
     }
 
     void EventLoop::RunInLoop(const Functor& functor) {
-        LOG_INFO << "EventLoop::RunInLoop tid=" << std::this_thread::get_id() << " IsInLoopThread=" << IsInLoopThread();
+        //LOG_INFO << "EventLoop::RunInLoop tid=" << std::this_thread::get_id() << " IsInLoopThread=" << IsInLoopThread();
         if (IsInLoopThread()) {
             functor();
         } else {
@@ -132,7 +132,7 @@ namespace evpp {
         }
 
         if (calling_pending_functors_ || !IsInLoopThread()) {
-            LOG_INFO << "EventLoop::QueueInLoop tid=" << std::this_thread::get_id() << " watcher_->Notify()";
+            //LOG_INFO << "EventLoop::QueueInLoop tid=" << std::this_thread::get_id() << " watcher_->Notify()";
             watcher_->Notify();
         }
     }
