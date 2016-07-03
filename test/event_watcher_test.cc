@@ -27,9 +27,9 @@ namespace evtimer {
 TEST_UNIT(testTimerEventWatcher) {
     using namespace evtimer;
     struct event_base* base = event_base_new();
+    evpp::Timestamp start = evpp::Timestamp::Now();
     std::shared_ptr<evpp::TimerEventWatcher> ev(new evpp::TimerEventWatcher(base, std::bind(&Handle, base), g_timeout));
     std::thread th(MyEventThread, base, ev.get());
-    evpp::Timestamp start = evpp::Timestamp::Now();
     th.join();
     evpp::Duration cost = evpp::Timestamp::Now() - start;
     H_TEST_ASSERT(g_timeout <= cost);
