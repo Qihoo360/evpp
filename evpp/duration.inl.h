@@ -52,7 +52,7 @@ namespace evpp {
 
     inline void Duration::To(struct timeval* t) const {
         t->tv_sec = (long)(ns_ / kSecond);
-        t->tv_usec = (long)(ns_ % kSecond) / kMicrosecond;
+        t->tv_usec = (long)(ns_ % kSecond) / (long)kMicrosecond;
     }
 
     inline bool Duration::operator<(const Duration& rhs) const {

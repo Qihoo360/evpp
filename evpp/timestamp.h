@@ -33,7 +33,7 @@ namespace evpp {
         Timestamp operator+ (const Duration& rhs) const;
         Timestamp operator-=(const Duration& rhs);
         Timestamp operator- (const Duration& rhs) const;
-        Duration operator- (const Timestamp& rhs) const;
+        Duration  operator- (const Timestamp& rhs) const;
 
     private:
         // ns_ gives the number of nanoseconds elapsed since
