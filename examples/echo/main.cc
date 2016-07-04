@@ -8,7 +8,7 @@ void OnMessage(const evpp::TCPConnPtr& conn,
                evpp::Timestamp ts) {
     std::string s = msg->NextAllString();
     LOG_INFO << "Received a message [" << s << "]";
-    conn->Send(s.data(), s.size());
+    conn->Send(s);
     if (s == "quit" || s == "exit") {
         conn->Close();
     }
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     }
     std::string addr = std::string("0.0.0.0:") + port;
     evpp::EventLoop loop;
-    evpp::TCPServer server(&loop, addr, "TCPEcho", 1);
+    evpp::TCPServer server(&loop, addr, "TCPEcho", 0);
     server.SetMessageCallback(&OnMessage);
     server.Start();
     loop.Run();

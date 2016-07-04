@@ -12,13 +12,13 @@ namespace evpp {
 
     FdChannel::FdChannel(EventLoop* l, int f, bool r, bool w)
         : loop_(l), attached_to_loop_(false), event_(NULL), fd_(f) {
-        events_ = (r ? kReadable : 0) | (w ? kWritable : 0) | EV_PERSIST;
+        events_ = (r ? kReadable : 0) | (w ? kWritable : 0);
         event_ = new event;
         memset(event_, 0, sizeof(struct event));
     }
 
     FdChannel::~FdChannel() {
-        LOG_INFO << "FdChannel::~FdChannel() fd=" << fd_;
+        LOG_INFO << "FdChannel::~FdChannel() this=" << this << " fd=" << fd_;
         assert(event_ == NULL);
     }
 
@@ -33,28 +33,76 @@ namespace evpp {
     }
 
     void FdChannel::AttachToLoop() {
-        loop_->AssertInLoopThread();
-        ::event_set(event_, fd_, events_, &FdChannel::HandleEvent, this);
+        assert(!IsNoneEvent());
+        assert(loop_->IsInLoopThread());
+        if (attached_to_loop_) {
+            // FdChannel::Update 可能会被多次调用，这样处理可以避免 event_add 被多次调用
+            DetachFromLoop();
+        }
+
+        ::event_set(event_, fd_, events_ | EV_PERSIST, &FdChannel::HandleEvent, this);
         ::event_base_set(loop_->event_base(), event_);
         if (::event_add(event_, NULL) == 0) {
+            LOG_TRACE << "this=" << this << " fd=" << fd_ << " watching event " << EventsToString();
             attached_to_loop_ = true;
         } else {
-            LOG_ERROR << "fd=" << fd_ << " with event " << EventsToString() << " attach to event loop failed";
+            LOG_ERROR << "this=" << this << " fd=" << fd_ << " with event " << EventsToString() << " attach to event loop failed";
         }
     }
 
+    void FdChannel::EnableReadEvent() {
+        int events = events_;
+        events_ |= kReadable;
+        if (events_ != events) {
+            Update();
+        }
+    }
+
+    void FdChannel::EnableWriteEvent() {
+        int events = events_;
+        events_ |= kWritable;
+        if (events_ != events) {
+            Update();
+        }
+    }
+
+    void FdChannel::DisableReadEvent() {
+        int events = events_;
+        events_ &= (~kReadable);
+        if (events_ != events) {
+            Update();
+        }
+    }
+
+    void FdChannel::DisableWriteEvent() {
+        int events = events_;
+        events_ &= (~kWritable);
+        if (events_ != events) {
+            Update();
+        }
+    }
+
+    void FdChannel::DisableAllEvent() {
+        if (events_ == kNone) {
+            return;
+        }
+        events_ = kNone;
+        Update();
+    }
+
     void FdChannel::DetachFromLoop() {
-        loop_->AssertInLoopThread();
+        assert(loop_->IsInLoopThread());
+        assert(attached_to_loop_);
         if (::event_del(event_) == 0) {
             attached_to_loop_ = false;
+            LOG_TRACE << "DetachFromLoop this=" << this << " fd=" << fd_ << " detach from event loop";
         } else {
-            LOG_ERROR << "fd=" << fd_ << " with event " << EventsToString() << " detach to event loop failed";
+            LOG_ERROR << "DetachFromLoop this=" << this << "fd=" << fd_ << " with event " << EventsToString() << " detach from event loop failed";
         }
     }
 
     void FdChannel::Update() {
-        assert(attached_to_loop_);
-        loop_->AssertInLoopThread();
+        assert(loop_->IsInLoopThread());
         if (IsNoneEvent()) {
             DetachFromLoop();
         } else {
@@ -65,23 +113,27 @@ namespace evpp {
     std::string FdChannel::EventsToString() const {
         std::string s;
         if (events_ & kReadable) {
-            s = "kReadable|";
+            s = "kReadable";
         }
 
         if (events_ & kWritable) {
+            if (!s.empty()) {
+                s += "|";
+            }
             s += "kWritable";
         }
 
         return s;
     }
 
-
-    void FdChannel::HandleEvent(int fd, short which, void *v) {
+    void FdChannel::HandleEvent(int sockfd, short which, void *v) {
         FdChannel *c = (FdChannel*)v;
-        c->HandleEvent(fd, which);
+        c->HandleEvent(sockfd, which);
     }
 
-    void FdChannel::HandleEvent(int f, short which) {
+    void FdChannel::HandleEvent(int sockfd, short which) {
+        assert(sockfd == fd_);
+        LOG_TRACE << "HandleEvent fd=" << sockfd << " " << EventsToString();
         if ((which & kReadable) && read_fn_) {
             read_fn_(Timestamp::Now());
         }

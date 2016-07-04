@@ -93,5 +93,4 @@ namespace evpp {
             return c;
         }
     }
-
 }
