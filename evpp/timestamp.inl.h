@@ -27,7 +27,7 @@ namespace evpp {
 
     inline void Timestamp::To(struct timeval* t) const {
         t->tv_sec = (long)(ns_ / Duration::kSecond);
-        t->tv_usec = (long)(ns_ % Duration::kSecond) / Duration::kMicrosecond;
+        t->tv_usec = (long)(ns_ % Duration::kSecond) / (long)Duration::kMicrosecond;
     }
 
     inline struct timeval Timestamp::TimeVal() const {
