@@ -20,18 +20,18 @@ namespace evpp {
                      , type_(kIncoming)
                      , status_(kDisconnected)
                      , high_water_mark_(128 * 1024 * 1024)
-                     , closing_delay_for_incoming_conn_(1.0) {
+                     , closing_delay_for_incoming_conn_(3.000001) {
         chan_.reset(new FdChannel(loop, sockfd, false, false));
 
         chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this, std::placeholders::_1));
         chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
         chan_->SetCloseCallback(std::bind(&TCPConn::HandleClose, this));
         chan_->SetErrorCallback(std::bind(&TCPConn::HandleError, this));
-        LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " fd=" << sockfd;
+        LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " channel=" << chan_.get() << " fd=" << sockfd;
     }
 
     TCPConn::~TCPConn() {
-        LOG_TRACE << "TCPConn::~TCPConn() name=" << name() << " this=" << this << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString();
+        LOG_TRACE << "TCPConn::~TCPConn() name=" << name() << " this=" << this << " channel=" << chan_.get() << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString();
         assert(fd_ == chan_->fd());
         assert(status_ == kDisconnected);
         assert(chan_->IsNoneEvent());
@@ -208,12 +208,12 @@ namespace evpp {
     }
 
     void TCPConn::HandleError() {
+        //TODO how?
     }
 
     void TCPConn::OnAttachedToLoop() {
         loop_->AssertInLoopThread();
         status_ = kConnected;
-        chan_->AttachToLoop();
         chan_->EnableReadEvent();
         if (conn_fn_) {
             conn_fn_(shared_from_this());

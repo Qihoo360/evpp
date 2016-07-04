@@ -4,7 +4,7 @@
 #include "evpp/sockets.h"
 
 namespace evpp {
-    EVPP_EXPORT std::string strerror(int e) {
+    std::string strerror(int e) {
 #ifdef H_OS_WINDOWS
         LPVOID lpMsgBuf = NULL;
         ::FormatMessageA(
@@ -21,7 +21,6 @@ namespace evpp {
         return std::string(strerror_r(e, buf, sizeof buf));
 #endif
     }
-
 
     int CreateNonblockingSocket() {
         int serrno = 0;

@@ -11,7 +11,7 @@ namespace evpp {
 
     class EventLoop;
 
-    // A selectable I/O channel.
+    // A selectable I/O fd channel.
     //
     // This class doesn't own the file descriptor.
     // The file descriptor could be a socket,
@@ -41,11 +41,11 @@ namespace evpp {
         bool IsWritable() const { return (events_ & kWritable) != 0; }
         bool IsNoneEvent() const { return events_ == kNone; }
 
-        void EnableReadEvent() { events_ |= kReadable; Update(); }
-        void EnableWriteEvent() { events_ |= kWritable; Update(); }
-        void DisableReadEvent() { events_ &= ~kReadable; Update(); }
-        void DisableWriteEvent() { events_ &= ~kWritable; Update(); }
-        void DisableAllEvent() { events_ = kNone; Update(); }
+        void EnableReadEvent();
+        void EnableWriteEvent();
+        void DisableReadEvent();
+        void DisableWriteEvent();
+        void DisableAllEvent();
 
     public:
         int fd() const { return fd_; }
