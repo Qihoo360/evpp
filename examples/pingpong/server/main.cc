@@ -6,12 +6,9 @@
 void OnMessage(const evpp::TCPConnPtr& conn,
                evpp::Buffer* msg,
                evpp::Timestamp ts) {
-    std::string s = msg->NextAllString();
-    LOG_INFO << "Received a message [" << s << "]";
-    conn->Send(s.data(), s.size());
-    if (s == "quit" || s == "exit") {
-        conn->Close();
-    }
+    //LOG_INFO << "Received a message len=" << msg->size();
+    conn->Send(msg->data(), msg->size());
+    msg->Reset();
 }
 
 int main(int argc, char* argv[]) {

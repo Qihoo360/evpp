@@ -15,13 +15,11 @@
 namespace {
     static bool connected = false;
     static bool message_recved = false;
-    static int count = 0;
     const static std::string addr = "127.0.0.1:9099";
     static void OnMessage(const evpp::TCPConnPtr& conn,
                           evpp::Buffer* msg,
                           evpp::Timestamp ts) {
         message_recved = true;
-        count = 1;
     }
 
     static void StopTCPServer(evpp::TCPServer* t) {
@@ -31,6 +29,7 @@ namespace {
     void OnClientConnection(const evpp::TCPConnPtr& conn) {
         if (conn->IsConnected()) {
             conn->Send("hello");
+            LOG_INFO << "Send a message to server when connected.";
             connected = true;
         } else {
             LOG_INFO << "Disconnected from " << conn->remote_addr();
@@ -55,13 +54,12 @@ TEST_UNIT(testTCPServer1) {
     evpp::TCPServer tsrv(&loop, addr, "tcp_server", 2);
     tsrv.SetMessageCallback(&OnMessage);
     tsrv.Start();
-    loop.RunAfter(evpp::Duration(1.2), std::bind(&StopTCPServer, &tsrv));
-    loop.RunAfter(evpp::Duration(1.3), std::bind(&evpp::EventLoop::Stop, &loop));
+    loop.RunAfter(evpp::Duration(1.4), std::bind(&StopTCPServer, &tsrv));
+    loop.RunAfter(evpp::Duration(1.6), std::bind(&evpp::EventLoop::Stop, &loop));
     std::shared_ptr<evpp::TCPClient> client = StartTCPClient(t.event_loop());
     loop.Run();
     t.Stop(true);
     H_TEST_ASSERT(connected);
-    H_TEST_ASSERT(count == 1);
     H_TEST_ASSERT(message_recved);
     ::usleep(evpp::Duration(1.0).Microseconds());
 }

@@ -44,6 +44,7 @@ namespace evpp {
         void SetConnectionCallback(ConnectionCallback cb) { conn_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
 
+        EventLoop* loop() const { return loop_; }
         void set_context(const Any& c) { context_ = c; }
         const Any& context() const { return context_; }
     public:
@@ -91,7 +92,7 @@ namespace evpp {
         size_t high_water_mark_; // Default 128MB
 
         // The delay time to close a incoming connection which has been shutdown by peer normally.
-        // Default is 1 second.
+        // Default is 3 second.
         Duration closing_delay_for_incoming_conn_;
 
         ConnectionCallback conn_fn_;
