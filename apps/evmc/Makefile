@@ -3,8 +3,8 @@ PLATFORM_VERSION := $(shell uname -r| awk -F 'el' '{printf("el%d", substr($$2,1,
 
 CXX := g++
 
-CURRENT_DIR=.
-PROJECT_ROOT_DIR=./../..
+CURRENT_DIR=$(shell pwd)
+PROJECT_ROOT_DIR=$(CURRENT_DIR)/../..
 THIRD_PARTY_DIR=$(PROJECT_ROOT_DIR)/3rdparty
 
 CPPFLAGS= -g -c -fPIC \
