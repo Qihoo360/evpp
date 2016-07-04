@@ -81,6 +81,15 @@ typedef int ssize_t;
 #define EAGAIN EWOULDBLOCK // Added by @weizili at 20160610
 #endif
 
+
+#ifndef HAVE_MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+
+#ifndef HAVE_MSG_DONTWAIT
+#define MSG_DONTWAIT 0
+#endif
+
 #endif
 
 
