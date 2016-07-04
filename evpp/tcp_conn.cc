@@ -7,12 +7,12 @@
 #include "evpp/event_loop.h"
 
 namespace evpp {
-    TCPConn::TCPConn(EventLoop* loop,
+    TCPConn::TCPConn(EventLoop* l,
                      const std::string& n,
                      int sockfd,
                      const std::string& laddr,
                      const std::string& raddr)
-                     : loop_(loop)
+                     : loop_(l)
                      , fd_(sockfd)
                      , name_(n)
                      , local_addr_(laddr)
@@ -21,7 +21,7 @@ namespace evpp {
                      , status_(kDisconnected)
                      , high_water_mark_(128 * 1024 * 1024)
                      , closing_delay_for_incoming_conn_(3.000001) {
-        chan_.reset(new FdChannel(loop, sockfd, false, false));
+        chan_.reset(new FdChannel(l, sockfd, false, false));
 
         chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this, std::placeholders::_1));
         chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
