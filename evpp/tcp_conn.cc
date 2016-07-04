@@ -109,7 +109,7 @@ namespace evpp {
 
         // if no data in output queue, writing directly
         if (!chan_->IsWritable() && output_buffer_.length() == 0) {
-            nwritten = ::send(chan_->fd(), static_cast<const char*>(data), len, 0);
+            nwritten = ::send(chan_->fd(), static_cast<const char*>(data), len, MSG_NOSIGNAL);
             if (nwritten >= 0) {
                 remaining = len - nwritten;
                 if (remaining == 0 && write_complete_fn_) {
@@ -172,7 +172,7 @@ namespace evpp {
     void TCPConn::HandleWrite() {
         loop_->AssertInLoopThread();
         assert(chan_->IsWritable());
-        ssize_t n = ::send(fd_, output_buffer_.data(), output_buffer_.length(), 0);
+        ssize_t n = ::send(fd_, output_buffer_.data(), output_buffer_.length(), MSG_NOSIGNAL);
         if (n > 0) {
             output_buffer_.Next(n);
             if (output_buffer_.length() == 0) {
