@@ -7,6 +7,7 @@ namespace evmc {
 thread_local std::map<std::string, MemcacheClientPtr> MemcacheClientPool::memc_clients_;
 
 MemcacheClientPool::~MemcacheClientPool() {
+    // TODO : don't stop in dtor
     loop_.Stop();
     loop_pool_.Stop(true);
 }
@@ -17,8 +18,8 @@ void MemcacheClientPool::OnReloadConfTimer() {
     LOG_INFO << "MemcacheClientPool OnReloadConfTimer";
 
     // evpp::InvokeTimerPtr timer = loop_.RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
+    loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
  
-    loop_pool_.GetNextLoopWithHash(rand())->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
   //TimerEventPtr timer(new evpp::TimerEventWatcher(loop_pool_.GetNextLoopWithHash(rand()),
   //        , evpp::Duration(0.1)));
   //timer->Init();
@@ -58,11 +59,32 @@ bool MemcacheClientPool::Start() {
     }
 
     bool ok = loop_pool_.Start(true);
-    if (ok) {
-        loop_pool_.GetNextLoopWithHash(rand())->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
+    if (!ok) {
+        return false;
+        // loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
+    }
+
+    // FIXME : thread pool 启动之后，这样做的安全性
+    auto threads = loop_pool_.threads();
+    for(size_t i = 0; i < (*threads).size(); ++i) {
+        evpp::EventLoop* loop = (*threads)[i]->event_loop();
+
+        memc_client_map_.push_back(new MemcClientMap());
+        loop->set_context(evpp::Any(memc_client_map_.back()));
     }
 
     return ok;
+}
+
+MemcClientMap* MemcacheClientPool::GetMemcClientMap(int hash) {
+    // return &memc_clients_; // use thread local var
+
+    auto threads = loop_pool_.threads();
+    if (threads->empty()) { 
+        return NULL;
+    }
+    evpp::EventLoop* loop = (*threads)[hash % threads->size()]->event_loop();
+    return evpp::any_cast<MemcClientMap*>(loop->context());
 }
 
 void MemcacheClientPool::Set(EventLoopPtr caller_loop, const std::string& key, const std::string& value, SetCallback callback) {
@@ -120,6 +142,7 @@ void MemcacheClientPool::MultiGet(EventLoopPtr caller_loop, const std::vector<st
     if (keys.size() <= 0) {
         return;
     }
+    // TODO : rand() performance fix
     uint32_t thread_hash = rand();
     std::map<uint16_t, std::vector<std::string> > vbucket_keys;
 
@@ -193,9 +216,15 @@ void MemcacheClientPool::DoLaunchCommand(CommandPtr command) {
     }
     command->set_server_id(server_id);
     std::string server_addr = vbconf->GetServerAddrById(server_id);
-    auto it = memc_clients_.find(server_addr);
+    MemcClientMap* client_map = GetMemcClientMap(command->thread_hash());
+    if (client_map == NULL) {
+        command->OnError(ERR_CODE_DISCONNECT);
+        LOG_INFO << "DoLaunchCommand thread pool empty";
+        return;
+    }
+    auto it = client_map->find(server_addr);
 
-    if (it == memc_clients_.end()) {
+    if (it == client_map->end()) {
         evpp::TCPClient * tcp_client = new evpp::TCPClient(loop_pool_.GetNextLoopWithHash(command->thread_hash()),
                 server_addr, "MemcacheBinaryClient");
         MemcacheClientPtr memc_client(new MemcacheClient(loop_pool_.GetNextLoopWithHash(command->thread_hash()),
@@ -208,7 +237,7 @@ void MemcacheClientPool::DoLaunchCommand(CommandPtr command) {
                     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         tcp_client->Connect();
 
-        memc_clients_[server_addr] = memc_client;
+        client_map->insert(std::make_pair(server_addr, memc_client));
 
         memc_client->push_waiting_command(command);
         return;
