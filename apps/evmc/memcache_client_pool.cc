@@ -1,6 +1,7 @@
 #include "memcache_client_pool.h"
 
 #include "vbucket_config.h"
+#include "evpp/event_loop_thread_pool.h"
 
 namespace evmc {
 
@@ -64,12 +65,9 @@ bool MemcacheClientPool::Start() {
         // loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
     }
 
-    // FIXME : thread pool 启动之后，这样做的安全性
-    auto threads = loop_pool_.threads();
-    for(size_t i = 0; i < (*threads).size(); ++i) {
-        evpp::EventLoop* loop = (*threads)[i]->event_loop();
-
-        memc_client_map_.push_back(new MemcClientMap());
+    for (int i = 0; i < loop_pool_.thread_num(); ++i) {
+        evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(i);
+        memc_client_map_.push_back(new MemcClientMap()); // FIXME memory release
         loop->set_context(evpp::Any(memc_client_map_.back()));
     }
 
@@ -77,13 +75,7 @@ bool MemcacheClientPool::Start() {
 }
 
 MemcClientMap* MemcacheClientPool::GetMemcClientMap(int hash) {
-    // return &memc_clients_; // use thread local var
-
-    auto threads = loop_pool_.threads();
-    if (threads->empty()) { 
-        return NULL;
-    }
-    evpp::EventLoop* loop = (*threads)[hash % threads->size()]->event_loop();
+    evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(hash);
     return evpp::any_cast<MemcClientMap*>(loop->context());
 }
 
