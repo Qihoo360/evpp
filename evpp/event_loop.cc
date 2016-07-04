@@ -24,6 +24,7 @@ namespace evpp {
     }
 
     void EventLoop::Init() {
+        running_ = false;
         tid_ = std::this_thread::get_id(); // The default thread id
         calling_pending_functors_ = false;
         watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
@@ -32,6 +33,7 @@ namespace evpp {
     }
 
     void EventLoop::Run() {
+        running_ = true;
         tid_ = std::this_thread::get_id(); // The actual thread id
 
         int rc = event_base_dispatch(event_base_);
@@ -44,6 +46,7 @@ namespace evpp {
             return;
         }
         //LOG_TRACE << "EventLoop stopped, tid: " << std::this_thread::get_id();
+        running_ = false;
     }
 
     bool EventLoop::IsInLoopThread() const {
