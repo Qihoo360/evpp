@@ -9,8 +9,8 @@ CXX := g++
 #CXX := g++
 #endif
 
-CURRENT_DIR=.
-ROOT_DIR=./../../..
+CURRENT_DIR= $(shell pwd)
+ROOT_DIR=$(shell cd ./../../.. && pwd)
 PREFIX=$(CURRENT_DIR)/../install
 
 CPPFLAGS= -g -c -fPIC \
@@ -20,6 +20,7 @@ CPPFLAGS= -g -c -fPIC \
 		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 \
 		  -I ../include\
 		  -I .. \
+		  -I ../.. \
 		  -I $(ROOT_DIR) \
 		  -I $(ROOT_DIR)/3rdparty
 
@@ -31,9 +32,10 @@ RTFLAGS := \
 LDFLAGS= $(RTFLAGS) \
 		 -L $(ROOT_DIR)/evpp \
 		 -L $(ROOT_DIR)/3rdparty/libhashkit \
+		 -L /home/muyuwei/3rd/lib \
 		 -L .. \
 		 -lpthread -levmc \
-		 -levpp -levent -lglog -lhashkit
+		 -levpp -leventd -lglog -lhashkit
 
 DIRNAME=$(shell basename `pwd`)
 
@@ -47,7 +49,7 @@ all : $(TARGET) test
 check : $(TARGET)
 	./$^
 
-$(TARGET) : $(OBJS)
+$(TARGET) : $(OBJS) ../libevmc.a $(ROOT_DIR)/evpp/libevpp.a
 	$(CXX) $(OBJS) $(LDFLAGS) -o $@
 
 -include $(DEPS)
@@ -58,4 +60,8 @@ $(TARGET) : $(OBJS)
 clean:
 	rm -rf *.o *.d $(OBJS) $(DEPS) $(TARGET) *.tmp
 
-.PHONY : test
+test_var :
+	echo ${CURRENT_DIR}
+	echo ${ROOT_DIR}
+
+.PHONY : test test_var
