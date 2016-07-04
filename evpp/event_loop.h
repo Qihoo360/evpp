@@ -39,7 +39,7 @@ namespace evpp {
         void AssertInLoopThread() const;
         void set_context(const Any& c) { context_ = c; }
         const Any& context() const { return context_; }
-
+        bool running() const { return running_; }
     private:
         void StopInLoop();
         void Init();
@@ -50,6 +50,7 @@ namespace evpp {
         struct event_base* event_base_;
         std::thread::id tid_;
         Any context_;
+        bool running_;
 
         std::mutex mutex_;
         std::shared_ptr<PipeEventWatcher> watcher_;
