@@ -5,6 +5,8 @@
 
 namespace evmc {
 
+typedef std::map<std::string, MemcacheClientPtr> MemcClientMap;
+
 class MemcacheClientPool {
 public:
     friend MemcacheClient;
@@ -36,10 +38,14 @@ private:
     bool DoReloadConf();
     VbucketConfigPtr vbucket_config();
 
+    // MemcClientMap& GetMemcClientMap();
+    MemcClientMap* GetMemcClientMap(int hash);
 private:
     void DoLaunchCommand(CommandPtr command);
 
     thread_local static std::map<std::string, MemcacheClientPtr> memc_clients_;
+    std::vector<MemcClientMap*> memc_client_map_;
+
     std::string vbucket_conf_file_;
     evpp::EventLoop loop_;
     evpp::EventLoopThreadPool loop_pool_;
