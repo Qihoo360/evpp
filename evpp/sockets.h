@@ -1,6 +1,6 @@
 #pragma once
 
-#include "evpp/inner_pre.h"
+#include "evpp/evpp_export.h"
 
 namespace evpp {
     template<typename To, typename From>
