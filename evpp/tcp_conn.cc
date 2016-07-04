@@ -99,14 +99,15 @@ namespace evpp {
 
     void TCPConn::SendInLoop(const void* data, size_t len) {
         loop_->AssertInLoopThread();
-        ssize_t nwritten = 0;
-        size_t remaining = len;
-        bool write_error = false;
         if (status_ == kDisconnected) {
             LOG_WARN << "disconnected, give up writing";
             return;
         }
 
+
+        ssize_t nwritten = 0;
+        size_t remaining = len;
+        bool write_error = false;
         // if no data in output queue, writing directly
         if (!chan_->IsWritable() && output_buffer_.length() == 0) {
             nwritten = ::send(chan_->fd(), static_cast<const char*>(data), len, 0);
@@ -127,8 +128,14 @@ namespace evpp {
             }
         }
 
+        if (write_error) {
+            HandleClose();
+            return;
+        }
+
+        assert(!write_error);
         assert(remaining <= len);
-        if (!write_error && remaining > 0) {
+        if (remaining > 0) {
             size_t old_len = output_buffer_.length();
             if (old_len + remaining >= high_water_mark_
                 && old_len < high_water_mark_
@@ -233,9 +240,4 @@ namespace evpp {
         H_CASE_STRING(kDisconnecting);
         H_CASE_STRING_END();
     }
-
-
-
-
-
 }
