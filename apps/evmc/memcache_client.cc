@@ -24,15 +24,13 @@ void MemcacheClient::PushRunningCommand(CommandPtr cmd) {
     if (!timeout_.IsZero()) {
         if (cmd_timer_) {
             cmd_timer_->Cancel();
-            LOG_DEBUG << "InvokeTimer canceled for " << timer_cmd_id_ << " " << conn()->remote_addr();
+            LOG_DEBUG << "InvokeTimer canceled for " << " " << conn()->remote_addr();
         }
 
         evpp::InvokeTimerPtr timer = exec_loop_->RunAfter(timeout_, 
                 std::bind(&MemcacheClient::OnPacketTimeout, shared_from_this(), cmd->id()));
 
         cmd_timer_ = timer;
-        timer_cmd_id_ = cmd->id();
-        LOG_DEBUG << "InvokeTimer created for " << timer_cmd_id_ << " " << conn()->remote_addr();
     }
 }
 
@@ -46,10 +44,9 @@ CommandPtr MemcacheClient::PopRunningCommand() {
     running_command_.pop();
 
     if (!timeout_.IsZero() && running_command_.empty()) {
-        LOG_DEBUG << "InvokeTimer cleared for " << timer_cmd_id_ << " " << conn()->remote_addr();
         if (cmd_timer_) {
-        cmd_timer_->Cancel();
-        cmd_timer_.reset();
+            cmd_timer_->Cancel();
+            cmd_timer_.reset();
         }
     }
 
@@ -79,14 +76,10 @@ void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
     LOG_DEBUG << "InvokeTimer triggered for " << cmd_id << " " << conn()->remote_addr();
     // cmd_timer_->Cancel();
     // cmd_timer_.reset();
-    assert(timer_cmd_id_ == cmd_id);
-    LOG_WARN << "OnPacketTimeout pre, waiting=" << waiting_command_.size()
-             << " running=" << running_command_.size();
     while(!running_command_.empty()) {
         CommandPtr cmd(running_command_.front());
         running_command_.pop();
 
-        LOG_WARN << "OnPacketTimeout cmd=" << cmd->id();
         if (mc_pool_ && cmd->ShouldRetry()) {
             // mc_pool_->LaunchCommand(cmd); 
             cmd->set_id(0); 
