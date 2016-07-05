@@ -60,9 +60,13 @@ bool MemcacheClientPool::Start() {
     loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
 
     for (int i = 0; i < loop_pool_.thread_num(); ++i) {
-        evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(i);
         memc_client_map_.push_back(MemcClientMap());
-        loop->set_context(evpp::Any(&memc_client_map_.back()));
+    }
+
+    // 须先构造memc_client_map_数组，再各个元素取地址，否则地址不稳定，可能崩溃
+    for (int i = 0; i < loop_pool_.thread_num(); ++i) {
+        evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(i);
+        loop->set_context(evpp::Any(&memc_client_map_[i]));
     }
 
     return ok;
