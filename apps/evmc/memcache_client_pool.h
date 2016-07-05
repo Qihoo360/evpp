@@ -17,7 +17,7 @@ public:
     virtual ~MemcacheClientPool();
 
     bool Start();
-    bool Stop();
+    void Stop(bool wait_thread_exit);
 
     void Set(EventLoopPtr caller_loop, const std::string& key, const std::string& value, SetCallback callback);
     void Set(EventLoopPtr caller_loop, const char* key, const char* value, size_t val_len, uint32_t flags,
@@ -38,21 +38,21 @@ private:
     bool DoReloadConf();
     VbucketConfigPtr vbucket_config();
 
-    // MemcClientMap& GetMemcClientMap();
     MemcClientMap* GetMemcClientMap(int hash);
 private:
     void DoLaunchCommand(CommandPtr command);
 
     thread_local static std::map<std::string, MemcacheClientPtr> memc_clients_;
-    std::vector<MemcClientMap*> memc_client_map_;
+    std::vector<MemcClientMap> memc_client_map_;
 
     std::string vbucket_conf_file_;
     evpp::EventLoop loop_;
     evpp::EventLoopThreadPool loop_pool_;
     int timeout_ms_;
+
     // std::atomic<VbucketConfigPtr> vbucket_config_;
     VbucketConfigPtr vbucket_config_;
-    std::mutex vbucket_config_mutex_;
+    std::mutex vbucket_config_mutex_; // TODO : use rw mutex
 };
 
 }

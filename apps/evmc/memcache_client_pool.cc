@@ -8,23 +8,17 @@ namespace evmc {
 thread_local std::map<std::string, MemcacheClientPtr> MemcacheClientPool::memc_clients_;
 
 MemcacheClientPool::~MemcacheClientPool() {
-    // TODO : don't stop in dtor
+}
+
+void MemcacheClientPool::Stop(bool wait_thread_exit) {
     loop_.Stop();
-    loop_pool_.Stop(true);
+    loop_pool_.Stop(wait_thread_exit);
 }
 
 static evpp::Duration reload_delay(1.0);
 void MemcacheClientPool::OnReloadConfTimer() {
-    // DoReloadConf();
-    LOG_INFO << "MemcacheClientPool OnReloadConfTimer";
-
-    // evpp::InvokeTimerPtr timer = loop_.RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
+    DoReloadConf();
     loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
- 
-  //TimerEventPtr timer(new evpp::TimerEventWatcher(loop_pool_.GetNextLoopWithHash(rand()),
-  //        , evpp::Duration(0.1)));
-  //timer->Init();
-  //timer->AsyncWait();
 }
 
 bool MemcacheClientPool::DoReloadConf() {
@@ -35,7 +29,7 @@ bool MemcacheClientPool::DoReloadConf() {
     if (success) {
         // std::atomic_store(&vbucket_config_, vbconf);
         {
-            // std::lock_guard<std::mutex> lock(vbucket_config_mutex_);
+            std::lock_guard<std::mutex> lock(vbucket_config_mutex_);
             vbucket_config_ = vbconf;
         }
         LOG_DEBUG << "DoReloadConf load ok, file=" << vbucket_conf_file_;
@@ -50,7 +44,7 @@ bool MemcacheClientPool::DoReloadConf() {
 VbucketConfigPtr MemcacheClientPool::vbucket_config() {
     // return std::atomic_load(&vbucket_config_);
 
-    // std::lock_guard<std::mutex> lock(vbucket_config_mutex_);
+    std::lock_guard<std::mutex> lock(vbucket_config_mutex_);
     return vbucket_config_;
 }
 
@@ -62,13 +56,13 @@ bool MemcacheClientPool::Start() {
     bool ok = loop_pool_.Start(true);
     if (!ok) {
         return false;
-        // loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
     }
+    loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
 
     for (int i = 0; i < loop_pool_.thread_num(); ++i) {
         evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(i);
-        memc_client_map_.push_back(new MemcClientMap()); // FIXME memory release
-        loop->set_context(evpp::Any(memc_client_map_.back()));
+        memc_client_map_.push_back(MemcClientMap());
+        loop->set_context(evpp::Any(&memc_client_map_.back()));
     }
 
     return ok;
