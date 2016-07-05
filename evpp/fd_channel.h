@@ -35,6 +35,7 @@ namespace evpp {
 
         // Attach this FdChannel to EventLoop
         void AttachToLoop();
+        bool attached_to_loop() const { return attached_to_loop_; }
 
     public:
         bool IsReadable() const { return (events_ & kReadable) != 0; }
