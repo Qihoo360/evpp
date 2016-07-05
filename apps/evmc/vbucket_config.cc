@@ -22,23 +22,17 @@ enum {
     MIN_WEIGHT = 100,
 };
 
-/*
-static uint32_t libhashkit_digest(const char *key, size_t key_length, hashkit_hash_algorithm_t hash_algorithm);
-static uint32_t hashkit_md5(const char *key, size_t key_length, void *context __attribute__((unused)));
-*/
-
 void VbucketConfig::OnVbucketResult(uint16_t vbucket, bool success) {
     // 捎带更新健康值，不专门更新. 这样该函数就是多余的
 
-    // 详细策略:
-    // 1. 健康值
-    // 2. N个replica，全部重试一遍，还是只重试一次？
-    // 3. 更新健康值时，要兼顾线程安全和性能
+    // 健康值/权重更新策略:
+    // 1. 健康值快速(指数)衰减，慢速(线性)恢复
+    // 2. N个replica，目前是选不同端口重试两次. 是否需要全部重试一遍？ 
+    // 3. 更新健康值时，兼顾线程安全和性能
     return;
 }
 
 uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const {
-    // TODO : 排除failed_id对应的server
     uint16_t vb = vbucket % vbucket_map_.size();
 
     const std::vector<int>& server_ids = vbucket_map_[vb];
@@ -97,7 +91,6 @@ uint16_t VbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
     return digest % vbucket_map_.size();
 }
 
-// TODO : double buffering
 bool VbucketConfig::Load(const char * json_file) {
     rapidjson::Document d;
 
@@ -133,59 +126,5 @@ bool VbucketConfig::Load(const char * json_file) {
 
     return true;
 }
-
-/*
-uint32_t libhashkit_digest(const char *key, size_t key_length, hashkit_hash_algorithm_t hash_algorithm) {
-    switch (hash_algorithm)
-    {
-        case HASHKIT_HASH_DEFAULT:
-            return libhashkit_one_at_a_time(key, key_length);
-        case HASHKIT_HASH_MD5:
-            return libhashkit_md5(key, key_length);
-        case HASHKIT_HASH_CRC:
-            return libhashkit_crc32(key, key_length);
-        case HASHKIT_HASH_FNV1_64:
-            return libhashkit_fnv1_64(key, key_length);
-        case HASHKIT_HASH_FNV1A_64:
-            return libhashkit_fnv1a_64(key, key_length);
-        case HASHKIT_HASH_FNV1_32:
-            return libhashkit_fnv1_32(key, key_length);
-        case HASHKIT_HASH_FNV1A_32:
-            return libhashkit_fnv1a_32(key, key_length);
-        case HASHKIT_HASH_HSIEH:
-#ifdef HAVE_HSIEH_HASH
-            return libhashkit_hsieh(key, key_length);
-#else
-            return 1;
-#endif
-        case HASHKIT_HASH_MURMUR:
-            return libhashkit_murmur(key, key_length);
-        case HASHKIT_HASH_JENKINS:
-            return libhashkit_jenkins(key, key_length);
-        case HASHKIT_HASH_CUSTOM:
-        case HASHKIT_HASH_MAX:
-        default:
-#ifdef HAVE_DEBUG
-            fprintf(stderr, "hashkit_hash_t was extended but libhashkit_generate_value was not updated\n");
-            fflush(stderr);
-            assert(0);
-#endif
-            break;
-    }
-
-    return 1;
-}
-
-uint32_t hashkit_md5_2(const char *key, size_t key_length, void *context __attribute__((unused))) {
-    unsigned char results[16];
-
-    libhashkit_md5_signature((const unsigned char*)key, (unsigned int)key_length, results); // 这一步计算MD5
-
-    return ((uint32_t) (results[3] & 0xFF) << 24)
-        | ((uint32_t) (results[2] & 0xFF) << 16)
-        | ((uint32_t) (results[1] & 0xFF) << 8)
-        | (results[0] & 0xFF);
-}
-*/
 
 }
