@@ -73,7 +73,6 @@ private:
 
     // TimerEventPtr cmd_timer_;
     evpp::InvokeTimerPtr cmd_timer_;
-    uint32_t timer_cmd_id_;
 
     BinaryCodec * codec_;
 
