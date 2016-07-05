@@ -10,6 +10,7 @@ public:
             : caller_loop_(evloop), id_(0)
             , vbucket_id_(vbucket), thread_hash_(th_hash) {
     }
+    virtual ~Command(){}
 
     uint32_t id() const { return id_; }
     void set_id(uint32_t v) { id_ = v; }
