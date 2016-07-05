@@ -27,10 +27,9 @@ uint16_t Command::server_id() const {
 }
 
 bool Command::ShouldRetry() const {
-    LOG_INFO << "ShouldRetry vbucket=" << vbucket_id()
+    LOG_DEBUG << "ShouldRetry vbucket=" << vbucket_id()
              << " server_id=" << server_id()
              << " len=" << server_id_history_.size();
-    return false;
     return server_id_history_.size() < 2;
 }
 
