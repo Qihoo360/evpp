@@ -15,28 +15,27 @@ namespace evpp {
 
         class EVPP_EXPORT Request {
         public:
-            //! \brief Create a HTTP Request and create Conn from pool.
-            //! Do a HTTP GET request if body is empty or HTTP POST request if body is not empty.
-            //! \param[in] - ConnPool * pool
-            //! \param[in] - EventLoop * loop
-            //! \param[in] - const std::string & uri The URI of the HTTP request
-            //! \param[in] - const std::string & body
+            // @brief Create a HTTP Request and create Conn from pool.
+            //  Do a HTTP GET request if body is empty or HTTP POST request if body is not empty.
+            // @param[in] pool - 
+            // @param[in] loop - 
+            // @param[in] uri - The URI of the HTTP request
+            // @param[in] body - 
+            // @return  - 
             Request(ConnPool* pool, EventLoop* loop, const std::string& uri, const std::string& body);
             
-            //! \brief Create a HTTP Request and create Conn myself
-            //! Do a HTTP GET request if body is empty or HTTP POST request if body is not empty.
-            //! \param[in] - EventLoop * loop
-            //! \param[in] - const std::string & url The URL of the HTTP request
-            //! \param[in] - const std::string & body
-            //! \param[in] - Duration timeout
+            // @brief Create a HTTP Request and create Conn myself
+            //  Do a HTTP GET request if body is empty or HTTP POST request if body is not empty.
+            // @param[in] loop - 
+            // @param[in] url - The URL of the HTTP request
+            // @param[in] body - 
+            // @param[in] timeout - 
+            // @return - 
             Request(EventLoop* loop, const std::string& url, const std::string& body, Duration timeout);
 
             ~Request();
 
             void Execute(const Handler& h);
-
-            //ConnPool* pool() { return pool_; }
-            //EventLoop* loop() { return loop_; }
 
             const std::shared_ptr<Conn>& conn() const { return conn_; }
             struct evhttp_connection* evhttp_conn() const { return conn_->evhttp_conn(); }
