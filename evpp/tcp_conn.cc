@@ -178,7 +178,9 @@ namespace evpp {
 
     void TCPConn::HandleWrite() {
         loop_->AssertInLoopThread();
-        assert(chan_->IsWritable());
+        // assert(chan_->IsWritable());
+        assert(!chan_->attached_to_loop() || chan_->IsWritable());
+
         ssize_t n = ::send(fd_, output_buffer_.data(), output_buffer_.length(), MSG_NOSIGNAL);
         if (n > 0) {
             output_buffer_.Next(n);
@@ -199,7 +201,7 @@ namespace evpp {
     }
 
     void TCPConn::HandleClose() {
-        assert(status_ == kConnected);
+        // assert(status_ == kConnected); // FIXME : HandleClose() might triggered twice
         status_ = kDisconnecting;
         loop_->AssertInLoopThread();
         chan_->DisableAllEvent();
