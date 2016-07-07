@@ -26,7 +26,6 @@ namespace evpp {
         chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this, std::placeholders::_1));
         chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
         chan_->SetCloseCallback(std::bind(&TCPConn::HandleClose, this));
-        chan_->SetErrorCallback(std::bind(&TCPConn::HandleError, this));
         LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " channel=" << chan_.get() << " fd=" << sockfd;
     }
 
@@ -178,8 +177,7 @@ namespace evpp {
 
     void TCPConn::HandleWrite() {
         loop_->AssertInLoopThread();
-        // assert(chan_->IsWritable());
-        assert(!chan_->attached_to_loop() || chan_->IsWritable());
+        assert(!chan_->attached() || chan_->IsWritable());
 
         ssize_t n = ::send(fd_, output_buffer_.data(), output_buffer_.length(), MSG_NOSIGNAL);
         if (n > 0) {
@@ -201,10 +199,11 @@ namespace evpp {
     }
 
     void TCPConn::HandleClose() {
+        // HandleClose() might trigger more once
         if (status_ == kDisconnected) {
             return;
         }
-        assert(status_ == kConnected); // FIXME : HandleClose() might triggered twice
+        assert(status_ == kConnected);
         status_ = kDisconnecting;
         loop_->AssertInLoopThread();
         chan_->DisableAllEvent();
@@ -217,10 +216,6 @@ namespace evpp {
 
         close_fn_(conn);
         status_ = kDisconnected;
-    }
-
-    void TCPConn::HandleError() {
-        //TODO how?
     }
 
     void TCPConn::OnAttachedToLoop() {
