@@ -201,7 +201,10 @@ namespace evpp {
     }
 
     void TCPConn::HandleClose() {
-        // assert(status_ == kConnected); // FIXME : HandleClose() might triggered twice
+        if (status_ == kDisconnected) {
+            return;
+        }
+        assert(status_ == kConnected); // FIXME : HandleClose() might triggered twice
         status_ = kDisconnecting;
         loop_->AssertInLoopThread();
         chan_->DisableAllEvent();
