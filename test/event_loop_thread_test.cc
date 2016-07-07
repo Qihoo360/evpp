@@ -25,6 +25,7 @@ TEST_UNIT(testEventLoopThread) {
     g_count.store(0);
     evpp::EventLoopThread t;
     t.Start();
+    usleep(1000);
     evpp::Timestamp begin = evpp::Timestamp::Now();
     t.event_loop()->RunAfter(delay, &OnTimeout);
     while (!g_timeout) {
