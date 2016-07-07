@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -15,6 +15,7 @@
     <Keyword>Win32Proj</Keyword>
     <Platform>Win32</Platform>
     <ProjectName>event_core</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -36,17 +37,17 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-    <PropertyGroup>
-      <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\lib\Debug\</OutDir>
-      <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">event_core.dir\Debug\</IntDir>
-      <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">event_core</TargetName>
-      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\lib\Release\</OutDir>
-      <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">event_core.dir\Release\</IntDir>
-      <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">event_core</TargetName>
-      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
-    </PropertyGroup>
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)bin/$(Configuration)/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">event_core.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">event_core</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)bin/$(Configuration)/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">event_core.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">event_core</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\include;D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\compat;D:\360.git\evpp\3rdparty\libevent-2.1.5-beta;D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\.\WIN32-Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -94,7 +95,8 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;TINYTEST_LOCAL;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;TINYTEST_LOCAL;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -196,27 +198,27 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\include\event2\util.h" />
     <ClInclude Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\include\event2\visibility.h" />
     <ClInclude Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\include\event2\event-config.h" />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\buffer.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_filter.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_pair.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_ratelim.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_sock.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\event.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evmap.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evthread.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evutil.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evutil_rand.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evutil_time.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\listener.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\log.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\signal.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\strlcpy.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evthread_win32.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\buffer_iocp.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_async.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\event_iocp.c"  />
-    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\win32select.c"  />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\buffer.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_filter.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_pair.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_ratelim.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_sock.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\event.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evmap.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evthread.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evutil.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evutil_rand.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evutil_time.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\listener.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\log.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\signal.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\strlcpy.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evthread_win32.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\buffer_iocp.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_async.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\event_iocp.c" />
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\win32select.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="D:/360.git/evpp/3rdparty/libevent-2.1.5-beta/ZERO_CHECK.vcxproj">
