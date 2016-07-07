@@ -21,6 +21,7 @@ namespace {
     }
 }
 
+#if 0
 TEST_UNIT(evhttpClientSample) {
     struct event_base* base = event_base_new();
     struct evhttp_connection* conn = evhttp_connection_new("qup.f.360.cn", 80);
@@ -31,10 +32,6 @@ TEST_UNIT(evhttpClientSample) {
     evhttp_connection_set_timeout(req->evcon, 600);
     event_base_dispatch(base);
 }
-
-
-
-
 
 
 namespace httpc {
@@ -76,3 +73,5 @@ TEST_UNIT(testHTTPRequest2) {
     t.Stop(true);
     LOG_INFO << "EventLoopThread stopped.";
 }
+
+#endif
