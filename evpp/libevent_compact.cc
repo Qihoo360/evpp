@@ -1,7 +1,7 @@
 #include "evpp/inner_pre.h"
 #include "evpp/libevent_headers.h"
 
-#ifdef _LIBEVENT14
+#ifdef H_LIBEVENT_VERSION_14
 struct event* event_new(struct event_base *base, int fd, short events,
     void(*cb)(int, short, void *), void *arg) {
     struct event *ev;
