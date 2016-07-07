@@ -18,5 +18,12 @@ void event_free(struct event *ev) {
     free(ev);
 }
 
+
+struct evhttp_connection * evhttp_connection_base_new(struct event_base *base, struct evdns_base *dnsbase, const char *address, unsigned short port) {
+    struct evhttp_connection *evhttp_conn = evhttp_connection_new(address, port);
+    evhttp_connection_set_base(evhttp_conn, base);
+    return evhttp_conn;
+}
+
 #endif
 
