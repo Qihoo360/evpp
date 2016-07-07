@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\bench_httpclient.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\WIN32-Code\getopt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\WIN32-Code\getopt_long.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9F4897B8-C18D-3476-8887-A216EE7EFC78}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
