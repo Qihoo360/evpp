@@ -6,7 +6,7 @@
 namespace evpp {
     class EventLoopThreadPool::Impl {
     public:
-        Impl(EventLoop* base_loop, int thread_num);
+        Impl(EventLoop* base_loop, int thread_number);
         ~Impl();
         bool Start(bool wait_until_thread_started);
         void Stop(bool wait_thread_exit);
@@ -27,10 +27,10 @@ namespace evpp {
         std::vector<EventLoopThreadPtr> threads_;
     };
 
-    EventLoopThreadPool::Impl::Impl(EventLoop* base_loop, int thread_num)
+    EventLoopThreadPool::Impl::Impl(EventLoop* base_loop, int thread_number)
         : base_loop_(base_loop),
         started_(false),
-        thread_num_(thread_num),
+        thread_num_(thread_number),
         next_(0) {}
 
     EventLoopThreadPool::Impl::~Impl() {}
@@ -119,8 +119,8 @@ namespace evpp {
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
-    EventLoopThreadPool::EventLoopThreadPool(EventLoop* base_loop, int thread_num)
-        : impl_(new Impl(base_loop, thread_num)) {}
+    EventLoopThreadPool::EventLoopThreadPool(EventLoop* base_loop, int thread_number)
+        : impl_(new Impl(base_loop, thread_number)) {}
 
     EventLoopThreadPool::~EventLoopThreadPool() {}
 
