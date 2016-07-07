@@ -21,11 +21,11 @@ namespace {
     }
 }
 
-#if 0
+#if 1
 TEST_UNIT(evhttpClientSample) {
     struct event_base* base = event_base_new();
-    struct evhttp_connection* conn = evhttp_connection_new("qup.f.360.cn", 80);
-    evhttp_connection_set_base(conn, base);
+    struct evhttp_connection* conn = evhttp_connection_base_new(base, NULL, "qup.f.360.cn", 80);
+    //evhttp_connection_set_base(conn, base);
     struct evhttp_request* req = evhttp_request_new(http_request_done, base);
     evhttp_add_header(req->output_headers, "Host", "qup.f.360.cn");
     evhttp_make_request(conn, req, EVHTTP_REQ_GET, "/status.html");
