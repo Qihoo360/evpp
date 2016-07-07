@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress.gen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_buffer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_bufferevent.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_dns.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_et.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_finalize.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_http.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_listener.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_minheap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_rpc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_testutils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\tinytest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\buffer.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_filter.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_pair.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_ratelim.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_sock.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\event.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evmap.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evthread.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evutil.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evutil_rand.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evutil_time.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\listener.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\log.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\signal.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\strlcpy.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evthread_win32.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\buffer_iocp.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\bufferevent_async.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\event_iocp.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\win32select.c">
+      <Filter>Source Core</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\event_tagging.c">
+      <Filter>Source Extra</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\http.c">
+      <Filter>Source Extra</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evdns.c">
+      <Filter>Source Extra</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\evrpc.c">
+      <Filter>Source Extra</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_iocp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_thread.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress.gen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\test\regress_testutils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\CMakeLists.txt" />
+    <CustomBuild Include="D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\CMakeFiles\13b64ab494a3700a4b084b4fb29732da\regress.gen.c.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9F4897B8-C18D-3476-8887-A216EE7EFC78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{62AFF697-1EF2-3A6B-874B-7517C381174C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{199DB3FF-5752-3851-9126-FFEAB2596E2D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Core">
+      <UniqueIdentifier>{3AA2A0AF-A417-32E7-B5E8-888DCD3822FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Extra">
+      <UniqueIdentifier>{1B0351B8-A971-3BFF-BD76-E6FEC49BDE7F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

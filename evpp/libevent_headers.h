@@ -10,39 +10,35 @@
 
 #ifdef WIN32
 	#include <WinSock2.h>
-	#include <event/event.h>
-	#include <event/evhttp.h>
-    #include <event/evutil.h>
-    #include <event/evdns.h>
-    //#include <event/compat/sys/queue.h>
-    #define _LIBEVENT14 1
 #else
 	#include <sys/queue.h>
-    #ifdef _LIBEVENT14
-        #include <event.h>
-        #include <evhttp.h>
-        #include <event/evutil.h>
-        #include <event/evdns.h>
-    #else
-        #include <event2/event.h>
-        #include <event2/event_struct.h>
-        #include <event2/buffer.h>
-        #include <event2/bufferevent.h>
-        #include <event2/http.h>
-        #include <event2/http_compat.h>
-        #include <event2/http_struct.h>
-        #include <event2/event_compat.h>
-        #include <event2/dns.h>
-        #include <event2/dns_compat.h>
-        #include <event2/dns_struct.h>
-	#endif
+#endif
+
+
+#ifdef H_LIBEVENT_VERSION_14
+    #include <event.h>
+    #include <evhttp.h>
+    #include <evutil.h>
+    #include <evdns.h>
+#else
+    #include <event2/event.h>
+    #include <event2/event_struct.h>
+    #include <event2/buffer.h>
+    #include <event2/bufferevent.h>
+    #include <event2/http.h>
+    #include <event2/http_compat.h>
+    #include <event2/http_struct.h>
+    #include <event2/event_compat.h>
+    #include <event2/dns.h>
+    #include <event2/dns_compat.h>
+    #include <event2/dns_struct.h>
 #endif
 
 #ifndef evtimer_new
 #define evtimer_new(b, cb, arg)	       event_new((b), -1, 0, (cb), (arg))
 #endif
 
-#ifdef _LIBEVENT14
+#ifdef H_LIBEVENT_VERSION_14
 extern "C" {
     struct event * event_new(struct event_base *base, int fd, short events, void(*cb)(int, short, void *), void *arg);
     void event_free(struct event *ev);
