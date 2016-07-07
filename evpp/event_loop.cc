@@ -7,7 +7,17 @@
 
 namespace evpp {
     EventLoop::EventLoop() {
+#if LIBEVENT_VERSION_NUMBER >= 0x02001500
+        struct event_config *cfg = event_config_new();
+        if (cfg) {
+            // Does not cache time to get a preciser timer
+            event_config_set_flag(cfg, EVENT_BASE_FLAG_NO_CACHE_TIME);
+            event_base_ = event_base_new_with_config(cfg);
+            event_config_free(cfg);
+        }
+#else
         event_base_ = event_base_new();
+#endif
         Init();
     }
 
@@ -35,7 +45,6 @@ namespace evpp {
     void EventLoop::Run() {
         running_ = true;
         tid_ = std::this_thread::get_id(); // The actual thread id
-
         int rc = event_base_dispatch(event_base_);
         DoAfterLoopFunctors();
         if (rc == 1) {
