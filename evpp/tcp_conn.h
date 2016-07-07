@@ -70,7 +70,6 @@ namespace evpp {
         void HandleRead(Timestamp recv_time);
         void HandleWrite();
         void HandleClose();
-        void HandleError();
         void SendInLoop(const Slice& message);
         void SendInLoop(const void* data, size_t len);
         void SendStringInLoop(const std::string& message);
