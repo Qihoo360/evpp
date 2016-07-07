@@ -60,7 +60,6 @@ namespace evpp {
         chan_.reset(new FdChannel(loop_, fd, false, true));
         LOG_TRACE << "this=" << this << " new FdChannel p=" << chan_.get() << " fd=" << chan_->fd();
         chan_->SetWriteCallback(std::bind(&Connector::HandleWrite, this));
-        chan_->SetErrorCallback(std::bind(&Connector::HandleError, this));
         chan_->AttachToLoop();
     }
 
