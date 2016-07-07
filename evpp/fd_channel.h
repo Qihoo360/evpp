@@ -35,7 +35,8 @@ namespace evpp {
 
         // Attach this FdChannel to EventLoop
         void AttachToLoop();
-        bool attached_to_loop() const { return attached_to_loop_; }
+
+        bool attached() const { return attached_; }
 
     public:
         bool IsReadable() const { return (events_ & kReadable) != 0; }
@@ -65,9 +66,6 @@ namespace evpp {
             close_fn_ = cb;
         }
 
-        void SetErrorCallback(const EventCallback& cb) {
-            error_fn_ = cb;
-        }
     private:
         void HandleEvent(int fd, short which);
         static void HandleEvent(int fd, short which, void *v);
@@ -78,10 +76,9 @@ namespace evpp {
         ReadEventCallback read_fn_;
         EventCallback write_fn_;
         EventCallback close_fn_;
-        EventCallback error_fn_;
 
         EventLoop* loop_;
-        bool attached_to_loop_;
+        bool attached_; // A flag indicate whether this FdChannel has been attached to loop_
 
         struct event* event_;
         int events_; // the bitwise OR of zero or more of the EventType flags
