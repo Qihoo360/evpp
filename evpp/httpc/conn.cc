@@ -30,13 +30,11 @@ namespace evpp {
                 return true;
             }
 
-            evhttp_conn_ = evhttp_connection_new(host_.c_str(), port_);
+            evhttp_conn_ = evhttp_connection_base_new(loop_->event_base(), NULL, host_.c_str(), port_);
             if (!evhttp_conn_) {
                 LOG_ERROR << "evhttp_connection_new failed.";
                 return false;
             }
-
-            evhttp_connection_set_base(evhttp_conn_, loop_->event_base());
 
             if (timeout_.IsZero()) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02010500
