@@ -8,6 +8,8 @@
  ********************************************************************/
 #pragma once
 
+#include "evpp_export.h"
+
 #ifdef WIN32
 	#include <WinSock2.h>
 	#include <event/event.h>
@@ -44,8 +46,12 @@
 
 #ifdef _LIBEVENT14
 extern "C" {
-    struct event * event_new(struct event_base *base, int fd, short events, void(*cb)(int, short, void *), void *arg);
-    void event_free(struct event *ev);
+    struct evdns_base;
+    EVPP_EXPORT struct event * event_new(struct event_base *base, int fd, short events, void(*cb)(int, short, void *), void *arg);
+    EVPP_EXPORT void event_free(struct event *ev);
+    EVPP_EXPORT evhttp_connection *evhttp_connection_base_new(
+        struct event_base *base, struct evdns_base *dnsbase,
+        const char *address, unsigned short port);
 }
 
 // There is a bug of event timer for libevent1.4 on windows platform.
