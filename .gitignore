@@ -34,3 +34,11 @@ core.*
 *.out
 
 apps/evnsq/evnsqtail/evnsqtail
+
+3rdparty/libevent-2.1.5-beta/.vs/
+3rdparty/libevent-2.1.5-beta/Win32/
+3rdparty/libevent-2.1.5-beta/event.dir/
+3rdparty/libevent-2.1.5-beta/event_core.dir/
+3rdparty/libevent-2.1.5-beta/event_extra.dir/
+3rdparty/libevent-2.1.5-beta/libevent.VC.db
+
