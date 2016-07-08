@@ -8,11 +8,11 @@
 
 namespace evpp {
     TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& n)
-        : loop_(l), remote_addr_(raddr), name_(n), auto_reconnect_(1), connection_timeout_(3.0) {
+        : loop_(l), remote_addr_(raddr), name_(n), auto_reconnect_(true), connection_timeout_(3.0) {
     }
 
     TCPClient::~TCPClient() {
-        auto_reconnect_.store(0);
+        auto_reconnect_.store(false);
         TCPConnPtr c = conn();
         assert(c->IsDisconnected());
         conn_.reset();
@@ -35,7 +35,7 @@ namespace evpp {
 
     void TCPClient::DisconnectInLoop() {
         loop_->AssertInLoopThread();
-        auto_reconnect_.store(0);
+        auto_reconnect_.store(false);
         if (conn_) {
             conn_->Close();
         } else {
@@ -52,8 +52,9 @@ namespace evpp {
     void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
         if (sockfd < 0) {
             LOG_INFO << "Failed to connect to " << remote_addr_ << ". errno=" << errno << " " << strerror(errno);
-            conn_fn_(TCPConnPtr());
-            if (auto_reconnect_.load() != 0) {
+            // 在某些场景下，需要将连接失败反馈给上层调用者
+            conn_fn_(TCPConnPtr(new TCPConn(loop_, "", sockfd, "", "")));
+            if (auto_reconnect_.load()) {
                 Reconnect();
             }
             return;
@@ -78,7 +79,7 @@ namespace evpp {
     void TCPClient::OnRemoveConnection(const TCPConnPtr& c) {
         assert(c.get() == conn_.get());
         loop_->AssertInLoopThread();
-        if (auto_reconnect_.load() != 0) {
+        if (auto_reconnect_.load()) {
             Reconnect();
         }
     }

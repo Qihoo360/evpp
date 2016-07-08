@@ -14,19 +14,20 @@ namespace evpp {
     class Connector;
     class EVPP_EXPORT TCPClient {
     public:
-        //! \brief
-        //! \param[in] - EventLoop * loop
-        //! \param[in] - const std::string & remote_addr The remote server address of the form "host:port"
-        //! \param[in] - const std::string & name
-        //! \return - 
-        TCPClient(EventLoop* loop, const std::string& remote_addr, const std::string& name);
+        TCPClient(EventLoop* loop, const std::string& remote_addr/*host:port*/, const std::string& name);
         ~TCPClient();
         void Connect();
         void Disconnect();
     public:
+        // 设置一个连接相关的回调函数，当成功建立连接、或连接断开、或建立连接失败等事件发生时，都会调用该回调
+        //  当成功建立连接时，回调中的参数 TCPConn::IsConnected() == true
+        //  当连接断开时，回调中的参数 TCPConn::IsDisconnecting() == true
+        //  当建立连接失败时，回调中的参数 TCPConn::IsDisconnected() == true 并且 TCPConn::fd() == -1
         void SetConnectionCallback(const ConnectionCallback& cb) { conn_fn_ = cb; }
+
         void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
         void SetWriteCompleteCallback(const WriteCompleteCallback& cb) { write_complete_fn_ = cb; }
+        void set_auto_reconnect(bool v) { auto_reconnect_.store(v); }
         void set_connection_timeout(Duration timeout) { connection_timeout_ = timeout; }
         void set_context(const Any& c) { context_ = c; }
         const Any& context() const { return context_; }
@@ -43,7 +44,7 @@ namespace evpp {
         EventLoop* loop_;
         std::string remote_addr_;
         std::string name_;
-        std::atomic<int> auto_reconnect_;
+        std::atomic<bool> auto_reconnect_; // 自动重连标记，默认为 true
         Any context_;
 
         mutable std::mutex mutex_; // The guard of conn_
