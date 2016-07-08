@@ -25,8 +25,7 @@ void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
 
 
 int main(int argc, char* argv[]) {
-
-    int opt;
+    int opt = 0;
     int digit_optind = 0;
     int option_index = 0;
     char *optstring = "t:h:";

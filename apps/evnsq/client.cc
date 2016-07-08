@@ -59,13 +59,21 @@ namespace evnsq {
     void Client::HandleLoopkupdHTTPResponse(
         const std::shared_ptr<evpp::httpc::Response>& response,
         const std::shared_ptr<evpp::httpc::Request>& request) {
+        if (response->http_code() != 200) {
+            LOG_ERROR << "Request lookupd http://" << request->conn()->host() << ":"
+                << request->conn()->port() << request->uri()
+                << " failed, http-code=" << response->http_code();
+            return;
+        }
         std::string body = response->body().ToString();
         rapidjson::Document doc;
         doc.Parse(body.c_str());
         int status_code = doc["status_code"].GetInt();
         if (status_code != 200) {
-            LOG_ERROR << "lookupd http://" << request->conn()->host() << ":" << request->conn()->port() << request->uri() << " response failed: " << body;
-            //TODO retry??
+            LOG_ERROR << "Request lookupd http://" << request->conn()->host()
+                << ":" << request->conn()->port() << request->uri()
+                << " failed: [" << body
+                << "]. We will automatically retry later.";
             return;
         } else {
             LOG_INFO << "lookupd response OK. http://" << request->conn()->host() << ":" << request->conn()->port() << request->uri() << " : " << body;
@@ -84,15 +92,26 @@ namespace evnsq {
     }
 
     void Client::OnConnection(Conn* conn) {
-        assert(conn->IsConnected());
-        if (type_ == kConsumer) {
-            conn->Subscribe(topic_, channel_);
-        } else {
-            conn->set_status(Conn::kReady);
-        }
-
-        if (ready_fn_) {
-            ready_fn_();
+        assert(conn->IsConnected() || conn->IsReady());
+        switch (conn->status()) {
+        case Conn::kConnected:
+            if (type_ == kConsumer) {
+                conn->Subscribe(topic_, channel_);
+            } else {
+                conn->set_status(Conn::kReady);
+                if (ready_fn_) {
+                    ready_fn_();
+                }
+            }
+            break;
+        case Conn::kReady:
+            assert(type_ == kConsumer);
+            if (ready_fn_) {
+                ready_fn_();
+            }
+            break;
+        default:
+            break;
         }
     }
 

@@ -27,6 +27,11 @@ namespace evpp {
 //             }
         }
 
+
+        Response::Response(Request* r)
+            : request_(r), evreq_(NULL), http_code_(0) {
+        }
+
         Response::~Response() {
 
         }
