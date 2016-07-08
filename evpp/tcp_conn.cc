@@ -21,21 +21,25 @@ namespace evpp {
                      , status_(kDisconnected)
                      , high_water_mark_(128 * 1024 * 1024)
                      , closing_delay_for_incoming_conn_(3.000001) {
-        chan_.reset(new FdChannel(l, sockfd, false, false));
-
-        chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this, std::placeholders::_1));
-        chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
-        chan_->SetCloseCallback(std::bind(&TCPConn::HandleClose, this));
+        if (sockfd >= 0) {
+            chan_.reset(new FdChannel(l, sockfd, false, false));
+            chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this, std::placeholders::_1));
+            chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
+            chan_->SetCloseCallback(std::bind(&TCPConn::HandleClose, this));
+        }
         LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " channel=" << chan_.get() << " fd=" << sockfd;
     }
 
     TCPConn::~TCPConn() {
         LOG_TRACE << "TCPConn::~TCPConn() name=" << name() << " this=" << this << " channel=" << chan_.get() << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString();
-        assert(fd_ == chan_->fd());
         assert(status_ == kDisconnected);
-        assert(chan_->IsNoneEvent());
-        EVUTIL_CLOSESOCKET(fd_);
-        fd_ = INVALID_SOCKET;
+        if (fd_ >= 0) {
+            assert(chan_);
+            assert(fd_ == chan_->fd());
+            assert(chan_->IsNoneEvent());
+            EVUTIL_CLOSESOCKET(fd_);
+            fd_ = INVALID_SOCKET;
+        }
     }
 
     void TCPConn::Close() {
@@ -102,7 +106,6 @@ namespace evpp {
             LOG_WARN << "disconnected, give up writing";
             return;
         }
-
 
         ssize_t nwritten = 0;
         size_t remaining = len;
