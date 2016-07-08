@@ -49,7 +49,7 @@ namespace evpp {
                     continue;
                 }
                 addrs_.push_back(a->sin_addr);
-                LOG_TRACE << "ip=" << inet_ntoa(a->sin_addr);
+                LOG_TRACE << host_ << " resolved a ip=" << inet_ntoa(a->sin_addr);
             }
         }
 
