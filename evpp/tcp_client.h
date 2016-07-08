@@ -28,7 +28,7 @@ namespace evpp {
         void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
         void SetWriteCompleteCallback(const WriteCompleteCallback& cb) { write_complete_fn_ = cb; }
         void set_auto_reconnect(bool v) { auto_reconnect_.store(v); }
-        void set_connection_timeout(Duration timeout) { connection_timeout_ = timeout; }
+        void set_connecting_timeout(Duration timeout) { connecting_timeout_ = timeout; }
         void set_context(const Any& c) { context_ = c; }
         const Any& context() const { return context_; }
         TCPConnPtr conn() const;
@@ -51,7 +51,7 @@ namespace evpp {
         TCPConnPtr conn_;
 
         std::shared_ptr<Connector> connector_;
-        Duration connection_timeout_; // Default : 3 seconds
+        Duration connecting_timeout_; // Default : 3 seconds
 
         ConnectionCallback conn_fn_;
         MessageCallback msg_fn_;
