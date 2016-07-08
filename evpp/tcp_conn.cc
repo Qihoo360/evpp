@@ -211,6 +211,9 @@ namespace evpp {
 
         TCPConnPtr conn(shared_from_this());
         if (conn_fn_) {
+            // 应该在 kDisconnecting 状态下调用该回调。
+            // 例如 TCPClient 在断开连接时，应用层可以自己决定是否需要重新自动重连。
+            assert(status_ == kDisconnecting);
             conn_fn_(conn);
         }
 
