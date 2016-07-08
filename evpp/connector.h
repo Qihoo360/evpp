@@ -21,6 +21,7 @@ namespace evpp {
         bool IsConnecting() const { return status_ == kConnecting; }
         bool IsConnected() const { return status_ == kConnected; }
     private:
+        void Connect();
         void HandleWrite();
         void HandleError();
         void OnConnectTimeout();
