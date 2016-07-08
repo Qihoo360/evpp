@@ -17,6 +17,7 @@ public:
     void OnVbucketResult(uint16_t vbucket, bool success);
 
     bool Load(const char * json_file);
+    const std::vector<std::string>& server_list() const { return server_list_; };
 private:
     int replicas_;
     std::string algorithm_;
