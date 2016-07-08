@@ -57,6 +57,7 @@ namespace evpp {
     }
 
     void TCPServer::HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/) {
+        assert(loop_->IsInLoopThread());
         EventLoop* io_loop = GetNextLoop(remote_addr);
         char buf[64];
         snprintf(buf, sizeof buf, "-%s#%" PRIu64, remote_addr.c_str(), next_conn_id_++);
@@ -65,6 +66,7 @@ namespace evpp {
         TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
         assert(conn->type() == TCPConn::kIncoming);
         conn->SetMessageCallback(msg_fn_);
+        conn->SetConnectionCallback(conn_fn_);
         conn->SetCloseCallback(std::bind(&TCPServer::RemoveConnection, this, std::placeholders::_1));
         io_loop->RunInLoop(std::bind(&TCPConn::OnAttachedToLoop, conn.get()));
         connections_[n] = conn;
@@ -88,6 +90,7 @@ namespace evpp {
     }
 
     void TCPServer::RemoveConnectionInLoop(const TCPConnPtr& conn) {
+        assert(loop_->IsInLoopThread());
         connections_.erase(conn->name());
     }
 
