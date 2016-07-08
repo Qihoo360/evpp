@@ -14,6 +14,7 @@ namespace evpp {
         public:
             typedef std::map<evpp::Slice, evpp::Slice> Headers;
             Response(Request* r, struct evhttp_request* evreq);
+            Response(Request* r);
             ~Response();
 
             int http_code() const { return http_code_; }
