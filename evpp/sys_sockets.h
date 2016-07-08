@@ -79,6 +79,9 @@ typedef int ssize_t;
 #define EREMOTE                 WSAEREMOTE
 
 #define EAGAIN EWOULDBLOCK // Added by @weizili at 20160610
+
+#define gai_strerror gai_strerrorA
+
 #endif
 
 
