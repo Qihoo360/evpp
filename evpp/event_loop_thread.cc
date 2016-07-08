@@ -44,7 +44,11 @@ namespace evpp {
         , state_(kStopped) {
     }
 
-    EventLoopThread::Impl::~Impl() {}
+    EventLoopThread::Impl::~Impl() {
+        if (thread_->joinable()) {
+            thread_->join();
+        }
+    }
 
     bool EventLoopThread::Impl::Start(bool wait_until_thread_started,
         const Functor& pre, const Functor& post) {
