@@ -84,6 +84,9 @@ namespace evnsq {
         case evnsq::Conn::kSubscribing:
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 status_ = kReady;
+                if (conn_fn_) {
+                    conn_fn_(this);
+                }
                 LOG_INFO << "Successfully connected to nsqd " << conn->remote_addr();
                 UpdateReady(3); //TODO RDY count
             } else {

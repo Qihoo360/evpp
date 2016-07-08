@@ -95,16 +95,14 @@ namespace evpp {
             Request* thiz = (Request*)v;
             assert(thiz);
 
-            //ErrCode ec = kOK;
             std::shared_ptr<Response> response;
             if (rsp) {
-                //ec = kOK;
                 response.reset(new Response(thiz, rsp));
                 if (thiz->pool_) {
                     thiz->pool_->Put(thiz->conn_);
                 }
             } else {
-                //ec = kConnFaild;
+                response.reset(new Response(thiz));
             }
             thiz->handler_(response);
         }
