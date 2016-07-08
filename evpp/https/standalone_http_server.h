@@ -7,6 +7,9 @@ struct event;
 
 namespace evpp {
     class EventLoopThreadPool;
+    class PipeEventWatcher;
+    class EventLoopThread;
+
     namespace https {
         class HTTPService;
         class EVPP_EXPORT StandaloneHTTPServer {
@@ -27,7 +30,7 @@ namespace evpp {
             //! \param[in] - bool wait_thread_exit 
             //!     true this function will blocked until the running thread exits
             //! \return - bool - 
-            bool Stop(bool wait_thread_exit = false);
+            void Stop(bool wait_thread_exit = false);
 
             HTTPService* http_service() const;
             void set_parse_parameters(bool v);
@@ -41,11 +44,23 @@ namespace evpp {
             bool IsRunning() const;
             bool IsStopped() const;
 
-            struct event_base* event_base() const;
-            std::shared_ptr<EventLoopThreadPool> pool() const;
+            std::shared_ptr<EventLoopThreadPool> pool() const { return tpool_; }
+
         private:
-            class Impl;
-            std::shared_ptr<Impl> impl_;
+            //void StopInLoop();
+             
+            void Dispatch(const HTTPContextPtr& ctx,
+                          const HTTPSendResponseCallback& response_callback,
+                          const HTTPRequestCallback& user_callback);
+
+        private:
+            std::shared_ptr<HTTPService>   http_;
+
+            //主要事件循环线程，监听http请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
+            std::shared_ptr<EventLoopThread> base_loop_;
+
+            //工作线程池，处理请求
+            std::shared_ptr<EventLoopThreadPool> tpool_;
         };
     }
 

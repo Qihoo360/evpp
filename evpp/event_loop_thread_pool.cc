@@ -33,7 +33,13 @@ namespace evpp {
         thread_num_(thread_number),
         next_(0) {}
 
-    EventLoopThreadPool::Impl::~Impl() {}
+    EventLoopThreadPool::Impl::~Impl() {
+        assert(thread_num_ == (int)threads_.size());
+        for (int i = 0; i < thread_num_; i++) {
+            assert(threads_[i]->IsStopped());
+        }
+        threads_.clear();
+    }
 
     bool EventLoopThreadPool::Impl::Start(bool wait_until_thread_started) {
         assert(!started_);
