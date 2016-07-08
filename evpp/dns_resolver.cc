@@ -41,7 +41,7 @@ namespace evpp {
         struct addrinfo *answer = NULL;
         int err = getaddrinfo(host_.c_str(), NULL, &hints, &answer);
         if (err != 0) {
-            LOG_ERROR << "getaddrinfo failed. errno=" << errno << strerror(errno);
+            LOG_ERROR << "getaddrinfo failed. err=" << err << " " << gai_strerror(err);
         } else {
             for (struct addrinfo* rp = answer; rp != NULL; rp = rp->ai_next) {
                 struct sockaddr_in* a = (struct sockaddr_in*)(rp->ai_addr);
