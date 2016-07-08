@@ -39,9 +39,11 @@ namespace evnsq {
     }
 
     void Client::ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/) {
-        std::shared_ptr<evpp::httpc::Request> r(new evpp::httpc::Request(loop_, lookupd_url, "", evpp::Duration(1.0)));
-        r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
-        //TODO Add a timer to query lookupd periodically
+        auto f = [this](const std::string& lookupd_url) {
+            std::shared_ptr<evpp::httpc::Request> r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
+            r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
+        };
+        loop_->RunEvery(evpp::Duration(1.0), std::bind(f, lookupd_url));
     }
 
     void Client::ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/) {
