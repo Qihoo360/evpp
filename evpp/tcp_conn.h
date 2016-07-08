@@ -40,14 +40,9 @@ namespace evpp {
         void Send(const Slice& message);
         void Send(Buffer* buf);
     public:
-        void SetMessageCallback(MessageCallback cb) { msg_fn_ = cb; }
-        void SetConnectionCallback(ConnectionCallback cb) { conn_fn_ = cb; }
-        void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
-
         EventLoop* loop() const { return loop_; }
         void set_context(const Any& c) { context_ = c; }
         const Any& context() const { return context_; }
-    public:
         const std::string& remote_addr() const { return remote_addr_; }
         const std::string& name() const { return name_; }
         bool IsConnected() const { return status_ == kConnected; }
@@ -55,16 +50,18 @@ namespace evpp {
         bool IsDisconnected() const { return status_ == kDisconnected; }
         bool IsDisconnecting() const { return status_ == kDisconnecting; }
         Type type() const { return type_; }
-        void set_type(Type t) { type_ = t; }
         Status status() const { return status_; }
-        void set_status(Status s) { status_ = s; }
         void set_closing_delay_for_incoming_conn(Duration d) { closing_delay_for_incoming_conn_ = d; }
-    private:
-        // class TCPClient and TCPServer need to call SetCloseCallback and OnAttachedToLoop
-        // but we don't want any other users to call these two functions.
+    protected:
+        // 这部分函数只能被 TCPClient 或者 TCPServer 调用，
+        // 我们不希望上层应用来调用这些函数
         friend class TCPClient;
         friend class TCPServer;
-        void SetCloseCallback(CloseCallback cb) { close_fn_ = cb; }
+        void set_type(Type t) { type_ = t; }
+        void SetMessageCallback(MessageCallback cb) { msg_fn_ = cb; } // 会回调到上层应用
+        void SetConnectionCallback(ConnectionCallback cb) { conn_fn_ = cb; } // 会回调到上层应用
+        void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark); // 会回调到上层应用
+        void SetCloseCallback(CloseCallback cb) { close_fn_ = cb; } // 会回调到 TCPClient 或 TCPServer
         void OnAttachedToLoop();
     private:
         void HandleRead(Timestamp recv_time);
