@@ -100,7 +100,7 @@ namespace evpp {
 
     void Connector::HandleError() {
         int serrno = errno;
-        LOG_ERROR << "errno=" << serrno << " " << strerror(serrno) << " status=" << StatusToString();
+        LOG_ERROR << "status=" << StatusToString() << " errno=" << serrno << " " << strerror(serrno);
         status_ = kDisconnected;
         if (chan_) {
             chan_->Close();
