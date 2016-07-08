@@ -113,17 +113,4 @@ namespace evnsq {
             it->second->WriteCommand(c);
         }
     }
-
-
-//     void Client::Finish(const NSQTCPClient& tc, const std::string& id) {
-//         Command c;
-//         c.Finish(id);
-//         WriteCommand(tc, c);
-//     }
-// 
-//     void Client::Requeue(const NSQTCPClient& tc, const std::string& id) {
-//         Command c;
-//         c.Requeue(id, evpp::Duration(0));
-//         WriteCommand(tc, c);
-//     }
 }
