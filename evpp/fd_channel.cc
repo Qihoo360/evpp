@@ -12,6 +12,7 @@ namespace evpp {
 
     FdChannel::FdChannel(EventLoop* l, int f, bool r, bool w)
         : loop_(l), attached_(false), event_(NULL), fd_(f) {
+        assert(fd_ > 0);
         events_ = (r ? kReadable : 0) | (w ? kWritable : 0);
         event_ = new event;
         memset(event_, 0, sizeof(struct event));
