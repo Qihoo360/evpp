@@ -108,7 +108,6 @@ namespace evpp {
             fprintf(stderr, "event_reinit failed!\n");
             abort();
         }
-        //CHECK(rc == 0) << "event_reinit" << rc;
     }
 
     InvokeTimerPtr EventLoop::RunAfter(double delay_ms, const Functor& f) {
