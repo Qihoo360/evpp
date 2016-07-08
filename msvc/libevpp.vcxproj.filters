@@ -20,6 +20,12 @@
     <Filter Include="tcp">
       <UniqueIdentifier>{eee53411-c7a0-4552-85ab-81e36a0b66cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="tcp\client">
+      <UniqueIdentifier>{5534b7c8-478e-46f8-8df7-a101078279a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tcp\server">
+      <UniqueIdentifier>{e1127564-5b0a-4df4-855b-c4e6692271b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\evpp\inner_pre.cc">
@@ -58,19 +64,7 @@
     <ClCompile Include="..\evpp\libevent_watcher.cc">
       <Filter>evloop</Filter>
     </ClCompile>
-    <ClCompile Include="..\evpp\connector.cc">
-      <Filter>tcp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\evpp\listener.cc">
-      <Filter>tcp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\evpp\tcp_client.cc">
-      <Filter>tcp</Filter>
-    </ClCompile>
     <ClCompile Include="..\evpp\tcp_conn.cc">
-      <Filter>tcp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\evpp\tcp_server.cc">
       <Filter>tcp</Filter>
     </ClCompile>
     <ClCompile Include="..\evpp\httpc\response.cc">
@@ -88,8 +82,20 @@
     <ClCompile Include="..\evpp\httpc\url_parser.cc">
       <Filter>http\client</Filter>
     </ClCompile>
+    <ClCompile Include="..\evpp\connector.cc">
+      <Filter>tcp\client</Filter>
+    </ClCompile>
     <ClCompile Include="..\evpp\dns_resolver.cc">
-      <Filter>tcp</Filter>
+      <Filter>tcp\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\listener.cc">
+      <Filter>tcp\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\tcp_server.cc">
+      <Filter>tcp\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\tcp_client.cc">
+      <Filter>tcp\client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -165,19 +171,7 @@
     <ClInclude Include="..\evpp\libevent_watcher.h">
       <Filter>evloop</Filter>
     </ClInclude>
-    <ClInclude Include="..\evpp\tcp_server.h">
-      <Filter>tcp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\evpp\connector.h">
-      <Filter>tcp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\evpp\listener.h">
-      <Filter>tcp</Filter>
-    </ClInclude>
     <ClInclude Include="..\evpp\tcp_callbacks.h">
-      <Filter>tcp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\evpp\tcp_client.h">
       <Filter>tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\tcp_conn.h">
@@ -199,7 +193,19 @@
       <Filter>http\client</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\dns_resolver.h">
-      <Filter>tcp</Filter>
+      <Filter>tcp\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\connector.h">
+      <Filter>tcp\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\listener.h">
+      <Filter>tcp\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\tcp_server.h">
+      <Filter>tcp\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\tcp_client.h">
+      <Filter>tcp\client</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
