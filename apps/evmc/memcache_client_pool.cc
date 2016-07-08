@@ -59,8 +59,26 @@ bool MemcacheClientPool::Start() {
     }
     loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
 
+    auto server_list = vbucket_config_->server_list();
+
     for (int i = 0; i < loop_pool_.thread_num(); ++i) {
         memc_client_map_.push_back(MemcClientMap());
+        evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(i);
+
+        for(size_t svr = 0; svr < server_list.size(); ++svr) {
+            evpp::TCPClient * tcp_client = new evpp::TCPClient(loop, server_list[svr], "evmc");
+            MemcacheClientPtr memc_client(new MemcacheClient(loop, tcp_client, this, timeout_ms_));
+
+            LOG_INFO << "Start new tcp_client=" << tcp_client << " loop=" << i << " server=" << server_list[svr];
+
+            tcp_client->SetConnectionCallback(std::bind(&MemcacheClientPool::OnClientConnection, this,
+                        std::placeholders::_1, memc_client));
+            tcp_client->SetMessageCallback(std::bind(&MemcacheClient::OnResponseData, memc_client,
+                        std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            tcp_client->Connect();
+
+            memc_client_map_.back().insert(std::make_pair(server_list[svr], memc_client));
+        }
     }
 
     // 须先构造memc_client_map_数组，再各个元素取地址，否则地址不稳定，可能崩溃
