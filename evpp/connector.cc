@@ -30,6 +30,10 @@ namespace evpp {
         LOG_INFO << "Try to connect " << remote_addr_ << " status=" << StatusToString();
         loop_->AssertInLoopThread();
 
+        timer_.reset(new TimerEventWatcher(loop_, std::bind(&Connector::OnConnectTimeout, this), timeout_));
+        timer_->Init();
+        timer_->AsyncWait();
+
         if (raddr_.sin_addr.s_addr == 0) {
             status_ = kDNSResolving;
             auto index = remote_addr_.rfind(':');
@@ -40,6 +44,10 @@ namespace evpp {
             return;
         }
 
+        Connect();
+    }
+
+    void Connector::Connect() {
         int fd = CreateNonblockingSocket();
         assert(fd >= 0);
         int rc = ::connect(fd, sockaddr_cast(&raddr_), sizeof(raddr_));
@@ -47,15 +55,12 @@ namespace evpp {
             int serrno = errno;
             if (!EVUTIL_ERR_CONNECT_RETRIABLE(serrno)) {
                 HandleError();
+                EVUTIL_CLOSESOCKET(fd);
                 return;
             }
         }
 
         status_ = kConnecting;
-
-        timer_.reset(new TimerEventWatcher(loop_, std::bind(&Connector::OnConnectTimeout, this), timeout_));
-        timer_->Init();
-        timer_->AsyncWait();
 
         chan_.reset(new FdChannel(loop_, fd, false, true));
         LOG_TRACE << "this=" << this << " new FdChannel p=" << chan_.get() << " fd=" << chan_->fd();
@@ -65,6 +70,7 @@ namespace evpp {
 
     void Connector::HandleWrite() {
         if (status_ == kDisconnected) {
+            // 这里有可能是超时了，但回调时间已经派发到队列中，后面才调用。
             LOG_INFO << "fd=" << chan_->fd() << " remote_addr=" << remote_addr_ << " receive write event when socket is closed";
             return;
         }
@@ -94,9 +100,11 @@ namespace evpp {
 
     void Connector::HandleError() {
         int serrno = errno;
-        LOG_INFO << "errno=" << serrno << " " << strerror(serrno);
+        LOG_ERROR << "errno=" << serrno << " " << strerror(serrno) << " status=" << StatusToString();
         status_ = kDisconnected;
-        chan_->Close();
+        if (chan_) {
+            chan_->Close();
+        }
         timer_->Cancel();
         if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
             conn_fn_(-1, "");
@@ -106,7 +114,7 @@ namespace evpp {
     }
 
     void Connector::OnConnectTimeout() {
-        assert(status_ == kConnecting);
+        assert(status_ == kConnecting || status_ == kDNSResolving);
         EVUTIL_SET_SOCKET_ERROR(ETIMEDOUT);
         HandleError();
     }
@@ -114,13 +122,13 @@ namespace evpp {
 
     void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
         if (addrs.empty()) {
-            //TODO how to p
             LOG_ERROR << "DNS Resolve failed. host=" << remote_addr_;
+            HandleError();
             return;
         }
         raddr_.sin_addr = addrs[0]; // TODO random index
         status_ = kDNSResolved;
-        Start();
+        Connect();
     }
 
 
