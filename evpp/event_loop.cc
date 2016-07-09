@@ -27,6 +27,7 @@ namespace evpp {
     }
 
     EventLoop::~EventLoop() {
+        watcher_.reset(); // 在 event_base 之前释放
         if (event_base_ != NULL) {
             event_base_free(event_base_);
             event_base_ = NULL;
