@@ -41,6 +41,7 @@ namespace evpp {
         }
 
         Request::~Request() {
+            assert(loop_->IsInLoopThread());
         }
 
         void Request::Execute(const Handler& h) {
