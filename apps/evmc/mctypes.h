@@ -3,7 +3,6 @@
 #include "evpp/exp.h"
 
 #include "evpp/libevent_watcher.h"
-#include "evpp/event_loop.h"
 #include "evpp/event_loop_thread.h"
 #include "evpp/buffer.h"
 #include "evpp/tcp_conn.h"
@@ -15,7 +14,6 @@ namespace evmc {
 // - embedded & standalone
 
 typedef std::shared_ptr<evpp::Buffer> BufferPtr;
-typedef std::shared_ptr<evpp::EventLoop> EventLoopPtr;
 typedef std::shared_ptr<evpp::TimerEventWatcher> TimerEventPtr;
 
 enum {
