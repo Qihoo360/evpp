@@ -100,13 +100,13 @@
     <ClCompile Include="..\evpp\tcp_client.cc">
       <Filter>tcp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\evpp\https\http_context.cc">
+    <ClCompile Include="..\evpp\http\embedded_http_server.cc">
       <Filter>http\server</Filter>
     </ClCompile>
-    <ClCompile Include="..\evpp\https\standalone_http_server.cc">
+    <ClCompile Include="..\evpp\http\http_context.cc">
       <Filter>http\server</Filter>
     </ClCompile>
-    <ClCompile Include="..\evpp\https\embedded_http_server.cc">
+    <ClCompile Include="..\evpp\http\standalone_http_server.cc">
       <Filter>http\server</Filter>
     </ClCompile>
   </ItemGroup>
@@ -219,13 +219,13 @@
     <ClInclude Include="..\evpp\tcp_client.h">
       <Filter>tcp\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\evpp\https\http_context.h">
+    <ClInclude Include="..\evpp\http\embedded_http_server.h">
       <Filter>http\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\evpp\https\standalone_http_server.h">
+    <ClInclude Include="..\evpp\http\http_context.h">
       <Filter>http\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\evpp\https\embedded_http_server.h">
+    <ClInclude Include="..\evpp\http\standalone_http_server.h">
       <Filter>http\server</Filter>
     </ClInclude>
   </ItemGroup>
