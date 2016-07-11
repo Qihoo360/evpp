@@ -33,7 +33,6 @@ namespace evpp {
             void Stop(bool wait_thread_exit = false);
 
             HTTPService* http_service() const;
-            void set_parse_parameters(bool v);
         public:
             bool RegisterEvent(const std::string& uri,
                                HTTPRequestCallback callback);
