@@ -1,5 +1,5 @@
 #include "http_context.h"
-#include "embedded_http_server.h"
+#include "service.h"
 #include "evpp/libevent_headers.h"
 
 namespace evpp {
@@ -17,7 +17,7 @@ namespace evpp {
             }
         }
 
-        bool HTTPContext::Init(HTTPService* hsrv) {
+        bool HTTPContext::Init(Service* hsrv) {
             if (req->type == EVHTTP_REQ_POST) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
                 struct evbuffer* evbuf = evhttp_request_get_input_buffer(req);
