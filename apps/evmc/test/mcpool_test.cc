@@ -24,7 +24,7 @@ static void OnTestMultiGetDone(const MultiGetResult& res) {
     }
 }
 
-static EventLoopPtr g_loop;
+static evpp::EventLoop* g_loop;
 static void StopLoop() {
     LOG_INFO << "EventLoop is stopping ...";
     g_loop->Stop();
@@ -32,7 +32,7 @@ static void StopLoop() {
 
 static void MyEventThread() {
     LOG_INFO << "EventLoop is running ...";
-    g_loop = EventLoopPtr(new evpp::EventLoop);
+    g_loop = new evpp::EventLoop;
     g_loop->Run();
 }
 
@@ -69,17 +69,17 @@ int main() {
     srand(time(NULL));
     std::thread th(MyEventThread);
 
-    MemcacheClientPool mcp("./kill_storage_cluster.json", 8, 200);
+    MemcacheClientPool mcp("./kill_storage_cluster.json", 4, 200);
     assert(mcp.Start());
 
-    const static int MAX_KEY = 100000;
+    const static int MAX_KEY = 1000000;
 
     for(size_t i = 0; i < MAX_KEY; ++i) {
         std::stringstream ss_key;
         ss_key << "test" << i;
         std::stringstream ss_value;
         ss_value << "test_value" << i;
-        // usleep(10000);
+        usleep(1000);
         mcp.Set(g_loop, ss_key.str(), ss_value.str(), &OnTestSetDone);
     }
 
@@ -87,6 +87,7 @@ int main() {
     for(size_t i = 0; i < MAX_KEY; ++i) {
         std::stringstream ss;
         ss << "test" << i;
+        usleep(1000);
         mcp.Get(g_loop, ss.str().c_str(), &OnTestGetDone);
     }
 
@@ -104,11 +105,12 @@ int main() {
     for(size_t i = 0; i < MAX_KEY; ++i) {
         std::stringstream ss_key;
         ss_key << "test" << i;
+        usleep(1000);
         mcp.Remove(g_loop, ss_key.str().c_str(), &OnTestRemoveDone);
     }
 #endif
 
-    g_loop->RunAfter(200000.0, &StopLoop);
+    g_loop->RunAfter(20000000.0, &StopLoop);
     th.join();
     mcp.Stop(true);
     return 0;
