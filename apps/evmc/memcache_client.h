@@ -25,7 +25,7 @@ public:
     }
     virtual ~MemcacheClient();
 
-    EventLoopPtr exec_loop() const { return exec_loop_; }
+    evpp::EventLoop* exec_loop() const { return exec_loop_; }
 
     void PushRunningCommand(CommandPtr cmd);
 
@@ -49,7 +49,7 @@ public:
     uint32_t next_id() { return ++id_seq_; }
 
     void EmbededGet(const char* key, GetCallback callback) {
-      //CommandPtr command(new GetCommand(EventLoopPtr(), key, callback));
+      //CommandPtr command(new GetCommand(evpp::EventLoop*(), key, callback));
       //command->Launch(this);
     }
 
@@ -66,7 +66,7 @@ private:
     // std::atomic_uint id_seq_;
     uint32_t id_seq_;
 
-    EventLoopPtr exec_loop_;
+    evpp::EventLoop* exec_loop_;
     evpp::TCPClient* tcp_client_;
     MemcacheClientPool* mc_pool_;
     evpp::Duration timeout_;
