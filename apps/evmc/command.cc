@@ -33,6 +33,7 @@ bool Command::ShouldRetry() const {
     return server_id_history_.size() < 2;
 }
 
+std::atomic_int SetCommand::next_thread_;
 BufferPtr SetCommand::RequestBuffer() const {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
@@ -57,6 +58,8 @@ BufferPtr SetCommand::RequestBuffer() const {
     return buf;
 }
 
+
+std::atomic_int GetCommand::next_thread_;
 BufferPtr GetCommand::RequestBuffer() const {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
@@ -123,6 +126,7 @@ BufferPtr MultiGetCommand::RequestBuffer() const {
 }
 
 
+std::atomic_int RemoveCommand::next_thread_;
 BufferPtr RemoveCommand::RequestBuffer() const {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
