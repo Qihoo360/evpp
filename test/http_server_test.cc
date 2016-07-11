@@ -163,10 +163,9 @@ namespace {
 
 
 TEST_UNIT(testHTTPServer) {
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 3; ++i) {
         g_stopping = true;
-        evpp::https::StandaloneHTTPServer ph(0);
-        ph.http_service()->set_parse_parameters(true);
+        evpp::https::StandaloneHTTPServer ph(i);
         ph.RegisterDefaultEvent(&DefaultRequestHandler);
         ph.RegisterEvent("/push/boot", &RequestHandler);
         bool r = ph.Start(g_listening_port, true);

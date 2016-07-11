@@ -100,10 +100,5 @@ namespace evpp {
         HTTPService* StandaloneHTTPServer::http_service() const {
             return http_.get();
         }
-
-        void StandaloneHTTPServer::set_parse_parameters(bool v) {
-            http_service()->set_parse_parameters(v);
-        }
-
     }
 }
