@@ -3,8 +3,7 @@
 #include "evpp/inner_pre.h"
 #include "context.h"
 
-#include <vector>
-#include <mutex>
+struct evhttp;
 
 namespace evpp {
     class EventLoop;
@@ -20,26 +19,19 @@ namespace evpp {
             void Stop();
 
             // uri 不能带有参数
-            bool RegisterEvent(const std::string& uri, HTTPRequestCallback callback);
-
-            bool RegisterDefaultEvent(HTTPRequestCallback callback);
-
-        private:
-            void HandleRequest(struct evhttp_request *req);
-
-            void DefaultHandleRequest(const ContextPtr& ctx);
+            bool RegisterHandler(const std::string& uri, HTTPRequestCallback callback);
+            bool RegisterDefaultHandler(HTTPRequestCallback callback);
 
         private:
             static void GenericCallback(struct evhttp_request *req, void *arg);
-
-        private:
+            void HandleRequest(struct evhttp_request *req);
+            void DefaultHandleRequest(const ContextPtr& ctx);
             void SendReply(struct evhttp_request *req, const std::string& response);
-
         private:
             struct evhttp* evhttp_;
-            EventLoop* loop_;
+            EventLoop* listen_loop_;
             HTTPRequestCallbackMap callbacks_;
-            HTTPRequestCallback    default_callback_;
+            HTTPRequestCallback default_callback_;
         };
     }
 
