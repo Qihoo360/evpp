@@ -15,13 +15,13 @@ struct evbuffer;
 
 namespace evpp {
     namespace http {
-        class HTTPService;
+        class Service;
         typedef std::map<std::string, std::string> HTTPParameterMap;
         struct EVPP_EXPORT HTTPContext {
             HTTPContext(struct evhttp_request* r);
             ~HTTPContext();
 
-            bool Init(HTTPService* hsrv);
+            bool Init(Service* hsrv);
 
             const char* original_uri() const; // Get the original URI with parameters
 
