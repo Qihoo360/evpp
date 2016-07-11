@@ -25,8 +25,10 @@ namespace evpp {
 
             const char* original_uri() const; // Get the original URI with parameters
 
-            const std::string& GetRequestHeader(const std::string& key, bool* found = NULL);
             void AddResponseHeader(const std::string& key, const std::string& value);
+
+            // 在HTTP请求的HEADER中查找某个key的值。如果没有找到返回一个空指针。
+            const char* FindRequestHeader(const char* key);
 
             std::string uri; // The URI without parameters
             std::string remote_ip; // The client ip. If the HTTP request is forwarded by NGINX we use the 'clientip' parameter in the url.   @see the NGINX conf : proxy_pass       http://127.0.0.1:8080/gasucs/special_kill/?clientip=$remote_addr;
