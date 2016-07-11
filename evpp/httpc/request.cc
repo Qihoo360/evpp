@@ -14,14 +14,30 @@ namespace evpp {
 
         Request::Request(EventLoop* loop, const std::string& http_url, const std::string& body, Duration timeout)
             : pool_(NULL), loop_(loop), body_(body) {
-            //TODO effective improve
+            //TODO performance compare
+#ifdef H_LIBEVENT_VERSION_14
             URLParser p(http_url);
-            conn_.reset(new Conn(loop, p.host, atoi(p.port.data()), timeout));
+            conn_.reset(new Conn(loop, p.host, port, timeout));
             if (p.query.empty()) {
                 uri_ = p.path;
             } else {
                 uri_ = p.path + "?" + p.query;
             }
+#else
+            struct evhttp_uri* evuri = evhttp_uri_parse(http_url.c_str());
+            uri_ = evhttp_uri_get_path(evuri);
+            const char* query = evhttp_uri_get_query(evuri);
+            if (query && strlen(query) > 0) {
+                uri_ += "?";
+                uri_ += query;
+            }
+            int port = evhttp_uri_get_port(evuri);
+            if (port < 0) {
+                port = 80;
+            }
+            conn_.reset(new Conn(loop, evhttp_uri_get_host(evuri), port, timeout));
+            evhttp_uri_free(evuri);
+#endif
         }
 
         Request::~Request() {
