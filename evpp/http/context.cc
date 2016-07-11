@@ -1,23 +1,19 @@
-#include "http_context.h"
+#include "context.h"
 #include "service.h"
 #include "evpp/libevent_headers.h"
 
 namespace evpp {
     namespace http {
         static const std::string __s_null = "";
-        HTTPContext::HTTPContext(struct evhttp_request* r)
-            : req(r), params(NULL) {
+        Context::Context(struct evhttp_request* r)
+            : req(r) {
             remote_ip = req->remote_host;
         }
 
-        HTTPContext::~HTTPContext() {
-            if (this->params) {
-                delete this->params;
-                this->params = NULL;
-            }
+        Context::~Context() {
         }
 
-        bool HTTPContext::Init(Service* hsrv) {
+        bool Context::Init(Service* hsrv) {
             if (req->type == EVHTTP_REQ_POST) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
                 struct evbuffer* evbuf = evhttp_request_get_input_buffer(req);
@@ -43,18 +39,19 @@ namespace evpp {
             }
 #endif
 
+            //TODO 如果该请求是Nginx转发过来的，需要将URL中的 clientip 提取出来，并赋值给 remote_ip
             return true;
         }
 
-        const char* HTTPContext::original_uri() const {
+        const char* Context::original_uri() const {
             return req->uri;
         }
 
-        void HTTPContext::AddResponseHeader(const std::string& key, const std::string& value) {
+        void Context::AddResponseHeader(const std::string& key, const std::string& value) {
             evhttp_add_header(req->output_headers, key.data(), value.data());
         }
 
-        const char* HTTPContext::FindRequestHeader(const char* key) {
+        const char* Context::FindRequestHeader(const char* key) {
             return evhttp_find_header(req->input_headers, key);
         }
     }
