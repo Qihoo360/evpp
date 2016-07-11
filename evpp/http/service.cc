@@ -1,6 +1,8 @@
 #include "service.h"
+
 #include "evpp/libevent_headers.h"
 #include "evpp/libevent_watcher.h"
+#include "evpp/event_loop.h"
 
 namespace evpp {
     namespace http {
@@ -20,13 +22,9 @@ namespace evpp {
         }
 
 
-        Service::Service(struct event_base* base /*= NULL*/)
-            : evhttp_(NULL), event_base_(base) {
-            if (!event_base_) {
-                return;
-            }
-
-            evhttp_ = evhttp_new(event_base_);
+        Service::Service(EventLoop* l)
+            : evhttp_(NULL), loop_(l) {
+            evhttp_ = evhttp_new(loop_->event_base());
             if (!evhttp_) {
                 return;
             }
@@ -37,15 +35,13 @@ namespace evpp {
         }
 
         bool Service::Listen(int port) {
-            if (!evhttp_ || !event_base_) {
-                return false;
-            }
+            assert(!evhttp_);
 
             if (evhttp_bind_socket(evhttp_, "0.0.0.0", port) != 0) {
                 return false;
             }
 
-            pending_reply_list_watcher_.reset(new PipeEventWatcher(event_base_, std::bind(&Service::HandleReply, this)));
+            pending_reply_list_watcher_.reset(new PipeEventWatcher(loop_, std::bind(&Service::HandleReply, this)));
             pending_reply_list_watcher_->Init();
             pending_reply_list_watcher_->AsyncWait();
 
@@ -59,7 +55,7 @@ namespace evpp {
                 evhttp_free(evhttp_);
                 evhttp_ = NULL;
             }
-            event_base_ = NULL;
+            loop_ = NULL;
             callbacks_.clear();
             default_callback_ = HTTPRequestCallback();
         }
