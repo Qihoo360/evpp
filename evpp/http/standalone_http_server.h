@@ -10,7 +10,7 @@ namespace evpp {
     class PipeEventWatcher;
     class EventLoopThread;
 
-    namespace https {
+    namespace http {
         class HTTPService;
         class EVPP_EXPORT StandaloneHTTPServer {
         public:
