@@ -95,26 +95,26 @@ MemcClientMap* MemcacheClientPool::GetMemcClientMap(int hash) {
     return evpp::any_cast<MemcClientMap*>(loop->context());
 }
 
-void MemcacheClientPool::Set(EventLoopPtr caller_loop, const std::string& key, const std::string& value, SetCallback callback) {
-    Set(caller_loop, key.c_str(), value.c_str(), value.size(), 0, 0, callback);
+void MemcacheClientPool::Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, SetCallback callback) {
+    Set(caller_loop, key, value, 0, 0, callback);
 }
-void MemcacheClientPool::Set(EventLoopPtr caller_loop, const char* key, const char* value, size_t val_len, uint32_t flags,
+void MemcacheClientPool::Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, uint32_t flags,
               uint32_t expire, SetCallback callback) {
-    uint16_t vbucket = vbucket_config()->GetVbucketByKey(key, strlen(key));
-    CommandPtr command(new SetCommand(caller_loop, vbucket, key, value, val_len, flags, expire, callback));
+    uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), key.size());
+    CommandPtr command(new SetCommand(caller_loop, vbucket, key, value, flags, expire, callback));
 
     caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
 }
 
-void MemcacheClientPool::Remove(EventLoopPtr caller_loop, const char* key, RemoveCallback callback) {
-    uint16_t vbucket = vbucket_config()->GetVbucketByKey(key, strlen(key));
+void MemcacheClientPool::Remove(evpp::EventLoop* caller_loop, const std::string& key, RemoveCallback callback) {
+    uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), key.size());
     CommandPtr command(new RemoveCommand(caller_loop, vbucket, key, callback));
 
     caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
 }
 
-void MemcacheClientPool::Get(EventLoopPtr caller_loop, const char* key, GetCallback callback) {
-    uint16_t vbucket = vbucket_config()->GetVbucketByKey(key, strlen(key));
+void MemcacheClientPool::Get(evpp::EventLoop* caller_loop, const std::string& key, GetCallback callback) {
+    uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), key.size());
     CommandPtr command(new GetCommand(caller_loop, vbucket, key, callback));
 
     caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
@@ -122,7 +122,7 @@ void MemcacheClientPool::Get(EventLoopPtr caller_loop, const char* key, GetCallb
 
 class MultiGetCollector {
 public:
-    MultiGetCollector(EventLoopPtr caller_loop, int count, const MultiGetCallback& cb)
+    MultiGetCollector(evpp::EventLoop* caller_loop, int count, const MultiGetCallback& cb)
             : caller_loop_(caller_loop), collect_counter_(count), callback_(cb) {}
     void Collect(const MultiGetResult& res) {
         collect_result_.code = res.code; // TODO : 部分失败时，code如何指定?
@@ -139,19 +139,18 @@ public:
         }
     }
 private:
-    EventLoopPtr caller_loop_;
+    evpp::EventLoop* caller_loop_;
     int collect_counter_;
     MultiGetResult collect_result_;
     MultiGetCallback callback_;
 };
 typedef std::shared_ptr<MultiGetCollector> MultiGetCollectorPtr;
 
-void MemcacheClientPool::MultiGet(EventLoopPtr caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback) {
+void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback) {
     if (keys.size() <= 0) {
         return;
     }
-    // TODO : rand() performance fix
-    uint32_t thread_hash = rand();
+    uint32_t thread_hash = next_thread_++;
     std::map<uint16_t, std::vector<std::string> > vbucket_keys;
 
     VbucketConfigPtr vbconf = vbucket_config();
