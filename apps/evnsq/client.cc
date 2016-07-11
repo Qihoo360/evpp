@@ -42,6 +42,7 @@ namespace evnsq {
         auto f = [this](const std::string& lookupd_url) {
             std::shared_ptr<evpp::httpc::Request> r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
             r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
+            //TODO does this Request r be deleted?
         };
         loop_->RunEvery(evpp::Duration(1.0), std::bind(f, lookupd_url));
     }
