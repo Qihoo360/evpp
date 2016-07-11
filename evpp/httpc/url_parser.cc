@@ -17,7 +17,7 @@ namespace evpp {
             return v == '?' || v == '#';
         }
 
-        URLParser::URLParser(const std::string& url) : port(default_http_port) {
+        URLParser::URLParser(const std::string& url) : port(80) {
             parse(url);
         }
 
@@ -28,8 +28,8 @@ namespace evpp {
             static const string prot_end("://");
             it = search(url_s.begin(), url_s.end(), prot_end.begin(), prot_end.end());
             if (it != url_s.end()) {
-                protocol.reserve(distance(url_s.begin(), it));
-                transform(url_s.begin(), it, back_inserter(protocol), ptr_fun<int, int>(tolower)); // protocol is icase
+                schema.reserve(distance(url_s.begin(), it));
+                transform(url_s.begin(), it, back_inserter(schema), ptr_fun<int, int>(tolower)); // protocol is icase
                 advance(it, prot_end.length());
                 last_it = it;
             }
@@ -48,7 +48,7 @@ namespace evpp {
                 if (it != url_s.end()) {
                     last_it = it;
                     it = find_if(last_it, url_s.end(), equal_key);
-                    port.assign(last_it, it);
+                    port = ::atoi(&(*last_it));
                 }
             }
 

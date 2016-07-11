@@ -19,7 +19,6 @@ namespace evpp {
 
     TCPServer::~TCPServer() {
         LOG_TRACE << "TCPServer::~TCPServer()";
-        tpool_->Stop(true);
         assert(tpool_->IsStopped());
         assert(!listener_->listening());
         assert(connections_.empty());
@@ -44,15 +43,14 @@ namespace evpp {
     }
 
     void TCPServer::StopInLoop() {
-        LOG_TRACE << "TCPServer::StopInLoop";
+        LOG_TRACE << "Entering TCPServer::StopInLoop";
         listener_->Stop();
         auto it = connections_.begin();
         auto ite = connections_.end();
         for (; it != ite; ++it) {
-            LOG_TRACE << it->first << " refcount=" << it->second.use_count() << " p=" << it->second.get();
             it->second->Close();
-            LOG_TRACE << it->first << " refcount=" << it->second.use_count() << " p=" << it->second.get();
         }
+        tpool_->Stop(true);
         LOG_TRACE << "TCPServer::StopInLoop exited";
     }
 
