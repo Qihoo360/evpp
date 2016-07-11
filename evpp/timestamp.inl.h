@@ -13,7 +13,6 @@ namespace evpp {
         return ns_ == 0;
     }
 
-
     inline Timestamp::Timestamp(const struct timeval& t)
         : ns_(int64_t(t.tv_sec)*Duration::kSecond + t.tv_usec*Duration::kMicrosecond) {}
 
