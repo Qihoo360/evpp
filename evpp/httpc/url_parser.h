@@ -13,9 +13,9 @@ namespace evpp {
     namespace httpc {
         struct EVPP_EXPORT URLParser {
         public:
-            std::string protocol;
+            std::string schema;
             std::string host;
-            std::string port;
+            int port;
             std::string path;
             std::string query;
 
