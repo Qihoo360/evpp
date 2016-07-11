@@ -13,8 +13,8 @@
 #include <evpp/httpc/conn.h>
 #include <evpp/httpc/response.h>
 
-#include "evpp/http/embedded_http_server.h"
-#include "evpp/http/standalone_http_server.h"
+#include "evpp/http/service.h"
+#include "evpp/http/http_server.h"
 
 static bool g_stopping = false;
 static void RequestHandler(const evpp::http::HTTPContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
@@ -165,7 +165,7 @@ namespace {
 TEST_UNIT(testHTTPServer) {
     for (int i = 0; i < 3; ++i) {
         g_stopping = true;
-        evpp::http::StandaloneHTTPServer ph(i);
+        evpp::http::HTTPServer ph(i);
         ph.RegisterDefaultEvent(&DefaultRequestHandler);
         ph.RegisterEvent("/push/boot", &RequestHandler);
         bool r = ph.Start(g_listening_port, true);

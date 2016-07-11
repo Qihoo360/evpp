@@ -1,4 +1,4 @@
-#include "standalone_http_server.h"
+#include "http_server.h"
 
 #include "evpp/libevent_headers.h"
 #include "evpp/libevent_watcher.h"
@@ -8,19 +8,19 @@
 
 namespace evpp {
     namespace http {
-        StandaloneHTTPServer::StandaloneHTTPServer(int thread_num)
+        HTTPServer::HTTPServer(int thread_num)
             : base_loop_(new EventLoopThread) {
             tpool_.reset(new EventLoopThreadPool(base_loop_->event_loop(), thread_num));
-            http_.reset(new HTTPService(base_loop_->event_base()));
+            http_.reset(new Service(base_loop_->event_base()));
         }
 
-        StandaloneHTTPServer::~StandaloneHTTPServer() {
+        HTTPServer::~HTTPServer() {
             http_.reset();
             base_loop_.reset();
             tpool_.reset();
         }
 
-        bool StandaloneHTTPServer::Start(int port, bool wait_for_http_service_started) {
+        bool HTTPServer::Start(int port, bool wait_for_http_service_started) {
             if (!http_->Listen(port)) {
                 return false;
             }
@@ -31,8 +31,8 @@ namespace evpp {
             }
             base_loop_->SetName("StandaloneHTTPServer-Main");
 
-            // 当 base_loop_ 停止运行时，会调用该函数来停止 HTTPService
-            auto http_close_fn = std::bind(&HTTPService::Stop, http_);
+            // 当 base_loop_ 停止运行时，会调用该函数来停止 Service
+            auto http_close_fn = std::bind(&Service::Stop, http_);
             rc = base_loop_->Start(wait_for_http_service_started,
                                    EventLoopThread::Functor(),
                                    http_close_fn);
@@ -43,7 +43,7 @@ namespace evpp {
             return rc;
         }
 
-        void StandaloneHTTPServer::Stop(bool wait_thread_exit /*= false*/) {
+        void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
             base_loop_->Stop();
             tpool_->Stop();
             if (wait_thread_exit) {
@@ -57,31 +57,31 @@ namespace evpp {
 //             base_loop_->Stop(false); // 已经在线程base_loop的线程里了，不能调用 base_loop_->Stop(true) ， 否则相互循环等待
 //         }
 
-        bool StandaloneHTTPServer::IsRunning() const {
+        bool HTTPServer::IsRunning() const {
             return base_loop_->IsRunning() && tpool_->IsRunning();
         }
 
-        bool StandaloneHTTPServer::IsStopped() const {
+        bool HTTPServer::IsStopped() const {
             return base_loop_->IsStopped() && tpool_->IsStopped();
         }
 
-        bool StandaloneHTTPServer::RegisterEvent(const std::string& uri, HTTPRequestCallback callback) {
-            HTTPRequestCallback cb = std::bind(&StandaloneHTTPServer::Dispatch, this,
+        bool HTTPServer::RegisterEvent(const std::string& uri, HTTPRequestCallback callback) {
+            HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
                                                std::placeholders::_1,
                                                std::placeholders::_2,
                                                callback);
             return http_->RegisterEvent(uri, cb);
         }
 
-        bool StandaloneHTTPServer::RegisterDefaultEvent(HTTPRequestCallback callback) {
-            HTTPRequestCallback cb = std::bind(&StandaloneHTTPServer::Dispatch, this,
+        bool HTTPServer::RegisterDefaultEvent(HTTPRequestCallback callback) {
+            HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
                                                std::placeholders::_1,
                                                std::placeholders::_2,
                                                callback);
             return http_->RegisterDefaultEvent(cb);
         }
 
-        void StandaloneHTTPServer::Dispatch(const HTTPContextPtr& ctx,
+        void HTTPServer::Dispatch(const HTTPContextPtr& ctx,
                                             const HTTPSendResponseCallback& response_callback,
                                             const HTTPRequestCallback& user_callback) {
             LOG_TRACE << "dispatch request " << ctx->req << " url=" << ctx->original_uri() << " in main thread";
@@ -97,7 +97,7 @@ namespace evpp {
             loop->RunInLoop(std::bind(f, ctx, response_callback, user_callback));
         }
 
-        HTTPService* StandaloneHTTPServer::http_service() const {
+        Service* HTTPServer::http_service() const {
             return http_.get();
         }
     }
