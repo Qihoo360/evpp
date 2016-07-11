@@ -75,9 +75,6 @@
     <ClCompile Include="..\test\buffer_test.cc">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\http_server_multi_thread_test.cc">
-      <Filter>http</Filter>
-    </ClCompile>
     <ClCompile Include="..\test\http_server_test.cc">
       <Filter>http</Filter>
     </ClCompile>
