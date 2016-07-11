@@ -4,7 +4,6 @@
 #include "http_context.h"
 
 #include <vector>
-#include <list>
 #include <mutex>
 
 namespace evpp {
@@ -20,7 +19,7 @@ namespace evpp {
 
             void Stop();
 
-            //! \brief URI=/the/uri
+            // uri 不能带有参数
             bool RegisterEvent(const std::string& uri, HTTPRequestCallback callback);
 
             bool RegisterDefaultEvent(HTTPRequestCallback callback);
@@ -34,35 +33,13 @@ namespace evpp {
             static void GenericCallback(struct evhttp_request *req, void *arg);
 
         private:
-            //thread-safe, it will be called from other thread possibly
-            void SendReplyT(struct evhttp_request *req, const std::string& response);
-
-            void HandleReply();
+            void SendReply(struct evhttp_request *req, const std::string& response);
 
         private:
             struct evhttp* evhttp_;
             EventLoop* loop_;
-
-            HTTPRequestCallbackMap  callbacks_;
-            HTTPRequestCallback     default_callback_;
-        private:
-            struct PendingReply {
-                PendingReply(struct evhttp_request* r, const std::string& m);
-                ~PendingReply();
-
-                struct evhttp_request*  req;
-                struct evbuffer *buffer;
-            };
-
-            typedef std::shared_ptr<PendingReply> PendingReplyPtr;
-
-            typedef std::list<PendingReplyPtr> PendingReplyPtrList;
-            PendingReplyPtrList         pending_reply_list_;
-            std::mutex                  pending_reply_list_lock_;
-            std::shared_ptr<PipeEventWatcher> pending_reply_list_watcher_;
-
-        private:
-            void SendReplyInLoop(const PendingReplyPtr& pt);
+            HTTPRequestCallbackMap callbacks_;
+            HTTPRequestCallback    default_callback_;
         };
     }
 
