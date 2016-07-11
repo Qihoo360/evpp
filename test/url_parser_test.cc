@@ -8,20 +8,20 @@ TEST_UNIT(testURLParser) {
 
         std::string protocol;
         std::string host;
-        std::string port;
+        int port;
         std::string path;
         std::string query;
     };
 
     TestCase cases[] = {
-        { "http://www.so.com/query?a=1", "http", "www.so.com", "80", "/query", "a=1" },
-        { "http://www.so.com/", "http", "www.so.com", "80", "/", "" },
-        { "http://www.so.com", "http", "www.so.com", "80", "", "" },
+        { "http://www.so.com/query?a=1", "http", "www.so.com", 80, "/query", "a=1" },
+        { "http://www.so.com/", "http", "www.so.com", 80, "/", "" },
+        { "http://www.so.com", "http", "www.so.com", 80, "", "" },
     };
 
     for (size_t i = 0; i < H_ARRAYSIZE(cases); i++) {
         evpp::httpc::URLParser p(cases[i].url);
-        H_TEST_ASSERT(p.protocol == cases[i].protocol);
+        H_TEST_ASSERT(p.schema == cases[i].protocol);
         H_TEST_ASSERT(p.host == cases[i].host);
         H_TEST_ASSERT(p.port == cases[i].port);
         H_TEST_ASSERT(p.path == cases[i].path);
