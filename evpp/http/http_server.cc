@@ -11,7 +11,7 @@ namespace evpp {
         HTTPServer::HTTPServer(int thread_num)
             : listen_thread_(new EventLoopThread) {
             tpool_.reset(new EventLoopThreadPool(listen_thread_->event_loop(), thread_num));
-            http_.reset(new Service(listen_thread_->event_base()));
+            http_.reset(new Service(listen_thread_->event_loop()));
         }
 
         HTTPServer::~HTTPServer() {
