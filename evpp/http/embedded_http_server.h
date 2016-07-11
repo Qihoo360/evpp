@@ -12,7 +12,7 @@ struct event_base;
 
 namespace evpp {
     class PipeEventWatcher;
-    namespace https {
+    namespace http {
         class EVPP_EXPORT HTTPService {
         public:
             HTTPService(struct event_base* base);
