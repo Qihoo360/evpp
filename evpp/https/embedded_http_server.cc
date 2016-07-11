@@ -21,7 +21,7 @@ namespace evpp {
 
 
         HTTPService::HTTPService(struct event_base* base /*= NULL*/)
-            : evhttp_(NULL), event_base_(base), parse_parameters_(false) {
+            : evhttp_(NULL), event_base_(base) {
             if (!event_base_) {
                 return;
             }
