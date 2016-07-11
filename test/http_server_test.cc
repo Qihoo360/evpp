@@ -17,7 +17,7 @@
 #include "evpp/http/http_server.h"
 
 static bool g_stopping = false;
-static void RequestHandler(const evpp::http::HTTPContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+static void RequestHandler(const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << " OK"
         << " ip=" << ctx->remote_ip << "\n"
@@ -26,21 +26,13 @@ static void RequestHandler(const evpp::http::HTTPContextPtr& ctx, const evpp::ht
     cb(oss.str());
 }
 
-static void DefaultRequestHandler(const evpp::http::HTTPContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+static void DefaultRequestHandler(const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     //std::cout << __func__ << " called ...\n";
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << "\n"
         << " ip=" << ctx->remote_ip << "\n"
         << " uri=" << ctx->uri << "\n"
         << " body=" << ctx->body.ToString() << "\n";
-
-    if (ctx->params) {
-        evpp::http::HTTPParameterMap::const_iterator it(ctx->params->begin());
-        evpp::http::HTTPParameterMap::const_iterator ite(ctx->params->end());
-        for (; it != ite; ++it) {
-            oss << "key=" << it->first << " value=[" << it->second << "]\n";
-        }
-    }
 
     if (ctx->uri.find("stop") != std::string::npos) {
         g_stopping = true;
