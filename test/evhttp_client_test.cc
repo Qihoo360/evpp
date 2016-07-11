@@ -21,7 +21,6 @@ namespace {
     }
 }
 
-#if 1
 TEST_UNIT(evhttpClientSample) {
     struct event_base* base = event_base_new();
     struct evhttp_connection* conn = evhttp_connection_base_new(base, NULL, "qup.f.360.cn", 80);
@@ -72,5 +71,3 @@ TEST_UNIT(testHTTPRequest2) {
     t.Stop(true);
     LOG_INFO << "EventLoopThread stopped.";
 }
-
-#endif
