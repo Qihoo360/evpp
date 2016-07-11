@@ -43,7 +43,7 @@ namespace evnsq {
         Client(evpp::EventLoop* loop, Type t, const std::string& topic, const std::string& channel, const Option& ops);
         void HandleLoopkupdHTTPResponse(
             const std::shared_ptr<evpp::httpc::Response>& response,
-            const std::shared_ptr<evpp::httpc::Request>& request);
+            evpp::httpc::Request* request);
         void OnConnection(Conn* conn);
         void Subscribe();
         void UpdateReady(int count);
