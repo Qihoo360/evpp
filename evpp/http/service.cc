@@ -6,22 +6,6 @@
 
 namespace evpp {
     namespace http {
-        Service::PendingReply::PendingReply(struct evhttp_request* r, const std::string& m) : req(r), buffer(NULL) {
-            if (m.size() > 0) {
-                buffer = evbuffer_new();
-                evbuffer_add(buffer, m.c_str(), m.size());
-            }
-        }
-
-        Service::PendingReply::~PendingReply() {
-            if (buffer) {
-                evbuffer_free(buffer);
-                buffer = NULL;
-            }
-            LOG_TRACE << "free request " << req->uri;
-        }
-
-
         Service::Service(EventLoop* l)
             : evhttp_(NULL), loop_(l) {
             evhttp_ = evhttp_new(loop_->event_base());
@@ -31,26 +15,23 @@ namespace evpp {
         }
 
         Service::~Service() {
-            Stop();
+            assert(!evhttp_);
+            assert(!loop_);
         }
 
         bool Service::Listen(int port) {
-            assert(!evhttp_);
-
+            assert(evhttp_);
+            assert(loop_->IsInLoopThread());
             if (evhttp_bind_socket(evhttp_, "0.0.0.0", port) != 0) {
                 return false;
             }
 
-            pending_reply_list_watcher_.reset(new PipeEventWatcher(loop_, std::bind(&Service::HandleReply, this)));
-            pending_reply_list_watcher_->Init();
-            pending_reply_list_watcher_->AsyncWait();
-
             evhttp_set_gencb(evhttp_, &Service::GenericCallback, this);
-
             return true;
         }
 
         void Service::Stop() {
+            assert(!loop_->running() || loop_->IsInLoopThread());
             if (evhttp_) {
                 evhttp_free(evhttp_);
                 evhttp_ = NULL;
@@ -76,6 +57,8 @@ namespace evpp {
         }
 
         void Service::HandleRequest(struct evhttp_request *req) {
+            // HTTP 请求的处理总入口，在监听主线程中执行
+            assert(loop_->IsInLoopThread());
             LOG_TRACE << "handle request " << req << " url=" << req->uri;
 
             HTTPContextPtr ctx(new HTTPContext(req));
@@ -87,58 +70,58 @@ namespace evpp {
                 return;
             }
 
-            it->second(ctx, std::bind(&Service::SendReplyT, this, req, std::placeholders::_1));
+            // 此处会调度到 HTTPServer::Dispatch 函数中
+            it->second(ctx, std::bind(&Service::SendReply, this, req, std::placeholders::_1));
         }
 
         void Service::DefaultHandleRequest(const HTTPContextPtr& ctx) {
             if (default_callback_) {
-                default_callback_(ctx, std::bind(&Service::SendReplyT, this, ctx->req, std::placeholders::_1));
+                default_callback_(ctx, std::bind(&Service::SendReply, this, ctx->req, std::placeholders::_1));
             } else {
                 evhttp_send_reply(ctx->req, HTTP_BADREQUEST, "Bad Request", NULL);
             }
         }
 
-        void Service::SendReplyInLoop(const PendingReplyPtr& pt) {
-            LOG_TRACE << "send reply";
-            if (!pt->buffer) {
-                evhttp_send_reply(pt->req, HTTP_NOTFOUND, "Not Found", NULL);
-                return;
+        struct Response {
+            Response(struct evhttp_request* r, const std::string& m)
+                : req(r), buffer(NULL) {
+                if (m.size() > 0) {
+                    buffer = evbuffer_new();
+                    evbuffer_add(buffer, m.c_str(), m.size());
+                }
             }
 
-            evhttp_send_reply(pt->req, HTTP_OK, "OK", pt->buffer);
-        }
+            ~Response() {
+                if (buffer) {
+                    evbuffer_free(buffer);
+                    buffer = NULL;
+                }
+                LOG_TRACE << "free request " << req->uri;
+            }
 
-        void Service::SendReplyT(struct evhttp_request *req, const std::string& response) {
+            struct evhttp_request*  req;
+            struct evbuffer *buffer;
+        };
+
+        void Service::SendReply(struct evhttp_request *req, const std::string& response) {
+            // 在工作线程中执行，将HTTP响应包的发送权交还给监听主线程
             LOG_TRACE << "send reply in working thread";
-            PendingReplyPtr pt(new PendingReply(req, response));
+
+            // 在工作线程中准备好响应报文
+            std::shared_ptr<Response> pt(new Response(req, response));
             
-            std::lock_guard<std::mutex> guard(pending_reply_list_lock_);
-            pending_reply_list_.push_back(pt);
-            pending_reply_list_watcher_->Notify();
+            auto f = [this](const std::shared_ptr<Response>& pt) {
+                assert(this->loop_->IsInLoopThread());
+                LOG_TRACE << "send reply";
+                if (!pt->buffer) {
+                    evhttp_send_reply(pt->req, HTTP_NOTFOUND, "Not Found", NULL);
+                    return;
+                }
+
+                evhttp_send_reply(pt->req, HTTP_OK, "OK", pt->buffer);
+            };
+
+            loop_->RunInLoop(std::bind(f, pt));
         }
-
-        void Service::HandleReply() {
-            // If http server is stopping or stopped
-            if (!evhttp_) {
-                return;
-            }
-
-            PendingReplyPtrList reply_list;
-
-            {
-                std::lock_guard<std::mutex> guard(pending_reply_list_lock_);
-                reply_list.swap(pending_reply_list_);
-            }
-
-            PendingReplyPtrList::iterator it(reply_list.begin());
-            PendingReplyPtrList::iterator ite(reply_list.end());
-            for (; it != ite; ++it) {
-                PendingReplyPtr& pt = *it;
-                SendReplyInLoop(pt);
-            }
-
-            reply_list.clear();
-        }
-
     }
 }
