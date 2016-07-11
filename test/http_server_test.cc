@@ -158,8 +158,8 @@ TEST_UNIT(testHTTPServer) {
     for (int i = 0; i < 3; ++i) {
         g_stopping = true;
         evpp::http::HTTPServer ph(i);
-        ph.RegisterDefaultEvent(&DefaultRequestHandler);
-        ph.RegisterEvent("/push/boot", &RequestHandler);
+        ph.RegisterDefaultHandler(&DefaultRequestHandler);
+        ph.RegisterHandler("/push/boot", &RequestHandler);
         bool r = ph.Start(g_listening_port);
         H_TEST_ASSERT(r);
         TestAll();
