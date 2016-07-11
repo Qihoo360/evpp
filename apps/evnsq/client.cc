@@ -40,9 +40,9 @@ namespace evnsq {
 
     void Client::ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/) {
         auto f = [this](const std::string& lookupd_url) {
-            std::shared_ptr<evpp::httpc::Request> r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
+            // This object will be deleted in HandleLoopkupdHTTPResponse
+            evpp::httpc::Request* r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
             r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
-            //TODO does this Request r be deleted?
         };
         loop_->RunEvery(evpp::Duration(1.0), std::bind(f, lookupd_url));
     }
@@ -59,7 +59,8 @@ namespace evnsq {
 
     void Client::HandleLoopkupdHTTPResponse(
         const std::shared_ptr<evpp::httpc::Response>& response,
-        const std::shared_ptr<evpp::httpc::Request>& request) {
+        evpp::httpc::Request* request) {
+        std::unique_ptr<evpp::httpc::Request> auto_delete(request);
         if (response->http_code() != 200) {
             LOG_ERROR << "Request lookupd http://" << request->conn()->host() << ":"
                 << request->conn()->port() << request->uri()
