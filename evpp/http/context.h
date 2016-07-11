@@ -6,12 +6,8 @@
 #include "evpp/slice.h"
 
 #include <map>
-#include <set>
 
-struct event_base;
-struct evhttp;
 struct evhttp_request;
-struct evbuffer;
 
 namespace evpp {
     namespace http {

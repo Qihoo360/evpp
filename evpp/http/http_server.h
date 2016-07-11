@@ -2,9 +2,6 @@
 
 #include "service.h"
 
-struct event_base;
-struct event;
-
 namespace evpp {
     class EventLoopThreadPool;
     class PipeEventWatcher;
@@ -26,12 +23,12 @@ namespace evpp {
 
             void Stop(bool wait_thread_exit = false);
 
-            Service* http_service() const;
+            Service* service() const;
         public:
-            bool RegisterEvent(const std::string& uri,
+            bool RegisterHandler(const std::string& uri,
                                HTTPRequestCallback callback);
 
-            bool RegisterDefaultEvent(HTTPRequestCallback callback);
+            bool RegisterDefaultHandler(HTTPRequestCallback callback);
 
         public:
             bool IsRunning() const;
