@@ -3,7 +3,7 @@
 #include "evpp/libevent_headers.h"
 
 namespace evpp {
-    namespace https {
+    namespace http {
         static const std::string __s_null = "";
         HTTPContext::HTTPContext(struct evhttp_request* r)
             : req(r), params(NULL) {
