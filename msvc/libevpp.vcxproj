@@ -24,9 +24,9 @@
     <ClCompile Include="..\evpp\httpc\response.cc" />
     <ClCompile Include="..\evpp\httpc\conn_pool.cc" />
     <ClCompile Include="..\evpp\httpc\url_parser.cc" />
-    <ClCompile Include="..\evpp\https\embedded_http_server.cc" />
-    <ClCompile Include="..\evpp\https\http_context.cc" />
-    <ClCompile Include="..\evpp\https\standalone_http_server.cc" />
+    <ClCompile Include="..\evpp\http\embedded_http_server.cc" />
+    <ClCompile Include="..\evpp\http\http_context.cc" />
+    <ClCompile Include="..\evpp\http\standalone_http_server.cc" />
     <ClCompile Include="..\evpp\inner_pre.cc" />
     <ClCompile Include="..\evpp\invoke_timer.cc" />
     <ClCompile Include="..\evpp\libevent_compact.cc" />
@@ -57,9 +57,9 @@
     <ClInclude Include="..\evpp\httpc\response.h" />
     <ClInclude Include="..\evpp\httpc\conn_pool.h" />
     <ClInclude Include="..\evpp\httpc\url_parser.h" />
-    <ClInclude Include="..\evpp\https\embedded_http_server.h" />
-    <ClInclude Include="..\evpp\https\http_context.h" />
-    <ClInclude Include="..\evpp\https\standalone_http_server.h" />
+    <ClInclude Include="..\evpp\http\embedded_http_server.h" />
+    <ClInclude Include="..\evpp\http\http_context.h" />
+    <ClInclude Include="..\evpp\http\standalone_http_server.h" />
     <ClInclude Include="..\evpp\inner_pre.h" />
     <ClInclude Include="..\evpp\invoke_timer.h" />
     <ClInclude Include="..\evpp\libevent_headers.h" />
