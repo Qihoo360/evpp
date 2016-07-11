@@ -1,6 +1,6 @@
 #pragma once
 
-#include "embedded_http_server.h"
+#include "service.h"
 
 struct event_base;
 struct event;
@@ -11,12 +11,16 @@ namespace evpp {
     class EventLoopThread;
 
     namespace http {
-        class HTTPService;
-        class EVPP_EXPORT StandaloneHTTPServer {
-        public:
-            StandaloneHTTPServer(int thread_num = 0);
+        class Service;
 
-            ~StandaloneHTTPServer();
+        // 这是一个可以独立运行的 HTTP Server
+        // 它会启动一个独立的线程用于端口监听、接收HTTP请求、分发HTTP请求、最后发送HTTP响应。
+        // 如果 thread_num 不为 0，它还会启动一个线程池，用于处理HTTP请求
+        class EVPP_EXPORT HTTPServer {
+        public:
+            HTTPServer(int thread_num = 0);
+
+            ~HTTPServer();
 
             //! \brief Create a thread to run the http service event loop.
             //! \param[in] - int http_listening_port
@@ -32,7 +36,7 @@ namespace evpp {
             //! \return - bool - 
             void Stop(bool wait_thread_exit = false);
 
-            HTTPService* http_service() const;
+            Service* http_service() const;
         public:
             bool RegisterEvent(const std::string& uri,
                                HTTPRequestCallback callback);
@@ -46,19 +50,17 @@ namespace evpp {
             std::shared_ptr<EventLoopThreadPool> pool() const { return tpool_; }
 
         private:
-            //void StopInLoop();
-             
             void Dispatch(const HTTPContextPtr& ctx,
                           const HTTPSendResponseCallback& response_callback,
                           const HTTPRequestCallback& user_callback);
 
         private:
-            std::shared_ptr<HTTPService>   http_;
+            std::shared_ptr<Service>   http_;
 
-            //主要事件循环线程，监听http请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
+            // 主要事件循环线程，监听http请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
             std::shared_ptr<EventLoopThread> base_loop_;
 
-            //工作线程池，处理请求
+            // 工作线程池，处理请求
             std::shared_ptr<EventLoopThreadPool> tpool_;
         };
     }
