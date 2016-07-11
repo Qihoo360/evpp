@@ -40,7 +40,7 @@ namespace evpp {
             std::shared_ptr<EventLoopThreadPool> pool() const { return tpool_; }
 
         private:
-            void Dispatch(const HTTPContextPtr& ctx,
+            void Dispatch(const ContextPtr& ctx,
                           const HTTPSendResponseCallback& response_callback,
                           const HTTPRequestCallback& user_callback);
 

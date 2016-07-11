@@ -61,7 +61,7 @@ namespace evpp {
             assert(loop_->IsInLoopThread());
             LOG_TRACE << "handle request " << req << " url=" << req->uri;
 
-            HTTPContextPtr ctx(new HTTPContext(req));
+            ContextPtr ctx(new Context(req));
             ctx->Init(this);
 
             HTTPRequestCallbackMap::iterator it = callbacks_.find(ctx->uri);
@@ -74,7 +74,7 @@ namespace evpp {
             it->second(ctx, std::bind(&Service::SendReply, this, req, std::placeholders::_1));
         }
 
-        void Service::DefaultHandleRequest(const HTTPContextPtr& ctx) {
+        void Service::DefaultHandleRequest(const ContextPtr& ctx) {
             if (default_callback_) {
                 default_callback_(ctx, std::bind(&Service::SendReply, this, ctx->req, std::placeholders::_1));
             } else {
