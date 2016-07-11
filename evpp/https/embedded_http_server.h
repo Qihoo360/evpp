@@ -31,14 +31,6 @@ namespace evpp {
 
             bool RegisterDefaultEvent(HTTPRequestCallback callback);
 
-            bool parse_parameters() const {
-                return parse_parameters_;
-            }
-
-            void set_parse_parameters(bool v) {
-                parse_parameters_ = v;
-            }
-
             void AddRequestHeaderKeyForParsing(const std::string& key) {
                 request_header_keys_for_parsing_.insert(key);
             }
@@ -64,8 +56,6 @@ namespace evpp {
         private:
             struct evhttp*      evhttp_;
             struct event_base*  event_base_;
-
-            bool parse_parameters_;
 
             stringset request_header_keys_for_parsing_;
 
