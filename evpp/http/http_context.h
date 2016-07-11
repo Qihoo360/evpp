@@ -14,7 +14,7 @@ struct evhttp_request;
 struct evbuffer;
 
 namespace evpp {
-    namespace https {
+    namespace http {
         class HTTPService;
         typedef std::map<std::string, std::string> HTTPParameterMap;
         struct EVPP_EXPORT HTTPContext {
