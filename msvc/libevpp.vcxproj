@@ -25,7 +25,7 @@
     <ClCompile Include="..\evpp\httpc\conn_pool.cc" />
     <ClCompile Include="..\evpp\httpc\url_parser.cc" />
     <ClCompile Include="..\evpp\http\service.cc" />
-    <ClCompile Include="..\evpp\http\http_context.cc" />
+    <ClCompile Include="..\evpp\http\context.cc" />
     <ClCompile Include="..\evpp\http\http_server.cc" />
     <ClCompile Include="..\evpp\inner_pre.cc" />
     <ClCompile Include="..\evpp\invoke_timer.cc" />
@@ -58,7 +58,7 @@
     <ClInclude Include="..\evpp\httpc\conn_pool.h" />
     <ClInclude Include="..\evpp\httpc\url_parser.h" />
     <ClInclude Include="..\evpp\http\service.h" />
-    <ClInclude Include="..\evpp\http\http_context.h" />
+    <ClInclude Include="..\evpp\http\context.h" />
     <ClInclude Include="..\evpp\http\http_server.h" />
     <ClInclude Include="..\evpp\inner_pre.h" />
     <ClInclude Include="..\evpp\invoke_timer.h" />

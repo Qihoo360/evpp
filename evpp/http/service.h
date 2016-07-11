@@ -1,7 +1,7 @@
 #pragma once
 
 #include "evpp/inner_pre.h"
-#include "http_context.h"
+#include "context.h"
 
 #include <vector>
 #include <mutex>
@@ -27,7 +27,7 @@ namespace evpp {
         private:
             void HandleRequest(struct evhttp_request *req);
 
-            void DefaultHandleRequest(const HTTPContextPtr& ctx);
+            void DefaultHandleRequest(const ContextPtr& ctx);
 
         private:
             static void GenericCallback(struct evhttp_request *req, void *arg);
