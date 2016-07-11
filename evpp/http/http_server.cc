@@ -61,20 +61,20 @@ namespace evpp {
             return listen_thread_->IsStopped() && tpool_->IsStopped();
         }
 
-        bool HTTPServer::RegisterEvent(const std::string& uri, HTTPRequestCallback callback) {
+        bool HTTPServer::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
             HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
                                                std::placeholders::_1,
                                                std::placeholders::_2,
                                                callback);
-            return http_->RegisterEvent(uri, cb);
+            return http_->RegisterHandler(uri, cb);
         }
 
-        bool HTTPServer::RegisterDefaultEvent(HTTPRequestCallback callback) {
+        bool HTTPServer::RegisterDefaultHandler(HTTPRequestCallback callback) {
             HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
                                                std::placeholders::_1,
                                                std::placeholders::_2,
                                                callback);
-            return http_->RegisterDefaultEvent(cb);
+            return http_->RegisterDefaultHandler(cb);
         }
 
         void HTTPServer::Dispatch(const ContextPtr& ctx,
@@ -96,7 +96,7 @@ namespace evpp {
             loop->RunInLoop(std::bind(f, ctx, response_callback, user_callback));
         }
 
-        Service* HTTPServer::http_service() const {
+        Service* HTTPServer::service() const {
             return http_.get();
         }
     }
