@@ -7,8 +7,8 @@
 namespace evpp {
     namespace http {
         Service::Service(EventLoop* l)
-            : evhttp_(NULL), loop_(l) {
-            evhttp_ = evhttp_new(loop_->event_base());
+            : evhttp_(NULL), listen_loop_(l) {
+            evhttp_ = evhttp_new(listen_loop_->event_base());
             if (!evhttp_) {
                 return;
             }
@@ -16,12 +16,12 @@ namespace evpp {
 
         Service::~Service() {
             assert(!evhttp_);
-            assert(!loop_);
+            assert(!listen_loop_);
         }
 
         bool Service::Listen(int port) {
             assert(evhttp_);
-            assert(loop_->IsInLoopThread());
+            assert(listen_loop_->IsInLoopThread());
             if (evhttp_bind_socket(evhttp_, "0.0.0.0", port) != 0) {
                 return false;
             }
@@ -31,22 +31,22 @@ namespace evpp {
         }
 
         void Service::Stop() {
-            assert(!loop_->running() || loop_->IsInLoopThread());
+            assert(!listen_loop_->running() || listen_loop_->IsInLoopThread());
             if (evhttp_) {
                 evhttp_free(evhttp_);
                 evhttp_ = NULL;
             }
-            loop_ = NULL;
+            listen_loop_ = NULL;
             callbacks_.clear();
             default_callback_ = HTTPRequestCallback();
         }
 
-        bool Service::RegisterEvent(const std::string& uri, HTTPRequestCallback callback) {
+        bool Service::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
             callbacks_[uri] = callback;
             return true;
         }
 
-        bool Service::RegisterDefaultEvent(HTTPRequestCallback callback) {
+        bool Service::RegisterDefaultHandler(HTTPRequestCallback callback) {
             default_callback_ = callback;
             return true;
         }
@@ -58,7 +58,7 @@ namespace evpp {
 
         void Service::HandleRequest(struct evhttp_request *req) {
             // HTTP 请求的处理总入口，在监听主线程中执行
-            assert(loop_->IsInLoopThread());
+            assert(listen_loop_->IsInLoopThread());
             LOG_TRACE << "handle request " << req << " url=" << req->uri;
 
             ContextPtr ctx(new Context(req));
@@ -111,7 +111,7 @@ namespace evpp {
             std::shared_ptr<Response> pt(new Response(req, response));
             
             auto f = [this](const std::shared_ptr<Response>& pt) {
-                assert(this->loop_->IsInLoopThread());
+                assert(this->listen_loop_->IsInLoopThread());
                 LOG_TRACE << "send reply";
                 if (!pt->buffer) {
                     evhttp_send_reply(pt->req, HTTP_NOTFOUND, "Not Found", NULL);
@@ -121,7 +121,7 @@ namespace evpp {
                 evhttp_send_reply(pt->req, HTTP_OK, "OK", pt->buffer);
             };
 
-            loop_->RunInLoop(std::bind(f, pt));
+            listen_loop_->RunInLoop(std::bind(f, pt));
         }
     }
 }
