@@ -19,13 +19,13 @@ public:
     bool Start();
     void Stop(bool wait_thread_exit);
 
-    void Set(EventLoopPtr caller_loop, const std::string& key, const std::string& value, SetCallback callback);
-    void Set(EventLoopPtr caller_loop, const char* key, const char* value, size_t val_len, uint32_t flags,
+    void Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, SetCallback callback);
+    void Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, uint32_t flags,
                   uint32_t expire, SetCallback callback);
 
-    void Remove(EventLoopPtr caller_loop, const char* key, RemoveCallback callback);
-    void Get(EventLoopPtr caller_loop, const char* key, GetCallback callback);
-    void MultiGet(EventLoopPtr caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback);
+    void Remove(evpp::EventLoop* caller_loop, const std::string& key, RemoveCallback callback);
+    void Get(evpp::EventLoop* caller_loop, const std::string& key, GetCallback callback);
+    void MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback);
 private:
     // noncopyable
     MemcacheClientPool(const MemcacheClientPool&);
@@ -53,6 +53,8 @@ private:
     // std::atomic<VbucketConfigPtr> vbucket_config_;
     VbucketConfigPtr vbucket_config_;
     std::mutex vbucket_config_mutex_; // TODO : use rw mutex
+
+    std::atomic_int next_thread_;
 };
 
 }
