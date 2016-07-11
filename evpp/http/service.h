@@ -7,15 +7,13 @@
 #include <list>
 #include <mutex>
 
-struct event;
-struct event_base;
-
 namespace evpp {
+    class EventLoop;
     class PipeEventWatcher;
     namespace http {
         class EVPP_EXPORT Service {
         public:
-            Service(struct event_base* base);
+            Service(EventLoop* loop);
             ~Service();
 
             bool Listen(int port);
@@ -42,8 +40,8 @@ namespace evpp {
             void HandleReply();
 
         private:
-            struct evhttp*      evhttp_;
-            struct event_base*  event_base_;
+            struct evhttp* evhttp_;
+            EventLoop* loop_;
 
             HTTPRequestCallbackMap  callbacks_;
             HTTPRequestCallback     default_callback_;
