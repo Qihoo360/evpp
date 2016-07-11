@@ -3,7 +3,7 @@
 #include "evpp/libevent_watcher.h"
 
 namespace evpp {
-    namespace https {
+    namespace http {
         HTTPService::PendingReply::PendingReply(struct evhttp_request* r, const std::string& m) : req(r), buffer(NULL) {
             if (m.size() > 0) {
                 buffer = evbuffer_new();
