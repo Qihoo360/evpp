@@ -52,6 +52,7 @@ namespace evpp {
         }
 
         void Conn::Close() {
+            assert(loop_->IsInLoopThread());
             if (evhttp_conn_) {
                 evhttp_connection_free(evhttp_conn_);
                 evhttp_conn_ = NULL;
