@@ -34,8 +34,8 @@ namespace evpp {
             // 当 base_loop_ 停止运行时，会调用该函数来停止 Service
             auto http_close_fn = std::bind(&Service::Stop, http_);
             rc = listen_thread_->Start(true,
-                                   EventLoopThread::Functor(),
-                                   http_close_fn);
+                                       EventLoopThread::Functor(),
+                                       http_close_fn);
 
             while (!IsRunning()) {
                 usleep(1);
@@ -78,8 +78,8 @@ namespace evpp {
         }
 
         void HTTPServer::Dispatch(const HTTPContextPtr& ctx,
-                                            const HTTPSendResponseCallback& response_callback,
-                                            const HTTPRequestCallback& user_callback) {
+                                  const HTTPSendResponseCallback& response_callback,
+                                  const HTTPRequestCallback& user_callback) {
             LOG_TRACE << "dispatch request " << ctx->req << " url=" << ctx->original_uri() << " in main thread";
 
             // 将该HTTP请求调度到工作线程处理
@@ -87,6 +87,9 @@ namespace evpp {
                         const HTTPSendResponseCallback& response_callback,
                         const HTTPRequestCallback& user_callback) {
                 LOG_TRACE << "process request " << ctx->req << " url=" << ctx->original_uri() << " in working thread";
+
+                // 在工作线程中执行，调用上层应用设置的回调函数来处理该HTTP请求
+                // 当上层应用处理完后，必须要调用 response_callback 来处理结果反馈回来，也就是会回到 Service::SendReply 函数中。
                 user_callback(ctx, response_callback);
             };
             EventLoop* loop = tpool_->GetNextLoop();
