@@ -13,31 +13,19 @@ struct event_base;
 namespace evpp {
     class PipeEventWatcher;
     namespace http {
-        class EVPP_EXPORT HTTPService {
+        class EVPP_EXPORT Service {
         public:
-            HTTPService(struct event_base* base);
-            ~HTTPService();
+            Service(struct event_base* base);
+            ~Service();
 
             bool Listen(int port);
 
             void Stop();
 
-            //! \brief URI=/uri?q=value&k=v
-            //!     @see unit test <code>http_ParseURI_test</code>
-            //! \param[in] - const std::string & uri
-            //! \param[in] - RequestCallback callback
-            //! \return - bool
+            //! \brief URI=/the/uri
             bool RegisterEvent(const std::string& uri, HTTPRequestCallback callback);
 
             bool RegisterDefaultEvent(HTTPRequestCallback callback);
-
-            void AddRequestHeaderKeyForParsing(const std::string& key) {
-                request_header_keys_for_parsing_.insert(key);
-            }
-
-            const stringset& request_header_keys_for_parsing() const {
-                return request_header_keys_for_parsing_;
-            }
 
         private:
             void HandleRequest(struct evhttp_request *req);
@@ -56,8 +44,6 @@ namespace evpp {
         private:
             struct evhttp*      evhttp_;
             struct event_base*  event_base_;
-
-            stringset request_header_keys_for_parsing_;
 
             HTTPRequestCallbackMap  callbacks_;
             HTTPRequestCallback     default_callback_;
