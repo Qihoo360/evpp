@@ -77,13 +77,13 @@ namespace evpp {
             return http_->RegisterDefaultEvent(cb);
         }
 
-        void HTTPServer::Dispatch(const HTTPContextPtr& ctx,
+        void HTTPServer::Dispatch(const ContextPtr& ctx,
                                   const HTTPSendResponseCallback& response_callback,
                                   const HTTPRequestCallback& user_callback) {
             LOG_TRACE << "dispatch request " << ctx->req << " url=" << ctx->original_uri() << " in main thread";
 
             // 将该HTTP请求调度到工作线程处理
-            auto f = [](const HTTPContextPtr& ctx,
+            auto f = [](const ContextPtr& ctx,
                         const HTTPSendResponseCallback& response_callback,
                         const HTTPRequestCallback& user_callback) {
                 LOG_TRACE << "process request " << ctx->req << " url=" << ctx->original_uri() << " in working thread";
