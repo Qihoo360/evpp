@@ -7,7 +7,7 @@
 #include "evpp/event_loop_thread_pool.h"
 
 namespace evpp {
-    namespace https {
+    namespace http {
         StandaloneHTTPServer::StandaloneHTTPServer(int thread_num)
             : base_loop_(new EventLoopThread) {
             tpool_.reset(new EventLoopThreadPool(base_loop_->event_loop(), thread_num));

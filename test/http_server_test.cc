@@ -13,11 +13,11 @@
 #include <evpp/httpc/conn.h>
 #include <evpp/httpc/response.h>
 
-#include "evpp/https/embedded_http_server.h"
-#include "evpp/https/standalone_http_server.h"
+#include "evpp/http/embedded_http_server.h"
+#include "evpp/http/standalone_http_server.h"
 
 static bool g_stopping = false;
-static void RequestHandler(const evpp::https::HTTPContextPtr& ctx, const evpp::https::HTTPSendResponseCallback& cb) {
+static void RequestHandler(const evpp::http::HTTPContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << " OK"
         << " ip=" << ctx->remote_ip << "\n"
@@ -26,7 +26,7 @@ static void RequestHandler(const evpp::https::HTTPContextPtr& ctx, const evpp::h
     cb(oss.str());
 }
 
-static void DefaultRequestHandler(const evpp::https::HTTPContextPtr& ctx, const evpp::https::HTTPSendResponseCallback& cb) {
+static void DefaultRequestHandler(const evpp::http::HTTPContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     //std::cout << __func__ << " called ...\n";
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << "\n"
@@ -35,8 +35,8 @@ static void DefaultRequestHandler(const evpp::https::HTTPContextPtr& ctx, const 
         << " body=" << ctx->body.ToString() << "\n";
 
     if (ctx->params) {
-        evpp::https::HTTPParameterMap::const_iterator it(ctx->params->begin());
-        evpp::https::HTTPParameterMap::const_iterator ite(ctx->params->end());
+        evpp::http::HTTPParameterMap::const_iterator it(ctx->params->begin());
+        evpp::http::HTTPParameterMap::const_iterator ite(ctx->params->end());
         for (; it != ite; ++it) {
             oss << "key=" << it->first << " value=[" << it->second << "]\n";
         }
@@ -165,7 +165,7 @@ namespace {
 TEST_UNIT(testHTTPServer) {
     for (int i = 0; i < 3; ++i) {
         g_stopping = true;
-        evpp::https::StandaloneHTTPServer ph(i);
+        evpp::http::StandaloneHTTPServer ph(i);
         ph.RegisterDefaultEvent(&DefaultRequestHandler);
         ph.RegisterEvent("/push/boot", &RequestHandler);
         bool r = ph.Start(g_listening_port, true);
