@@ -26,6 +26,9 @@
     <Filter Include="tcp\server">
       <UniqueIdentifier>{e1127564-5b0a-4df4-855b-c4e6692271b5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="http\server">
+      <UniqueIdentifier>{2c7daa43-1fb2-4c03-be31-4566f44e29e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\evpp\inner_pre.cc">
@@ -96,6 +99,15 @@
     </ClCompile>
     <ClCompile Include="..\evpp\tcp_client.cc">
       <Filter>tcp\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\http\service.cc">
+      <Filter>http\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\http\http_server.cc">
+      <Filter>http\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\http\context.cc">
+      <Filter>http\server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -206,6 +218,15 @@
     </ClInclude>
     <ClInclude Include="..\evpp\tcp_client.h">
       <Filter>tcp\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\http\service.h">
+      <Filter>http\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\http\http_server.h">
+      <Filter>http\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\http\context.h">
+      <Filter>http\server</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
