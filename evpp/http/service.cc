@@ -31,7 +31,7 @@ namespace evpp {
         }
 
         void Service::Stop() {
-            assert(!listen_loop_->running() || listen_loop_->IsInLoopThread());
+            assert(listen_loop_->IsInLoopThread());
             if (evhttp_) {
                 evhttp_free(evhttp_);
                 evhttp_ = NULL;
@@ -103,22 +103,22 @@ namespace evpp {
             struct evbuffer *buffer;
         };
 
-        void Service::SendReply(struct evhttp_request *req, const std::string& response) {
+        void Service::SendReply(struct evhttp_request *req, const std::string& response_data) {
             // 在工作线程中执行，将HTTP响应包的发送权交还给监听主线程
             LOG_TRACE << "send reply in working thread";
 
             // 在工作线程中准备好响应报文
-            std::shared_ptr<Response> pt(new Response(req, response));
+            std::shared_ptr<Response> pt(new Response(req, response_data));
             
-            auto f = [this](const std::shared_ptr<Response>& pt) {
+            auto f = [this](const std::shared_ptr<Response>& response) {
                 assert(this->listen_loop_->IsInLoopThread());
                 LOG_TRACE << "send reply";
-                if (!pt->buffer) {
-                    evhttp_send_reply(pt->req, HTTP_NOTFOUND, "Not Found", NULL);
+                if (!response->buffer) {
+                    evhttp_send_reply(response->req, HTTP_NOTFOUND, "Not Found", NULL);
                     return;
                 }
 
-                evhttp_send_reply(pt->req, HTTP_OK, "OK", pt->buffer);
+                evhttp_send_reply(response->req, HTTP_OK, "OK", response->buffer);
             };
 
             listen_loop_->RunInLoop(std::bind(f, pt));
