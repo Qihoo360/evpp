@@ -8,11 +8,16 @@ namespace evnsq {
     class EVNSQ_EXPORT Producer : public Client {
     public:
         // When the connection to NSQD is ready, this callback will be called.
+        // After this callback, the application can publish message.
         typedef std::function<void()> ReadyCallback;
 
         Producer(evpp::EventLoop* loop, const Option& ops);
         ~Producer();
-        void Publish(const std::string& topic, const std::string& msg);
+        
+        // Return true if publish a message successfully
+        // or return false if failed
+        bool Publish(const std::string& topic, const std::string& msg);
+
         void SetReadyCallback(const ReadyCallback& cb) { ready_fn_ = cb; }
     private:
         void OnReady(Conn* conn);
@@ -25,9 +30,9 @@ namespace evnsq {
         std::map<Conn*, CommandList> wait_ack_;
         ReadyCallback ready_fn_;
         size_t wait_ack_count_;
-        size_t published_count_;
-        size_t published_ok_count_;
-        size_t published_failed_count_;
+        int64_t published_count_;
+        int64_t published_ok_count_;
+        int64_t published_failed_count_;
     };
 }
 

@@ -44,7 +44,7 @@ namespace evnsq {
             evpp::httpc::Request* r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
             r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
         };
-        loop_->RunEvery(evpp::Duration(10.0), std::bind(f, lookupd_url));
+        loop_->RunEvery(evpp::Duration(1.0), std::bind(f, lookupd_url));
     }
 
     void Client::ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/) {
