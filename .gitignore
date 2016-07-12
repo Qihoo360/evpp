@@ -33,6 +33,8 @@ examples/pingpong/server/pingpong_server
 core.*
 *.out
 
+*.orig
+
 apps/evnsq/evnsqtail/evnsqtail
 
 3rdparty/libevent-2.1.5-beta/.vs/
