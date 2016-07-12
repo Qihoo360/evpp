@@ -37,6 +37,7 @@ namespace httpc {
     static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& r, evpp::EventLoopThread* t) {
         LOG_INFO << "http_code=" << r->http_code() << " [" << r->body().ToString() << "]";
         responsed = true;
+        delete r->request();
     }
 }
 
@@ -46,12 +47,14 @@ TEST_UNIT(testHTTPRequest1) {
     evpp::EventLoopThread t;
     t.Start(true);
     std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("qup.f.360.cn", 80, evpp::Duration(2.0)));
-    evpp::httpc::Request r(pool.get(), t.event_loop(), "/status.html", "");
+    evpp::httpc::Request* r = new evpp::httpc::Request(pool.get(), t.event_loop(), "/status.html", "");
     LOG_INFO << "Do http request";
-    r.Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
+    r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
     while (!responsed) {
         usleep(1);
     }
+    pool->Clear();
+    usleep(500 * 1000);
     pool.reset();
     t.Stop(true);
     LOG_INFO << "EventLoopThread stopped.";
@@ -62,9 +65,9 @@ TEST_UNIT(testHTTPRequest2) {
     responsed = false;
     evpp::EventLoopThread t;
     t.Start(true);
-    evpp::httpc::Request r(t.event_loop(), "http://qup.f.360.cn/status.html?a=1", "", evpp::Duration(2.0));
+    evpp::httpc::Request* r = new evpp::httpc::Request(t.event_loop(), "http://qup.f.360.cn/status.html?a=1", "", evpp::Duration(2.0));
     LOG_INFO << "Do http request";
-    r.Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
+    r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
     while (!responsed) {
         usleep(1);
     }
