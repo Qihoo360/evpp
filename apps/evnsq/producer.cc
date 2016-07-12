@@ -23,7 +23,7 @@ namespace evnsq {
         assert(conn_->second->IsReady());
         Command c;
         c.Publish(topic, msg);
-        conn_->second->WriteCommand(c); //TODO need to process the response code 'OK'
+        conn_->second->WriteCommand(&c); //TODO need to process the response code 'OK'
         ++conn_;
     }
 }
