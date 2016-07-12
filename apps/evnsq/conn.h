@@ -41,7 +41,7 @@ namespace evnsq {
         void Connect(const std::string& nsqd_tcp_addr/*host:port*/);
         void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
         void SetConnectionCallback(const ConnectionCallback& cb) { conn_fn_ = cb; }
-        void WriteCommand(const Command& c);
+        void WriteCommand(const Command* c);
         void Subscribe(const std::string& topic, const std::string& channel);
 
         void set_status(Status s) { status_ = s; }
