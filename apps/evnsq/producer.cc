@@ -19,7 +19,12 @@ namespace evnsq {
     Producer::~Producer() {
     }
 
-    void Producer::Publish(const std::string& topic, const std::string& msg) {
+    bool Producer::Publish(const std::string& topic, const std::string& msg) {
+        if (wait_ack_count_ > 1024) {
+            // TODO Add config for max_waiting_ack_count
+            LOG_WARN << "Too many messages are waiting a response ACK. Please try again.";
+            return false;
+        }
         assert(loop_->IsInLoopThread());
         if (conn_ == conns_.end()) {
             conn_ = conns_.begin();
@@ -34,6 +39,7 @@ namespace evnsq {
         LOG_INFO << "Publish a message, command=" << c;
         
         ++conn_; // Using next Conn
+        return true;
     }
 
     void Producer::OnReady(Conn* conn) {
