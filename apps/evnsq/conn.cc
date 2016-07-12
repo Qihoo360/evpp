@@ -60,7 +60,7 @@ namespace evnsq {
             return;
         }
         buf->Skip(4); // 4 bytes of size
-                      //LOG_INFO << "Recv a data from NSQD msg body len=" << size - 4 << " body=[" << std::string(buf->data(), size - 4) << "]";
+        //LOG_INFO << "Recv a data from NSQD msg body len=" << size - 4 << " body=[" << std::string(buf->data(), size - 4) << "]";
         int32_t frame_type = buf->ReadInt32();
         switch (status_) {
         case evnsq::Conn::kDisconnected:
@@ -90,7 +90,7 @@ namespace evnsq {
                 LOG_INFO << "Successfully connected to nsqd " << conn->remote_addr();
                 UpdateReady(3); //TODO RDY count
             } else {
-                //TODO
+                Reconnect();
             }
             break;
         case evnsq::Conn::kReady:
@@ -107,7 +107,7 @@ namespace evnsq {
                 LOG_TRACE << "recv heartbeat from nsqd " << tcp_client_->remote_addr();
                 Command c;
                 c.Nop();
-                WriteCommand(c);
+                WriteCommand(&c);
                 buf->Skip(message_len);
                 return;
             }
@@ -138,9 +138,9 @@ namespace evnsq {
         }
     }
 
-    void Conn::WriteCommand(const Command& c) {
+    void Conn::WriteCommand(const Command* c) {
         evpp::Buffer buf;
-        c.WriteTo(&buf);
+        c->WriteTo(&buf);
         tcp_client_->conn()->Send(&buf);
     }
 
@@ -148,7 +148,7 @@ namespace evnsq {
     void Conn::Subscribe(const std::string& topic, const std::string& channel) {
         Command c;
         c.Subscribe(topic, channel);
-        WriteCommand(c);
+        WriteCommand(&c);
         status_ = kSubscribing;
     }
 
@@ -156,26 +156,26 @@ namespace evnsq {
         tcp_client_->conn()->Send(kNSQMagic);
         Command c;
         c.Identify(option_.ToJSON());
-        WriteCommand(c);
+        WriteCommand(&c);
         status_ = kIdentifying;
     }
 
     void Conn::Finish(const std::string& id) {
         Command c;
         c.Finish(id);
-        WriteCommand(c);
+        WriteCommand(&c);
     }
 
     void Conn::Requeue(const std::string& id) {
         Command c;
         c.Requeue(id, evpp::Duration(0));
-        WriteCommand(c);
+        WriteCommand(&c);
     }
 
     void Conn::UpdateReady(int count) {
         Command c;
         c.Ready(count);
-        WriteCommand(c);
+        WriteCommand(&c);
     }
 
 }
