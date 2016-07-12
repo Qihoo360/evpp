@@ -51,7 +51,7 @@ namespace evpp {
         bool IsDisconnecting() const { return status_ == kDisconnecting; }
         Type type() const { return type_; }
         Status status() const { return status_; }
-        void set_closing_delay_for_incoming_conn(Duration d) { closing_delay_for_incoming_conn_ = d; }
+        void SetCloseDelayTime(Duration d) { close_delay_ = d; } // 设置延时关闭时间，仅对 kIncoming 类型的TCPConn生效。
     protected:
         // 这部分函数只能被 TCPClient 或者 TCPServer 调用，
         // 我们不希望上层应用来调用这些函数
@@ -89,7 +89,7 @@ namespace evpp {
 
         // The delay time to close a incoming connection which has been shutdown by peer normally.
         // Default is 3 second.
-        Duration closing_delay_for_incoming_conn_;
+        Duration close_delay_;
 
         ConnectionCallback conn_fn_;
         MessageCallback msg_fn_;

@@ -20,7 +20,7 @@ namespace evpp {
                      , type_(kIncoming)
                      , status_(kDisconnected)
                      , high_water_mark_(128 * 1024 * 1024)
-                     , closing_delay_for_incoming_conn_(3.000001) {
+                     , close_delay_(3.000001) {
         if (sockfd >= 0) {
             chan_.reset(new FdChannel(l, sockfd, false, false));
             chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this, std::placeholders::_1));
@@ -166,7 +166,7 @@ namespace evpp {
                 // And we set a timer to close the connection eventually.
                 chan_->DisableReadEvent();
                 LOG_DEBUG << "channel (fd=" << chan_->fd() << ") DisableReadEvent";
-                loop_->RunAfter(closing_delay_for_incoming_conn_, std::bind(&TCPConn::HandleClose, shared_from_this()));
+                loop_->RunAfter(close_delay_, std::bind(&TCPConn::HandleClose, shared_from_this()));
             }
         } else {
             if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
