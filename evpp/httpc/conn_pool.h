@@ -15,9 +15,12 @@ namespace evpp {
         class EVPP_EXPORT ConnPool {
         public:
             ConnPool(const std::string& host, int port, Duration timeout, size_t max_pool_size = 1024);
+            ~ConnPool();
 
             ConnPtr Get(EventLoop* loop);
             void Put(const ConnPtr& c);
+
+            void Clear();
 
             const std::string& host() const { return host_; }
             int port() const { return port_; }
