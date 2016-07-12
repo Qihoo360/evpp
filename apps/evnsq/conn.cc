@@ -11,13 +11,14 @@
 
 #include "command.h"
 #include "option.h"
+#include "client.h"
 
 namespace evnsq {
     static const std::string kNSQMagic = "  V2";
     static const std::string kOK = "OK";
 
-    Conn::Conn(evpp::EventLoop* loop, const Option& ops)
-        : loop_(loop), option_(ops), status_(kDisconnected) {}
+    Conn::Conn(Client* c, const Option& ops)
+        : client_(c), loop_(c->loop()), option_(ops), status_(kDisconnected) {}
 
     Conn::~Conn() {}
 
@@ -103,7 +104,7 @@ namespace evnsq {
 
     void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) {
         if (frame_type == kFrameTypeResponse) {
-            if (strncmp(buf->data(), "_heartbeat_", 11) == 0) {
+            if (message_len == 11 && strncmp(buf->data(), "_heartbeat_", 11) == 0) {
                 LOG_TRACE << "recv heartbeat from nsqd " << tcp_client_->remote_addr();
                 Command c;
                 c.Nop();
@@ -115,7 +116,11 @@ namespace evnsq {
 
         switch (frame_type) {
         case kFrameTypeResponse:
-            LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
+            LOG_INFO << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
+            if (client_->IsProducer() && publish_response_cb_) {
+                publish_response_cb_(buf->data(), message_len);
+            }
+            buf->Retrieve(message_len);
             break;
         case kFrameTypeMessage:
         {

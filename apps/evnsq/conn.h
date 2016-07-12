@@ -22,7 +22,7 @@ namespace evpp {
 namespace evnsq {
 
     class Command;
-
+    class Client;
     class EVNSQ_EXPORT Conn {
     public:
         enum Status {
@@ -35,12 +35,14 @@ namespace evnsq {
         };
 
         typedef std::function<void(Conn*)> ConnectionCallback;
+        typedef std::function<void(const char* d, size_t len)> PublishResponseCallback;
     public:
-        Conn(evpp::EventLoop* loop, const Option& ops);
+        Conn(Client* c, const Option& ops);
         ~Conn();
         void Connect(const std::string& nsqd_tcp_addr/*host:port*/);
         void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
         void SetConnectionCallback(const ConnectionCallback& cb) { conn_fn_ = cb; }
+        void SetPublishResponseCallback(const PublishResponseCallback& cb) { publish_response_cb_ = cb; }
         void WriteCommand(const Command* c);
         void Subscribe(const std::string& topic, const std::string& channel);
 
@@ -58,12 +60,14 @@ namespace evnsq {
         void Requeue(const std::string& id);
         void UpdateReady(int count);
     private:
+        Client* client_;
         evpp::EventLoop* loop_;
         Option option_;
         Status status_;
         evpp::TCPClientPtr tcp_client_;
         MessageCallback msg_fn_;
         ConnectionCallback conn_fn_;
+        PublishResponseCallback publish_response_cb_;
 
         //         int64_t messagesInFlight
         //             maxRdyCount      int64
