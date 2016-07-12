@@ -7,6 +7,10 @@ namespace evpp {
             : host_(h), port_(p), timeout_(t), max_pool_size_(size) {
         }
 
+        ConnPool::~ConnPool() {
+            assert(pool_.empty());
+        }
+
         ConnPtr ConnPool::Get(EventLoop* loop) {
             loop->AssertInLoopThread();
             auto it = pool_.find(loop);
@@ -39,5 +43,22 @@ namespace evpp {
             it->second.push_back(c);
         }
 
+        void ConnPool::Clear() {
+            std::map<EventLoop*, std::vector<ConnPtr> > m;
+            if (!pool_.empty()) {
+                std::lock_guard<std::mutex> guard(mutex_);
+                pool_.swap(m);
+                assert(pool_.empty());
+            }
+
+            auto it = m.begin();
+            auto ite = m.end();
+            for (; it != ite; ++it) {
+                for (size_t i = 0; i < it->second.size(); ++i) {
+                    it->first->RunInLoop(std::bind(&Conn::Close, it->second[i]));
+                }
+                it->second.clear();
+            }
+        }
     } // httpc
 } // evpp
