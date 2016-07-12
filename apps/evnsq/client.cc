@@ -123,7 +123,7 @@ namespace evnsq {
         for (; it != ite; ++it) {
             Command c;
             c.Subscribe(topic_, channel_);
-            it->second->WriteCommand(c);
+            it->second->WriteCommand(&c);
         }
     }
 
@@ -133,7 +133,7 @@ namespace evnsq {
         for (; it != ite; ++it) {
             Command c;
             c.Ready(count);
-            it->second->WriteCommand(c);
+            it->second->WriteCommand(&c);
         }
     }
 }
