@@ -71,7 +71,7 @@ namespace evpp {
         }
 
         if (wait_thread_exit) {
-            if (!IsStopped()) {
+            while (!IsStopped()) {
                 usleep(1);
             }
         }
@@ -114,7 +114,7 @@ namespace evpp {
         EventLoop* loop = base_loop_;
 
         if (!threads_.empty()) {
-            unsigned int next = hash % threads_.size();
+            uint64_t next = hash % threads_.size();
             loop = (threads_[next])->event_loop();
         }
         return loop;
