@@ -28,9 +28,6 @@ namespace evnsq {
             kConsumer = 1,
             kProducer = 2,
         };
-        
-        // When the connection to NSQD is ready, this callback will be called.
-        typedef std::function<void()> ReadyCallback;
 
         virtual ~Client();
         void ConnectToNSQD(const std::string& tcp_addr/*host:port*/);
@@ -38,7 +35,8 @@ namespace evnsq {
         void ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/);
         void ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/);
         void SetMessageCallback(const MessageCallback& cb) { msg_fn_ = cb; }
-        void SetReadyCallback(const ReadyCallback& cb) { ready_fn_ = cb; }
+        bool IsProducer() const { return type_ == kProducer; }
+        evpp::EventLoop* loop() const { return loop_; }
     protected:
         Client(evpp::EventLoop* loop, Type t, const std::string& topic, const std::string& channel, const Option& ops);
         void HandleLoopkupdHTTPResponse(
@@ -47,6 +45,7 @@ namespace evnsq {
         void OnConnection(Conn* conn);
         void Subscribe();
         void UpdateReady(int count);
+
     protected:
         evpp::EventLoop* loop_;
         Type type_;
@@ -55,7 +54,9 @@ namespace evnsq {
         std::string channel_;
         std::map<std::string/*host:port*/, ConnPtr> conns_; // The TCP connections with NSQD
         MessageCallback msg_fn_;
-        ReadyCallback ready_fn_;
+
+        typedef std::function<void(Conn*)> ReadyToPublishCallback;
+        ReadyToPublishCallback ready_to_publish_fn_;
     };
 }
 
