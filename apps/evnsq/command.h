@@ -20,7 +20,7 @@ namespace evnsq {
         // on the supported options
         void Identify(const std::string& js) {
             name_ = "IDENTIFY";
-            body_ = js;
+            body_.push_back(js);
         }
 
         // Auth sends credentials for authentication
@@ -28,7 +28,7 @@ namespace evnsq {
         // After `Identify`, this is usually the first message sent, if auth is used.
         void Auth(const  std::string& secret) {
             name_ = "AUTH";
-            body_ = secret;
+            body_.push_back(secret);
         }
 
         // Register sets a new Command to add a topic/channel for the connected nsqd
@@ -62,7 +62,15 @@ namespace evnsq {
             assert(!topic.empty());
             name_ = "PUB";
             params_.push_back(topic);
-            body_ = body;
+            body_.push_back(body);
+        }
+
+        void MultiPublish(const std::string& topic, const std::vector<std::string>& messages) {
+            assert(!topic.empty());
+            assert(messages.size() > 1);
+            name_ = "MPUB";
+            params_.push_back(topic);
+            body_ = messages;
         }
 
         // Subscribe sets a new Command to subscribe to the given topic/channel
@@ -132,7 +140,7 @@ namespace evnsq {
     private:
         std::string name_;
         std::vector<std::string> params_;
-        std::string body_;
+        std::vector<std::string> body_;
     };
 }
 
