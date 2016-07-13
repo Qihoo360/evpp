@@ -10,7 +10,7 @@
 
 namespace evmc {
 
-// TODO 
+// TODO
 // - embedded & standalone
 
 typedef std::shared_ptr<evpp::Buffer> BufferPtr;

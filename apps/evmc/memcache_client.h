@@ -20,20 +20,23 @@ class MemcacheClientPool;
 class MemcacheClient : public std::enable_shared_from_this<MemcacheClient> {
 public:
     MemcacheClient(evpp::EventLoop* evloop, evpp::TCPClient* tcp_client, MemcacheClientPool* mcpool = NULL, int timeout_ms = 249)
-            : id_seq_(0), exec_loop_(evloop), tcp_client_(tcp_client)
-            , mc_pool_(mcpool), timeout_(timeout_ms / 1000.0), codec_(NULL) {
+        : id_seq_(0), exec_loop_(evloop), tcp_client_(tcp_client)
+        , mc_pool_(mcpool), timeout_(timeout_ms / 1000.0), codec_(NULL) {
     }
     virtual ~MemcacheClient();
 
-    evpp::EventLoop* exec_loop() const { return exec_loop_; }
+    evpp::EventLoop* exec_loop() const {
+        return exec_loop_;
+    }
 
     void PushRunningCommand(CommandPtr cmd);
 
     CommandPtr PopRunningCommand();
     CommandPtr peek_running_command() {
         if (running_command_.empty()) {
-            return CommandPtr(); 
+            return CommandPtr();
         }
+
         return CommandPtr(running_command_.front());
     }
 
@@ -45,17 +48,21 @@ public:
     }
     CommandPtr pop_waiting_command();
 
-    evpp::TCPConnPtr conn() const { return tcp_client_->conn();}
-    uint32_t next_id() { return ++id_seq_; }
+    evpp::TCPConnPtr conn() const {
+        return tcp_client_->conn();
+    }
+    uint32_t next_id() {
+        return ++id_seq_;
+    }
 
     void EmbededGet(const char* key, GetCallback callback) {
-      //CommandPtr command(new GetCommand(evpp::EventLoop*(), key, callback));
-      //command->Launch(this);
+        //CommandPtr command(new GetCommand(evpp::EventLoop*(), key, callback));
+        //command->Launch(this);
     }
 
     void OnResponseData(const evpp::TCPConnPtr& tcp_conn,
-           evpp::Buffer* buf,
-           evpp::Timestamp ts);
+                        evpp::Buffer* buf,
+                        evpp::Timestamp ts);
     void OnPacketTimeout(uint32_t cmd_id);
 
 private:
@@ -74,7 +81,7 @@ private:
     // TimerEventPtr cmd_timer_;
     evpp::InvokeTimerPtr cmd_timer_;
 
-    BinaryCodec * codec_;
+    BinaryCodec* codec_;
 
     std::queue<CommandPtr> running_command_;
     std::queue<CommandPtr> waiting_command_;

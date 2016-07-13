@@ -1,8 +1,7 @@
 #include <evpp/exp.h>
 #include "test_common.h"
 
-TEST_UNIT(testglog)
-{
+TEST_UNIT(testglog) {
     google::InitGoogleLogging("xxx");
     FLAGS_stderrthreshold = 0;
     LOG(INFO) << "INFO";

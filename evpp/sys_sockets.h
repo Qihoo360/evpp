@@ -26,10 +26,10 @@ typedef int ssize_t;
 #include <arpa/inet.h>
 #include <sys/uio.h>
 #ifndef SOCKET
-#	define SOCKET int		    /**< SOCKET definition */
+#   define SOCKET int           /**< SOCKET definition */
 #endif
 #ifndef INVALID_SOCKET
-#	define INVALID_SOCKET -1	/**< invalid socket definition */
+#   define INVALID_SOCKET -1    /**< invalid socket definition */
 #endif
 #endif
 
@@ -102,35 +102,35 @@ typedef int ssize_t;
 #ifndef H_OS_WINDOWS
 
 /* True iff e is an error that means a read/write operation can be retried. */
-#define EVUTIL_ERR_RW_RETRIABLE(e)				\
+#define EVUTIL_ERR_RW_RETRIABLE(e)              \
     ((e) == EINTR || (e) == EAGAIN)
 /* True iff e is an error that means an connect can be retried. */
-#define EVUTIL_ERR_CONNECT_RETRIABLE(e)			\
+#define EVUTIL_ERR_CONNECT_RETRIABLE(e)         \
     ((e) == EINTR || (e) == EINPROGRESS)
 /* True iff e is an error that means a accept can be retried. */
-#define EVUTIL_ERR_ACCEPT_RETRIABLE(e)			\
+#define EVUTIL_ERR_ACCEPT_RETRIABLE(e)          \
     ((e) == EINTR || (e) == EAGAIN || (e) == ECONNABORTED)
 
 /* True iff e is an error that means the connection was refused */
-#define EVUTIL_ERR_CONNECT_REFUSED(e)					\
+#define EVUTIL_ERR_CONNECT_REFUSED(e)                   \
     ((e) == ECONNREFUSED)
 
 #else
 
-#define EVUTIL_ERR_RW_RETRIABLE(e)					\
+#define EVUTIL_ERR_RW_RETRIABLE(e)                  \
     ((e) == WSAEWOULDBLOCK || \
-    (e) == WSAEINTR)
+     (e) == WSAEINTR)
 
-#define EVUTIL_ERR_CONNECT_RETRIABLE(e)					\
+#define EVUTIL_ERR_CONNECT_RETRIABLE(e)                 \
     ((e) == WSAEWOULDBLOCK || \
-    (e) == WSAEINTR || \
-    (e) == WSAEINPROGRESS || \
-    (e) == WSAEINVAL)
+     (e) == WSAEINTR || \
+     (e) == WSAEINPROGRESS || \
+     (e) == WSAEINVAL)
 
-#define EVUTIL_ERR_ACCEPT_RETRIABLE(e)			\
+#define EVUTIL_ERR_ACCEPT_RETRIABLE(e)          \
     EVUTIL_ERR_RW_RETRIABLE(e)
 
-#define EVUTIL_ERR_CONNECT_REFUSED(e)					\
+#define EVUTIL_ERR_CONNECT_REFUSED(e)                   \
     ((e) == WSAECONNREFUSED)
 
 #endif
