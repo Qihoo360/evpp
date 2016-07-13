@@ -115,23 +115,23 @@ namespace evnsq {
         }
     }
 
-    void Client::Subscribe() {
-        auto it = conns_.begin();
-        auto ite = conns_.end();
-        for (; it != ite; ++it) {
-            Command c;
-            c.Subscribe(topic_, channel_);
-            it->second->WriteCommand(&c);
-        }
-    }
-
-    void Client::UpdateReady(int count) {
-        auto it = conns_.begin();
-        auto ite = conns_.end();
-        for (; it != ite; ++it) {
-            Command c;
-            c.Ready(count);
-            it->second->WriteCommand(&c);
-        }
-    }
+//     void Client::Subscribe() {
+//         auto it = conns_.begin();
+//         auto ite = conns_.end();
+//         for (; it != ite; ++it) {
+//             Command c;
+//             c.Subscribe(topic_, channel_);
+//             it->second->WriteCommand(&c);
+//         }
+//     }
+// 
+//     void Client::UpdateReady(int count) {
+//         auto it = conns_.begin();
+//         auto ite = conns_.end();
+//         for (; it != ite; ++it) {
+//             Command c;
+//             c.Ready(count);
+//             it->second->WriteCommand(&c);
+//         }
+//     }
 }
