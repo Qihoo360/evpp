@@ -11,12 +11,17 @@ int OnMessage(const evnsq::Message* msg) {
 }
 
 void Publish(evnsq::Producer* producer) {
+    static const std::string topic = "test";
     static int i = 0;
     std::stringstream ss;
     ss << "a NSQ message, index=" << i++;
     std::string msg = ss.str();
-    producer->Publish("test", msg);
+    producer->Publish(topic, msg);
     LOG_INFO << "Publish : [" << msg << "]";
+    std::vector<std::string> messages;
+    messages.push_back(msg);
+    messages.push_back(msg);
+    producer->MultiPublish(topic, messages);
 }
 
 void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
