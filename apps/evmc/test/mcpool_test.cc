@@ -19,7 +19,8 @@ static void OnTestRemoveDone(const std::string& key, int code) {
 static void OnTestMultiGetDone(const MultiGetResult& res) {
     LOG_INFO << ">>>>>>>>>>>>> OnTestMultiGetDone code=" << res.code;
     std::map<std::string, GetResult>::const_iterator it = res.get_result_map_.begin();
-    for(; it != res.get_result_map_.end(); ++it) {
+
+    for (; it != res.get_result_map_.end(); ++it) {
         LOG_INFO << ">>>>>>>>>>>>> OnTestMultiGetDone " << it->first << " " << it->second.code << " " << it->second.value;
     }
 }
@@ -36,8 +37,7 @@ static void MyEventThread() {
     g_loop->Run();
 }
 
-static const char * keys[] =
-{
+static const char* keys[] = {
     "hello",
     "doctor",
     "name",
@@ -48,12 +48,14 @@ static const char * keys[] =
 };
 
 void VbucketConfTest() {
-    VbucketConfig * conf = new VbucketConfig();
+    VbucketConfig* conf = new VbucketConfig();
+
     if (!conf->Load("./test_kill_storage_cluster.json")) {
         LOG_ERROR << "VbucketConfTest load error";
         return;
     }
-    for(size_t i = 0; i < sizeof(keys)/sizeof(keys[0]); ++i) {
+
+    for (size_t i = 0; i < sizeof(keys) / sizeof(keys[0]); ++i) {
         uint16_t vbucket = conf->GetVbucketByKey(keys[i], strlen(keys[i]));
         LOG_INFO << "VbucketConfTest key=" << keys[i] << " vbucket=" << vbucket;
     }
@@ -63,8 +65,8 @@ void VbucketConfTest() {
 
 int main() {
 // TEST_UNIT(testMemcacheClient) {
-  //VbucketConfTest();
-  //return 0;
+    //VbucketConfTest();
+    //return 0;
 
     srand(time(NULL));
     std::thread th(MyEventThread);
@@ -74,7 +76,7 @@ int main() {
 
     const static int MAX_KEY = 1000000;
 
-    for(size_t i = 0; i < MAX_KEY; ++i) {
+    for (size_t i = 0; i < MAX_KEY; ++i) {
         std::stringstream ss_key;
         ss_key << "test" << i;
         std::stringstream ss_value;
@@ -84,7 +86,8 @@ int main() {
     }
 
 #if 1
-    for(size_t i = 0; i < MAX_KEY; ++i) {
+
+    for (size_t i = 0; i < MAX_KEY; ++i) {
         std::stringstream ss;
         ss << "test" << i;
         usleep(1000);
@@ -102,12 +105,13 @@ int main() {
 //  }
 //  mcp.MultiGet(g_loop, mget_keys, &OnTestMultiGetDone);
 
-    for(size_t i = 0; i < MAX_KEY; ++i) {
+    for (size_t i = 0; i < MAX_KEY; ++i) {
         std::stringstream ss_key;
         ss_key << "test" << i;
         usleep(1000);
         mcp.Remove(g_loop, ss_key.str().c_str(), &OnTestRemoveDone);
     }
+
 #endif
 
     g_loop->RunAfter(20000000.0, &StopLoop);

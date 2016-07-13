@@ -23,13 +23,13 @@
 */
 
 #define TEST_UNIT(name)  \
-class GtestObjectClass_##name : public testing::Test{ \
-public: \
-    GtestObjectClass_##name() {} \
-    ~GtestObjectClass_##name() {} \
-    virtual void SetUp() {} \
-    virtual void TearDown() {} \
-}; \
+    class GtestObjectClass_##name : public testing::Test{ \
+    public: \
+        GtestObjectClass_##name() {} \
+        ~GtestObjectClass_##name() {} \
+        virtual void SetUp() {} \
+        virtual void TearDown() {} \
+    }; \
     TEST_F(GtestObjectClass_##name, name)
 
 #define H_TEST_ASSERT ASSERT_TRUE
@@ -40,7 +40,7 @@ public: \
 
 #define H_ARRAYSIZE(a) \
     ((sizeof(a) / sizeof(*(a))) / \
-    static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
+     static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
 
 
 #endif

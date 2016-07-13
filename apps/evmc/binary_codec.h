@@ -11,14 +11,13 @@ namespace evmc {
 
 class MemcacheClient;
 
-class BinaryCodec
-{
+class BinaryCodec {
 public:
-    explicit BinaryCodec(MemcacheClient * memc_client) : memc_client_(memc_client) {}
+    explicit BinaryCodec(MemcacheClient* memc_client) : memc_client_(memc_client) {}
 
     void OnCodecMessage(const evpp::TCPConnPtr& conn,
-           evpp::Buffer* buf,
-           evpp::Timestamp ts);
+                        evpp::Buffer* buf,
+                        evpp::Timestamp ts);
 
 private:
     // noncopyable
@@ -26,10 +25,10 @@ private:
     const BinaryCodec& operator=(const BinaryCodec&);
 
     void OnResponsePacket(const protocol_binary_response_header& resp,
-                evpp::Buffer* buf);
+                          evpp::Buffer* buf);
 private:
     // TODO : 若使用智能指针，要处理循环引用. client的回调中引用了codec
-    MemcacheClient * memc_client_;
+    MemcacheClient* memc_client_;
 };
 
 }
