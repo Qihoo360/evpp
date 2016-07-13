@@ -24,10 +24,8 @@ namespace evnsq {
         void SetReadyCallback(const ReadyCallback& cb) { ready_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
     private:
-        typedef std::function<Command* ()> CommandPublishFunc;
-        void PublishInLoopFunc(const CommandPublishFunc& f);
-        void PublishInLoop(const std::string& topic, const std::string& msg);
-        void MultiPublishInLoop(const std::string& topic, const std::vector<std::string>& messages);
+        void Publish(Command* cmd);
+        void PublishInLoop(Command* cmd);
 
         void OnReady(Conn* conn);
         void OnPublishResponse(Conn* conn, const char* d, size_t len);
