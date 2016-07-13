@@ -10,18 +10,18 @@
 
 
 namespace evtimer {
-    static evpp::Duration g_timeout(1.0); // 1s
-    static bool g_event_handler_called = false;
-    static void Handle(struct event_base* base) {
-        g_event_handler_called = true;
-        event_base_loopexit(base, 0);
-    }
+static evpp::Duration g_timeout(1.0); // 1s
+static bool g_event_handler_called = false;
+static void Handle(struct event_base* base) {
+    g_event_handler_called = true;
+    event_base_loopexit(base, 0);
+}
 
-    static void MyEventThread(struct event_base* base, evpp::TimerEventWatcher* ev) {
-        ev->Init();
-        ev->AsyncWait();
-        event_base_loop(base, 0);
-    }
+static void MyEventThread(struct event_base* base, evpp::TimerEventWatcher* ev) {
+    ev->Init();
+    ev->AsyncWait();
+    event_base_loop(base, 0);
+}
 }
 
 TEST_UNIT(testTimerEventWatcher) {

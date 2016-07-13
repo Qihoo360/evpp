@@ -10,26 +10,26 @@
 #include <thread>
 
 namespace evloop {
-    static std::shared_ptr<evpp::EventLoop> loop;
-    static evpp::Duration delay(1.0);
-    static bool event_handler_called = false;
-    static void Handle(evpp::InvokeTimerPtr t) {
-        event_handler_called = true;
-        t->Cancel();
-        loop->Stop();
-    }
+static std::shared_ptr<evpp::EventLoop> loop;
+static evpp::Duration delay(1.0);
+static bool event_handler_called = false;
+static void Handle(evpp::InvokeTimerPtr t) {
+    event_handler_called = true;
+    t->Cancel();
+    loop->Stop();
+}
 
-    static void MyEventThread() {
-        LOG_INFO << "EventLoop is running ...";
-        loop = std::shared_ptr<evpp::EventLoop>(new evpp::EventLoop);
-        loop->Run();
-    }
+static void MyEventThread() {
+    LOG_INFO << "EventLoop is running ...";
+    loop = std::shared_ptr<evpp::EventLoop>(new evpp::EventLoop);
+    loop->Run();
+}
 
-    static int periodic_run_count = 0;
-    static void PeriodicFunc() {
-        periodic_run_count++;
-        LOG_INFO << "PeriodicFunc is called , periodic_run_count=" << periodic_run_count;
-    }
+static int periodic_run_count = 0;
+static void PeriodicFunc() {
+    periodic_run_count++;
+    LOG_INFO << "PeriodicFunc is called , periodic_run_count=" << periodic_run_count;
+}
 }
 
 TEST_UNIT(testEventLoop) {

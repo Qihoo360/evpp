@@ -37,120 +37,123 @@ static void DefaultRequestHandler(const evpp::http::ContextPtr& ctx, const evpp:
     if (ctx->uri.find("stop") != std::string::npos) {
         g_stopping = true;
     }
+
     cb(oss.str());
 }
 
 namespace {
 
 
-    static int g_listening_port = 49000;
+static int g_listening_port = 49000;
 
-    static std::string GetHttpServerURL() {
-        std::ostringstream oss;
-        oss << "http://127.0.0.1:" << g_listening_port;
-        return oss.str();
-    }
+static std::string GetHttpServerURL() {
+    std::ostringstream oss;
+    oss << "http://127.0.0.1:" << g_listening_port;
+    return oss.str();
+}
 
-    void testDefaultHandler1(evpp::EventLoop* loop) {
-        std::string uri = "/status?a=1";
-        std::string url = GetHttpServerURL() + uri;
-        auto f = [](const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request* request) {
-            std::string result = response->body().ToString();
-            H_TEST_ASSERT(!result.empty());
-            H_TEST_ASSERT(result.find("uri=/status") != std::string::npos);
-            H_TEST_ASSERT(result.find("uri=/status?a=1") == std::string::npos);
-            H_TEST_ASSERT(result.find("func=DefaultRequestHandler") != std::string::npos);
-            delete request;
-            g_stopping = true;
-        };
+void testDefaultHandler1(evpp::EventLoop* loop) {
+    std::string uri = "/status?a=1";
+    std::string url = GetHttpServerURL() + uri;
+    auto f = [](const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request * request) {
+        std::string result = response->body().ToString();
+        H_TEST_ASSERT(!result.empty());
+        H_TEST_ASSERT(result.find("uri=/status") != std::string::npos);
+        H_TEST_ASSERT(result.find("uri=/status?a=1") == std::string::npos);
+        H_TEST_ASSERT(result.find("func=DefaultRequestHandler") != std::string::npos);
+        delete request;
+        g_stopping = true;
+    };
 
-        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
-        r->Execute(std::bind(f, std::placeholders::_1, r));
-    }
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    r->Execute(std::bind(f, std::placeholders::_1, r));
+}
 
-    void testDefaultHandler2(evpp::EventLoop* loop) {
-        std::string uri = "/status";
-        std::string body = "The http request body.";
-        std::string url = GetHttpServerURL() + uri;
-        auto f = [body](const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request* request) {
-            std::string result = response->body().ToString();
-            H_TEST_ASSERT(!result.empty());
-            H_TEST_ASSERT(result.find("uri=/status") != std::string::npos);
-            H_TEST_ASSERT(result.find("func=DefaultRequestHandler") != std::string::npos);
-            H_TEST_ASSERT(result.find(body.c_str()) != std::string::npos);
-            delete request;
-            g_stopping = true;
-        };
+void testDefaultHandler2(evpp::EventLoop* loop) {
+    std::string uri = "/status";
+    std::string body = "The http request body.";
+    std::string url = GetHttpServerURL() + uri;
+    auto f = [body](const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request * request) {
+        std::string result = response->body().ToString();
+        H_TEST_ASSERT(!result.empty());
+        H_TEST_ASSERT(result.find("uri=/status") != std::string::npos);
+        H_TEST_ASSERT(result.find("func=DefaultRequestHandler") != std::string::npos);
+        H_TEST_ASSERT(result.find(body.c_str()) != std::string::npos);
+        delete request;
+        g_stopping = true;
+    };
 
-        auto r = new evpp::httpc::Request(loop, url, body, evpp::Duration(1.0));
-        r->Execute(std::bind(f, std::placeholders::_1, r));
-    }
+    auto r = new evpp::httpc::Request(loop, url, body, evpp::Duration(1.0));
+    r->Execute(std::bind(f, std::placeholders::_1, r));
+}
 
-    void testDefaultHandler3(evpp::EventLoop* loop) {
-        std::string uri = "/status/method/method2/xx";
-        std::string url = GetHttpServerURL() + uri;
-        auto f = [](const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request* request) {
-            std::string result = response->body().ToString();
-            H_TEST_ASSERT(!result.empty());
-            H_TEST_ASSERT(result.find("uri=/status/method/method2/xx") != std::string::npos);
-            H_TEST_ASSERT(result.find("func=DefaultRequestHandler") != std::string::npos);
-            delete request;
-            g_stopping = true;
-        };
+void testDefaultHandler3(evpp::EventLoop* loop) {
+    std::string uri = "/status/method/method2/xx";
+    std::string url = GetHttpServerURL() + uri;
+    auto f = [](const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request * request) {
+        std::string result = response->body().ToString();
+        H_TEST_ASSERT(!result.empty());
+        H_TEST_ASSERT(result.find("uri=/status/method/method2/xx") != std::string::npos);
+        H_TEST_ASSERT(result.find("func=DefaultRequestHandler") != std::string::npos);
+        delete request;
+        g_stopping = true;
+    };
 
-        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
-        r->Execute(std::bind(f, std::placeholders::_1, r));
-    }
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    r->Execute(std::bind(f, std::placeholders::_1, r));
+}
 
-    void testPushBootHandler(evpp::EventLoop* loop) {
-        std::string uri = "/push/boot";
-        std::string url = GetHttpServerURL() + uri;
-        auto f = [](const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request* request) {
-            std::string result = response->body().ToString();
-            H_TEST_ASSERT(!result.empty());
-            H_TEST_ASSERT(result.find("uri=/push/boot") != std::string::npos);
-            H_TEST_ASSERT(result.find("func=RequestHandler") != std::string::npos);
-            delete request;
-            g_stopping = true;
-        };
+void testPushBootHandler(evpp::EventLoop* loop) {
+    std::string uri = "/push/boot";
+    std::string url = GetHttpServerURL() + uri;
+    auto f = [](const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request * request) {
+        std::string result = response->body().ToString();
+        H_TEST_ASSERT(!result.empty());
+        H_TEST_ASSERT(result.find("uri=/push/boot") != std::string::npos);
+        H_TEST_ASSERT(result.find("func=RequestHandler") != std::string::npos);
+        delete request;
+        g_stopping = true;
+    };
 
-        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
-        r->Execute(std::bind(f, std::placeholders::_1, r));
-    }
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    r->Execute(std::bind(f, std::placeholders::_1, r));
+}
 
-    void testStop(evpp::EventLoop* loop) {
-        std::string uri = "/mod/stop";
-        std::string url = GetHttpServerURL() + uri;
-        auto f = [](const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request* request) {
-            std::string result = response->body().ToString();
-            H_TEST_ASSERT(!result.empty());
-            H_TEST_ASSERT(result.find("uri=/mod/stop") != std::string::npos);
-            H_TEST_ASSERT(result.find("func=DefaultRequestHandler") != std::string::npos);
-            delete request;
-            g_stopping = true;
-        };
+void testStop(evpp::EventLoop* loop) {
+    std::string uri = "/mod/stop";
+    std::string url = GetHttpServerURL() + uri;
+    auto f = [](const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request * request) {
+        std::string result = response->body().ToString();
+        H_TEST_ASSERT(!result.empty());
+        H_TEST_ASSERT(result.find("uri=/mod/stop") != std::string::npos);
+        H_TEST_ASSERT(result.find("func=DefaultRequestHandler") != std::string::npos);
+        delete request;
+        g_stopping = true;
+    };
 
-        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
-        r->Execute(std::bind(f, std::placeholders::_1, r));
-    }
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    r->Execute(std::bind(f, std::placeholders::_1, r));
+}
 
-    static void TestAll() {
-        evpp::EventLoopThread t;
-        t.Start(true);
-        testDefaultHandler1(t.event_loop());
-        testDefaultHandler2(t.event_loop());
-        testDefaultHandler3(t.event_loop());
-        testPushBootHandler(t.event_loop());
-        testStop(t.event_loop());
+static void TestAll() {
+    evpp::EventLoopThread t;
+    t.Start(true);
+    testDefaultHandler1(t.event_loop());
+    testDefaultHandler2(t.event_loop());
+    testDefaultHandler3(t.event_loop());
+    testPushBootHandler(t.event_loop());
+    testStop(t.event_loop());
 
-        while (true) {
-            usleep(10);
-            if (g_stopping) {
-                break;
-            }
+    while (true) {
+        usleep(10);
+
+        if (g_stopping) {
+            break;
         }
-        t.Stop(true);
     }
+
+    t.Stop(true);
+}
 }
 
 
