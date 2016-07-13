@@ -10,23 +10,23 @@
 #include <thread>
 
 namespace evloop {
-    static std::shared_ptr<evpp::EventLoop> loop;
-    static evpp::Duration delay(1.0);
-    static evpp::Duration cancel_delay(0.5);
-    static bool event_handler_called = false;
-    static void Close() {
-        loop->Stop();
-    }
+static std::shared_ptr<evpp::EventLoop> loop;
+static evpp::Duration delay(1.0);
+static evpp::Duration cancel_delay(0.5);
+static bool event_handler_called = false;
+static void Close() {
+    loop->Stop();
+}
 
-    static void Handle() {
-        event_handler_called = true;
-    }
+static void Handle() {
+    event_handler_called = true;
+}
 
-    static void MyEventThread() {
-        LOG_INFO << "EventLoop is running ...";
-        loop = std::shared_ptr<evpp::EventLoop>(new evpp::EventLoop);
-        loop->Run();
-    }
+static void MyEventThread() {
+    LOG_INFO << "EventLoop is running ...";
+    loop = std::shared_ptr<evpp::EventLoop>(new evpp::EventLoop);
+    loop->Run();
+}
 }
 
 TEST_UNIT(testInvokerTimerCancel) {

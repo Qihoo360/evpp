@@ -6,10 +6,10 @@
 #include <atomic>
 
 namespace {
-    static bool resolved = false;
-    static void OnResolved(const std::vector <struct in_addr>& addrs) {
-        resolved = true;
-    }
+static bool resolved = false;
+static void OnResolved(const std::vector <struct in_addr>& addrs) {
+    resolved = true;
+}
 }
 
 
@@ -20,8 +20,10 @@ TEST_UNIT(testDNSResolver) {
     usleep(1000);
     evpp::DNSResolver dns_resolver(t.event_loop(), "www.so.com", evpp::Duration(1.0), &OnResolved);
     dns_resolver.Start();
+
     while (!resolved) {
         usleep(1);
     }
+
     t.Stop(true);
 }
