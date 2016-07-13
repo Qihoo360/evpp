@@ -65,7 +65,6 @@ namespace evnsq {
             body_ = body;
         }
 
-
         // Subscribe sets a new Command to subscribe to the given topic/channel
         void Subscribe(const std::string& topic, const std::string& channel) {
             assert(!topic.empty());
