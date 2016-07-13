@@ -22,14 +22,15 @@ void Command::Launch(MemcacheClientPtr memc_client) {
 uint16_t Command::server_id() const {
     if (server_id_history_.empty()) {
         return BAD_SERVER_ID;
-    } 
-    return server_id_history_.back(); 
+    }
+
+    return server_id_history_.back();
 }
 
 bool Command::ShouldRetry() const {
     LOG_DEBUG << "ShouldRetry vbucket=" << vbucket_id()
-             << " server_id=" << server_id()
-             << " len=" << server_id_history_.size();
+              << " server_id=" << server_id()
+              << " len=" << server_id_history_.size();
     return server_id_history_.size() < 2;
 }
 
@@ -83,6 +84,7 @@ void MultiGetCommand::OnMultiGetCommandDone(int resp_code, const std::string& ke
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
         mget_result_.get_result_map_[key] = GetResult(resp_code, value);
     }
+
     mget_result_.code = resp_code;
 
     if (caller_loop()) {
@@ -94,24 +96,28 @@ void MultiGetCommand::OnMultiGetCommandDone(int resp_code, const std::string& ke
 
 void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, const std::string& key, const std::string& value) {
     LOG_INFO << "OnMultiGetCommandOneResponse " << key << " " << resp_code << " " << value;
+
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
         mget_result_.get_result_map_[key] = GetResult(resp_code, value);
     }
+
     mget_result_.code = resp_code;
 }
 
 BufferPtr MultiGetCommand::RequestBuffer() const {
     BufferPtr buf(new evpp::Buffer(50 * keys_.size()));  // 预分配长度多数情况够长
 
-    for(size_t i = 0; i < keys_.size(); ++i) {
+    for (size_t i = 0; i < keys_.size(); ++i) {
         protocol_binary_request_header req;
         memset((void*)&req, 0, sizeof(req));
         req.request.magic    = PROTOCOL_BINARY_REQ;
+
         if (i < keys_.size() - 1) {
             req.request.opcode   = PROTOCOL_BINARY_CMD_GETKQ;
         } else {
             req.request.opcode   = PROTOCOL_BINARY_CMD_GETK;
         }
+
         req.request.keylen = htons(uint16_t(keys_[i].size()));
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
         req.request.vbucket  = htons(vbucket_id());

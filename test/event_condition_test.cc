@@ -7,18 +7,19 @@
 #include <thread>
 
 namespace {
-    static bool g_event_handler_called = false;
-    static void Handle(struct event_base* base) {
-        g_event_handler_called = true;
-        event_base_loopexit(base, 0);
+static bool g_event_handler_called = false;
+static void Handle(struct event_base* base) {
+    g_event_handler_called = true;
+    event_base_loopexit(base, 0);
+}
+
+static void MyEventThread(struct event_base* base, evpp::PipeEventWatcher* ev) {
+    if (ev->Init()) {
+        ev->AsyncWait();
     }
 
-    static void MyEventThread(struct event_base* base, evpp::PipeEventWatcher* ev) {
-        if (ev->Init()) {
-            ev->AsyncWait();
-        }
-        event_base_loop(base, 0);
-    }
+    event_base_loop(base, 0);
+}
 }
 
 TEST_UNIT(testPipeEventWatcher) {

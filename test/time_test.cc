@@ -4,8 +4,7 @@
 #include "evpp/duration.h"
 #include "evpp/timestamp.h"
 
-TEST_UNIT(testDuration)
-{
+TEST_UNIT(testDuration) {
     evpp::Duration d0(0);
     evpp::Duration d1(1);
     evpp::Duration d2(2);
@@ -24,7 +23,6 @@ TEST_UNIT(testDuration)
     H_TEST_ASSERT(d2 >= d1);
 }
 
-TEST_UNIT(testTimestamp)
-{
+TEST_UNIT(testTimestamp) {
 }
 
