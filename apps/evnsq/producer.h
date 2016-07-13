@@ -3,6 +3,7 @@
 #include <list>
 #include <vector>
 #include "client.h"
+#include "command.h"
 
 namespace evnsq {
     class Command;
@@ -16,14 +17,36 @@ namespace evnsq {
         Producer(evpp::EventLoop* loop, const Option& ops);
         ~Producer();
         
+        // Thread safe
         void Publish(const std::string& topic, const std::string& msg);
         void MultiPublish(const std::string& topic, const std::vector<std::string>& messages);
 
         void SetReadyCallback(const ReadyCallback& cb) { ready_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
     private:
+        template <typename Argument>
+        class Function {
+        public:
+            typedef void (Command::*MemberFunc)(const std::string&, const Argument&);
+            Function(MemberFunc f, const std::string& topic, const Argument& msg)
+                : mfun_(f), topic_(topic), msg_(msg) {}
+
+            Command* operator()() const {
+                Command* c = new Command;
+                (c->*mfun_)(topic_, msg_);
+                return c;
+            };
+        private:
+            MemberFunc mfun_;
+            const std::string& topic_;
+            const Argument& msg_;
+        };
+
+        template <typename Argument>
+        void PublishInLoopFunc(const Function<Argument>& f);
         void PublishInLoop(const std::string& topic, const std::string& msg);
         void MultiPublishInLoop(const std::string& topic, const std::vector<std::string>& messages);
+
         void OnReady(Conn* conn);
         void OnPublishResponse(Conn* conn, const char* d, size_t len);
         Command* PopWaitACKCommand(Conn* conn);
@@ -43,5 +66,7 @@ namespace evnsq {
         HighWaterMarkCallback high_water_mark_fn_;
         size_t high_water_mark_;
     };
+
+
 }
 
