@@ -12,9 +12,26 @@ namespace evnsq {
             }
         }
         buf->AppendInt8('\n');
-        if (!body_.empty()) {
+        if (body_.size() == 1) {
+            const std::string& body = body_[0];
+            buf->AppendInt32(int32_t(body.size()));
+            buf->Append(body);
+        } else {
+            assert(body_.size() > 1);
+            assert(name_ == "MPUB");
+            int32_t mpub_body_size = 4;
+            for (size_t i = 0; i < body_.size(); ++i) {
+                mpub_body_size += 4;
+                mpub_body_size += body_[i].size();
+            }
+
+            buf->AppendInt32(mpub_body_size);
             buf->AppendInt32(int32_t(body_.size()));
-            buf->Append(body_);
+            for (size_t i = 0; i < body_.size(); ++i) {
+                const std::string& msg = body_[i];
+                buf->AppendInt32(int32_t(msg.size()));
+                buf->Append(msg);
+            }
         }
     }
 }
