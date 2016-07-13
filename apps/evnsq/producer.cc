@@ -22,13 +22,10 @@ namespace evnsq {
     Producer::~Producer() {}
 
     void Producer::Publish(const std::string& topic, const std::string& msg) {
-        if (loop_->IsInLoopThread()) {
-            PublishInLoop(topic, msg);
-        } else {
-            loop_->RunInLoop(std::bind(&Producer::PublishInLoop, this, topic, msg));
-        }
+        Command* cmd = new Command;
+        cmd->Publish(topic, msg);
+        Publish(cmd);
     }
-
 
     void Producer::MultiPublish(const std::string& topic, const std::vector<std::string>& messages) {
         if (messages.empty()) {
@@ -40,10 +37,16 @@ namespace evnsq {
             return;
         }
 
+        Command* cmd = new Command;
+        cmd->MultiPublish(topic, messages);
+        Publish(cmd);
+    }
+
+    void Producer::Publish(Command* cmd) {
         if (loop_->IsInLoopThread()) {
-            MultiPublishInLoop(topic, messages);
+            PublishInLoop(cmd);
         } else {
-            loop_->RunInLoop(std::bind(&Producer::MultiPublishInLoop, this, topic, messages));
+            loop_->RunInLoop(std::bind(&Producer::PublishInLoop, this, cmd));
         }
     }
 
@@ -52,7 +55,7 @@ namespace evnsq {
         high_water_mark_ = mark;
     }
 
-    void Producer::PublishInLoopFunc(const CommandPublishFunc& f) {
+    void Producer::PublishInLoop(Command* c) {
         if (wait_ack_count_ > kHighWaterMark * conns_.size()) {
             LOG_WARN << "Too many messages are waiting a response ACK. Please try again later";
             hwm_triggered_ = true;
@@ -67,31 +70,12 @@ namespace evnsq {
         }
         assert(conn_ != conns_.end());
         assert(conn_->second->IsReady());
-        Command* c = f();
         published_count_++;
         conn_->second->WriteCommand(c);
         PushWaitACKCommand(conn_->second.get(), c);
         LOG_INFO << "Publish a message, command=" << c;
 
         ++conn_; // Using next Conn
-    }
-
-    void Producer::PublishInLoop(const std::string& topic, const std::string& msg) {
-        auto f = [](const std::string& topic, const std::string& msg) -> Command* {
-            Command* c = new Command;
-            c->Publish(topic, msg);
-            return c;
-        };
-        PublishInLoopFunc(std::bind(f, topic, msg));
-    }
-
-    void Producer::MultiPublishInLoop(const std::string& topic, const std::vector<std::string>& messages) {
-        auto f = [](const std::string& topic, const std::vector<std::string>& messages) -> Command* {
-            Command* c = new Command;
-            c->MultiPublish(topic, messages);
-            return c;
-        };
-        PublishInLoopFunc(std::bind(f, topic, messages));
     }
 
     void Producer::OnReady(Conn* conn) {

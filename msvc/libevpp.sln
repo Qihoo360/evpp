@@ -73,7 +73,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "event_core", "..\3rdparty\l
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "event_extra", "..\3rdparty\libevent-2.1.5-beta\event_extra.vcxproj", "{12D181CA-8BE0-32FB-A49F-F561FCE6F7E1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevent1.4.5", "..\3rdparty\libevent-1.4.15\WIN32-Prj\libevent.vcxproj", "{B98ABFCE-24D4-4B70-94DE-EF7F1E0662F9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libevent1.4.15", "..\3rdparty\libevent-1.4.15\WIN32-Prj\libevent.vcxproj", "{B98ABFCE-24D4-4B70-94DE-EF7F1E0662F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -182,6 +182,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{4877AA94-AD55-407F-9ED3-D4503FAB2A7F} = {E8E8B2B4-69D4-4418-8E63-7BBB791472DB}
 		{772C2111-BBBF-49E6-B912-198A7F7A88E5} = {343D8BB4-8FF3-45AD-8F2B-6888CF913258}
 		{B2ACE5F6-CDA2-4A3E-869C-5E2CA8ED43EE} = {E8E8B2B4-69D4-4418-8E63-7BBB791472DB}
 		{DEE13AF7-CE91-43A7-89A0-32FB219D4B68} = {67DBE3BC-4CDA-4432-8E02-3CC4C04552E8}
