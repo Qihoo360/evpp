@@ -20,10 +20,10 @@ void Publish(evnsq::Producer* producer) {
 }
 
 void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
-    //loop->RunEvery(evpp::Duration(1.0), std::bind(&Publish, p));
-    for (int i = 0; i < 20; i++) {
-        Publish(p);
-    }
+    loop->RunEvery(evpp::Duration(1.0), std::bind(&Publish, p));
+//     for (int i = 0; i < 20; i++) {
+//         Publish(p);
+//     }
 }
 
 
