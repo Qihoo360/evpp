@@ -19,14 +19,13 @@ namespace evnsq {
         ready_to_publish_fn_ = std::bind(&Producer::OnReady, this, std::placeholders::_1);
     }
 
-    Producer::~Producer() {
-    }
+    Producer::~Producer() {}
 
     void Producer::Publish(const std::string& topic, const std::string& msg) {
         if (loop_->IsInLoopThread()) {
             PublishInLoop(topic, msg);
         } else {
-            loop_->RunInLoop(std::bind(&Producer::Publish, this, topic, msg));
+            loop_->RunInLoop(std::bind(&Producer::PublishInLoop, this, topic, msg));
         }
     }
 
@@ -53,8 +52,7 @@ namespace evnsq {
         high_water_mark_ = mark;
     }
 
-    template <typename Argument>
-    void Producer::PublishInLoopFunc(const Function<Argument>& f) {
+    void Producer::PublishInLoopFunc(const CommandPublishFunc& f) {
         if (wait_ack_count_ > kHighWaterMark * conns_.size()) {
             LOG_WARN << "Too many messages are waiting a response ACK. Please try again later";
             hwm_triggered_ = true;
@@ -79,18 +77,26 @@ namespace evnsq {
     }
 
     void Producer::PublishInLoop(const std::string& topic, const std::string& msg) {
-        Function<std::string> f(&Command::Publish, topic, msg);
-        PublishInLoopFunc(f);
+        auto f = [](const std::string& topic, const std::string& msg) -> Command* {
+            Command* c = new Command;
+            c->Publish(topic, msg);
+            return c;
+        };
+        PublishInLoopFunc(std::bind(f, topic, msg));
     }
 
     void Producer::MultiPublishInLoop(const std::string& topic, const std::vector<std::string>& messages) {
-        Function<std::vector<std::string> > f(&Command::MultiPublish, topic, messages);
-        PublishInLoopFunc(f);
+        auto f = [](const std::string& topic, const std::vector<std::string>& messages) -> Command* {
+            Command* c = new Command;
+            c->MultiPublish(topic, messages);
+            return c;
+        };
+        PublishInLoopFunc(std::bind(f, topic, messages));
     }
 
     void Producer::OnReady(Conn* conn) {
         conn->SetPublishResponseCallback(std::bind(&Producer::OnPublishResponse, this, conn, std::placeholders::_1, std::placeholders::_2));
-        
+
         // Only the first successful connection to NSQD can trigger this callback.
         if (ready_fn_ && conns_.size() == 1) {
             ready_fn_();
@@ -137,5 +143,4 @@ namespace evnsq {
         wait_ack_count_++;
         assert(cl.first.size() == cl.second);
     }
-
 }
