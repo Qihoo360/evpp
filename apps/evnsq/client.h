@@ -43,8 +43,8 @@ namespace evnsq {
             const std::shared_ptr<evpp::httpc::Response>& response,
             evpp::httpc::Request* request);
         void OnConnection(Conn* conn);
-        void Subscribe();
-        void UpdateReady(int count);
+        //void Subscribe();
+        //void UpdateReady(int count);
 
     protected:
         evpp::EventLoop* loop_;
