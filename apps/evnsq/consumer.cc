@@ -13,11 +13,11 @@
 #include "option.h"
 
 namespace evnsq {
-    Consumer::Consumer(evpp::EventLoop* loop, const std::string& topic, const std::string& channel, const Option& ops)
-        : Client(loop, kConsumer, topic, channel, ops) {
-    }
+Consumer::Consumer(evpp::EventLoop* loop, const std::string& topic, const std::string& channel, const Option& ops)
+    : Client(loop, kConsumer, topic, channel, ops) {
+}
 
-    Consumer::~Consumer() {
-    }
+Consumer::~Consumer() {
+}
 
 }

@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
     int opt = 0;
     int digit_optind = 0;
     int option_index = 0;
-    char *optstring = "t:h:";
+    char* optstring = "t:h:";
     static struct option long_options[] = {
         { "nsqd_tcp_addr", required_argument, NULL, 't' },
         { "lookupd_http_addr", required_argument, NULL, 'h' },
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 
     std::string nsqd_tcp_addr;
     std::string lookupd_http_url;
-    
+
     //nsqd_tcp_addr = "127.0.0.1:4150";
     nsqd_tcp_addr = "10.16.28.17:4150";
     //nsqd_tcp_addr = "weizili-L1:4150";
@@ -57,9 +57,11 @@ int main(int argc, char* argv[]) {
         case 't':
             nsqd_tcp_addr = optarg;
             break;
+
         case 'h':
             lookupd_http_url = optarg;
             break;
+
         default:
             printf("error argument [%s]\n", argv[optind]);
             return -1;
@@ -70,11 +72,13 @@ int main(int argc, char* argv[]) {
     evnsq::Producer client(&loop, evnsq::Option());
     client.SetMessageCallback(&OnMessage);
     client.SetReadyCallback(std::bind(&OnReady, &loop, &client));
+
     if (!lookupd_http_url.empty()) {
         client.ConnectToLoopupds(lookupd_http_url);
     } else {
         client.ConnectToNSQDs(nsqd_tcp_addr);
     }
+
     loop.Run();
     return 0;
 }

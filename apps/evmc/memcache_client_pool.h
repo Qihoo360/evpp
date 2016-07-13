@@ -10,9 +10,9 @@ typedef std::map<std::string, MemcacheClientPtr> MemcClientMap;
 class MemcacheClientPool {
 public:
     friend MemcacheClient;
-    MemcacheClientPool(const char* vbucket_conf, int concurrency, int timeout_ms) 
-            : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, concurrency)
-            , timeout_ms_(timeout_ms) {
+    MemcacheClientPool(const char* vbucket_conf, int concurrency, int timeout_ms)
+        : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, concurrency)
+        , timeout_ms_(timeout_ms) {
     }
     virtual ~MemcacheClientPool();
 
@@ -21,7 +21,7 @@ public:
 
     void Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, SetCallback callback);
     void Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, uint32_t flags,
-                  uint32_t expire, SetCallback callback);
+             uint32_t expire, SetCallback callback);
 
     void Remove(evpp::EventLoop* caller_loop, const std::string& key, RemoveCallback callback);
     void Get(evpp::EventLoop* caller_loop, const std::string& key, GetCallback callback);

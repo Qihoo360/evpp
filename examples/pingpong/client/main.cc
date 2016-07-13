@@ -17,22 +17,25 @@ void OnMessage(const evpp::TCPConnPtr& conn,
     //LOG_TRACE << "Recv a message size=" << msg->length();
     recv_count++;
     recv_size.fetch_add(msg->size());
+
     for (;;) {
         if (msg->length() < 4) {
             return;
         }
 
         int32_t len = msg->PeekInt32();
+
         if ((int32_t)(msg->length()) < len + 4) {
             return;
         }
 
         //LOG_INFO << "Received a message size=" << len;
         conn->Send(msg->data(), len + 4);
-        send_size.fetch_add(len+4);
+        send_size.fetch_add(len + 4);
         send_count++;
         msg->Retrieve(4 + len);
     }
+
     usleep(1000 * 1000);
 }
 
@@ -59,9 +62,11 @@ int main(int argc, char* argv[]) {
     //std::string addr = "10.16.29.131:9099";
     //std::string addr = "build15v.kill.corp.qihoo.net:9099";
     std::string addr = "127.0.0.1:9099";
+
     if (argc == 2) {
         addr = argv[1];
     }
+
     evpp::EventLoop loop;
     evpp::TCPClient client(&loop, addr, "TCPPingPongClient");
     client.SetMessageCallback(&OnMessage);

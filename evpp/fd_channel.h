@@ -9,83 +9,93 @@ struct event_base;
 
 namespace evpp {
 
-    class EventLoop;
+class EventLoop;
 
-    // A selectable I/O fd channel.
-    //
-    // This class doesn't own the file descriptor.
-    // The file descriptor could be a socket,
-    // an eventfd, a timerfd, or a signalfd
-    class EVPP_EXPORT FdChannel {
-    public:
-        enum EventType {
-            kNone = 0x00,
-            kReadable = 0x02,
-            kWritable = 0x04,
-        };
-        typedef std::function<void()> EventCallback;
-        typedef std::function<void(Timestamp)> ReadEventCallback;
-
-    public:
-        FdChannel(EventLoop* loop, int fd,
-                  bool watch_read_event, bool watch_write_event);
-        ~FdChannel();
-
-        void Close();
-
-        // Attach this FdChannel to EventLoop
-        void AttachToLoop();
-
-        bool attached() const { return attached_; }
-
-    public:
-        bool IsReadable() const { return (events_ & kReadable) != 0; }
-        bool IsWritable() const { return (events_ & kWritable) != 0; }
-        bool IsNoneEvent() const { return events_ == kNone; }
-
-        void EnableReadEvent();
-        void EnableWriteEvent();
-        void DisableReadEvent();
-        void DisableWriteEvent();
-        void DisableAllEvent();
-
-    public:
-        int fd() const { return fd_; }
-        std::string EventsToString() const;
-
-    public:
-        void SetReadCallback(const ReadEventCallback& cb) {
-            read_fn_ = cb;
-        }
-
-        void SetWriteCallback(const EventCallback& cb) {
-            write_fn_ = cb;
-        }
-
-        void SetCloseCallback(const EventCallback& cb) {
-            close_fn_ = cb;
-        }
-
-    private:
-        void HandleEvent(int fd, short which);
-        static void HandleEvent(int fd, short which, void *v);
-
-        void Update();
-        void DetachFromLoop();
-    private:
-        ReadEventCallback read_fn_;
-        EventCallback write_fn_;
-        EventCallback close_fn_;
-
-        EventLoop* loop_;
-        bool attached_; // A flag indicate whether this FdChannel has been attached to loop_
-
-        struct event* event_;
-        int events_; // the bitwise OR of zero or more of the EventType flags
-        
-        int fd_;
+// A selectable I/O fd channel.
+//
+// This class doesn't own the file descriptor.
+// The file descriptor could be a socket,
+// an eventfd, a timerfd, or a signalfd
+class EVPP_EXPORT FdChannel {
+public:
+    enum EventType {
+        kNone = 0x00,
+        kReadable = 0x02,
+        kWritable = 0x04,
     };
+    typedef std::function<void()> EventCallback;
+    typedef std::function<void(Timestamp)> ReadEventCallback;
 
-} // namespace 
+public:
+    FdChannel(EventLoop* loop, int fd,
+              bool watch_read_event, bool watch_write_event);
+    ~FdChannel();
+
+    void Close();
+
+    // Attach this FdChannel to EventLoop
+    void AttachToLoop();
+
+    bool attached() const {
+        return attached_;
+    }
+
+public:
+    bool IsReadable() const {
+        return (events_ & kReadable) != 0;
+    }
+    bool IsWritable() const {
+        return (events_ & kWritable) != 0;
+    }
+    bool IsNoneEvent() const {
+        return events_ == kNone;
+    }
+
+    void EnableReadEvent();
+    void EnableWriteEvent();
+    void DisableReadEvent();
+    void DisableWriteEvent();
+    void DisableAllEvent();
+
+public:
+    int fd() const {
+        return fd_;
+    }
+    std::string EventsToString() const;
+
+public:
+    void SetReadCallback(const ReadEventCallback& cb) {
+        read_fn_ = cb;
+    }
+
+    void SetWriteCallback(const EventCallback& cb) {
+        write_fn_ = cb;
+    }
+
+    void SetCloseCallback(const EventCallback& cb) {
+        close_fn_ = cb;
+    }
+
+private:
+    void HandleEvent(int fd, short which);
+    static void HandleEvent(int fd, short which, void* v);
+
+    void Update();
+    void DetachFromLoop();
+private:
+    ReadEventCallback read_fn_;
+    EventCallback write_fn_;
+    EventCallback close_fn_;
+
+    EventLoop* loop_;
+    bool attached_; // A flag indicate whether this FdChannel has been attached to loop_
+
+    struct event* event_;
+    int events_; // the bitwise OR of zero or more of the EventType flags
+
+    int fd_;
+};
+
+} // namespace
 
 
