@@ -5,13 +5,15 @@
 #include "conn.h"
 
 namespace evnsq {
+    static const size_t kHighWaterMark = 10;
 
     Producer::Producer(evpp::EventLoop* loop, const Option& ops)
         : Client(loop, kProducer, "", "", ops)
         , wait_ack_count_(0)
         , published_count_(0)
         , published_ok_count_(0)
-        , published_failed_count_(0) {
+        , published_failed_count_(0)
+        , hwm_triggered_(false) {
         conn_ = conns_.end();
         ready_to_publish_fn_ = std::bind(&Producer::OnReady, this, std::placeholders::_1);
     }
@@ -20,9 +22,9 @@ namespace evnsq {
     }
 
     bool Producer::Publish(const std::string& topic, const std::string& msg) {
-        if (wait_ack_count_ > 1024) {
-            // TODO Add config for max_waiting_ack_count
-            LOG_WARN << "Too many messages are waiting a response ACK. Please try again.";
+        if (wait_ack_count_ > kHighWaterMark * conns_.size()) {
+            LOG_WARN << "Too many messages are waiting a response ACK. Please try again later";
+            hwm_triggered_ = true;
             return false;
         }
         assert(loop_->IsInLoopThread());
@@ -44,7 +46,9 @@ namespace evnsq {
 
     void Producer::OnReady(Conn* conn) {
         conn->SetPublishResponseCallback(std::bind(&Producer::OnPublishResponse, this, conn, std::placeholders::_1, std::placeholders::_2));
-        if (ready_fn_) {
+        
+        // Only the first successful connection to NSQD can trigger this callback.
+        if (ready_fn_ && conns_.size() == 1) {
             ready_fn_();
         }
     }
@@ -55,6 +59,13 @@ namespace evnsq {
             LOG_INFO << "Get a PublishResponse message OK, command=" << c;
             published_ok_count_++;
             delete c;
+            if (hwm_triggered_ && wait_ack_count_ < kHighWaterMark * conns_.size() / 2) {
+                LOG_TRACE << "We can publish more data now.";
+                hwm_triggered_ = false;
+                if (ready_fn_) {
+                    ready_fn_();
+                }
+            }
             return;
         }
 
