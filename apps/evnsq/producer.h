@@ -33,6 +33,7 @@ namespace evnsq {
         int64_t published_count_;
         int64_t published_ok_count_;
         int64_t published_failed_count_;
+        bool hwm_triggered_; // The flag of high water mark
     };
 }
 

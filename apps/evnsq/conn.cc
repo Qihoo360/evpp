@@ -51,54 +51,52 @@ namespace evnsq {
     }
 
     void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp ts) {
-        if (buf->size() < 4) {
-            return;
-        }
-
-        size_t size = buf->PeekInt32();
-        if (buf->size() < size) {
-            // need to read more data
-            return;
-        }
-        buf->Skip(4); // 4 bytes of size
-        //LOG_INFO << "Recv a data from NSQD msg body len=" << size - 4 << " body=[" << std::string(buf->data(), size - 4) << "]";
-        int32_t frame_type = buf->ReadInt32();
-        switch (status_) {
-        case evnsq::Conn::kDisconnected:
-            break;
-        case evnsq::Conn::kConnecting:
-            break;
-        case evnsq::Conn::kIdentifying:
-            if (buf->NextString(size - sizeof(frame_type)) == kOK) {
-                status_ = kConnected;
-                if (conn_fn_) {
-                    conn_fn_(this);
-                }
-            } else {
-                LOG_ERROR << "Identify ERROR";
-                Reconnect();
+        while (buf->size() > 4) {
+            size_t size = buf->PeekInt32();
+            if (buf->size() < size) {
+                // need to read more data
+                return;
             }
-            break;
-        case evnsq::Conn::kConnected:
-            assert(false && "It should never come here.");
-            break;
-        case evnsq::Conn::kSubscribing:
-            if (buf->NextString(size - sizeof(frame_type)) == kOK) {
-                status_ = kReady;
-                if (conn_fn_) {
-                    conn_fn_(this);
+            buf->Skip(4); // 4 bytes of size
+            //LOG_INFO << "Recv a data from NSQD msg body len=" << size - 4 << " body=[" << std::string(buf->data(), size - 4) << "]";
+            int32_t frame_type = buf->ReadInt32();
+            switch (status_) {
+            case evnsq::Conn::kDisconnected:
+                break;
+            case evnsq::Conn::kConnecting:
+                break;
+            case evnsq::Conn::kIdentifying:
+                if (buf->NextString(size - sizeof(frame_type)) == kOK) {
+                    status_ = kConnected;
+                    if (conn_fn_) {
+                        conn_fn_(this);
+                    }
+                } else {
+                    LOG_ERROR << "Identify ERROR";
+                    Reconnect();
                 }
-                LOG_INFO << "Successfully connected to nsqd " << conn->remote_addr();
-                UpdateReady(3); //TODO RDY count
-            } else {
-                Reconnect();
+                break;
+            case evnsq::Conn::kConnected:
+                assert(false && "It should never come here.");
+                break;
+            case evnsq::Conn::kSubscribing:
+                if (buf->NextString(size - sizeof(frame_type)) == kOK) {
+                    status_ = kReady;
+                    if (conn_fn_) {
+                        conn_fn_(this);
+                    }
+                    LOG_INFO << "Successfully connected to nsqd " << conn->remote_addr();
+                    UpdateReady(100); //TODO RDY count
+                } else {
+                    Reconnect();
+                }
+                break;
+            case evnsq::Conn::kReady:
+                OnMessage(size - sizeof(frame_type), frame_type, buf);
+                break;
+            default:
+                break;
             }
-            break;
-        case evnsq::Conn::kReady:
-            OnMessage(size - sizeof(frame_type), frame_type, buf);
-            break;
-        default:
-            break;
         }
     }
 
