@@ -16,7 +16,7 @@ namespace evnsq {
 
         Producer(evpp::EventLoop* loop, const Option& ops);
         ~Producer();
-        
+
         // Thread safe
         void Publish(const std::string& topic, const std::string& msg);
         void MultiPublish(const std::string& topic, const std::vector<std::string>& messages);
@@ -24,26 +24,8 @@ namespace evnsq {
         void SetReadyCallback(const ReadyCallback& cb) { ready_fn_ = cb; }
         void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
     private:
-        template <typename Argument>
-        class Function {
-        public:
-            typedef void (Command::*MemberFunc)(const std::string&, const Argument&);
-            Function(MemberFunc f, const std::string& topic, const Argument& msg)
-                : mfun_(f), topic_(topic), msg_(msg) {}
-
-            Command* operator()() const {
-                Command* c = new Command;
-                (c->*mfun_)(topic_, msg_);
-                return c;
-            };
-        private:
-            MemberFunc mfun_;
-            const std::string& topic_;
-            const Argument& msg_;
-        };
-
-        template <typename Argument>
-        void PublishInLoopFunc(const Function<Argument>& f);
+        typedef std::function<Command* ()> CommandPublishFunc;
+        void PublishInLoopFunc(const CommandPublishFunc& f);
         void PublishInLoop(const std::string& topic, const std::string& msg);
         void MultiPublishInLoop(const std::string& topic, const std::vector<std::string>& messages);
 
@@ -54,7 +36,7 @@ namespace evnsq {
     private:
         std::map<std::string/*host:port*/, ConnPtr>::iterator conn_;
         typedef std::pair<std::list<Command*>, size_t> CommandList;
-        
+
         std::map<Conn*, CommandList> wait_ack_;
         ReadyCallback ready_fn_;
         size_t wait_ack_count_;
