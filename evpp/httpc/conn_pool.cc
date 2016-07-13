@@ -44,6 +44,10 @@ namespace evpp {
         }
 
         void ConnPool::Clear() {
+            if (pool_.empty()) {
+                return;
+            }
+
             std::map<EventLoop*, std::vector<ConnPtr> > m;
             if (!pool_.empty()) {
                 std::lock_guard<std::mutex> guard(mutex_);
@@ -51,6 +55,7 @@ namespace evpp {
                 assert(pool_.empty());
             }
 
+            // 让Conn在自己所在的线程(EventLoop)中释放
             auto it = m.begin();
             auto ite = m.end();
             for (; it != ite; ++it) {
@@ -59,6 +64,7 @@ namespace evpp {
                 }
                 it->second.clear();
             }
+            pool_.clear();
         }
     } // httpc
 } // evpp
