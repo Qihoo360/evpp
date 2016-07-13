@@ -12,20 +12,20 @@
 #include <set>
 
 namespace {
-    static std::set<std::thread::id> g_working_tids;
+static std::set<std::thread::id> g_working_tids;
 
-    static void OnWorkingThread() {
-        static std::mutex mutex;
-        std::lock_guard<std::mutex> g(mutex);
-        g_working_tids.insert(std::this_thread::get_id());
-    }
+static void OnWorkingThread() {
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> g(mutex);
+    g_working_tids.insert(std::this_thread::get_id());
+}
 
 
-    static std::atomic<int> g_count;
-    static void OnCount() {
-        g_count++;
-        OnWorkingThread();
-    }
+static std::atomic<int> g_count;
+static void OnCount() {
+    g_count++;
+    OnWorkingThread();
+}
 }
 
 TEST_UNIT(testEventLoopThreadPool) {

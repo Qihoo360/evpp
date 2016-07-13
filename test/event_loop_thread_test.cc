@@ -8,15 +8,15 @@
 #include <atomic>
 
 namespace {
-    static bool g_timeout = false;
-    static std::atomic<int> g_count;
-    static void OnTimeout() {
-        g_timeout = true;
-    }
+static bool g_timeout = false;
+static std::atomic<int> g_count;
+static void OnTimeout() {
+    g_timeout = true;
+}
 
-    static void OnCount() {
-        g_count++;
-    }
+static void OnCount() {
+    g_count++;
+}
 }
 
 
@@ -28,9 +28,11 @@ TEST_UNIT(testEventLoopThread) {
     usleep(1000);
     evpp::Timestamp begin = evpp::Timestamp::Now();
     t.event_loop()->RunAfter(delay, &OnTimeout);
+
     while (!g_timeout) {
         usleep(1);
     }
+
     evpp::Duration cost = evpp::Timestamp::Now() - begin;
     H_TEST_ASSERT(delay <= cost);
     t.event_loop()->RunInLoop(&OnCount);

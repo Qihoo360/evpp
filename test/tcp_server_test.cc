@@ -13,37 +13,37 @@
 #include <thread>
 
 namespace {
-    static bool connected = false;
-    static bool message_recved = false;
-    const static std::string addr = "127.0.0.1:19099";
-    static void OnMessage(const evpp::TCPConnPtr& conn,
-                          evpp::Buffer* msg,
-                          evpp::Timestamp ts) {
-        message_recved = true;
-    }
+static bool connected = false;
+static bool message_recved = false;
+const static std::string addr = "127.0.0.1:19099";
+static void OnMessage(const evpp::TCPConnPtr& conn,
+                      evpp::Buffer* msg,
+                      evpp::Timestamp ts) {
+    message_recved = true;
+}
 
-    static void StopTCPServer(evpp::TCPServer* t) {
-        t->Stop();
-    }
+static void StopTCPServer(evpp::TCPServer* t) {
+    t->Stop();
+}
 
-    void OnClientConnection(const evpp::TCPConnPtr& conn) {
-        if (conn->IsConnected()) {
-            conn->Send("hello");
-            LOG_INFO << "Send a message to server when connected.";
-            connected = true;
-        } else {
-            LOG_INFO << "Disconnected from " << conn->remote_addr();
-        }
+void OnClientConnection(const evpp::TCPConnPtr& conn) {
+    if (conn->IsConnected()) {
+        conn->Send("hello");
+        LOG_INFO << "Send a message to server when connected.";
+        connected = true;
+    } else {
+        LOG_INFO << "Disconnected from " << conn->remote_addr();
     }
+}
 
-    std::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop) {
-        std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
-        client->SetConnectionCallback(&OnClientConnection);
-        client->Connect();
-        loop->RunAfter(evpp::Duration(1.0), std::bind(&evpp::TCPClient::Disconnect, client));
-        loop->RunAfter(evpp::Duration(1.1), std::bind(&evpp::EventLoop::Stop, loop));
-        return client;
-    }
+std::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop) {
+    std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
+    client->SetConnectionCallback(&OnClientConnection);
+    client->Connect();
+    loop->RunAfter(evpp::Duration(1.0), std::bind(&evpp::TCPClient::Disconnect, client));
+    loop->RunAfter(evpp::Duration(1.1), std::bind(&evpp::EventLoop::Stop, loop));
+    return client;
+}
 }
 
 
