@@ -5,7 +5,7 @@
 #include "conn.h"
 
 namespace evnsq {
-    static const size_t kHighWaterMark = 10;
+    static const size_t kHighWaterMark = 1024;
 
     Producer::Producer(evpp::EventLoop* loop, const Option& ops)
         : Client(loop, kProducer, "", "", ops)
@@ -13,7 +13,8 @@ namespace evnsq {
         , published_count_(0)
         , published_ok_count_(0)
         , published_failed_count_(0)
-        , hwm_triggered_(false) {
+        , hwm_triggered_(false)
+        , high_water_mark_(kHighWaterMark) {
         conn_ = conns_.end();
         ready_to_publish_fn_ = std::bind(&Producer::OnReady, this, std::placeholders::_1);
     }
@@ -21,11 +22,46 @@ namespace evnsq {
     Producer::~Producer() {
     }
 
-    bool Producer::Publish(const std::string& topic, const std::string& msg) {
+    void Producer::Publish(const std::string& topic, const std::string& msg) {
+        if (loop_->IsInLoopThread()) {
+            PublishInLoop(topic, msg);
+        } else {
+            loop_->RunInLoop(std::bind(&Producer::Publish, this, topic, msg));
+        }
+    }
+
+
+    void Producer::MultiPublish(const std::string& topic, const std::vector<std::string>& messages) {
+        if (messages.empty()) {
+            return;
+        }
+
+        if (messages.size() == 1) {
+            Publish(topic, messages[0]);
+            return;
+        }
+
+        if (loop_->IsInLoopThread()) {
+            MultiPublishInLoop(topic, messages);
+        } else {
+            loop_->RunInLoop(std::bind(&Producer::MultiPublishInLoop, this, topic, messages));
+        }
+    }
+
+    void Producer::SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark) {
+        high_water_mark_fn_ = cb;
+        high_water_mark_ = mark;
+    }
+
+
+    void Producer::PublishInLoop(const std::string& topic, const std::string& msg) {
         if (wait_ack_count_ > kHighWaterMark * conns_.size()) {
             LOG_WARN << "Too many messages are waiting a response ACK. Please try again later";
             hwm_triggered_ = true;
-            return false;
+            if (high_water_mark_fn_) {
+                high_water_mark_fn_(this, wait_ack_count_);
+            }
+            return;
         }
         assert(loop_->IsInLoopThread());
         if (conn_ == conns_.end()) {
@@ -39,9 +75,34 @@ namespace evnsq {
         conn_->second->WriteCommand(c);
         PushWaitACKCommand(conn_->second.get(), c);
         LOG_INFO << "Publish a message, command=" << c;
-        
+
         ++conn_; // Using next Conn
-        return true;
+    }
+
+
+    void Producer::MultiPublishInLoop(const std::string& topic, const std::vector<std::string>& messages) {
+        if (wait_ack_count_ > kHighWaterMark * conns_.size()) {
+            LOG_WARN << "Too many messages are waiting a response ACK. Please try again later";
+            hwm_triggered_ = true;
+            if (high_water_mark_fn_) {
+                high_water_mark_fn_(this, wait_ack_count_);
+            }
+            return;
+        }
+        assert(loop_->IsInLoopThread());
+        if (conn_ == conns_.end()) {
+            conn_ = conns_.begin();
+        }
+        assert(conn_ != conns_.end());
+        assert(conn_->second->IsReady());
+        Command* c = new Command;
+        c->MultiPublish(topic, messages);
+        published_count_++;
+        conn_->second->WriteCommand(c);
+        PushWaitACKCommand(conn_->second.get(), c);
+        LOG_INFO << "Publish a message, command=" << c;
+
+        ++conn_; // Using next Conn
     }
 
     void Producer::OnReady(Conn* conn) {
