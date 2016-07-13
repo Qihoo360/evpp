@@ -202,7 +202,7 @@ namespace evpp {
     }
 
     void TCPConn::HandleClose() {
-        // HandleClose() might trigger more once
+        // ∑¿÷π∂‡¥Œ¥•∑¢
         if (status_ == kDisconnected) {
             return;
         }
