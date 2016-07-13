@@ -53,8 +53,8 @@ namespace evnsq {
         high_water_mark_ = mark;
     }
 
-
-    void Producer::PublishInLoop(const std::string& topic, const std::string& msg) {
+    template <typename Argument>
+    void Producer::PublishInLoopFunc(const Function<Argument>& f) {
         if (wait_ack_count_ > kHighWaterMark * conns_.size()) {
             LOG_WARN << "Too many messages are waiting a response ACK. Please try again later";
             hwm_triggered_ = true;
@@ -69,8 +69,7 @@ namespace evnsq {
         }
         assert(conn_ != conns_.end());
         assert(conn_->second->IsReady());
-        Command* c = new Command;
-        c->Publish(topic, msg);
+        Command* c = f();
         published_count_++;
         conn_->second->WriteCommand(c);
         PushWaitACKCommand(conn_->second.get(), c);
@@ -79,30 +78,14 @@ namespace evnsq {
         ++conn_; // Using next Conn
     }
 
+    void Producer::PublishInLoop(const std::string& topic, const std::string& msg) {
+        Function<std::string> f(&Command::Publish, topic, msg);
+        PublishInLoopFunc(f);
+    }
 
     void Producer::MultiPublishInLoop(const std::string& topic, const std::vector<std::string>& messages) {
-        if (wait_ack_count_ > kHighWaterMark * conns_.size()) {
-            LOG_WARN << "Too many messages are waiting a response ACK. Please try again later";
-            hwm_triggered_ = true;
-            if (high_water_mark_fn_) {
-                high_water_mark_fn_(this, wait_ack_count_);
-            }
-            return;
-        }
-        assert(loop_->IsInLoopThread());
-        if (conn_ == conns_.end()) {
-            conn_ = conns_.begin();
-        }
-        assert(conn_ != conns_.end());
-        assert(conn_->second->IsReady());
-        Command* c = new Command;
-        c->MultiPublish(topic, messages);
-        published_count_++;
-        conn_->second->WriteCommand(c);
-        PushWaitACKCommand(conn_->second.get(), c);
-        LOG_INFO << "Publish a message, command=" << c;
-
-        ++conn_; // Using next Conn
+        Function<std::vector<std::string> > f(&Command::MultiPublish, topic, messages);
+        PublishInLoopFunc(f);
     }
 
     void Producer::OnReady(Conn* conn) {
