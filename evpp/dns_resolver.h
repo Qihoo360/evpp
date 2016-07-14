@@ -16,11 +16,11 @@ public:
     void Cancel();
 private:
     void StartInLoop();
+    void SyncDNSResolve();
+    void AsyncDNSResolve();
     void AsyncWait(Duration timeout);
     void OnTimeout();
     void OnCanceled();
-    void OnResolved(int result, char type, int count, int ttl, void* addresses);
-    static void OnResolved(int result, char type, int count, int ttl, void* addresses, void* arg);
 private:
     EventLoop* loop_;
     std::string host_;
