@@ -19,6 +19,7 @@
 
 #ifdef H_OS_WINDOWS
 #include <ws2tcpip.h>
+#include <ws2def.h>
 #else
 #include <netdb.h>
 #include <netinet/in.h>
