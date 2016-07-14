@@ -16,6 +16,10 @@ void Command::WriteTo(evpp::Buffer* buf) const {
 
     buf->AppendInt8('\n');
 
+    if (body_.empty()) {
+        return;
+    }
+
     if (body_.size() == 1) {
         const std::string& body = body_[0];
         buf->AppendInt32(int32_t(body.size()));
