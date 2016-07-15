@@ -14,6 +14,7 @@
 #include <evpp/httpc/response.h>
 
 #include "evpp/http/service.h"
+#include "evpp/http/context.h"
 #include "evpp/http/http_server.h"
 
 static bool g_stopping = false;
@@ -167,5 +168,23 @@ TEST_UNIT(testHTTPServer) {
         H_TEST_ASSERT(r);
         TestAll();
         ph.Stop(true);
+    }
+}
+
+TEST_UNIT(testFindClientIP) {
+    struct TestCase {
+        std::string uri;
+        std::string ip;
+    } cases[] = { 
+        {"/abc?clientip=", ""},
+        {"/abc?clientip=123.1.1.9", "123.1.1.9"},
+        {"/abc?clientip=123.1.1.9&a=b", "123.1.1.9"},
+        {"/abc?c=d&clientip=123.1.1.9&a=b", "123.1.1.9"},
+        {"/abc?c=d&xx=123.1.1.9&a=b", ""},
+    };
+
+    for (size_t i = 0; i < H_ARRAYSIZE(cases); i++) {
+        std::string ip = evpp::http::Context::FindClientIP(cases[i].uri.data());
+        H_TEST_ASSERT(ip == cases[i].ip);
     }
 }

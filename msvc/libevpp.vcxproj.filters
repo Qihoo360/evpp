@@ -228,5 +228,8 @@
     <ClInclude Include="..\evpp\http\context.h">
       <Filter>http\server</Filter>
     </ClInclude>
+    <ClInclude Include="..\evpp\memmem.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
