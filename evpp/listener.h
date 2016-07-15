@@ -34,7 +34,7 @@ private:
     EventLoop* loop_;
     bool listening_;
     std::string addr_;
-    std::shared_ptr<FdChannel> chan_;
+    std::unique_ptr<FdChannel> chan_;
     NewConnectionCallback new_conn_fn_;
 };
 }
