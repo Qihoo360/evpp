@@ -46,9 +46,9 @@ void TCPServer::Stop() {
 void TCPServer::StopInLoop() {
     LOG_TRACE << "Entering TCPServer::StopInLoop";
     listener_->Stop();
+
     auto it = connections_.begin();
     auto ite = connections_.end();
-
     for (; it != ite; ++it) {
         it->second->Close();
     }
@@ -62,10 +62,9 @@ void TCPServer::HandleNewConn(int sockfd,
                               const struct sockaddr_in* raddr) {
     assert(loop_->IsInLoopThread());
     EventLoop* io_loop = GetNextLoop(raddr);
-    char buf[64];
+    char buf[64] = {};
     snprintf(buf, sizeof buf, "-%s#%" PRIu64, remote_addr.c_str(), next_conn_id_++);
     std::string n = name_ + buf;
-
     TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
     assert(conn->type() == TCPConn::kIncoming);
     conn->SetMessageCallback(msg_fn_);
@@ -85,15 +84,12 @@ EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
 }
 
 void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
-    loop_->RunInLoop(std::bind(&TCPServer::RemoveConnectionInLoop, this, conn));
+    auto f = [this](const TCPConnPtr& c) {
+        // Remove the connection in the listener EventLoop
+        assert(this->loop_->IsInLoopThread());
+        this->connections_.erase(c->name());
+    };
+    loop_->RunInLoop(std::bind(f, conn));
 }
 
-void TCPServer::RemoveConnectionInLoop(const TCPConnPtr& conn) {
-    assert(loop_->IsInLoopThread());
-    connections_.erase(conn->name());
 }
-
-
-}
-
-
