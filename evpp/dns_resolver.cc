@@ -140,7 +140,6 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         evdns_base_free(dnsbase_, 0);
         dnsbase_ = NULL;
 
-        //TODO
         //No route to host
         //errno = EHOSTUNREACH;
         //OnError();
@@ -156,7 +155,6 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         evdns_base_free(dnsbase_, 0);
         dnsbase_ = NULL;
 
-        //TODO
         //No route to host
         //errno = EHOSTUNREACH;
         //OnError();
