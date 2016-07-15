@@ -66,6 +66,7 @@
     <ClInclude Include="..\evpp\libevent_watcher.h" />
     <ClInclude Include="..\evpp\listener.h" />
     <ClInclude Include="..\evpp\log_config.h" />
+    <ClInclude Include="..\evpp\memmem.h" />
     <ClInclude Include="..\evpp\platform_config.h" />
     <ClInclude Include="..\evpp\slice.h" />
     <ClInclude Include="..\evpp\sockets.h" />
