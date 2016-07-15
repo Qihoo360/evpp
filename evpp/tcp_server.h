@@ -42,8 +42,8 @@ private:
     void StopInLoop();
     void RemoveConnection(const TCPConnPtr& conn);
     void RemoveConnectionInLoop(const TCPConnPtr& conn); // Remove the connection in the listener EventLoop
-    void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/);
-    EventLoop* GetNextLoop(const std::string& remote_addr);
+    void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/, const struct sockaddr_in* raddr);
+    EventLoop* GetNextLoop(const struct sockaddr_in* raddr);
 private:
     typedef std::map<std::string, TCPConnPtr> ConnectionMap;
 
