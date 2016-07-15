@@ -49,7 +49,7 @@ private:
     EventLoop* loop_;  // the listener loop
     const std::string listen_addr_;
     const std::string name_;
-    std::shared_ptr<Listener> listener_;
+    std::unique_ptr<Listener> listener_;
     std::shared_ptr<EventLoopThreadPool> tpool_;
     MessageCallback msg_fn_;
     ConnectionCallback conn_fn_;
