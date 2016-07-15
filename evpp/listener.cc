@@ -86,7 +86,7 @@ void Listener::HandleAccept(Timestamp ts) {
              << ", client fd=" << nfd;
 
     if (new_conn_fn_) {
-        new_conn_fn_(nfd, raddr);
+        new_conn_fn_(nfd, raddr, (const struct sockaddr_in*)(&ss));
     }
 }
 
