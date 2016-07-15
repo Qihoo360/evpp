@@ -20,6 +20,7 @@ public:
     ConnPtr Get(EventLoop* loop);
     void Put(const ConnPtr& c);
 
+    // To make sure all Conn are released in it's own EventLoop
     void Clear();
 
     const std::string& host() const {
@@ -38,7 +39,7 @@ private:
     size_t max_pool_size_; // The max size of the pool per EventLoop
 
     std::mutex mutex_; // The guard of pools_
-    std::map<EventLoop*, std::vector<ConnPtr> > pool_; // TODO make sure all Conn released in EventLoop
+    std::map<EventLoop*, std::vector<ConnPtr> > pool_;
 };
 } // httpc
 } // evpp
