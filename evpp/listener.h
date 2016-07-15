@@ -9,7 +9,10 @@ class FdChannel;
 
 class EVPP_EXPORT Listener {
 public:
-    typedef std::function<void(int sockfd, const std::string& /*ip:port*/)> NewConnectionCallback;
+    typedef std::function<
+        void(int sockfd,
+             const std::string& /*ip:port*/,
+             const struct sockaddr_in* /*remote addr*/)> NewConnectionCallback;
     Listener(EventLoop* loop, const std::string& addr/*ip:port*/);
     ~Listener();
 
