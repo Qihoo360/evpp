@@ -32,7 +32,7 @@ private:
     std::string host_;
     Duration timeout_;
     Functor functor_;
-    TimerEventWatcher* timer_;
+    std::unique_ptr<TimerEventWatcher> timer_;
     std::vector <struct in_addr> addrs_;
 };
 }

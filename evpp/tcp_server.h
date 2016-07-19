@@ -41,16 +41,15 @@ public:
 private:
     void StopInLoop();
     void RemoveConnection(const TCPConnPtr& conn);
-    void RemoveConnectionInLoop(const TCPConnPtr& conn); // Remove the connection in the listener EventLoop
-    void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/);
-    EventLoop* GetNextLoop(const std::string& remote_addr);
+    void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/, const struct sockaddr_in* raddr);
+    EventLoop* GetNextLoop(const struct sockaddr_in* raddr);
 private:
     typedef std::map<std::string, TCPConnPtr> ConnectionMap;
 
     EventLoop* loop_;  // the listener loop
     const std::string listen_addr_;
     const std::string name_;
-    std::shared_ptr<Listener> listener_;
+    std::unique_ptr<Listener> listener_;
     std::shared_ptr<EventLoopThreadPool> tpool_;
     MessageCallback msg_fn_;
     ConnectionCallback conn_fn_;
@@ -60,6 +59,6 @@ private:
 
     // always in loop thread
     uint64_t next_conn_id_;
-    ConnectionMap connections_; // TODO 这个变量真的有必要存在么？由于每一个连接都会在libevent内部做好记录，这里再保存一份理论上是没必要的。但代码看起来更清晰一些。
+    ConnectionMap connections_;
 };
 }
