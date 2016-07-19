@@ -34,7 +34,8 @@ bool TCPServer::Start() {
         std::bind(&TCPServer::HandleNewConn,
                   this,
                   std::placeholders::_1,
-                  std::placeholders::_2));
+                  std::placeholders::_2,
+                  std::placeholders::_3));
     return true;
 }
 
@@ -45,9 +46,9 @@ void TCPServer::Stop() {
 void TCPServer::StopInLoop() {
     LOG_TRACE << "Entering TCPServer::StopInLoop";
     listener_->Stop();
+
     auto it = connections_.begin();
     auto ite = connections_.end();
-
     for (; it != ite; ++it) {
         it->second->Close();
     }
@@ -56,13 +57,14 @@ void TCPServer::StopInLoop() {
     LOG_TRACE << "TCPServer::StopInLoop exited";
 }
 
-void TCPServer::HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/) {
+void TCPServer::HandleNewConn(int sockfd,
+                              const std::string& remote_addr/*ip:port*/,
+                              const struct sockaddr_in* raddr) {
     assert(loop_->IsInLoopThread());
-    EventLoop* io_loop = GetNextLoop(remote_addr);
-    char buf[64];
+    EventLoop* io_loop = GetNextLoop(raddr);
+    char buf[64] = {};
     snprintf(buf, sizeof buf, "-%s#%" PRIu64, remote_addr.c_str(), next_conn_id_++);
     std::string n = name_ + buf;
-
     TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
     assert(conn->type() == TCPConn::kIncoming);
     conn->SetMessageCallback(msg_fn_);
@@ -72,29 +74,22 @@ void TCPServer::HandleNewConn(int sockfd, const std::string& remote_addr/*ip:por
     connections_[n] = conn;
 }
 
-EventLoop* TCPServer::GetNextLoop(const std::string& raddr) {
+EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
     if (threads_dispatch_policy_ == kRoundRobin) {
         return tpool_->GetNextLoop();
     } else {
         assert(threads_dispatch_policy_ == kIPAddressHashing);
-        //TODO efficient improve. Using the sockaddr_in to calculate the hash value of the remote address instead of std::string
-        auto index = raddr.rfind(':');
-        assert(index != std::string::npos);
-        auto hash = std::hash<std::string>()(std::string(raddr.data(), index));
-        return tpool_->GetNextLoopWithHash(hash);
+        return tpool_->GetNextLoopWithHash(raddr->sin_addr.s_addr);
     }
 }
 
 void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
-    loop_->RunInLoop(std::bind(&TCPServer::RemoveConnectionInLoop, this, conn));
+    auto f = [this](const TCPConnPtr& c) {
+        // Remove the connection in the listener EventLoop
+        assert(this->loop_->IsInLoopThread());
+        this->connections_.erase(c->name());
+    };
+    loop_->RunInLoop(std::bind(f, conn));
 }
 
-void TCPServer::RemoveConnectionInLoop(const TCPConnPtr& conn) {
-    assert(loop_->IsInLoopThread());
-    connections_.erase(conn->name());
 }
-
-
-}
-
-

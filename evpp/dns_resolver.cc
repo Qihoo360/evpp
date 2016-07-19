@@ -6,16 +6,11 @@
 
 namespace evpp {
 DNSResolver::DNSResolver(EventLoop* evloop, const std::string& host, Duration timeout, const Functor& f)
-    : loop_(evloop), dnsbase_(NULL), dns_req_(NULL), host_(host), timeout_(timeout), functor_(f), timer_(NULL) {}
+    : loop_(evloop), dnsbase_(NULL), dns_req_(NULL), host_(host), timeout_(timeout), functor_(f) {}
 
 DNSResolver::~DNSResolver() {
     LOG_INFO << "DNSResolver::~DNSResolver tid=" << std::this_thread::get_id() << " this=" << this;
 
-    if (timer_) {
-        delete timer_;
-        timer_ = NULL;
-    }
-    
     if (dnsbase_) {
         evdns_base_free(dnsbase_, 0);
         dnsbase_ = NULL;
@@ -75,13 +70,13 @@ void DNSResolver::SyncDNSResolve() {
 
 void DNSResolver::Cancel() {
     if (timer_) {
-        loop_->RunInLoop(std::bind(&TimerEventWatcher::Cancel, timer_));
+        loop_->RunInLoop(std::bind(&TimerEventWatcher::Cancel, timer_.get()));
     }
 }
 
 void DNSResolver::AsyncWait() {
     LOG_INFO << "DNSResolver::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this;
-    timer_ = new TimerEventWatcher(loop_, std::bind(&DNSResolver::OnTimeout, this), timeout_);
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&DNSResolver::OnTimeout, this), timeout_));
     timer_->set_cancel_callback(std::bind(&DNSResolver::OnCanceled, this));
     timer_->Init();
     timer_->AsyncWait();
@@ -140,7 +135,6 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         evdns_base_free(dnsbase_, 0);
         dnsbase_ = NULL;
 
-        //TODO
         //No route to host
         //errno = EHOSTUNREACH;
         //OnError();
@@ -156,7 +150,6 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         evdns_base_free(dnsbase_, 0);
         dnsbase_ = NULL;
 
-        //TODO
         //No route to host
         //errno = EHOSTUNREACH;
         //OnError();
