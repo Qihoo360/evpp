@@ -160,9 +160,22 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
     std::map<uint16_t, std::vector<std::string> > vbucket_keys;
 
     VbucketConfigPtr vbconf = vbucket_config();
-
+	uint16_t vbucket = 0;
+	uint16_t server_id = 0;
+	std::map<uint16_t, uint16_t> serverid_vbucket;
+    std::map<uint16_t, uint16_t>::iterator iter;
     for (size_t i = 0; i < keys.size(); ++i) {
-        uint16_t vbucket = vbconf->GetVbucketByKey(keys[i].c_str(), keys[i].size());
+        vbucket = vbconf->GetVbucketByKey(keys[i].c_str(), keys[i].size());
+		server_id = vbconf->SelectServerId(vbucket, BAD_SERVER_ID);
+
+		if (server_id != BAD_SERVER_ID) {
+			iter = serverid_vbucket.find(server_id);
+			if (iter != serverid_vbucket.end()) {
+				vbucket = iter->second;
+			} else {
+				serverid_vbucket.insert(std::make_pair(server_id, vbucket));
+			}
+		}
         vbucket_keys[vbucket].push_back(keys[i]);
     }
 
