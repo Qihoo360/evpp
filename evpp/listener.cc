@@ -41,7 +41,7 @@ void Listener::Listen() {
         LOG_FATAL << "Listen failed " << strerror(serrno);
     }
 
-    chan_ = std::shared_ptr<FdChannel>(new FdChannel(loop_, fd_, true, false));
+    chan_.reset(new FdChannel(loop_, fd_, true, false));
     chan_->SetReadCallback(std::bind(&Listener::HandleAccept, this, std::placeholders::_1));
     loop_->RunInLoop(std::bind(&FdChannel::AttachToLoop, chan_.get()));
     listening_ = true;
@@ -86,7 +86,7 @@ void Listener::HandleAccept(Timestamp ts) {
              << ", client fd=" << nfd;
 
     if (new_conn_fn_) {
-        new_conn_fn_(nfd, raddr);
+        new_conn_fn_(nfd, raddr, (const struct sockaddr_in*)(&ss));
     }
 }
 

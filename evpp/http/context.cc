@@ -1,13 +1,12 @@
 #include "context.h"
 #include "service.h"
 #include "evpp/libevent_headers.h"
+#include "evpp/memmem.h"
 
 namespace evpp {
 namespace http {
-static const std::string __s_null = "";
 Context::Context(struct evhttp_request* r)
     : req(r) {
-    remote_ip = req->remote_host;
 }
 
 Context::~Context() {
@@ -45,7 +44,11 @@ bool Context::Init(Service* hsrv) {
 
 #endif
 
-    //TODO 如果该请求是Nginx转发过来的，需要将URL中的 clientip 提取出来，并赋值给 remote_ip
+    remote_ip = FindClientIP(original_uri());
+    if (remote_ip.empty()) {
+        remote_ip = req->remote_host;
+    }
+
     return true;
 }
 
@@ -59,6 +62,23 @@ void Context::AddResponseHeader(const std::string& key, const std::string& value
 
 const char* Context::FindRequestHeader(const char* key) {
     return evhttp_find_header(req->input_headers, key);
+}
+
+std::string Context::FindClientIP(const char* uri) {
+    static const std::string __s_null = "";
+    static const std::string __s_clientip = "clientip=";
+    const char* found = static_cast<const char*>(memmem(uri, strlen(uri), __s_clientip.data(), __s_clientip.size()));
+    if (found) {
+        const char* ip = found + __s_clientip.size();
+        const char* end = strchr(const_cast<char*>(ip), '&');
+        if (!end) {
+            return ip;
+        } else {
+            return std::string(ip, end);
+        }
+    }
+
+    return __s_null;
 }
 }
 }
