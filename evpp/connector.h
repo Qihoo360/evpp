@@ -40,9 +40,9 @@ private:
     std::string remote_addr_; // host:port
     struct sockaddr_in raddr_;
     Duration timeout_;
-    std::shared_ptr<FdChannel> chan_;
-    std::shared_ptr<TimerEventWatcher> timer_;
-    std::shared_ptr<DNSResolver> dns_resolver_;
+    std::unique_ptr<FdChannel> chan_;
+    std::unique_ptr<TimerEventWatcher> timer_;
+    std::unique_ptr<DNSResolver> dns_resolver_;
     NewConnectionCallback conn_fn_;
 };
 }
