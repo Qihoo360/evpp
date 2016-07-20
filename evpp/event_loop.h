@@ -32,7 +32,6 @@ public:
 
     void RunInLoop(const Functor& handler);
     void QueueInLoop(const Functor& handler);
-    void AddAfterLoopFunctor(const Functor& handler);
 
     struct event_base* event_base() {
         return event_base_;
@@ -52,7 +51,6 @@ private:
     void StopInLoop();
     void Init();
     void DoPendingFunctors();
-    void DoAfterLoopFunctors();
 
 private:
     struct event_base* event_base_;
@@ -64,6 +62,5 @@ private:
     std::shared_ptr<PipeEventWatcher> watcher_;
     std::vector<Functor> pending_functors_; // @Guarded By mutex_
     bool calling_pending_functors_;
-    std::vector<Functor> after_loop_functors_; // @Guarded By mutex_
 };
 }
