@@ -24,7 +24,7 @@ private:
     EventLoop* base_loop_;
     bool started_;
     uint32_t thread_num_;
-    std::atomic<int> next_;
+    std::atomic<int64_t> next_;
 
     typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
     std::vector<EventLoopThreadPtr> threads_;
