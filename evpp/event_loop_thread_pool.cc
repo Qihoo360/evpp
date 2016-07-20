@@ -88,7 +88,7 @@ EventLoop* EventLoopThreadPool::GetNextLoop() {
 
     if (!threads_.empty()) {
         // No need to lock here
-        int next = next_.fetch_add(1);
+        int64_t next = next_.fetch_add(1);
         next = next % threads_.size();
         loop = (threads_[next])->event_loop();
     }
