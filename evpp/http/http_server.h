@@ -15,7 +15,7 @@ class Service;
 // 如果 thread_num 不为 0，它还会启动一个线程池，用于处理HTTP请求
 class EVPP_EXPORT HTTPServer {
 public:
-    HTTPServer(int thread_num = 0);
+    HTTPServer(uint32_t thread_num = 0);
 
     ~HTTPServer();
 
