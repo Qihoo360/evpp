@@ -8,7 +8,7 @@ namespace evpp {
 TCPServer::TCPServer(EventLoop* loop,
                      const std::string& listen_addr,
                      const std::string& name,
-                     int thread_num)
+                     uint32_t thread_num)
     : loop_(loop)
     , listen_addr_(listen_addr)
     , name_(name)
