@@ -50,7 +50,6 @@ void EventLoop::Run() {
     running_ = true;
     tid_ = std::this_thread::get_id(); // The actual thread id
     int rc = event_base_dispatch(event_base_);
-    DoAfterLoopFunctors();
 
     if (rc == 1) {
         LOG_ERROR << "event_base_dispatch error: no event registered";
@@ -91,23 +90,6 @@ void EventLoop::StopInLoop() {
     tv.tv_sec = 0;
     tv.tv_usec = 500 * 1000; //500ms
     event_base_loopexit(event_base_, &tv);
-}
-
-void EventLoop::AddAfterLoopFunctor(const Functor& cb) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    after_loop_functors_.push_back(cb);
-}
-
-void EventLoop::DoAfterLoopFunctors() {
-    std::vector<Functor> functors;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        functors.swap(after_loop_functors_);
-    }
-
-    for (size_t i = 0; i < functors.size(); ++i) {
-        functors[i]();
-    }
 }
 
 void EventLoop::AfterFork() {
