@@ -19,7 +19,6 @@ public:
     bool Start(bool wait_until_thread_started = false, const Functor& pre = Functor(), const Functor& post = Functor());
     void Stop(bool wait_thread_exit = false);
 
-public:
     void SetName(const std::string& n);
     const std::string& name() const;
     EventLoop* event_loop() const;
@@ -27,9 +26,20 @@ public:
     std::thread::id tid() const;
     bool IsRunning() const;
     bool IsStopped() const;
-private:
 
-    class Impl;
-    std::shared_ptr<Impl> impl_;
+private:
+    void Run(const Functor& pre, const Functor& post);
+
+private:
+    std::shared_ptr<EventLoop> event_loop_;
+    std::shared_ptr<std::thread> thread_;
+    enum State {
+        kRunning = 1,
+        kStopping = 2,
+        kStopped = 3,
+    };
+    State state_;
+
+    std::string name_;
 };
 }
