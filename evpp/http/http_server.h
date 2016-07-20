@@ -46,7 +46,7 @@ private:
 private:
     std::shared_ptr<Service>   http_;
 
-    // 主要事件循环线程，监听http请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
+    // 监听主线程，监听http请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
     std::shared_ptr<EventLoopThread> listen_thread_;
 
     // 工作线程池，处理请求

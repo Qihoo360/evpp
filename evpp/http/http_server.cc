@@ -8,8 +8,8 @@
 
 namespace evpp {
 namespace http {
-HTTPServer::HTTPServer(uint32_t thread_num)
-    : listen_thread_(new EventLoopThread) {
+HTTPServer::HTTPServer(uint32_t thread_num) {
+    listen_thread_.reset(new EventLoopThread());
     tpool_.reset(new EventLoopThreadPool(listen_thread_->event_loop(), thread_num));
     http_.reset(new Service(listen_thread_->event_loop()));
 }
@@ -33,7 +33,7 @@ bool HTTPServer::Start(int port) {
 
     listen_thread_->SetName("StandaloneHTTPServer-Main");
 
-    // 当 base_loop_ 停止运行时，会调用该函数来停止 Service
+    // 当 listen_thread_ 退出时，会调用该函数来停止 Service
     auto http_close_fn = std::bind(&Service::Stop, http_);
     rc = listen_thread_->Start(true,
                                EventLoopThread::Functor(),
@@ -49,6 +49,8 @@ bool HTTPServer::Start(int port) {
 void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
     listen_thread_->Stop();
     tpool_->Stop();
+
+    // http_ 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
 
     if (wait_thread_exit) {
         while (!listen_thread_->IsStopped() || !tpool_->IsStopped()) {
