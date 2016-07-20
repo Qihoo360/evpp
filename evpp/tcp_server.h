@@ -19,7 +19,7 @@ public:
     TCPServer(EventLoop* loop,
               const std::string& listen_addr/*ip:port*/,
               const std::string& name,
-              int thread_num);
+              uint32_t thread_num);
     ~TCPServer();
     bool Start();
     void Stop();
