@@ -119,6 +119,9 @@
     <ClInclude Include="..\apps\evmc\exp.h">
       <Filter>evmc</Filter>
     </ClInclude>
+    <ClInclude Include="..\apps\evmc\random.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\3rdparty\libhashkit\include.am">

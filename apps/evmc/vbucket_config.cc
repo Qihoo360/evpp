@@ -18,7 +18,7 @@ namespace evmc {
 
 const uint16_t BAD_SERVER_ID = 65535;
 
-VbucketConfig::VbucketConfig() : rand_(new osl::Random(time(NULL))) {
+VbucketConfig::VbucketConfig() : rand_(new Random(time(NULL))) {
 }
 
 VbucketConfig::~VbucketConfig() {
@@ -63,7 +63,7 @@ uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const
         }
 
         if (total_weight > 0) {
-            server_id = weighted_items.upper_bound(rand_->next() % total_weight)->second;
+            server_id = weighted_items.upper_bound(rand_->Next() % total_weight)->second;
             LOG_DEBUG << "SelectServerId selected_server_id=" << server_id << " last_id=" << last_id;
         } else {
             return BAD_SERVER_ID;
