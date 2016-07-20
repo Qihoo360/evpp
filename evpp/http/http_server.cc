@@ -8,7 +8,7 @@
 
 namespace evpp {
 namespace http {
-HTTPServer::HTTPServer(uint32_t thread_num) {
+HTTPServer::HTTPServer(uint32_t thread_num) : threads_dispatch_policy_(kRoundRobin) {
     listen_thread_.reset(new EventLoopThread());
     tpool_.reset(new EventLoopThreadPool(listen_thread_->event_loop(), thread_num));
     http_.reset(new Service(listen_thread_->event_loop()));
@@ -99,7 +99,13 @@ void HTTPServer::Dispatch(const ContextPtr& ctx,
         // 当上层应用处理完后，必须要调用 response_callback 来处理结果反馈回来，也就是会回到 Service::SendReply 函数中。
         user_cb(context, response_cb);
     };
-    EventLoop* loop = tpool_->GetNextLoop();
+    EventLoop* loop = NULL;
+    if (threads_dispatch_policy_ == kRoundRobin) {
+        loop = tpool_->GetNextLoop();
+    } else {
+        uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
+        loop = tpool_->GetNextLoopWithHash(hash);
+    }
     loop->RunInLoop(std::bind(f, ctx, response_callback, user_callback));
 }
 
