@@ -105,7 +105,7 @@ void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, const std::str
 }
 
 BufferPtr MultiGetCommand::RequestBuffer() const {
-    BufferPtr buf(new evpp::Buffer(50 * keys_.size()));  // 预分配长度多数情况够长
+    BufferPtr buf(new evpp::Buffer(50 * keys_.size())); // 预分配长度大多数时候是足够的
 
     for (size_t i = 0; i < keys_.size(); ++i) {
         protocol_binary_request_header req;
