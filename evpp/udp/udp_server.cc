@@ -181,7 +181,7 @@ void Server::RecvingLoop(RecvThread* thread) {
             recv_msg->WriteBytes(readn);
             if (tpool_) {
                 EventLoop* loop = NULL;
-                if (threads_dispatch_policy_ == kRoundRobin) {
+                if (IsRoundRobin()) {
                     loop = tpool_->GetNextLoop();
                 } else {
                     loop = tpool_->GetNextLoopWithHash(sockaddr_in_cast(recv_msg->remote_addr())->sin_addr.s_addr);
