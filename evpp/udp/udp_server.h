@@ -1,6 +1,8 @@
 #pragma once
 
 #include "evpp/inner_pre.h"
+#include "evpp/thread_dispatch_policy.h"
+
 #include "udp_message.h"
 
 #include <thread>
@@ -8,13 +10,10 @@
 namespace evpp {
 class EventLoopThreadPool;
 namespace udp {
-class EVPP_EXPORT Server {
+class EVPP_EXPORT Server : public ThreadDispatchPolicy {
 public:
     typedef std::function<void(const MessagePtr& msg)> MessageHandler;
-    enum ThreadDispatchPolicy {
-        kRoundRobin,
-        kIPAddressHashing,
-    };
+
 public:
     Server();
     ~Server();
@@ -37,9 +36,6 @@ public:
         tpool_ = pool;
     }
 
-    void SetThreadDispatchPolicy(ThreadDispatchPolicy v) {
-        threads_dispatch_policy_ = v;
-    }
 private:
     class RecvThread;
     typedef std::shared_ptr<RecvThread> RecvThreadPtr;
@@ -49,7 +45,6 @@ private:
 
     // 工作线程池，处理请求
     std::shared_ptr<EventLoopThreadPool> tpool_;
-    ThreadDispatchPolicy threads_dispatch_policy_;
 private:
     void RecvingLoop(RecvThread* th);
 };

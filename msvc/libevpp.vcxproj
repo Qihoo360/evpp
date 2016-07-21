@@ -78,6 +78,7 @@
     <ClInclude Include="..\evpp\tcp_client.h" />
     <ClInclude Include="..\evpp\tcp_conn.h" />
     <ClInclude Include="..\evpp\tcp_server.h" />
+    <ClInclude Include="..\evpp\thread_dispatch_policy.h" />
     <ClInclude Include="..\evpp\timestamp.h" />
     <ClInclude Include="..\evpp\timestamp.inl.h" />
     <ClInclude Include="..\evpp\udp\sync_udp_client.h" />
