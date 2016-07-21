@@ -7,7 +7,7 @@
 namespace evpp {
 namespace http {
 Service::Service(EventLoop* l)
-    : evhttp_(NULL), listen_loop_(l) {
+    : evhttp_(NULL), listen_loop_(l), evhttp_bound_socket_(NULL) {
     evhttp_ = evhttp_new(listen_loop_->event_base());
 
     if (!evhttp_) {
@@ -24,9 +24,16 @@ bool Service::Listen(int port) {
     assert(evhttp_);
     assert(listen_loop_->IsInLoopThread());
 
+#if LIBEVENT_VERSION_NUMBER >= 0x02001500
+    evhttp_bound_socket_ = evhttp_bind_socket_with_handle(evhttp_, "0.0.0.0", port);
+    if (!evhttp_bound_socket_) {
+        return false;
+    }
+#else
     if (evhttp_bind_socket(evhttp_, "0.0.0.0", port) != 0) {
         return false;
     }
+#endif
 
     evhttp_set_gencb(evhttp_, &Service::GenericCallback, this);
     return true;
@@ -43,6 +50,27 @@ void Service::Stop() {
     listen_loop_ = NULL;
     callbacks_.clear();
     default_callback_ = HTTPRequestCallback();
+}
+
+
+void Service::Pause() {
+#if LIBEVENT_VERSION_NUMBER >= 0x02001500
+    if (evhttp_bound_socket_) {
+        evconnlistener_disable(evhttp_bound_socket_get_listener(evhttp_bound_socket_));
+    }
+#else
+    LOG_ERROR << "Not support!".
+#endif
+}
+
+void Service::Continue() {
+#if LIBEVENT_VERSION_NUMBER >= 0x02001500
+    if (evhttp_bound_socket_) {
+        evconnlistener_enable(evhttp_bound_socket_get_listener(evhttp_bound_socket_));
+    }
+#else
+    LOG_ERROR << "Not support!".
+#endif
 }
 
 bool Service::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
