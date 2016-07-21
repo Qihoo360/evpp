@@ -7,55 +7,9 @@
 namespace evpp {
 namespace udp {
 
-class Server::Impl {
-public:
-    Impl();
-    ~Impl();
+Server::Server() {}
 
-    //! Start the server.
-    //! \remark Start the service and listening in the given port
-    //!     This call will start several receiving thread at every net interface
-    //! \return false if failed to start server.
-    bool Start(std::vector<int> ports);
-    bool Start(int port);
-
-    //! Stop the server
-    void Stop();
-
-    bool IsRunning() const;
-    bool IsStopped() const;
-
-    void SetMessageHandler(MessageHandler handler) {
-        message_handler_ = handler;
-    }
-
-public:
-    void set_name(const std::string& n);
-
-private:
-    struct RecvThread {
-        int     sockfd;
-        Impl*   udp_server;
-        int     port;
-        std::shared_ptr<std::thread> thread;
-        Status status;
-    };
-    typedef std::shared_ptr<RecvThread> RecvThreadPtr;
-
-    typedef std::vector<RecvThreadPtr> RecvThreadVector;
-    RecvThreadVector recv_threads_;
-    MessageHandler   message_handler_;
-
-    //For unit test
-private:
-    std::string      name_;
-private:
-    void RecvingLoop(RecvThread* th);
-};
-
-Server::Impl::Impl() {}
-
-Server::Impl::~Impl() {
+Server::~Server() {
     RecvThreadVector::iterator it(recv_threads_.begin());
     RecvThreadVector::iterator ite(recv_threads_.end());
 
@@ -67,7 +21,7 @@ Server::Impl::~Impl() {
     }
 }
 
-bool Server::Impl::Start(std::vector<int> ports) {
+bool Server::Start(std::vector<int> ports) {
     std::vector<int>::const_iterator pit = ports.begin();
     std::vector<int>::const_iterator pite = ports.end();
 
@@ -80,7 +34,7 @@ bool Server::Impl::Start(std::vector<int> ports) {
     return true;
 }
 
-bool Server::Impl::Start(int port) {
+bool Server::Start(int port) {
     if (!message_handler_) {
         LOG_ERROR << "MessageHandler DO NOT set!";
         return false;
@@ -91,23 +45,29 @@ bool Server::Impl::Start(int port) {
     th->port = port;
     th->sockfd = CreateUDPServer(port);
     th->udp_server = this;
-    th->thread.reset(new std::thread(std::bind(&Server::Impl::RecvingLoop, this, th.get())));
+    th->thread.reset(new std::thread(std::bind(&Server::RecvingLoop, this, th.get())));
     SetTimeout(th->sockfd, 500);
     LOG_TRACE << "start udp server at 0.0.0.0:" << port;
     recv_threads_.push_back(th);
     return true;
 }
 
-void Server::Impl::Stop() {
+void Server::Stop(bool wait_thread_exit) {
     RecvThreadVector::iterator it(recv_threads_.begin());
     RecvThreadVector::iterator ite(recv_threads_.end());
 
     for (; it != ite; it++) {
         (*it)->status = Server::kStopping;
     }
+
+    if (wait_thread_exit) {
+        while (!IsStopped()) {
+            usleep(1);
+        }
+    }
 }
 
-bool Server::Impl::IsRunning() const {
+bool Server::IsRunning() const {
     bool rc = true;
     RecvThreadVector::const_iterator it(recv_threads_.begin());
     RecvThreadVector::const_iterator ite(recv_threads_.end());
@@ -119,7 +79,7 @@ bool Server::Impl::IsRunning() const {
     return rc;
 }
 
-bool Server::Impl::IsStopped() const {
+bool Server::IsStopped() const {
     bool rc = true;
     RecvThreadVector::const_iterator it(recv_threads_.begin());
     RecvThreadVector::const_iterator ite(recv_threads_.end());
@@ -139,7 +99,7 @@ inline bool IsEAgain(int eno) {
 #endif
 }
 
-void Server::Impl::RecvingLoop(RecvThread* th) {
+void Server::RecvingLoop(RecvThread* th) {
     while (th->status == Server::kRunning) {
         size_t nBufSize = 1472; // TODO The UDP max payload size
         MessagePtr recv_msg(new Message(th->sockfd, nBufSize));
@@ -163,64 +123,8 @@ void Server::Impl::RecvingLoop(RecvThread* th) {
     }
 
     th->status = Server::kStopped;
-    LOG_INFO << "fd=" << th->sockfd << " port=" << th->port << " UDP server(" << name_ << ") existed.";
+    LOG_INFO << "fd=" << th->sockfd << " port=" << th->port << " UDP server existed.";
     EVUTIL_CLOSESOCKET(th->sockfd);
-}
-
-void Server::Impl::set_name(const std::string& n) {
-    name_ = n;
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
-
-void Server::set_name(const std::string& n) {
-    impl_->set_name(n);
-}
-void Server::SetMessageHandler(MessageHandler handler) {
-    impl_->SetMessageHandler(handler);
-}
-
-bool Server::Start(int port) {
-    return impl_->Start(port);
-}
-
-bool Server::Start(std::vector<int> ports) {
-    return impl_->Start(ports);
-}
-
-void Server::Stop() {
-    Stop(true);
-}
-
-void Server::Stop(bool wait_thread_exit) {
-    impl_->Stop();
-
-    if (wait_thread_exit) {
-        while (!impl_->IsStopped()) {
-            usleep(1);
-        }
-    }
-}
-
-bool Server::IsRunning() const {
-    return impl_->IsRunning();
-}
-
-bool Server::IsStopped() const {
-    return impl_->IsStopped();
-}
-
-Server::Server() {
-    impl_.reset(new Server::Impl);
-}
-
-Server::~Server() {
-    impl_->Stop();
-    impl_.reset();
 }
 
 }
