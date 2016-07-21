@@ -54,10 +54,14 @@ inline const struct sockaddr_storage* sockaddr_storage_cast(const struct sockadd
 
 EVPP_EXPORT std::string strerror(int e);
 EVPP_EXPORT int CreateNonblockingSocket();
+EVPP_EXPORT int CreateUDPServer(int port);
 EVPP_EXPORT void SetKeepAlive(int fd);
+EVPP_EXPORT void SetReuseAddr(int fd);
+EVPP_EXPORT void SetTimeout(int fd, uint32_t timeout_ms);
 EVPP_EXPORT struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/);
 EVPP_EXPORT struct sockaddr_in GetLocalAddr(int sockfd);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr_storage* ss);
+
 }
 
 #ifdef H_OS_WINDOWS
