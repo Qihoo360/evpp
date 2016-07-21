@@ -3,6 +3,8 @@
 #include "evpp/inner_pre.h"
 #include "udp_message.h"
 
+#include <thread>
+
 namespace evpp {
 namespace udp {
 
@@ -26,20 +28,30 @@ public:
     bool Start(int port);
 
     //! Stop the server
-    void Stop();
     void Stop(bool wait_thread_exit);
 
     bool IsRunning() const;
     bool IsStopped() const;
 
-    void SetMessageHandler(MessageHandler handler);
-
-public:
-    void set_name(const std::string& n);
+    void SetMessageHandler(MessageHandler handler) {
+        message_handler_ = handler;
+    }
 
 private:
-    class Impl;
-    std::shared_ptr<Impl> impl_;
+    struct RecvThread {
+        int     sockfd;
+        Server*   udp_server;
+        int     port;
+        std::shared_ptr<std::thread> thread;
+        Status status;
+    };
+    typedef std::shared_ptr<RecvThread> RecvThreadPtr;
+
+    typedef std::vector<RecvThreadPtr> RecvThreadVector;
+    RecvThreadVector recv_threads_;
+    MessageHandler   message_handler_;
+private:
+    void RecvingLoop(RecvThread* th);
 };
 
 }
