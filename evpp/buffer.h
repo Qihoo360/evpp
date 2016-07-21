@@ -105,7 +105,7 @@ public:
 public:
     void Write(const void* /*restrict*/ d, size_t len) {
         ensureWritableBytes(len);
-        memcpy(beginWrite(), d, len);
+        memcpy(WriteBegin(), d, len);
         assert(write_index_ + len <= capacity_);
         write_index_ += len;
     }
@@ -175,6 +175,10 @@ public:
         write_index_ -= n;
     }
 
+    void WriteBytes(size_t n) {
+        assert(n <= WritableBytes());
+        write_index_ += n;
+    }
 
     //Read
 public:
@@ -313,6 +317,14 @@ public:
         return buffer_ + read_index_;
     }
 
+    char* WriteBegin() {
+        return begin() + write_index_;
+    }
+
+    const char* WriteBegin() const {
+        return begin() + write_index_;
+    }
+
     // length returns the number of bytes of the unread portion of the buffer
     size_t length() const {
         assert(write_index_ >= read_index_);
@@ -331,7 +343,6 @@ public:
         return capacity_;
     }
 
-
     size_t WritableBytes() const {
         assert(capacity_ >= write_index_);
         return capacity_ - write_index_;
@@ -344,15 +355,15 @@ public:
     // Helpers
 public:
     const char* FindCRLF() const {
-        const char* crlf = std::search(data(), beginWrite(), kCRLF, kCRLF + 2);
-        return crlf == beginWrite() ? NULL : crlf;
+        const char* crlf = std::search(data(), WriteBegin(), kCRLF, kCRLF + 2);
+        return crlf == WriteBegin() ? NULL : crlf;
     }
 
     const char* FindCRLF(const char* start) const {
         assert(data() <= start);
-        assert(start <= beginWrite());
-        const char* crlf = std::search(start, beginWrite(), kCRLF, kCRLF + 2);
-        return crlf == beginWrite() ? NULL : crlf;
+        assert(start <= WriteBegin());
+        const char* crlf = std::search(start, WriteBegin(), kCRLF, kCRLF + 2);
+        return crlf == WriteBegin() ? NULL : crlf;
     }
 
     const char* FindEOL() const {
@@ -362,18 +373,11 @@ public:
 
     const char* FindEOL(const char* start) const {
         assert(data() <= start);
-        assert(start <= beginWrite());
-        const void* eol = memchr(start, '\n', beginWrite() - start);
+        assert(start <= WriteBegin());
+        const void* eol = memchr(start, '\n', WriteBegin() - start);
         return static_cast<const char*>(eol);
     }
 private:
-    char* beginWrite() {
-        return begin() + write_index_;
-    }
-
-    const char* beginWrite() const {
-        return begin() + write_index_;
-    }
 
     char* begin() {
         return buffer_;
