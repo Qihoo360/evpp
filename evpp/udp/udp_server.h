@@ -8,26 +8,18 @@
 namespace evpp {
 namespace udp {
 
+
+class RecvThread;
 class EVPP_EXPORT Server {
 public:
     typedef std::function<void(const MessagePtr& msg)> MessageHandler;
-    enum Status {
-        kRunning = 1,
-        kStopping = 2,
-        kStopped = 3,
-    };
 public:
     Server();
     ~Server();
 
-    //! Start the server.
-    //! \remark Start the service and listening in the given port
-    //!		This call will start several receiving thread at every net interface
-    //! \return false if failed to start server.
-    bool Start(std::vector<int> ports);
     bool Start(int port);
+    bool Start(std::vector<int> ports);
 
-    //! Stop the server
     void Stop(bool wait_thread_exit);
 
     bool IsRunning() const;
@@ -38,19 +30,14 @@ public:
     }
 
 private:
-    struct RecvThread {
-        int     sockfd;
-        Server*   udp_server;
-        int     port;
-        std::shared_ptr<std::thread> thread;
-        Status status;
-    };
     typedef std::shared_ptr<RecvThread> RecvThreadPtr;
 
     typedef std::vector<RecvThreadPtr> RecvThreadVector;
     RecvThreadVector recv_threads_;
     MessageHandler   message_handler_;
+
 private:
+    friend class RecvThread;
     void RecvingLoop(RecvThread* th);
 };
 
