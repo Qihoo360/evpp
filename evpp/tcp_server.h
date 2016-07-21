@@ -4,18 +4,15 @@
 #include "evpp/event_loop.h"
 #include "evpp/event_loop_thread_pool.h"
 #include "evpp/tcp_callbacks.h"
+#include "evpp/thread_dispatch_policy.h"
 
 #include <map>
 
 namespace evpp {
 class Listener;
 
-class EVPP_EXPORT TCPServer {
+class EVPP_EXPORT TCPServer : public ThreadDispatchPolicy {
 public:
-    enum ThreadDispatchPolicy {
-        kRoundRobin,
-        kIPAddressHashing,
-    };
     TCPServer(EventLoop* loop,
               const std::string& listen_addr/*ip:port*/,
               const std::string& name,
@@ -35,9 +32,6 @@ public:
         msg_fn_ = cb;
     }
 
-    void SetThreadDispatchPolicy(ThreadDispatchPolicy v) {
-        threads_dispatch_policy_ = v;
-    }
 private:
     void StopInLoop();
     void RemoveConnection(const TCPConnPtr& conn);
@@ -54,8 +48,6 @@ private:
     MessageCallback msg_fn_;
     ConnectionCallback conn_fn_;
     WriteCompleteCallback write_complete_fn_;
-
-    ThreadDispatchPolicy threads_dispatch_policy_;
 
     // always in loop thread
     uint64_t next_conn_id_;

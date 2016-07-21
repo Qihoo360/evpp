@@ -249,5 +249,8 @@
     <ClInclude Include="..\evpp\udp\sync_udp_client.h">
       <Filter>udp</Filter>
     </ClInclude>
+    <ClInclude Include="..\evpp\thread_dispatch_policy.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
