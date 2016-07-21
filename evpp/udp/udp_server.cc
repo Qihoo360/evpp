@@ -7,18 +7,63 @@
 namespace evpp {
 namespace udp {
 
+enum Status {
+    kRunning = 1,
+    kStopping = 2,
+    kStopped = 3,
+};
+
+class RecvThread {
+public:
+    int     sockfd;
+    Server* udp_server;
+    int     port;
+    std::shared_ptr<std::thread> thread;
+    Status status;
+
+public:
+    RecvThread(Server* srv)
+        : sockfd(INVALID_SOCKET), udp_server(srv), port(-1), status(kStopped) {
+    }
+
+    ~RecvThread() {
+        EVUTIL_CLOSESOCKET(sockfd);
+        sockfd = INVALID_SOCKET;
+        if (this->thread->joinable()) {
+            this->thread->join();
+        }
+    }
+
+    bool Start(int port) {
+        this->port = port;
+        this->sockfd = CreateUDPServer(port);
+        this->status = kRunning;
+        this->thread.reset(new std::thread(std::bind(&Server::RecvingLoop, this->udp_server, this)));
+        SetTimeout(this->sockfd, 500);
+        LOG_TRACE << "start udp server at 0.0.0.0:" << port;
+        return true;
+    }
+
+    void Stop() {
+        status = kStopping;
+    }
+
+    bool IsRunning() const {
+        return status == kRunning;
+    }
+
+    bool IsStopped() const {
+        return status == kStopped;
+    }
+
+    void SetStatus(Status s) {
+        status = s;
+    }
+};
+
 Server::Server() {}
 
 Server::~Server() {
-    RecvThreadVector::iterator it(recv_threads_.begin());
-    RecvThreadVector::iterator ite(recv_threads_.end());
-
-    for (; it != ite; it++) {
-        RecvThread* t = it->get();
-        if (t->thread->joinable()) {
-            t->thread->join();
-        }
-    }
 }
 
 bool Server::Start(std::vector<int> ports) {
@@ -40,16 +85,11 @@ bool Server::Start(int port) {
         return false;
     }
 
-    RecvThreadPtr th(new RecvThread);
-    th->status = Server::kRunning;
-    th->port = port;
-    th->sockfd = CreateUDPServer(port);
-    th->udp_server = this;
-    th->thread.reset(new std::thread(std::bind(&Server::RecvingLoop, this, th.get())));
-    SetTimeout(th->sockfd, 500);
-    LOG_TRACE << "start udp server at 0.0.0.0:" << port;
-    recv_threads_.push_back(th);
-    return true;
+    RecvThreadPtr t(new RecvThread(this));
+    bool ret = t->Start(port);
+    assert(ret);
+    recv_threads_.push_back(t);
+    return ret;
 }
 
 void Server::Stop(bool wait_thread_exit) {
@@ -57,7 +97,7 @@ void Server::Stop(bool wait_thread_exit) {
     RecvThreadVector::iterator ite(recv_threads_.end());
 
     for (; it != ite; it++) {
-        (*it)->status = Server::kStopping;
+        (*it)->Stop();
     }
 
     if (wait_thread_exit) {
@@ -73,7 +113,7 @@ bool Server::IsRunning() const {
     RecvThreadVector::const_iterator ite(recv_threads_.end());
 
     for (; it != ite; it++) {
-        rc = rc && (*it)->status == Server::kRunning;
+        rc = rc && (*it)->IsRunning();
     }
 
     return rc;
@@ -85,7 +125,7 @@ bool Server::IsStopped() const {
     RecvThreadVector::const_iterator ite(recv_threads_.end());
 
     for (; it != ite; it++) {
-        rc = rc && (*it)->status == Server::kStopped;
+        rc = rc && (*it)->IsStopped();
     }
 
     return rc;
@@ -100,7 +140,7 @@ inline bool IsEAgain(int eno) {
 }
 
 void Server::RecvingLoop(RecvThread* th) {
-    while (th->status == Server::kRunning) {
+    while (th->IsRunning()) {
         size_t nBufSize = 1472; // TODO The UDP max payload size
         MessagePtr recv_msg(new Message(th->sockfd, nBufSize));
         socklen_t m_nAddrLen = sizeof(struct sockaddr);
@@ -113,7 +153,6 @@ void Server::RecvingLoop(RecvThread* th) {
             th->udp_server->message_handler_(recv_msg);
         } else {
             int eno = errno;
-
             if (IsEAgain(eno)) {
                 continue;
             }
@@ -122,9 +161,8 @@ void Server::RecvingLoop(RecvThread* th) {
         }
     }
 
-    th->status = Server::kStopped;
     LOG_INFO << "fd=" << th->sockfd << " port=" << th->port << " UDP server existed.";
-    EVUTIL_CLOSESOCKET(th->sockfd);
+    th->SetStatus(kStopped);
 }
 
 }
