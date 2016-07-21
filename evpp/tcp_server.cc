@@ -13,7 +13,6 @@ TCPServer::TCPServer(EventLoop* loop,
     , listen_addr_(listen_addr)
     , name_(name)
     , next_conn_id_(0) {
-    threads_dispatch_policy_ = kRoundRobin;
     tpool_.reset(new EventLoopThreadPool(loop_, thread_num));
 }
 
@@ -75,10 +74,9 @@ void TCPServer::HandleNewConn(int sockfd,
 }
 
 EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
-    if (threads_dispatch_policy_ == kRoundRobin) {
+    if (IsRoundRobin()) {
         return tpool_->GetNextLoop();
     } else {
-        assert(threads_dispatch_policy_ == kIPAddressHashing);
         return tpool_->GetNextLoopWithHash(raddr->sin_addr.s_addr);
     }
 }

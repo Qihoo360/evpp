@@ -8,7 +8,7 @@
 
 namespace evpp {
 namespace http {
-HTTPServer::HTTPServer(uint32_t thread_num) : threads_dispatch_policy_(kRoundRobin) {
+HTTPServer::HTTPServer(uint32_t thread_num) {
     listen_thread_.reset(new EventLoopThread());
     tpool_.reset(new EventLoopThreadPool(listen_thread_->event_loop(), thread_num));
     http_.reset(new Service(listen_thread_->event_loop()));
@@ -109,7 +109,7 @@ void HTTPServer::Dispatch(const ContextPtr& ctx,
         user_cb(context, response_cb);
     };
     EventLoop* loop = NULL;
-    if (threads_dispatch_policy_ == kRoundRobin) {
+    if (IsRoundRobin()) {
         loop = tpool_->GetNextLoop();
     } else {
         uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
