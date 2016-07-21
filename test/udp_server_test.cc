@@ -31,7 +31,6 @@ TEST_UNIT(testUDPServer) {
     ports[1] = 53669;
     evpp::udp::Server* udpsrv = new evpp::udp::Server;
     udpsrv->SetMessageHandler(std::bind(&OnMessage, udpsrv, std::placeholders::_1));
-    udpsrv->set_name(__func__);
     H_TEST_ASSERT(udpsrv->Start(ports));
     usleep(100);//wait udpsrv started
 
@@ -67,7 +66,6 @@ TEST_UNIT(testUDPServerGraceStop) {
     int port = 53669;
     evpp::udp::Server* udpsrv = new evpp::udp::Server;
     udpsrv->SetMessageHandler(std::bind(&OnMessage, udpsrv, std::placeholders::_1));
-    udpsrv->set_name(__func__);
     H_TEST_ASSERT(udpsrv->Start(port));
     usleep(100);//wait udpsrv started
 
