@@ -6,17 +6,17 @@
 namespace evpp {
 namespace udp {
 
-class EVPP_EXPORT UdpServer {
+class EVPP_EXPORT Server {
 public:
-    typedef std::function<void(const UdpMessagePtr& msg)> MessageHandler;
+    typedef std::function<void(const MessagePtr& msg)> MessageHandler;
     enum Status {
         kRunning = 1,
         kStopping = 2,
         kStopped = 3,
     };
 public:
-    UdpServer();
-    ~UdpServer();
+    Server();
+    ~Server();
 
     //! Start the server.
     //! \remark Start the service and listening in the given port
