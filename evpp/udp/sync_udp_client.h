@@ -36,6 +36,7 @@ public:
     static bool Send(const std::string& msg, const struct sockaddr_in& addr);
     static bool Send(const char* msg, size_t len, const struct sockaddr_in& addr);
     static bool Send(const MessagePtr& msg);
+    static bool Send(const Message* msg);
 public:
     int sockfd() const {
         return sockfd_;
