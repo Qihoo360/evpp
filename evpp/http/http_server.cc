@@ -59,6 +59,15 @@ void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
     }
 }
 
+
+void HTTPServer::Pause() {
+    listen_thread_->event_loop()->RunInLoop(std::bind(&Service::Pause, http_));
+}
+
+void HTTPServer::Continue() {
+    listen_thread_->event_loop()->RunInLoop(std::bind(&Service::Continue, http_));
+}
+
 bool HTTPServer::IsRunning() const {
     return listen_thread_->IsRunning() && tpool_->IsRunning();
 }

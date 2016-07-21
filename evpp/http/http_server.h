@@ -24,8 +24,9 @@ public:
     ~HTTPServer();
 
     bool Start(int listen_port);
-
     void Stop(bool wait_thread_exit = false);
+    void Pause();
+    void Continue();
 
     Service* service() const;
 public:
