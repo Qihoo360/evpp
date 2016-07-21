@@ -1,8 +1,9 @@
 #include "evpp/inner_pre.h"
-#include "udp_server.h"
 #include "evpp/libevent_headers.h"
+#include "evpp/event_loop.h"
+#include "evpp/event_loop_thread_pool.h"
 
-#include <thread>
+#include "udp_server.h"
 
 namespace evpp {
 namespace udp {
@@ -178,7 +179,17 @@ void Server::RecvingLoop(RecvThread* thread) {
 
         if (readn >= 0) {
             recv_msg->WriteBytes(readn);
-            thread->server()->message_handler_(recv_msg);
+            if (tpool_) {
+                EventLoop* loop = NULL;
+                if (threads_dispatch_policy_ == kRoundRobin) {
+                    loop = tpool_->GetNextLoop();
+                } else {
+                    loop = tpool_->GetNextLoopWithHash(sockaddr_in_cast(recv_msg->remote_addr())->sin_addr.s_addr);
+                }
+                loop->RunInLoop(std::bind(this->message_handler_, recv_msg));
+            } else {
+                this->message_handler_(recv_msg);
+            }
         } else {
             int eno = errno;
             if (EVUTIL_ERR_RW_RETRIABLE(eno)) {
