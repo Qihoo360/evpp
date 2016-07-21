@@ -7,7 +7,7 @@
 namespace evpp {
 namespace udp {
 
-class UdpServer::Impl {
+class Server::Impl {
 public:
     Impl();
     ~Impl();
@@ -53,9 +53,9 @@ private:
     void RecvingLoop(RecvThread* th);
 };
 
-UdpServer::Impl::Impl() {}
+Server::Impl::Impl() {}
 
-UdpServer::Impl::~Impl() {
+Server::Impl::~Impl() {
     RecvThreadVector::iterator it(recv_threads_.begin());
     RecvThreadVector::iterator ite(recv_threads_.end());
 
@@ -67,7 +67,7 @@ UdpServer::Impl::~Impl() {
     }
 }
 
-bool UdpServer::Impl::Start(std::vector<int> ports) {
+bool Server::Impl::Start(std::vector<int> ports) {
     std::vector<int>::const_iterator pit = ports.begin();
     std::vector<int>::const_iterator pite = ports.end();
 
@@ -80,52 +80,52 @@ bool UdpServer::Impl::Start(std::vector<int> ports) {
     return true;
 }
 
-bool UdpServer::Impl::Start(int port) {
+bool Server::Impl::Start(int port) {
     if (!message_handler_) {
         LOG_ERROR << "MessageHandler DO NOT set!";
         return false;
     }
 
     RecvThreadPtr th(new RecvThread);
-    th->status = UdpServer::kRunning;
+    th->status = Server::kRunning;
     th->port = port;
     th->sockfd = CreateUDPServer(port);
     th->udp_server = this;
-    th->thread.reset(new std::thread(std::bind(&UdpServer::Impl::RecvingLoop, this, th.get())));
+    th->thread.reset(new std::thread(std::bind(&Server::Impl::RecvingLoop, this, th.get())));
     SetTimeout(th->sockfd, 500);
     LOG_TRACE << "start udp server at 0.0.0.0:" << port;
     recv_threads_.push_back(th);
     return true;
 }
 
-void UdpServer::Impl::Stop() {
+void Server::Impl::Stop() {
     RecvThreadVector::iterator it(recv_threads_.begin());
     RecvThreadVector::iterator ite(recv_threads_.end());
 
     for (; it != ite; it++) {
-        (*it)->status = UdpServer::kStopping;
+        (*it)->status = Server::kStopping;
     }
 }
 
-bool UdpServer::Impl::IsRunning() const {
+bool Server::Impl::IsRunning() const {
     bool rc = true;
     RecvThreadVector::const_iterator it(recv_threads_.begin());
     RecvThreadVector::const_iterator ite(recv_threads_.end());
 
     for (; it != ite; it++) {
-        rc = rc && (*it)->status == UdpServer::kRunning;
+        rc = rc && (*it)->status == Server::kRunning;
     }
 
     return rc;
 }
 
-bool UdpServer::Impl::IsStopped() const {
+bool Server::Impl::IsStopped() const {
     bool rc = true;
     RecvThreadVector::const_iterator it(recv_threads_.begin());
     RecvThreadVector::const_iterator ite(recv_threads_.end());
 
     for (; it != ite; it++) {
-        rc = rc && (*it)->status == UdpServer::kStopped;
+        rc = rc && (*it)->status == Server::kStopped;
     }
 
     return rc;
@@ -139,10 +139,10 @@ inline bool IsEAgain(int eno) {
 #endif
 }
 
-void UdpServer::Impl::RecvingLoop(RecvThread* th) {
-    while (th->status == UdpServer::kRunning) {
+void Server::Impl::RecvingLoop(RecvThread* th) {
+    while (th->status == Server::kRunning) {
         size_t nBufSize = 1472; // TODO The UDP max payload size
-        UdpMessagePtr recv_msg(new UdpMessage(th->sockfd, nBufSize));
+        MessagePtr recv_msg(new Message(th->sockfd, nBufSize));
         socklen_t m_nAddrLen = sizeof(struct sockaddr);
         int readn = ::recvfrom(th->sockfd, (char*)recv_msg->data(), nBufSize, 0, recv_msg->mutable_remote_addr(), &m_nAddrLen);
         LOG_TRACE << "fd=" << th->sockfd << " port=" << th->port
@@ -162,12 +162,12 @@ void UdpServer::Impl::RecvingLoop(RecvThread* th) {
         }
     }
 
-    th->status = UdpServer::kStopped;
+    th->status = Server::kStopped;
     LOG_INFO << "fd=" << th->sockfd << " port=" << th->port << " UDP server(" << name_ << ") existed.";
     EVUTIL_CLOSESOCKET(th->sockfd);
 }
 
-void UdpServer::Impl::set_name(const std::string& n) {
+void Server::Impl::set_name(const std::string& n) {
     name_ = n;
 }
 
@@ -177,26 +177,26 @@ void UdpServer::Impl::set_name(const std::string& n) {
 //////////////////////////////////////////////////////////////////////////
 
 
-void UdpServer::set_name(const std::string& n) {
+void Server::set_name(const std::string& n) {
     impl_->set_name(n);
 }
-void UdpServer::SetMessageHandler(MessageHandler handler) {
+void Server::SetMessageHandler(MessageHandler handler) {
     impl_->SetMessageHandler(handler);
 }
 
-bool UdpServer::Start(int port) {
+bool Server::Start(int port) {
     return impl_->Start(port);
 }
 
-bool UdpServer::Start(std::vector<int> ports) {
+bool Server::Start(std::vector<int> ports) {
     return impl_->Start(ports);
 }
 
-void UdpServer::Stop() {
+void Server::Stop() {
     Stop(true);
 }
 
-void UdpServer::Stop(bool wait_thread_exit) {
+void Server::Stop(bool wait_thread_exit) {
     impl_->Stop();
 
     if (wait_thread_exit) {
@@ -206,19 +206,19 @@ void UdpServer::Stop(bool wait_thread_exit) {
     }
 }
 
-bool UdpServer::IsRunning() const {
+bool Server::IsRunning() const {
     return impl_->IsRunning();
 }
 
-bool UdpServer::IsStopped() const {
+bool Server::IsStopped() const {
     return impl_->IsStopped();
 }
 
-UdpServer::UdpServer() {
-    impl_.reset(new UdpServer::Impl);
+Server::Server() {
+    impl_.reset(new Server::Impl);
 }
 
-UdpServer::~UdpServer() {
+Server::~Server() {
     impl_->Stop();
     impl_.reset();
 }

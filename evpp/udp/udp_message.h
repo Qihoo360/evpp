@@ -6,9 +6,9 @@
 
 namespace evpp {
 namespace udp {
-class EVPP_EXPORT UdpMessage : public Buffer {
+class EVPP_EXPORT Message : public Buffer {
 public:
-    UdpMessage(int fd, size_t buffer_size = 1472)
+    Message(int fd, size_t buffer_size = 1472)
         : Buffer(buffer_size), sockfd_(fd) {
         memset(&remote_addr_, 0, sizeof(remote_addr_));
     }
@@ -22,13 +22,13 @@ private:
     struct sockaddr_in remote_addr_;
     int sockfd_;
 };
-typedef std::shared_ptr<UdpMessage> UdpMessagePtr;
+typedef std::shared_ptr<Message> MessagePtr;
 
-inline void UdpMessage::set_remote_addr(const struct sockaddr& raddr) {
+inline void Message::set_remote_addr(const struct sockaddr& raddr) {
     memcpy(&remote_addr_, &raddr, sizeof raddr);
 }
 
-inline const struct sockaddr* UdpMessage::remote_addr() const {
+inline const struct sockaddr* Message::remote_addr() const {
     return sockaddr_cast(&remote_addr_);
 }
 
@@ -41,7 +41,7 @@ inline bool SendMessage(int fd, const struct sockaddr* addr, const char* d, size
     return true;
 }
 
-inline bool SendMessage(const UdpMessagePtr& msg) {
+inline bool SendMessage(const MessagePtr& msg) {
     return SendMessage(msg->sockfd(), msg->remote_addr(), msg->data(), msg->size());
 }
 

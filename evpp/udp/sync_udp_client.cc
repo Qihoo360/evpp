@@ -7,37 +7,37 @@
 namespace evpp {
 namespace udp {
 namespace sync {
-UdpClient::UdpClient() {
+Client::Client() {
     sockfd_ = INVALID_SOCKET;
     memset(&remote_addr_, 0, sizeof(remote_addr_));
 }
 
-UdpClient::~UdpClient(void) {
+Client::~Client(void) {
     Close();
 }
 
-bool UdpClient::Connect(const struct sockaddr_in& addr) {
+bool Client::Connect(const struct sockaddr_in& addr) {
     memcpy(&remote_addr_, &addr, sizeof(remote_addr_));
     return Connect();
 }
 
-bool UdpClient::Connect(const char* host, int port) {
+bool Client::Connect(const char* host, int port) {
     char buf[32] = {};
     snprintf(buf, sizeof buf, "%s:%d", host, port);
     return Connect(buf);
 }
 
-bool UdpClient::Connect(const char* addr/*host:port*/) {
+bool Client::Connect(const char* addr/*host:port*/) {
     struct sockaddr_in raddr = ParseFromIPPort(addr);
     return Connect(raddr);
 }
 
-bool UdpClient::Connect(const struct sockaddr& addr) {
+bool Client::Connect(const struct sockaddr& addr) {
     memcpy(&remote_addr_, &addr, sizeof(remote_addr_));
     return Connect();
 }
 
-bool UdpClient::Connect() {
+bool Client::Connect() {
     sockfd_ = socket(AF_INET, SOCK_DGRAM, 0);
     SetReuseAddr(sockfd_);
 
@@ -58,12 +58,12 @@ bool UdpClient::Connect() {
 }
 
 
-void UdpClient::Close() {
+void Client::Close() {
     EVUTIL_CLOSESOCKET(sockfd_);
 }
 
 
-std::string UdpClient::DoRequest(const std::string& data, uint32_t timeout_ms) {
+std::string Client::DoRequest(const std::string& data, uint32_t timeout_ms) {
     if (!Send(data)) {
         LOG_ERROR << "sent failed, errno=" << errno << " , dlen=" << data.size();
         return "";
@@ -72,7 +72,7 @@ std::string UdpClient::DoRequest(const std::string& data, uint32_t timeout_ms) {
     SetTimeout(sockfd_, timeout_ms);
 
     size_t nBufSize = 1472; // The UDP max payload size
-    UdpMessagePtr msg(new UdpMessage(sockfd_, nBufSize));
+    MessagePtr msg(new Message(sockfd_, nBufSize));
     socklen_t m_nAddrLen = sizeof(remote_addr_);
     int readn = ::recvfrom(sockfd_, msg->WriteBegin(), nBufSize, 0, msg->mutable_remote_addr(), &m_nAddrLen);
     int err = errno;
@@ -89,8 +89,8 @@ std::string UdpClient::DoRequest(const std::string& data, uint32_t timeout_ms) {
     return "";
 }
 
-std::string UdpClient::DoRequest(const std::string& remote_ip, int port, const std::string& udp_package_data, uint32_t timeout_ms) {
-    UdpClient c;
+std::string Client::DoRequest(const std::string& remote_ip, int port, const std::string& udp_package_data, uint32_t timeout_ms) {
+    Client c;
     if (!c.Connect(remote_ip.data(), port)) {
         return "";
     }
@@ -98,24 +98,24 @@ std::string UdpClient::DoRequest(const std::string& remote_ip, int port, const s
     return c.DoRequest(udp_package_data, timeout_ms);
 }
 
-bool UdpClient::Send(const char* msg, size_t len) {
+bool Client::Send(const char* msg, size_t len) {
     int sentn = ::sendto(sockfd(),
                             msg,
                             len, 0, &remote_addr_, sizeof(remote_addr_));
     return sentn > 0;
 }
 
-bool UdpClient::Send(const std::string& msg) {
+bool Client::Send(const std::string& msg) {
     return Send(msg.data(), msg.size());
 }
 
-bool UdpClient::Send(const std::string& msg, const struct sockaddr_in& addr) {
-    return UdpClient::Send(msg.data(), msg.size(), addr);
+bool Client::Send(const std::string& msg, const struct sockaddr_in& addr) {
+    return Client::Send(msg.data(), msg.size(), addr);
 }
 
 
-bool UdpClient::Send(const char* msg, size_t len, const struct sockaddr_in& addr) {
-    UdpClient c;
+bool Client::Send(const char* msg, size_t len, const struct sockaddr_in& addr) {
+    Client c;
     if (!c.Connect(addr)) {
         return "";
     }
@@ -123,8 +123,8 @@ bool UdpClient::Send(const char* msg, size_t len, const struct sockaddr_in& addr
     return c.Send(msg, len);
 }
 
-bool UdpClient::Send(const UdpMessagePtr& msg) {
-    return UdpClient::Send(msg->data(), msg->size(), *(const struct sockaddr_in*)(msg->remote_addr()));
+bool Client::Send(const MessagePtr& msg) {
+    return Client::Send(msg->data(), msg->size(), *(const struct sockaddr_in*)(msg->remote_addr()));
 }
 }
 }
