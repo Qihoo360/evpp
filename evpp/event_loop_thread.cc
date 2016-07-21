@@ -6,7 +6,7 @@
 namespace evpp {
 EventLoopThread::EventLoopThread()
     : event_loop_(new EventLoop)
-    , state_(kStopped) {
+    , status_(kStopped) {
 }
 
 EventLoopThread::~EventLoopThread() {
@@ -39,7 +39,7 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
         name_ = os.str();
     }
 
-    state_ = kRunning;
+    status_ = kRunning;
 
     if (pre) {
         pre();
@@ -51,11 +51,11 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
         post();
     }
 
-    state_ = kStopped;
+    status_ = kStopped;
 }
 
 void EventLoopThread::Stop(bool wait_thread_exit) {
-    state_ = kStopping;
+    status_ = kStopping;
     event_loop_->Stop();
 
     if (wait_thread_exit) {
@@ -90,11 +90,11 @@ std::thread::id EventLoopThread::tid() const {
 }
 
 bool EventLoopThread::IsRunning() const {
-    return thread_ && state_ == kRunning;
+    return thread_ && status_ == kRunning;
 }
 
 bool EventLoopThread::IsStopped() const {
-    return state_ == kStopped;
+    return status_ == kStopped;
 }
 
 }

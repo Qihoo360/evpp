@@ -33,12 +33,12 @@ private:
 private:
     std::shared_ptr<EventLoop> event_loop_;
     std::shared_ptr<std::thread> thread_;
-    enum State {
+    enum Status {
         kRunning = 1,
         kStopping = 2,
         kStopped = 3,
     };
-    State state_;
+    Status status_;
 
     std::string name_;
 };
