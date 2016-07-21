@@ -4,7 +4,7 @@
 #include "context.h"
 
 struct evhttp;
-
+struct evhttp_bound_socket;
 namespace evpp {
 class EventLoop;
 class PipeEventWatcher;
@@ -15,8 +15,9 @@ public:
     ~Service();
 
     bool Listen(int port);
-
     void Stop();
+    void Pause();
+    void Continue();
 
     // uri 不能带有参数
     bool RegisterHandler(const std::string& uri, HTTPRequestCallback callback);
@@ -29,6 +30,7 @@ private:
     void SendReply(struct evhttp_request* req, const std::string& response);
 private:
     struct evhttp* evhttp_;
+    struct evhttp_bound_socket* evhttp_bound_socket_;
     EventLoop* listen_loop_;
     HTTPRequestCallbackMap callbacks_;
     HTTPRequestCallback default_callback_;
