@@ -5,7 +5,7 @@
 #include "evpp/sockets.h"
 
 namespace evpp {
-
+namespace udp {
 class EVPP_EXPORT UdpMessage : public Buffer {
 public:
     UdpMessage(int fd, size_t buffer_size = 1472)
@@ -44,6 +44,6 @@ inline bool SendMessage(int fd, const struct sockaddr* addr, const char* d, size
 inline bool SendMessage(const UdpMessagePtr& msg) {
     return SendMessage(msg->sockfd(), msg->remote_addr(), msg->data(), msg->size());
 }
+
 }
-
-
+}
