@@ -126,6 +126,11 @@ bool Client::Send(const char* msg, size_t len, const struct sockaddr_in& addr) {
 bool Client::Send(const MessagePtr& msg) {
     return Client::Send(msg->data(), msg->size(), *(const struct sockaddr_in*)(msg->remote_addr()));
 }
+
+bool Client::Send(const Message* msg) {
+    return Client::Send(msg->data(), msg->size(), *(const struct sockaddr_in*)(msg->remote_addr()));
+}
+
 }
 }
 }
