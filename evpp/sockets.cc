@@ -26,13 +26,13 @@ std::string strerror(int e) {
 
 int CreateNonblockingSocket() {
     int serrno = 0;
-    int on = 1;
+    //int on = 1;
 
     /* Create listen socket */
     int fd = ::socket(AF_INET, SOCK_STREAM, 0);
-    serrno = errno;
 
     if (fd == -1) {
+        serrno = errno;
         LOG_ERROR << "socket error " << strerror(serrno);
         return INVALID_SOCKET;
     }
@@ -51,12 +51,35 @@ int CreateNonblockingSocket() {
 
 #endif
 
-    ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
-    ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
+    SetKeepAlive(fd);
+    SetReuseAddr(fd);
+    //::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
+    //::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
     return fd;
 out:
     EVUTIL_CLOSESOCKET(fd);
     return INVALID_SOCKET;
+}
+
+int CreateUDPServer(int port) {
+    int fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd == -1) {
+        int serrno = errno;
+        LOG_ERROR << "socket error " << strerror(serrno);
+        return INVALID_SOCKET;
+    }
+    SetReuseAddr(fd);
+
+    char buf[64] = {};
+    snprintf(buf, sizeof buf, "0.0.0.0:%d", port);
+    struct sockaddr_in local = ParseFromIPPort(buf);
+    if (::bind(fd, (struct sockaddr*)&local, sizeof(local))) {
+        int serrno = errno;
+        LOG_ERROR << "socket bind error " << strerror(serrno);
+        return INVALID_SOCKET;
+    }
+
+    return fd;
 }
 
 struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
@@ -139,11 +162,36 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
     return saddr;
 }
 
+
+void SetTimeout(int fd, uint32_t timeout_ms) {
+#ifdef H_OS_WINDOWS
+    DWORD tv = timeout_ms;
+#else
+    struct timeval tv;
+    tv.tv_sec = timeout_ms / 1000;
+    tv.tv_usec = (timeout_ms % 1000) * 1000;
+#endif
+    int ret = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+    assert(ret == 0);
+    if (ret != 0) {
+        int err = errno;
+        LOG_ERROR << "setsockopt SO_RCVTIMEO ERROR " << err << strerror(err);
+    }
+}
+
 void SetKeepAlive(int fd) {
     int on = 1;
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
     assert(rc == 0);
 }
+
+void SetReuseAddr(int fd) {
+    int on = 1;
+    int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
+    assert(rc == 0);
+}
+
+
 }
 
 #ifdef H_OS_WINDOWS
