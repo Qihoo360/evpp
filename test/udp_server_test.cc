@@ -8,7 +8,7 @@ namespace {
     static int g_count = 0;
     static bool g_exit = false;
     static uint64_t g_timeout_ms = 1000;
-    static void OnMessage(evpp::udp::UdpServer* udpsrv, const evpp::udp::UdpMessagePtr msg) {
+    static void OnMessage(evpp::udp::Server* udpsrv, const evpp::udp::MessagePtr msg) {
         g_count++;
         evpp::udp::SendMessage(msg);
         usleep(100);
@@ -29,7 +29,7 @@ TEST_UNIT(testUDPServer) {
     std::vector<int> ports(2, 0);
     ports[0] = 53668;
     ports[1] = 53669;
-    evpp::udp::UdpServer* udpsrv = new evpp::udp::UdpServer;
+    evpp::udp::Server* udpsrv = new evpp::udp::Server;
     udpsrv->SetMessageHandler(std::bind(&OnMessage, udpsrv, std::placeholders::_1));
     udpsrv->set_name(__func__);
     H_TEST_ASSERT(udpsrv->Start(ports));
@@ -38,16 +38,16 @@ TEST_UNIT(testUDPServer) {
     int loop = 10;
     for (int i = 0; i < loop; ++i) {
         std::string req = "data xxx";
-        std::string resp = evpp::udp::sync::UdpClient::DoRequest("127.0.0.1", ports[0], req, g_timeout_ms);
+        std::string resp = evpp::udp::sync::Client::DoRequest("127.0.0.1", ports[0], req, g_timeout_ms);
         H_TEST_ASSERT(req == resp);
-        resp = evpp::udp::sync::UdpClient::DoRequest("127.0.0.1", ports[1], req, g_timeout_ms);
+        resp = evpp::udp::sync::Client::DoRequest("127.0.0.1", ports[1], req, g_timeout_ms);
         H_TEST_ASSERT(req == resp);
     }
 
     H_TEST_ASSERT(g_count == 2 * loop);
-    evpp::udp::sync::UdpClient::DoRequest("127.0.0.1", ports[0], "stop", g_timeout_ms);
+    evpp::udp::sync::Client::DoRequest("127.0.0.1", ports[0], "stop", g_timeout_ms);
     H_TEST_ASSERT(g_count == 2 * loop + 1);
-    evpp::udp::sync::UdpClient::DoRequest("127.0.0.1", ports[1], "stop", g_timeout_ms);
+    evpp::udp::sync::Client::DoRequest("127.0.0.1", ports[1], "stop", g_timeout_ms);
     H_TEST_ASSERT(g_count == 2 * loop + 2);
 
     while (!g_exit) {
@@ -65,7 +65,7 @@ TEST_UNIT(testUDPServerGraceStop) {
     LOG_TRACE << __func__;
     Init();
     int port = 53669;
-    evpp::udp::UdpServer* udpsrv = new evpp::udp::UdpServer;
+    evpp::udp::Server* udpsrv = new evpp::udp::Server;
     udpsrv->SetMessageHandler(std::bind(&OnMessage, udpsrv, std::placeholders::_1));
     udpsrv->set_name(__func__);
     H_TEST_ASSERT(udpsrv->Start(port));
@@ -74,12 +74,12 @@ TEST_UNIT(testUDPServerGraceStop) {
     int loop = 10;
     for (int i = 0; i < loop; ++i) {
         std::string req = "data xxx";
-        std::string resp = evpp::udp::sync::UdpClient::DoRequest("127.0.0.1", port, req, g_timeout_ms);
+        std::string resp = evpp::udp::sync::Client::DoRequest("127.0.0.1", port, req, g_timeout_ms);
         H_TEST_ASSERT(req == resp);
     }
 
     H_TEST_ASSERT(g_count == loop);
-    evpp::udp::sync::UdpClient::DoRequest("127.0.0.1", port, "stop", g_timeout_ms);
+    evpp::udp::sync::Client::DoRequest("127.0.0.1", port, "stop", g_timeout_ms);
     H_TEST_ASSERT(g_count == loop + 1);
 
     while (!g_exit) {
