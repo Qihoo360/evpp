@@ -5,14 +5,14 @@
 namespace evpp {
 namespace udp {
 namespace sync {
-class EVPP_EXPORT UdpClient {
+class EVPP_EXPORT Client {
 public:
     //! Constructors
     //! \param sockfd, 
     //!     If it equals to INVALID_SOCKET, you need to call <code>connect(...)</code> method to connect to UDP server
     //!     else you can use this instance to receive and send data directly.
-    UdpClient();
-    ~UdpClient();
+    Client();
+    ~Client();
 
     bool Connect(const char* host, int port);
     bool Connect(const char* addr/*host:port*/);
@@ -35,7 +35,7 @@ public:
 
     static bool Send(const std::string& msg, const struct sockaddr_in& addr);
     static bool Send(const char* msg, size_t len, const struct sockaddr_in& addr);
-    static bool Send(const UdpMessagePtr& msg);
+    static bool Send(const MessagePtr& msg);
 public:
     int sockfd() const {
         return sockfd_;
