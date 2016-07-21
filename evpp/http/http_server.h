@@ -1,6 +1,7 @@
 #pragma once
 
 #include "service.h"
+#include "evpp/thread_dispatch_policy.h"
 
 namespace evpp {
 class EventLoopThreadPool;
@@ -13,12 +14,8 @@ class Service;
 // 这是一个可以独立运行的 HTTP Server
 // 它会启动一个独立的线程用于端口监听、接收HTTP请求、分发HTTP请求、最后发送HTTP响应。
 // 如果 thread_num 不为 0，它还会启动一个线程池，用于处理HTTP请求
-class EVPP_EXPORT HTTPServer {
+class EVPP_EXPORT HTTPServer : public ThreadDispatchPolicy {
 public:
-    enum ThreadDispatchPolicy {
-        kRoundRobin,
-        kIPAddressHashing,
-    };
     HTTPServer(uint32_t thread_num = 0);
 
     ~HTTPServer();
@@ -34,10 +31,6 @@ public:
                          HTTPRequestCallback callback);
 
     bool RegisterDefaultHandler(HTTPRequestCallback callback);
-
-    void SetThreadDispatchPolicy(ThreadDispatchPolicy v) {
-        threads_dispatch_policy_ = v;
-    }
 public:
     bool IsRunning() const;
     bool IsStopped() const;
@@ -59,8 +52,6 @@ private:
 
     // 工作线程池，处理请求
     std::shared_ptr<EventLoopThreadPool> tpool_;
-
-    ThreadDispatchPolicy threads_dispatch_policy_;
 };
 }
 
