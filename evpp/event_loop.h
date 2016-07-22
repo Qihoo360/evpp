@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 #include "evpp/inner_pre.h"
 #include "evpp/libevent_watcher.h"
@@ -47,6 +48,9 @@ public:
     bool running() const {
         return running_;
     }
+    int pending_functor_count() const {
+        return pending_functor_count_.load();
+    }
 private:
     void StopInLoop();
     void Init();
@@ -62,5 +66,7 @@ private:
     std::shared_ptr<PipeEventWatcher> watcher_;
     std::vector<Functor> pending_functors_; // @Guarded By mutex_
     bool calling_pending_functors_;
+
+    std::atomic<int> pending_functor_count_;
 };
 }
