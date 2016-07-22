@@ -36,6 +36,10 @@ public:
         tpool_ = pool;
     }
 
+    void set_recv_buf_size(size_t v) {
+        recv_buf_size_ = v;
+    }
+
 private:
     class RecvThread;
     typedef std::shared_ptr<RecvThread> RecvThreadPtr;
@@ -45,6 +49,8 @@ private:
 
     // 工作线程池，处理请求
     std::shared_ptr<EventLoopThreadPool> tpool_;
+
+    size_t recv_buf_size_; // 接收udp包时的缓冲区大小。默认值为1472。最小值为1472，最大值为65535。
 private:
     void RecvingLoop(RecvThread* th);
 };
