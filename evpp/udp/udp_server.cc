@@ -89,7 +89,7 @@ private:
     Status status_;
 };
 
-Server::Server() {}
+Server::Server() : recv_buf_size_(1472) {}
 
 Server::~Server() {
 }
@@ -170,10 +170,9 @@ void Server::RecvingLoop(RecvThread* thread) {
             break;
         }
 
-        size_t nBufSize = 1472; // TODO The UDP max payload size
-        MessagePtr recv_msg(new Message(thread->fd(), nBufSize));
-        socklen_t m_nAddrLen = sizeof(struct sockaddr);
-        int readn = ::recvfrom(thread->fd(), (char*)recv_msg->data(), nBufSize, 0, recv_msg->mutable_remote_addr(), &m_nAddrLen);
+        MessagePtr recv_msg(new Message(thread->fd(), recv_buf_size_));
+        socklen_t addr_len = sizeof(struct sockaddr);
+        int readn = ::recvfrom(thread->fd(), (char*)recv_msg->data(), recv_buf_size_, 0, recv_msg->mutable_remote_addr(), &addr_len);
         LOG_TRACE << "fd=" << thread->fd() << " port=" << thread->port()
                   << " recv len=" << readn << " from " << ToIPPort(sockaddr_storage_cast(recv_msg->remote_addr()));
 
