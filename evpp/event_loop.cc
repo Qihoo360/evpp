@@ -132,6 +132,7 @@ void EventLoop::QueueInLoop(const Functor& cb) {
     {
         std::lock_guard<std::mutex> lock(mutex_);
         pending_functors_.push_back(cb);
+        ++pending_functor_count_;
     }
 
     if (calling_pending_functors_ || !IsInLoopThread()) {
@@ -151,6 +152,7 @@ void EventLoop::DoPendingFunctors() {
 
     for (size_t i = 0; i < functors.size(); ++i) {
         functors[i]();
+        --pending_functor_count_;
     }
 
     calling_pending_functors_ = false;
