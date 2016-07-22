@@ -86,9 +86,7 @@ void EventLoop::StopInLoop() {
     }
 
     //TODO make sure all the event in event_base stopped.
-    timeval tv;
-    tv.tv_sec = 0;
-    tv.tv_usec = 500 * 1000; //500ms
+    timeval tv = Duration(0.5).TimeVal(); // 0.5 second
     event_base_loopexit(event_base_, &tv);
 }
 
