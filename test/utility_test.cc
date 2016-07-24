@@ -3,11 +3,6 @@
 #include <evpp/exp.h>
 #include <evpp/utility.h>
 
-TEST_UNIT(testCast) {
-    int i = 1;
-    H_TEST_ASSERT(evpp::cast<int>(i) == "1");
-}
-
 TEST_UNIT(testStringSplit1) {
     std::string s = "a,b,c,d";
     std::vector<std::string> v;
