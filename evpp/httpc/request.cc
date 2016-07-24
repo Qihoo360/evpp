@@ -7,6 +7,8 @@
 
 namespace evpp {
 namespace httpc {
+const std::string Request::empty_ = "";
+
 Request::Request(ConnPool* pool, EventLoop* loop, const std::string& http_uri, const std::string& body)
     : pool_(pool), loop_(loop), uri_(http_uri), body_(body) {
 

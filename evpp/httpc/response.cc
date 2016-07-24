@@ -32,7 +32,10 @@ Response::Response(Request* r)
 }
 
 Response::~Response() {
+}
 
+const char* Response::FindHeader(const char* key) {
+    return evhttp_find_header(this->evreq_->input_headers, key);
 }
 
 }
