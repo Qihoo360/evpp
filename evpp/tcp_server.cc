@@ -61,9 +61,7 @@ void TCPServer::HandleNewConn(int sockfd,
                               const struct sockaddr_in* raddr) {
     assert(loop_->IsInLoopThread());
     EventLoop* io_loop = GetNextLoop(raddr);
-    char buf[64] = {};
-    snprintf(buf, sizeof buf, "-%s#%" PRIu64, remote_addr.c_str(), next_conn_id_++);
-    std::string n = name_ + buf;
+    std::string n = name_ + "-" + remote_addr + "#" + std::to_string(next_conn_id_++);
     TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
     assert(conn->type() == TCPConn::kIncoming);
     conn->SetMessageCallback(msg_fn_);
