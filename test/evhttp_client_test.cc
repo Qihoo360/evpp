@@ -24,11 +24,13 @@ void http_request_done(struct evhttp_request* req, void* arg) {
 TEST_UNIT(evhttpClientSample) {
     struct event_base* base = event_base_new();
     struct evhttp_connection* conn = evhttp_connection_base_new(base, NULL, "qup.f.360.cn", 80);
-    struct evhttp_request* req = evhttp_request_new(http_request_done, base);
+    struct evhttp_request* req = evhttp_request_new(http_request_done, base); // will be free by evhttp_connection
     evhttp_add_header(req->output_headers, "Host", "qup.f.360.cn");
     evhttp_make_request(conn, req, EVHTTP_REQ_GET, "/status.html");
     evhttp_connection_set_timeout(req->evcon, 600);
     event_base_dispatch(base);
+    evhttp_connection_free(conn);
+    event_base_free(base);
 }
 
 
@@ -121,6 +123,44 @@ TEST_UNIT(testHTTPRequest4) {
         usleep(1);
     }
 
+    t.Stop(true);
+    LOG_INFO << "EventLoopThread stopped.";
+}
+
+
+namespace hc {
+    static int responsed = 0;
+    static int retried = 0;
+    static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& r, evpp::httpc::Request* req, evpp::EventLoopThread* t) {
+        LOG_INFO << "http_code=" << r->http_code() << " [" << r->body().ToString() << "]";
+        responsed++;
+        std::string h = r->FindHeader("Connection");
+        H_TEST_ASSERT(h == "close");
+        if (retried < 3) {
+            retried++;
+            req->Execute(std::bind(&hc::HandleHTTPResponse, std::placeholders::_1, req, t));
+        } else {
+            delete req;
+        }
+    }
+
+    void Init() {
+        responsed = 0;
+    }
+}
+
+TEST_UNIT(testHTTPRequest5) {
+    hc::Init();
+    evpp::EventLoopThread t;
+    t.Start(true);
+    evpp::httpc::PostRequest* r = new evpp::httpc::PostRequest(t.event_loop(), "http://qup.f.360.cn/status.html?a=1", "", evpp::Duration(2.0));
+    LOG_INFO << "Do http request";
+    r->Execute(std::bind(&hc::HandleHTTPResponse, std::placeholders::_1, r, &t));
+
+    while (hc::responsed != 4) {
+        usleep(1);
+    }
+    H_TEST_ASSERT(hc::retried == 3);
     t.Stop(true);
     LOG_INFO << "EventLoopThread stopped.";
 }
