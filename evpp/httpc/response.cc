@@ -24,11 +24,6 @@ Response::Response(Request* r, struct evhttp_request* evreq)
     }
 
 #endif
-
-//             struct evkeyval *header;
-//             TAILQ_FOREACH(header, r->input_headers, next) {
-//                 headers_[header->key] = header->value;
-//             }
 }
 
 
@@ -40,7 +35,7 @@ Response::~Response() {
 
 }
 
-} // httpc
-} // evpp
+}
+}
 
 
