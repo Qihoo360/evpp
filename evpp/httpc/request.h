@@ -19,10 +19,10 @@ public:
     //  Do a HTTP GET request if body is empty or HTTP POST request if body is not empty.
     // @param[in] pool -
     // @param[in] loop -
-    // @param[in] uri - The URI of the HTTP request
+    // @param[in] uri_with_param - The URI of the HTTP request with parameters
     // @param[in] body -
     // @return  -
-    Request(ConnPool* pool, EventLoop* loop, const std::string& uri, const std::string& body);
+    Request(ConnPool* pool, EventLoop* loop, const std::string& uri_with_param, const std::string& body);
 
     // @brief Create a HTTP Request and create Conn myself
     //  Do a HTTP GET request if body is empty or HTTP POST request if body is not empty.
@@ -49,6 +49,8 @@ public:
 private:
     static void HandleResponse(struct evhttp_request* r, void* v);
     void ExecuteInLoop(const Handler& h);
+protected:
+    static const std::string empty_;
 private:
     ConnPool* pool_;
     EventLoop* loop_;
@@ -58,5 +60,24 @@ private:
     Handler handler_;
 };
 typedef std::shared_ptr<Request> RequestPtr;
+
+class GetRequest : public Request {
+public:
+    GetRequest(ConnPool* pool, EventLoop* loop, const std::string& uri)
+        : Request(pool, loop, uri, empty_) {}
+
+    GetRequest(EventLoop* loop, const std::string& url, Duration timeout)
+        : Request(loop, url, empty_, timeout) {}
+};
+
+class PostRequest : public Request {
+public:
+    PostRequest(ConnPool* pool, EventLoop* loop, const std::string& uri, const std::string& body)
+        : Request(pool, loop, uri, body) {}
+
+    PostRequest(EventLoop* loop, const std::string& url, const std::string& body, Duration timeout)
+        : Request(loop, url, body, timeout) {}
+};
+
 } // httpc
 } // evpp
