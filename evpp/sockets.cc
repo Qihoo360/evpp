@@ -70,9 +70,8 @@ int CreateUDPServer(int port) {
     }
     SetReuseAddr(fd);
 
-    char buf[64] = {};
-    snprintf(buf, sizeof buf, "0.0.0.0:%d", port);
-    struct sockaddr_in local = ParseFromIPPort(buf);
+    std::string addr = std::string("0.0.0.0:") + std::to_string(port);
+    struct sockaddr_in local = ParseFromIPPort(addr.c_str());
     if (::bind(fd, (struct sockaddr*)&local, sizeof(local))) {
         int serrno = errno;
         LOG_ERROR << "socket bind error " << strerror(serrno);
@@ -154,9 +153,7 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
     }
 
     if (!saddr.empty()) {
-        char buf[16] = {};
-        snprintf(buf, sizeof(buf), "%d", port);
-        saddr.append(":", 1).append(buf);
+        saddr.append(":", 1).append(std::to_string(port));
     }
 
     return saddr;
