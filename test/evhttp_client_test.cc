@@ -37,13 +37,20 @@ static bool responsed = false;
 static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& r, evpp::EventLoopThread* t) {
     LOG_INFO << "http_code=" << r->http_code() << " [" << r->body().ToString() << "]";
     responsed = true;
+    std::string h = r->FindHeader("Connection");
+    H_TEST_ASSERT(h == "close");
     delete r->request();
 }
+
+void Init() {
+    responsed = false;
+}
+
 }
 
 TEST_UNIT(testHTTPRequest1) {
     using namespace httpc;
-    responsed = false;
+    Init();
     evpp::EventLoopThread t;
     t.Start(true);
     std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("qup.f.360.cn", 80, evpp::Duration(2.0)));
@@ -64,10 +71,49 @@ TEST_UNIT(testHTTPRequest1) {
 
 TEST_UNIT(testHTTPRequest2) {
     using namespace httpc;
-    responsed = false;
+    Init();
     evpp::EventLoopThread t;
     t.Start(true);
     evpp::httpc::Request* r = new evpp::httpc::Request(t.event_loop(), "http://qup.f.360.cn/status.html?a=1", "", evpp::Duration(2.0));
+    LOG_INFO << "Do http request";
+    r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
+
+    while (!responsed) {
+        usleep(1);
+    }
+
+    t.Stop(true);
+    LOG_INFO << "EventLoopThread stopped.";
+}
+
+
+TEST_UNIT(testHTTPRequest3) {
+    using namespace httpc;
+    Init();
+    evpp::EventLoopThread t;
+    t.Start(true);
+    std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("qup.f.360.cn", 80, evpp::Duration(2.0)));
+    evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(pool.get(), t.event_loop(), "/status.html");
+    LOG_INFO << "Do http request";
+    r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
+
+    while (!responsed) {
+        usleep(1);
+    }
+
+    pool->Clear();
+    usleep(500 * 1000);
+    pool.reset();
+    t.Stop(true);
+    LOG_INFO << "EventLoopThread stopped.";
+}
+
+TEST_UNIT(testHTTPRequest4) {
+    using namespace httpc;
+    Init();
+    evpp::EventLoopThread t;
+    t.Start(true);
+    evpp::httpc::PostRequest* r = new evpp::httpc::PostRequest(t.event_loop(), "http://qup.f.360.cn/status.html?a=1", "", evpp::Duration(2.0));
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
 
