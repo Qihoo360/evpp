@@ -95,7 +95,7 @@ void Client::HandleLoopkupdHTTPResponse(
         rapidjson::Value& producer = producers[i];
         std::string broadcast_address = producer["broadcast_address"].GetString();
         int tcp_port = producer["tcp_port"].GetInt();
-        std::string addr = broadcast_address + ":" + evpp::cast(tcp_port);
+        std::string addr = broadcast_address + ":" + std::to_string(tcp_port);
 
         if (conns_.find(addr) == conns_.end()) {
             ConnectToNSQD(addr);
