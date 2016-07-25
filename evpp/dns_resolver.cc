@@ -11,10 +11,7 @@ DNSResolver::DNSResolver(EventLoop* evloop, const std::string& host, Duration ti
 DNSResolver::~DNSResolver() {
     LOG_INFO << "DNSResolver::~DNSResolver tid=" << std::this_thread::get_id() << " this=" << this;
 
-    if (dnsbase_) {
-        evdns_base_free(dnsbase_, 0);
-        dnsbase_ = NULL;
-    }
+    assert(dnsbase_ == NULL);
 
     if (dns_req_) {
         dns_req_ = NULL;
