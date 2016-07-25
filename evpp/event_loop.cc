@@ -69,12 +69,13 @@ bool EventLoop::IsInLoopThread() const {
 }
 
 void EventLoop::Stop() {
+    assert(running_);
     RunInLoop(std::bind(&EventLoop::StopInLoop, this));
 }
 
 void EventLoop::StopInLoop() {
     LOG_TRACE << "EventLoop is stopping now, tid=" << std::this_thread::get_id();
-
+    assert(running_);
     for (;;) {
         DoPendingFunctors();
 
