@@ -1,5 +1,7 @@
 #include "test_common.h"
 
+#include <signal.h>
+
 #include <thread>
 
 #include <evpp/exp.h>
@@ -44,7 +46,38 @@ TEST_UNIT(testsocketpair) {
 
     int r = evutil_socketpair(AF_UNIX, SOCK_STREAM, 0, sockpair);
     H_TEST_ASSERT(r >= 0);
+    H_TEST_ASSERT(sockpair[0] > 0);
+    H_TEST_ASSERT(sockpair[1] > 0);
     EVUTIL_CLOSESOCKET(sockpair[0]);
     EVUTIL_CLOSESOCKET(sockpair[1]);
 }
 
+#if 0
+namespace evsignal {
+    static bool g_event_handler_called = false;
+    static void Handle(struct event_base* base) {
+        LOG_INFO << "SIGINT caught.";
+        g_event_handler_called = true;
+        event_base_loopexit(base, 0);
+    }
+
+    static void MyEventThread(struct event_base* base, evpp::SignalEventWatcher* ev) {
+        ev->Init();
+        ev->AsyncWait();
+        event_base_loop(base, 0);
+    }
+}
+
+TEST_UNIT(testSignalEventWatcher) {
+    using namespace evsignal;
+    struct event_base* base = event_base_new();
+    evpp::Timestamp start = evpp::Timestamp::Now();
+    std::shared_ptr<evpp::SignalEventWatcher> ev(new evpp::SignalEventWatcher(SIGINT, base, std::bind(&Handle, base)));
+    std::thread th(MyEventThread, base, ev.get());
+    th.join();
+    evpp::Duration cost = evpp::Timestamp::Now() - start;
+    H_TEST_ASSERT(g_event_handler_called);
+    ev.reset();
+    event_base_free(base);
+}
+#endif
