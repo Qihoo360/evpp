@@ -71,15 +71,12 @@ std::string Client::DoRequest(const std::string& data, uint32_t timeout_ms) {
 
     SetTimeout(sockfd_, timeout_ms);
 
-    size_t nBufSize = 1472; // The UDP max payload size
-    MessagePtr msg(new Message(sockfd_, nBufSize));
+    size_t buf_size = 1472; // The UDP max payload size
+    MessagePtr msg(new Message(sockfd_, buf_size));
     socklen_t m_nAddrLen = sizeof(remote_addr_);
-    int readn = ::recvfrom(sockfd_, msg->WriteBegin(), nBufSize, 0, msg->mutable_remote_addr(), &m_nAddrLen);
+    int readn = ::recvfrom(sockfd_, msg->WriteBegin(), buf_size, 0, msg->mutable_remote_addr(), &m_nAddrLen);
     int err = errno;
-    if (readn == 0) {
-        //TODO ERROR process
-        LOG_ERROR << "errno=" << err << " " << strerror(err) << " recvfrom return 0";
-    } else if (readn > 0) {
+    if (readn >= 0) {
         msg->WriteBytes(readn);
         return std::string(msg->data(), msg->size());
     } else {
