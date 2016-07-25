@@ -54,7 +54,7 @@ protected:
 private:
     ConnPool* pool_;
     EventLoop* loop_;
-    std::string uri_;
+    std::string uri_; // The URI of the HTTP request with parameters
     std::string body_;
     std::shared_ptr<Conn> conn_;
     Handler handler_;
@@ -63,8 +63,8 @@ typedef std::shared_ptr<Request> RequestPtr;
 
 class GetRequest : public Request {
 public:
-    GetRequest(ConnPool* pool, EventLoop* loop, const std::string& uri)
-        : Request(pool, loop, uri, empty_) {}
+    GetRequest(ConnPool* pool, EventLoop* loop, const std::string& uri_with_param)
+        : Request(pool, loop, uri_with_param, empty_) {}
 
     GetRequest(EventLoop* loop, const std::string& url, Duration timeout)
         : Request(loop, url, empty_, timeout) {}
@@ -72,8 +72,8 @@ public:
 
 class PostRequest : public Request {
 public:
-    PostRequest(ConnPool* pool, EventLoop* loop, const std::string& uri, const std::string& body)
-        : Request(pool, loop, uri, body) {}
+    PostRequest(ConnPool* pool, EventLoop* loop, const std::string& uri_with_param, const std::string& body)
+        : Request(pool, loop, uri_with_param, body) {}
 
     PostRequest(EventLoop* loop, const std::string& url, const std::string& body, Duration timeout)
         : Request(loop, url, body, timeout) {}
