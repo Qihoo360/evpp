@@ -16,7 +16,7 @@ EventLoopThread::~EventLoopThread() {
 }
 
 bool EventLoopThread::Start(bool wait_until_thread_started,
-                                  const Functor& pre, const Functor& post) {
+                            const Functor& pre, const Functor& post) {
     thread_.reset(new std::thread(
                       std::bind(&EventLoopThread::Run, this, pre, post)));
 
@@ -60,6 +60,9 @@ void EventLoopThread::Stop(bool wait_thread_exit) {
 
     if (wait_thread_exit) {
         thread_->join();
+        while (!IsStopped()) {
+            usleep(1);
+        }
     }
 }
 
