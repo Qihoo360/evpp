@@ -16,8 +16,7 @@ static void OnResolved(const std::vector <struct in_addr>& addrs) {
 TEST_UNIT(testDNSResolver) {
     evpp::Duration delay(double(1.0)); // 1s
     evpp::EventLoopThread t;
-    t.Start();
-    usleep(1000);
+    t.Start(true);
     evpp::DNSResolver dns_resolver(t.event_loop(), "www.so.com", evpp::Duration(1.0), &OnResolved);
     dns_resolver.Start();
 
