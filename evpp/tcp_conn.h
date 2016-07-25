@@ -76,6 +76,7 @@ public:
         return status_;
     }
     void SetCloseDelayTime(Duration d) {
+        assert(type_ == kIncoming);
         close_delay_ = d;    // 设置延时关闭时间，仅对 kIncoming 类型的TCPConn生效。
     }
 protected:
