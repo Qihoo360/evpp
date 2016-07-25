@@ -53,6 +53,7 @@ bool EventWatcher::Watch(Duration timeout) {
     }
 
     if (::event_add(event_, timeoutval) != 0) {
+        LOG_ERROR << "event_add failed. fd=" << this->event_->ev_fd << " event_=" << event_;
         return false;
     }
 
@@ -140,8 +141,8 @@ void PipeEventWatcher::HandlerFn(int fd, short which, void* v) {
     }
 }
 
-void PipeEventWatcher::AsyncWait() {
-    Watch(Duration());
+bool PipeEventWatcher::AsyncWait() {
+    return Watch(Duration());
 }
 
 void PipeEventWatcher::Notify() {
@@ -188,7 +189,7 @@ bool TimerEventWatcher::AsyncWait() {
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-#ifndef H_OS_WINDOWS
+
 SignalEventWatcher::SignalEventWatcher(int signo, struct event_base* event_base,
                                        const Handler& handler)
     : EventWatcher(event_base, handler)
@@ -213,6 +214,9 @@ void SignalEventWatcher::HandlerFn(int sn, short which, void* v) {
     SignalEventWatcher* h = (SignalEventWatcher*)v;
     h->handler_();
 }
-#endif
+
+bool SignalEventWatcher::AsyncWait() {
+    return Watch(Duration());
+}
 }
 
