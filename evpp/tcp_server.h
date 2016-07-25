@@ -21,9 +21,9 @@ public:
     bool Start();
     void Stop();
 
-    // 设置一个连接相关的回调函数，当接收到一个新的连接、或已有连接断开等事件发生时，都会调用该回调
-    //  当成功建立连接时，回调中的参数 TCPConn::IsConnected() == true
-    //  当连接断开时，回调中的参数 TCPConn::IsDisconnecting() == true
+    // 设置一个TCP连接相关的回调函数，当接收到一个新的连接、或已有连接断开等事件发生时，都会调用该回调
+    //  1. 当成功建立连接时，回调中的参数 TCPConn::IsConnected() == true
+    //  2. 当连接断开时，回调中的参数 TCPConn::IsDisconnecting() == true
     void SetConnectionCallback(const ConnectionCallback& cb) {
         conn_fn_ = cb;
     }
@@ -38,8 +38,6 @@ private:
     void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/, const struct sockaddr_in* raddr);
     EventLoop* GetNextLoop(const struct sockaddr_in* raddr);
 private:
-    typedef std::map<std::string, TCPConnPtr> ConnectionMap;
-
     EventLoop* loop_;  // the listener loop
     const std::string listen_addr_;
     const std::string name_;
@@ -47,10 +45,10 @@ private:
     std::shared_ptr<EventLoopThreadPool> tpool_;
     MessageCallback msg_fn_;
     ConnectionCallback conn_fn_;
-    WriteCompleteCallback write_complete_fn_;
 
     // always in loop thread
     uint64_t next_conn_id_;
+    typedef std::map<std::string, TCPConnPtr> ConnectionMap;
     ConnectionMap connections_;
 };
 }
