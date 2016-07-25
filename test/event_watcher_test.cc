@@ -8,7 +8,8 @@
 #include <evpp/libevent_headers.h>
 #include <evpp/libevent_watcher.h>
 #include <evpp/timestamp.h>
-
+#include <evpp/event_loop.h>
+#include <evpp/event_loop_thread.h>
 
 
 namespace evtimer {
@@ -52,32 +53,35 @@ TEST_UNIT(testsocketpair) {
     EVUTIL_CLOSESOCKET(sockpair[1]);
 }
 
-#if 0
 namespace evsignal {
     static bool g_event_handler_called = false;
-    static void Handle(struct event_base* base) {
+    static void Handle(evpp::EventLoopThread* thread) {
         LOG_INFO << "SIGINT caught.";
         g_event_handler_called = true;
-        event_base_loopexit(base, 0);
+        thread->Stop();
     }
 
-    static void MyEventThread(struct event_base* base, evpp::SignalEventWatcher* ev) {
+    static void WatchSignalInt(evpp::SignalEventWatcher* ev) {
         ev->Init();
         ev->AsyncWait();
-        event_base_loop(base, 0);
     }
 }
 
 TEST_UNIT(testSignalEventWatcher) {
     using namespace evsignal;
-    struct event_base* base = event_base_new();
-    evpp::Timestamp start = evpp::Timestamp::Now();
-    std::shared_ptr<evpp::SignalEventWatcher> ev(new evpp::SignalEventWatcher(SIGINT, base, std::bind(&Handle, base)));
-    std::thread th(MyEventThread, base, ev.get());
-    th.join();
-    evpp::Duration cost = evpp::Timestamp::Now() - start;
+    std::shared_ptr<evpp::EventLoopThread> thread(new evpp::EventLoopThread);
+    thread->Start(true);
+    evpp::EventLoop* loop = thread->event_loop();
+    std::shared_ptr<evpp::SignalEventWatcher> ev(new evpp::SignalEventWatcher(SIGINT, loop, std::bind(&Handle, thread.get())));
+    loop->RunInLoop(std::bind(&WatchSignalInt, ev.get()));
+    auto f = []() {
+        LOG_INFO << "Send SIGINT ...";
+        raise(SIGINT);
+    };
+    loop->RunAfter(evpp::Duration(0.1), f);
+    while (!thread->IsStopped()) {
+        usleep(1);
+    }
     H_TEST_ASSERT(g_event_handler_called);
     ev.reset();
-    event_base_free(base);
 }
-#endif
