@@ -7,7 +7,7 @@
 namespace evpp {
 namespace http {
 Service::Service(EventLoop* l)
-    : evhttp_(NULL), listen_loop_(l), evhttp_bound_socket_(NULL) {
+    : evhttp_(NULL), evhttp_bound_socket_(NULL), listen_loop_(l) {
     evhttp_ = evhttp_new(listen_loop_->event_base());
 
     if (!evhttp_) {
