@@ -6,34 +6,43 @@
 #include "evpp/invoke_timer.h"
 
 namespace evpp {
-EventLoop::EventLoop() {
+EventLoop::EventLoop() : create_evbase_myself_(true) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
 
     if (cfg) {
         // Does not cache time to get a preciser timer
         event_config_set_flag(cfg, EVENT_BASE_FLAG_NO_CACHE_TIME);
-        event_base_ = event_base_new_with_config(cfg);
+        evbase_ = event_base_new_with_config(cfg);
         event_config_free(cfg);
     }
 
 #else
-    event_base_ = event_base_new();
+    evbase_ = event_base_new();
 #endif
     Init();
 }
 
 EventLoop::EventLoop(struct event_base* base)
-    : event_base_(base) {
+    : evbase_(base), create_evbase_myself_(false) {
     Init();
+
+    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
+    int rc = watcher_->Init();
+    assert(rc);
+    rc = watcher_->AsyncWait();
+    assert(rc);
 }
 
 EventLoop::~EventLoop() {
+    if (create_evbase_myself_) {
+        watcher_.reset();
+    }
     assert(!watcher_.get());
 
-    if (event_base_ != NULL) {
-        event_base_free(event_base_);
-        event_base_ = NULL;
+    if (evbase_ != NULL && create_evbase_myself_) {
+        event_base_free(evbase_);
+        evbase_ = NULL;
     }
 }
 
@@ -54,7 +63,7 @@ void EventLoop::Run() {
 
     // 所有的事情都准备好之后，才置标记为true
     running_ = true;
-    rc = event_base_dispatch(event_base_);
+    rc = event_base_dispatch(evbase_);
 
     if (rc == 1) {
         LOG_ERROR << "event_base_dispatch error: no event registered";
@@ -92,11 +101,11 @@ void EventLoop::StopInLoop() {
 
     //TODO make sure all the event in event_base stopped.
     timeval tv = Duration(0.5).TimeVal(); // 0.5 second
-    event_base_loopexit(event_base_, &tv);
+    event_base_loopexit(evbase_, &tv);
 }
 
 void EventLoop::AfterFork() {
-    int rc = event_reinit(event_base_);
+    int rc = event_reinit(evbase_);
     assert(rc == 0);
 
     if (rc != 0) {
