@@ -131,6 +131,7 @@ void PipeEventWatcher::DoClose() {
 }
 
 void PipeEventWatcher::HandlerFn(int fd, short which, void* v) {
+    //LOG_INFO << "PipeEventWatcher::HandlerFn() ";
     PipeEventWatcher* e = (PipeEventWatcher*)v;
     char buf[128];
     int n = 0;
@@ -145,6 +146,7 @@ bool PipeEventWatcher::AsyncWait() {
 }
 
 void PipeEventWatcher::Notify() {
+    //LOG_INFO << "PipeEventWatcher::Notify() ";
     char buf[1] = {};
 
     if (::send(pipe_[0], buf, sizeof(buf), 0) < 0) {
