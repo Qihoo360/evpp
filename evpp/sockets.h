@@ -69,6 +69,7 @@ inline const struct sockaddr_storage* sockaddr_storage_cast(const struct sockadd
 }
 
 }
+
 }
 
 #ifdef H_OS_WINDOWS
