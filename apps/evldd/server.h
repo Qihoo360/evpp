@@ -19,7 +19,7 @@ public:
 
     void SetMessageCallback(const LddMessgageCallback& cb);
 
-    void NotifyMessage(ChannelBasePtr channel);
+    void OnMessage(ChannelBasePtr channel);
 private:
     Options             options_;
     LddMessgageCallback msg_fn_;
