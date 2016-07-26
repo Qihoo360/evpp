@@ -4,7 +4,7 @@
 
 namespace evldd {
 
-class Packet;
+class IncomingPacket;
 
 class PacketReader {
     enum ReadStat {
@@ -19,7 +19,7 @@ public:
                 evpp::Buffer* buf,
                 evpp::Timestamp ts);
 public:
-    const Packet* packet() const {
+    const IncomingPacket* packet() const {
         return packet_;
     }
 
@@ -29,8 +29,8 @@ protected:
     virtual void Error()    = 0;
 
 protected:
-    ReadStat                read_stat_;
-    Packet*                 packet_;
+    ReadStat         read_stat_;
+    IncomingPacket*  packet_;
 };
 
 
