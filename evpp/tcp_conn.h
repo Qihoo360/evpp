@@ -34,9 +34,7 @@ public:
 
     void Close();
 
-    void Send(const char* s) {
-        Send(s, strlen(s));
-    }
+    void Send(const char* s) { Send(s, strlen(s)); }
     void Send(const void* d, size_t dlen);
     void Send(const std::string& d);
     void Send(const Slice& message);
