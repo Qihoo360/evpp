@@ -41,15 +41,20 @@ void EventLoop::Init() {
     running_ = false;
     tid_ = std::this_thread::get_id(); // The default thread id
     calling_pending_functors_ = false;
-    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
-    watcher_->Init();
-    watcher_->AsyncWait();
 }
 
 void EventLoop::Run() {
-    running_ = true;
+    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
+    int rc = watcher_->Init();
+    assert(rc);
+    rc = watcher_->AsyncWait();
+    assert(rc);
+
     tid_ = std::this_thread::get_id(); // The actual thread id
-    int rc = event_base_dispatch(event_base_);
+
+    // 所有的事情都准备好之后，才置标记为true
+    running_ = true;
+    rc = event_base_dispatch(event_base_);
 
     if (rc == 1) {
         LOG_ERROR << "event_base_dispatch error: no event registered";
@@ -126,7 +131,7 @@ void EventLoop::RunInLoop(const Functor& functor) {
 }
 
 void EventLoop::QueueInLoop(const Functor& cb) {
-    LOG_INFO << "EventLoop::QueueInLoop tid=" << std::this_thread::get_id() << " IsInLoopThread=" << IsInLoopThread();
+    //LOG_INFO << "EventLoop::QueueInLoop tid=" << std::this_thread::get_id() << " IsInLoopThread=" << IsInLoopThread();
     {
         std::lock_guard<std::mutex> lock(mutex_);
         pending_functors_.push_back(cb);
