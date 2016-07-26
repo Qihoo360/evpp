@@ -16,13 +16,13 @@ void PacketReader::OnRead(const evpp::TCPConnPtr& conn,
         }
     }
     if (read_stat_ == kBody) {
-        if (buf->size() >= kHeaderLen + packet_->BodySize()) {
+        if (buf->size() >= kHeaderLen + packet_->LeftSize()) {
             packet_->ReadBody(data);
             read_stat_ = kHeader;
             if (packet_->IsOk()) {
                 Done();
             }
-            buf->Retrieve(kHeaderLen + packet_->BodySize());
+            buf->Retrieve(kHeaderLen + packet_->LeftSize());
         }
     }
     if (!packet_->IsOk()) {
