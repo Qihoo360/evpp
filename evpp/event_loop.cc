@@ -35,7 +35,8 @@ EventLoop::EventLoop(struct event_base* base)
 }
 
 EventLoop::~EventLoop() {
-    if (create_evbase_myself_) {
+    if (!create_evbase_myself_) {
+        assert(watcher_);
         watcher_.reset();
     }
     assert(!watcher_.get());
@@ -72,7 +73,7 @@ void EventLoop::Run() {
     }
 
     //LOG_TRACE << "EventLoop stopped, tid: " << std::this_thread::get_id();
-    watcher_.reset();
+    watcher_.reset(); // 确保在同一个线程构造、初始化和析构
     running_ = false;
 }
 
@@ -99,7 +100,6 @@ void EventLoop::StopInLoop() {
         }
     }
 
-    //TODO make sure all the event in event_base stopped.
     timeval tv = Duration(0.5).TimeVal(); // 0.5 second
     event_base_loopexit(evbase_, &tv);
 }
@@ -131,7 +131,6 @@ evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, const Functor& f) {
 }
 
 void EventLoop::RunInLoop(const Functor& functor) {
-    //LOG_INFO << "EventLoop::RunInLoop tid=" << std::this_thread::get_id() << " IsInLoopThread=" << IsInLoopThread();
     if (IsInLoopThread()) {
         functor();
     } else {
@@ -140,7 +139,6 @@ void EventLoop::RunInLoop(const Functor& functor) {
 }
 
 void EventLoop::QueueInLoop(const Functor& cb) {
-    //LOG_INFO << "EventLoop::QueueInLoop tid=" << std::this_thread::get_id() << " IsInLoopThread=" << IsInLoopThread();
     {
         std::lock_guard<std::mutex> lock(mutex_);
         pending_functors_.push_back(cb);
@@ -148,7 +146,6 @@ void EventLoop::QueueInLoop(const Functor& cb) {
     }
 
     if (calling_pending_functors_ || !IsInLoopThread()) {
-        //LOG_INFO << "EventLoop::QueueInLoop tid=" << std::this_thread::get_id() << " watcher_->Notify()";
         watcher_->Notify();
     }
 }
