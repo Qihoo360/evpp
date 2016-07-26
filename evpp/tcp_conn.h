@@ -34,9 +34,7 @@ public:
 
     void Close();
 
-    void Send(const char* s) {
-        Send(s, strlen(s));
-    }
+    void Send(const char* s) { Send(s, strlen(s)); }
     void Send(const void* d, size_t dlen);
     void Send(const std::string& d);
     void Send(const Slice& message);
@@ -76,6 +74,7 @@ public:
         return status_;
     }
     void SetCloseDelayTime(Duration d) {
+        assert(type_ == kIncoming);
         close_delay_ = d;    // 设置延时关闭时间，仅对 kIncoming 类型的TCPConn生效。
     }
 protected:
