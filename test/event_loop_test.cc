@@ -41,10 +41,12 @@ TEST_UNIT(testEventLoop) {
     evpp::InvokeTimerPtr t = loop->RunEvery(evpp::Duration(0.3), &PeriodicFunc);
     loop->RunAfter(delay, std::bind(&Handle, t));
     th.join();
+    t.reset();
     evpp::Duration cost = evpp::Timestamp::Now() - start;
     H_TEST_ASSERT(delay <= cost);
     H_TEST_ASSERT(event_handler_called);
     H_TEST_ASSERT(periodic_run_count == 3);
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
 
