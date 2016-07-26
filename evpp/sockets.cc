@@ -4,6 +4,7 @@
 #include "evpp/sockets.h"
 
 namespace evpp {
+
 std::string strerror(int e) {
 #ifdef H_OS_WINDOWS
     LPVOID lpMsgBuf = NULL;
@@ -24,6 +25,7 @@ std::string strerror(int e) {
 #endif
 }
 
+namespace sock {
 int CreateNonblockingSocket() {
     int serrno = 0;
     //int on = 1;
@@ -197,7 +199,7 @@ void SetReuseAddr(int fd) {
     assert(rc == 0);
 }
 
-
+}
 }
 
 #ifdef H_OS_WINDOWS
