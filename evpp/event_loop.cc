@@ -29,7 +29,7 @@ EventLoop::EventLoop(struct event_base* base)
 }
 
 EventLoop::~EventLoop() {
-    watcher_.reset(); // 在 event_base 之前释放
+    //assert(!watcher_.get());
 
     if (event_base_ != NULL) {
         event_base_free(event_base_);
@@ -41,25 +41,24 @@ void EventLoop::Init() {
     running_ = false;
     tid_ = std::this_thread::get_id(); // The default thread id
     calling_pending_functors_ = false;
-    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
-    watcher_->Init();
-    watcher_->AsyncWait();
 }
 
 void EventLoop::Run() {
     running_ = true;
+    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
+    watcher_->Init();
+    watcher_->AsyncWait();
     tid_ = std::this_thread::get_id(); // The actual thread id
     int rc = event_base_dispatch(event_base_);
 
     if (rc == 1) {
         LOG_ERROR << "event_base_dispatch error: no event registered";
-        return;
     } else if (rc == -1) {
         LOG_FATAL << "event_base_dispatch error";
-        return;
     }
 
     //LOG_TRACE << "EventLoop stopped, tid: " << std::this_thread::get_id();
+    //watcher_.reset();
     running_ = false;
 }
 
