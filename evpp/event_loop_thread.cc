@@ -38,18 +38,15 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
         os << "thread-" << std::this_thread::get_id();
         name_ = os.str();
     }
-
     status_ = kRunning;
-
     if (pre) {
         pre();
     }
-
     event_loop_->Run();
-
     if (post) {
         post();
     }
+    event_loop_.reset(); // 就在当前线程中释放所有资源
     status_ = kStopped;
 }
 
