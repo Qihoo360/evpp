@@ -39,6 +39,7 @@ TEST_UNIT(testTimerEventWatcher) {
     H_TEST_ASSERT(g_timeout <= cost);
     H_TEST_ASSERT(g_event_handler_called);
     event_base_free(base);
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
 TEST_UNIT(testsocketpair) {
@@ -85,5 +86,7 @@ TEST_UNIT(testSignalEventWatcher) {
     while (!thread->IsStopped()) {
         usleep(1);
     }
+    thread.reset();
     H_TEST_ASSERT(g_event_handler_called);
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }

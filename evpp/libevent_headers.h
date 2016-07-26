@@ -62,9 +62,3 @@ extern "C" {
 
 #endif
 
-
-namespace evpp {
-int EventAdd(struct event *ev, const struct timeval *timeout);
-int EventDel(struct event *);
-int GetActiveEventCount();
-}
