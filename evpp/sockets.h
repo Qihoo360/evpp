@@ -61,6 +61,8 @@ EVPP_EXPORT void SetTimeout(int fd, uint32_t timeout_ms);
 EVPP_EXPORT struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/);
 EVPP_EXPORT struct sockaddr_in GetLocalAddr(int sockfd);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr_storage* ss);
+EVPP_EXPORT std::string ToIPPort(const struct sockaddr* ss);
+EVPP_EXPORT std::string ToIPPort(const struct sockaddr_in* ss);
 
 }
 
