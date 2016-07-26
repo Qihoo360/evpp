@@ -19,7 +19,6 @@ Listener::~Listener() {
 
 void Listener::Listen() {
     fd_ = sock::CreateNonblockingSocket();
-
     if (fd_ < 0) {
         return;
     }
@@ -27,15 +26,12 @@ void Listener::Listen() {
     struct sockaddr_in addr = sock::ParseFromIPPort(addr_.data());
 
     int ret = ::bind(fd_, sock::sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
-
     int serrno = errno;
-
     if (ret < 0) {
         LOG_FATAL << "bind error :" << strerror(serrno);
     }
 
     ret = ::listen(fd_, SOMAXCONN);
-
     if (ret < 0) {
         serrno = errno;
         LOG_FATAL << "Listen failed " << strerror(serrno);
@@ -54,7 +50,6 @@ void Listener::HandleAccept(Timestamp ts) {
     struct sockaddr_storage ss;
     socklen_t addrlen = sizeof(ss);
     int nfd = -1;
-
     if ((nfd = ::accept(fd_, (struct sockaddr*)&ss, &addrlen)) == -1) {
         int serrno = errno;
 
@@ -71,11 +66,9 @@ void Listener::HandleAccept(Timestamp ts) {
         return;
     }
 
-    int on = 1;
-    ::setsockopt(nfd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
+    sock::SetKeepAlive(nfd);
 
     std::string raddr = sock::ToIPPort(&ss);
-
     if (raddr.empty()) {
         EVUTIL_CLOSESOCKET(nfd);
         return;
