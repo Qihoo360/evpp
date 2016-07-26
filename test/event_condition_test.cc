@@ -19,17 +19,19 @@ static void MyEventThread(struct event_base* base, evpp::PipeEventWatcher* ev) {
     }
 
     event_base_loop(base, 0);
+    delete ev;// 确保初始化和析构过程在同一个线程中
 }
 }
 
 TEST_UNIT(testPipeEventWatcher) {
     struct event_base* base = event_base_new();
-    evpp::PipeEventWatcher ev(base, std::bind(&Handle, base));
-    std::thread th(MyEventThread, base, &ev);
+    evpp::PipeEventWatcher* ev = new evpp::PipeEventWatcher(base, std::bind(&Handle, base));
+    std::thread th(MyEventThread, base, ev);
     ::usleep(1000 * 100);
-    ev.Notify();
+    ev->Notify();
     th.join();
     event_base_free(base);
     H_TEST_ASSERT(g_event_handler_called == true);
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 

@@ -18,6 +18,10 @@ public:
     typedef std::function<void()> Functor;
 public:
     EventLoop();
+
+    // 从一个已有的event_base对象创建EventLoop，
+    // 这样就可以将evpp::EventLoop方便的嵌入到别的基于libevent的已有框架中。
+    // 需要仔细处理 event_base_、watcher_等对象的释放问题
     explicit EventLoop(struct event_base* base);
     ~EventLoop();
 
@@ -35,7 +39,7 @@ public:
     void QueueInLoop(const Functor& handler);
 
     struct event_base* event_base() {
-        return event_base_;
+        return evbase_;
     }
     bool IsInLoopThread() const;
     void AssertInLoopThread() const;
@@ -57,7 +61,8 @@ private:
     void DoPendingFunctors();
 
 private:
-    struct event_base* event_base_;
+    struct event_base* evbase_;
+    bool create_evbase_myself_;
     std::thread::id tid_;
     Any context_;
     bool running_;

@@ -36,7 +36,7 @@ private:
     std::string host_;
     int port_;
     Duration timeout_;
-    size_t max_pool_size_; // The max size of the pool per EventLoop
+    size_t max_pool_size_; // The max size of the pool for every EventLoop
 
     std::mutex mutex_; // The guard of pools_
     std::map<EventLoop*, std::vector<ConnPtr> > pool_;
