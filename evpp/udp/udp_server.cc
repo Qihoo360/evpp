@@ -174,7 +174,7 @@ void Server::RecvingLoop(RecvThread* thread) {
         socklen_t addr_len = sizeof(struct sockaddr);
         int readn = ::recvfrom(thread->fd(), (char*)recv_msg->WriteBegin(), recv_buf_size_, 0, recv_msg->mutable_remote_addr(), &addr_len);
         LOG_TRACE << "fd=" << thread->fd() << " port=" << thread->port()
-                  << " recv len=" << readn << " from " << ToIPPort(sockaddr_storage_cast(recv_msg->remote_addr()));
+                  << " recv len=" << readn << " from " << ToIPPort(recv_msg->remote_addr());
 
         if (readn >= 0) {
             recv_msg->WriteBytes(readn);
