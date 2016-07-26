@@ -16,7 +16,9 @@ public:
     EventLoopThread();
     ~EventLoopThread();
 
-    bool Start(bool wait_until_thread_started = false, const Functor& pre = Functor(), const Functor& post = Functor());
+    bool Start(bool wait_until_thread_started = false,
+               const Functor& pre = Functor(),
+               const Functor& post = Functor());
     void Stop(bool wait_thread_exit = false);
 
     void SetName(const std::string& n);

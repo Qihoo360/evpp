@@ -46,9 +46,7 @@ void TCPServer::StopInLoop() {
     LOG_TRACE << "Entering TCPServer::StopInLoop";
     listener_->Stop();
 
-    auto it = connections_.begin();
-    auto ite = connections_.end();
-    for (; it != ite; ++it) {
+    for (auto it = connections_.begin(); it != connections_.end(); ++it) {
         it->second->Close();
     }
 
