@@ -41,8 +41,6 @@ namespace evpp {
 #ifdef H_DEBUG_MODE
 static std::map<struct event*, std::thread::id> evmap;
 static std::mutex mutex;
-#else
-    static int count;
 #endif
 
 int EventAdd(struct event* ev, const struct timeval* timeout) {
@@ -85,8 +83,9 @@ int EventDel(struct event* ev) {
 int GetActiveEventCount() {
 #ifdef H_DEBUG_MODE
     return evmap.size();
-#endif
+#else
     return 0;
+#endif
 }
 
 }
