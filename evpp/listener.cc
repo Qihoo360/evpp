@@ -18,15 +18,15 @@ Listener::~Listener() {
 }
 
 void Listener::Listen() {
-    fd_ = CreateNonblockingSocket();
+    fd_ = sock::CreateNonblockingSocket();
 
     if (fd_ < 0) {
         return;
     }
 
-    struct sockaddr_in addr = ParseFromIPPort(addr_.data());
+    struct sockaddr_in addr = sock::ParseFromIPPort(addr_.data());
 
-    int ret = ::bind(fd_, sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
+    int ret = ::bind(fd_, sock::sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
 
     int serrno = errno;
 
@@ -74,7 +74,7 @@ void Listener::HandleAccept(Timestamp ts) {
     int on = 1;
     ::setsockopt(nfd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
 
-    std::string raddr = ToIPPort(&ss);
+    std::string raddr = sock::ToIPPort(&ss);
 
     if (raddr.empty()) {
         EVUTIL_CLOSESOCKET(nfd);
