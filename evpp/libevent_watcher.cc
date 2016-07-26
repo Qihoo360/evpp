@@ -9,7 +9,7 @@
 namespace evpp {
 
 EventWatcher::EventWatcher(struct event_base* evbase, const Handler& handler)
-    : evbase_(evbase), attached_to_loop_(false), handler_(handler) {
+    : evbase_(evbase), attached_(false), handler_(handler) {
     event_ = new event;
     memset(event_, 0, sizeof(struct event));
 }
@@ -40,31 +40,30 @@ void EventWatcher::Close() {
 bool EventWatcher::Watch(Duration timeout) {
     struct timeval tv;
     struct timeval* timeoutval = NULL;
-
     if (timeout.Nanoseconds() > 0) {
         timeout.To(&tv);
         timeoutval = &tv;
     }
 
-    if (attached_to_loop_) {
+    if (attached_) {
         // 在周期性的InvokerTimer中，EventWatcher::Watch 会被调用多次，这样就可以避免 event_add 被调用多次。
-        ::event_del(event_);
-        attached_to_loop_ = false;
+        EventDel(event_);
+        attached_ = false;
     }
 
-    if (::event_add(event_, timeoutval) != 0) {
+    assert(!attached_);
+    if (EventAdd(event_, timeoutval) != 0) {
         LOG_ERROR << "event_add failed. fd=" << this->event_->ev_fd << " event_=" << event_;
         return false;
     }
-
-    attached_to_loop_ = true;
+    attached_ = true;
     return true;
 }
 
 void EventWatcher::FreeEvent() {
     if (event_) {
-        if (event_initialized(event_)) {
-            ::event_del(event_);
+        if (attached_) {
+            EventDel(event_);
         }
 
         delete(event_);
@@ -132,6 +131,7 @@ void PipeEventWatcher::DoClose() {
 }
 
 void PipeEventWatcher::HandlerFn(int fd, short which, void* v) {
+    //LOG_INFO << "PipeEventWatcher::HandlerFn() ";
     PipeEventWatcher* e = (PipeEventWatcher*)v;
     char buf[128];
     int n = 0;
@@ -146,6 +146,7 @@ bool PipeEventWatcher::AsyncWait() {
 }
 
 void PipeEventWatcher::Notify() {
+    //LOG_INFO << "PipeEventWatcher::Notify() ";
     char buf[1] = {};
 
     if (::send(pipe_[0], buf, sizeof(buf), 0) < 0) {

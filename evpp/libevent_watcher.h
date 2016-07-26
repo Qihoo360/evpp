@@ -49,7 +49,7 @@ protected:
 
     struct event* event_;
     struct event_base* evbase_;
-    bool attached_to_loop_;
+    bool attached_;
     Handler handler_;
     Handler cancel_callback_;
 };

@@ -26,7 +26,6 @@ bool HTTPServer::Start(int port) {
     }
 
     bool rc = tpool_->Start(true);
-
     if (!rc) {
         return rc;
     }
