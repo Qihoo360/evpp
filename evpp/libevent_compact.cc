@@ -17,7 +17,7 @@ struct event* event_new(struct event_base* base, int fd, short events,
 }
 
 void event_free(struct event* ev) {
-    ::event_del(ev);
+    evpp::EventDel(ev);
     free(ev);
 }
 
