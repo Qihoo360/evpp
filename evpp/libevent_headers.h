@@ -60,5 +60,5 @@ extern "C" {
 #endif
 #define event_initialized(ev) ((ev)->ev_flags & EVLIST_INIT)
 
-
 #endif
+

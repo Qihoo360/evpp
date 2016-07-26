@@ -6,34 +6,45 @@
 #include "evpp/invoke_timer.h"
 
 namespace evpp {
-EventLoop::EventLoop() {
+EventLoop::EventLoop() : create_evbase_myself_(true) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
-
     if (cfg) {
         // Does not cache time to get a preciser timer
         event_config_set_flag(cfg, EVENT_BASE_FLAG_NO_CACHE_TIME);
-        event_base_ = event_base_new_with_config(cfg);
+        evbase_ = event_base_new_with_config(cfg);
         event_config_free(cfg);
     }
-
 #else
-    event_base_ = event_base_new();
+    evbase_ = event_base_new();
 #endif
     Init();
 }
 
 EventLoop::EventLoop(struct event_base* base)
-    : event_base_(base) {
+    : evbase_(base), create_evbase_myself_(false) {
     Init();
+
+    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
+    int rc = watcher_->Init();
+    assert(rc);
+    rc = rc && watcher_->AsyncWait();
+    assert(rc);
+    if (!rc) {
+        LOG_ERROR << "PipeEventWatcher init failed.";
+    }
 }
 
 EventLoop::~EventLoop() {
-    watcher_.reset(); // 在 event_base 之前释放
+    if (!create_evbase_myself_) {
+        assert(watcher_);
+        watcher_.reset();
+    }
+    assert(!watcher_.get());
 
-    if (event_base_ != NULL) {
-        event_base_free(event_base_);
-        event_base_ = NULL;
+    if (evbase_ != NULL && create_evbase_myself_) {
+        event_base_free(evbase_);
+        evbase_ = NULL;
     }
 }
 
@@ -41,25 +52,32 @@ void EventLoop::Init() {
     running_ = false;
     tid_ = std::this_thread::get_id(); // The default thread id
     calling_pending_functors_ = false;
-    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
-    watcher_->Init();
-    watcher_->AsyncWait();
 }
 
 void EventLoop::Run() {
-    running_ = true;
+    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
+    int rc = watcher_->Init();
+    assert(rc);
+    rc = rc && watcher_->AsyncWait();
+    assert(rc);
+    if (!rc) {
+        LOG_ERROR << "PipeEventWatcher init failed.";
+    }
+
     tid_ = std::this_thread::get_id(); // The actual thread id
-    int rc = event_base_dispatch(event_base_);
+
+    // 所有的事情都准备好之后，才置标记为true
+    running_ = true;
+    rc = event_base_dispatch(evbase_);
 
     if (rc == 1) {
         LOG_ERROR << "event_base_dispatch error: no event registered";
-        return;
     } else if (rc == -1) {
         LOG_FATAL << "event_base_dispatch error";
-        return;
     }
 
     //LOG_TRACE << "EventLoop stopped, tid: " << std::this_thread::get_id();
+    watcher_.reset(); // 确保在同一个线程构造、初始化和析构
     running_ = false;
 }
 
@@ -86,13 +104,12 @@ void EventLoop::StopInLoop() {
         }
     }
 
-    //TODO make sure all the event in event_base stopped.
     timeval tv = Duration(0.5).TimeVal(); // 0.5 second
-    event_base_loopexit(event_base_, &tv);
+    event_base_loopexit(evbase_, &tv);
 }
 
 void EventLoop::AfterFork() {
-    int rc = event_reinit(event_base_);
+    int rc = event_reinit(evbase_);
     assert(rc == 0);
 
     if (rc != 0) {
@@ -118,7 +135,6 @@ evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, const Functor& f) {
 }
 
 void EventLoop::RunInLoop(const Functor& functor) {
-    //LOG_INFO << "EventLoop::RunInLoop tid=" << std::this_thread::get_id() << " IsInLoopThread=" << IsInLoopThread();
     if (IsInLoopThread()) {
         functor();
     } else {
@@ -127,7 +143,6 @@ void EventLoop::RunInLoop(const Functor& functor) {
 }
 
 void EventLoop::QueueInLoop(const Functor& cb) {
-    LOG_INFO << "EventLoop::QueueInLoop tid=" << std::this_thread::get_id() << " IsInLoopThread=" << IsInLoopThread();
     {
         std::lock_guard<std::mutex> lock(mutex_);
         pending_functors_.push_back(cb);
@@ -135,7 +150,6 @@ void EventLoop::QueueInLoop(const Functor& cb) {
     }
 
     if (calling_pending_functors_ || !IsInLoopThread()) {
-        //LOG_INFO << "EventLoop::QueueInLoop tid=" << std::this_thread::get_id() << " watcher_->Notify()";
         watcher_->Notify();
     }
 }
