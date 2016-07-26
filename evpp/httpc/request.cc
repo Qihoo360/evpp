@@ -11,7 +11,6 @@ const std::string Request::empty_ = "";
 
 Request::Request(ConnPool* pool, EventLoop* loop, const std::string& http_uri, const std::string& body)
     : pool_(pool), loop_(loop), uri_(http_uri), body_(body) {
-
 }
 
 Request::Request(EventLoop* loop, const std::string& http_url, const std::string& body, Duration timeout)
@@ -66,7 +65,6 @@ void Request::ExecuteInLoop(const Handler& h) {
 
     if (conn_) {
         assert(pool_ == NULL);
-
         if (!conn_->Init()) {
             errmsg = "conn init fail";
             goto failed;
@@ -74,7 +72,6 @@ void Request::ExecuteInLoop(const Handler& h) {
     } else {
         assert(pool_);
         conn_ = pool_->Get(loop_);
-
         if (!conn_->Init()) {
             errmsg = "conn init fail";
             goto failed;
@@ -82,7 +79,6 @@ void Request::ExecuteInLoop(const Handler& h) {
     }
 
     req = evhttp_request_new(&Request::HandleResponse, this);
-
     if (!req) {
         errmsg = "evhttp_request_new fail";
         goto failed;
@@ -96,7 +92,6 @@ void Request::ExecuteInLoop(const Handler& h) {
 
     if (!body_.empty()) {
         req_type = EVHTTP_REQ_POST;
-
         if (evbuffer_add(req->output_buffer, body_.c_str(), body_.size())) {
             evhttp_request_free(req);
             errmsg = "evbuffer_add fail";
@@ -123,10 +118,8 @@ void Request::HandleResponse(struct evhttp_request* rsp, void* v) {
     assert(thiz);
 
     std::shared_ptr<Response> response;
-
     if (rsp) {
         response.reset(new Response(thiz, rsp));
-
         if (thiz->pool_) {
             thiz->pool_->Put(thiz->conn_);
         }
