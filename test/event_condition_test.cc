@@ -32,5 +32,6 @@ TEST_UNIT(testPipeEventWatcher) {
     th.join();
     event_base_free(base);
     H_TEST_ASSERT(g_event_handler_called == true);
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
