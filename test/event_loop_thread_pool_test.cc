@@ -29,21 +29,24 @@ static void OnCount() {
 }
 
 TEST_UNIT(testEventLoopThreadPool) {
-    evpp::EventLoopThread loop;
-    loop.Start(true);
+    std::unique_ptr<evpp::EventLoopThread> loop(new evpp::EventLoopThread);
+    loop->Start(true);
 
     int thread_num = 24;
-    evpp::EventLoopThreadPool pool(loop.event_loop(), thread_num);
-    H_TEST_ASSERT(pool.Start(true));
+    std::unique_ptr<evpp::EventLoopThreadPool> pool(new evpp::EventLoopThreadPool(loop->event_loop(), thread_num));
+    H_TEST_ASSERT(pool->Start(true));
 
     for (int i = 0; i < thread_num; i++) {
-        pool.GetNextLoop()->RunInLoop(&OnCount);
+        pool->GetNextLoop()->RunInLoop(&OnCount);
     }
 
     usleep(1000 * 1000);
-    pool.Stop(true);
-    loop.Stop(true);
+    pool->Stop(true);
+    loop->Stop(true);
     usleep(1000 * 1000);
     H_TEST_ASSERT((int)g_working_tids.size() == thread_num);
+    pool.reset();
+    loop.reset();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
