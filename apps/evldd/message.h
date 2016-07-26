@@ -19,7 +19,7 @@ struct Message {
     ExtraMap*   extras;
 
     Message();
-}
+};
 
 typedef std::shared_ptr<Message> MessagePtr;
 
