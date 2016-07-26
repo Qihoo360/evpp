@@ -17,6 +17,7 @@ void BinaryCodec::OnCodecMessage(const evpp::TCPConnPtr& conn,
         resp.response.status  = ntohs(resp.response.status);
         resp.response.keylen  = ntohs(resp.response.keylen);
 
+
         if (resp.response.bodylen < 0) {
             LOG_ERROR << "Invalid length " << resp.response.bodylen;
             conn->Close();
@@ -30,16 +31,54 @@ void BinaryCodec::OnCodecMessage(const evpp::TCPConnPtr& conn,
     }
 }
 
+
+void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& resp,
+                                   evpp::Buffer* buf, CommandPtr& ptr) {
+	const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
+	std::string key(pv, resp.response.keylen);
+	uint32_t pos = resp.response.keylen;
+	uint32_t klen = 0;
+	uint32_t vlen = 0;
+	const uint32_t size = resp.response.bodylen - resp.response.keylen - resp.response.extlen; 
+	const uint32_t buf_size = buf->size();
+	int ret = resp.response.status;
+	union {
+		uint32_t len;
+		char buf[4];
+	} x;
+	while(pos < size) {
+		if (pos >= buf_size || pos + 4 >= buf_size) {
+			break;
+		}
+		memcpy(x.buf, pv + pos, 4);
+		pos += 4;
+		klen = ntohl(x.len);
+		std::string rkey(pv + pos, klen);
+		pos += klen;                                                                                                                                                                                                                                                      
+		if (pos >= buf_size || pos + 4 >= buf_size) {
+			break;
+		}
+		memcpy(x.buf, pv + pos, 4);
+		pos += 4;
+		vlen = ntohl(x.len);
+		std::string rval(pv + pos, vlen);
+		LOG(INFO) << key << ":" << size << " parse prefix:" << rkey << " get result, GetResult value: " << rval;
+		ptr->OnPrefixGetCommandOneResponse(rkey, rval);
+		pos += vlen;
+	}
+	ptr->OnPrefixGetCommandDone(ret, key);
+}
+
 void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
                                    evpp::Buffer* buf) {
     uint32_t id  = resp.response.opaque;  // no need to call ntohl
-    int      opcode = resp.response.opcode;
+    int opcode = resp.response.opcode;
     CommandPtr cmd = memc_client_->peek_running_command();
 
     if (!cmd || id != cmd->id()) {
         // TODO : id 不一致时候，如何处理?
-        buf->Retrieve(kHeaderLen + resp.response.bodylen);
-        LOG_WARN << "OnResponsePacket cmd/message mismatch.";
+		buf->Retrieve(kHeaderLen + resp.response.bodylen);
+		LOG_WARN << "OnResponsePacket cmd/message mismatch.";
         return;
     }
 
@@ -71,10 +110,10 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 
         const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
         std::string key(pv, resp.response.keylen);
-        std::string value(pv, resp.response.bodylen - resp.response.keylen - resp.response.extlen);
+        std::string value(pv + resp.response.keylen, resp.response.bodylen - resp.response.keylen - resp.response.extlen);
 
         cmd->OnMultiGetCommandDone(resp.response.status, key, value);
-        LOG_DEBUG << "OnResponsePacket GETK, opaque=" << id << " key=" << key;
+        LOG_DEBUG << "OnResponsePacket GETK, opaque=" << id << " key=" << key << " value=" << value << " retcode=" << resp.response.status;
     }
     break;
 
@@ -82,21 +121,32 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
         cmd = memc_client_->peek_running_command();
         const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
         std::string key(pv, resp.response.keylen);
-        std::string value(pv, resp.response.bodylen - resp.response.keylen - resp.response.extlen);
+        std::string value(pv + resp.response.keylen, resp.response.bodylen - resp.response.keylen - resp.response.extlen);
 
         cmd->OnMultiGetCommandOneResponse(resp.response.status, key, value);
         LOG_DEBUG << "OnResponsePacket GETKQ, opaque=" << id << " key=" << key;
     }
     break;
 
+	case PROTOCOL_BINARY_CMD_PGETK: 
+        cmd = memc_client_->PopRunningCommand();
+		DecodePrefixGetPacket(resp, buf, cmd);
+		break;
+
+	case PROTOCOL_BINARY_CMD_PGETKQ: 
+        cmd = memc_client_->PopRunningCommand();
+		DecodePrefixGetPacket(resp, buf, cmd);
+		break;
+
     case PROTOCOL_BINARY_CMD_NOOP:
 
     ////LOG_DEBUG << "GETQ, NOOP opaque=" << id;
     //memc_client_->onMultiGetCommandDone(id, resp.response.status);
     //break;
-    default:
+	default:
         break;
-    }
+	}
+										
 
     // memc_client_->set_last_command_id(id);
     buf->Retrieve(kHeaderLen + resp.response.bodylen);
