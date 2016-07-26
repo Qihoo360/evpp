@@ -86,7 +86,6 @@ void FdChannel::DisableReadEvent() {
 void FdChannel::DisableWriteEvent() {
     int events = events_;
     events_ &= (~kWritable);
-
     if (events_ != events) {
         Update();
     }

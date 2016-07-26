@@ -53,7 +53,6 @@ void Connector::Connect() {
     int fd = sock::CreateNonblockingSocket();
     assert(fd >= 0);
     int rc = ::connect(fd, sock::sockaddr_cast(&raddr_), sizeof(raddr_));
-
     if (rc != 0) {
         int serrno = errno;
 
