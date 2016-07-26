@@ -97,7 +97,7 @@ void Connector::HandleWrite() {
     chan_->DisableAllEvent();
 
     struct sockaddr_in addr = GetLocalAddr(chan_->fd());
-    std::string laddr = ToIPPort(sockaddr_storage_cast(&addr));
+    std::string laddr = ToIPPort(&addr);
     conn_fn_(chan_->fd(), laddr);
     timer_->Cancel();
     status_ = kConnected;
