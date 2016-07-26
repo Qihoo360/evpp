@@ -60,5 +60,11 @@ extern "C" {
 #endif
 #define event_initialized(ev) ((ev)->ev_flags & EVLIST_INIT)
 
-
 #endif
+
+
+namespace evpp {
+int EventAdd(struct event *ev, const struct timeval *timeout);
+int EventDel(struct event *);
+int GetActiveEventCount();
+}
