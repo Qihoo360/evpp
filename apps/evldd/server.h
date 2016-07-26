@@ -1,7 +1,6 @@
 #pragma once
 
-#include "type.h"
-#include "packet.h"
+#include "func.h"
 
 namespace evldd {
 
