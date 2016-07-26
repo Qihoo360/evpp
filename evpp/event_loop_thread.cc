@@ -16,7 +16,7 @@ EventLoopThread::~EventLoopThread() {
 }
 
 bool EventLoopThread::Start(bool wait_until_thread_started,
-                                  const Functor& pre, const Functor& post) {
+                            const Functor& pre, const Functor& post) {
     thread_.reset(new std::thread(
                       std::bind(&EventLoopThread::Run, this, pre, post)));
 
@@ -50,16 +50,19 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
     if (post) {
         post();
     }
-
     status_ = kStopped;
 }
 
 void EventLoopThread::Stop(bool wait_thread_exit) {
+    assert(status_ == kRunning && IsRunning());
     status_ = kStopping;
     event_loop_->Stop();
 
     if (wait_thread_exit) {
         thread_->join();
+        while (!IsStopped()) {
+            usleep(1);
+        }
     }
 }
 
@@ -90,7 +93,10 @@ std::thread::id EventLoopThread::tid() const {
 }
 
 bool EventLoopThread::IsRunning() const {
-    return thread_ && status_ == kRunning;
+    // 使 event_loop_->running() 这种判断方式更准确，而不是 status_==kRunning 。
+    // 这是因为：在极端情况下， status_==kRunning，但 event_loop_::running_ == false， 
+    //          这种情况下某些依赖EventLoop运行的代码将发生异常。
+    return event_loop_->running();
 }
 
 bool EventLoopThread::IsStopped() const {
