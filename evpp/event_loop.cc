@@ -9,14 +9,12 @@ namespace evpp {
 EventLoop::EventLoop() : create_evbase_myself_(true) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
-
     if (cfg) {
         // Does not cache time to get a preciser timer
         event_config_set_flag(cfg, EVENT_BASE_FLAG_NO_CACHE_TIME);
         evbase_ = event_base_new_with_config(cfg);
         event_config_free(cfg);
     }
-
 #else
     evbase_ = event_base_new();
 #endif
@@ -30,8 +28,11 @@ EventLoop::EventLoop(struct event_base* base)
     watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
     int rc = watcher_->Init();
     assert(rc);
-    rc = watcher_->AsyncWait();
+    rc = rc && watcher_->AsyncWait();
     assert(rc);
+    if (!rc) {
+        LOG_ERROR << "PipeEventWatcher init failed.";
+    }
 }
 
 EventLoop::~EventLoop() {
@@ -57,8 +58,11 @@ void EventLoop::Run() {
     watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
     int rc = watcher_->Init();
     assert(rc);
-    rc = watcher_->AsyncWait();
+    rc = rc && watcher_->AsyncWait();
     assert(rc);
+    if (!rc) {
+        LOG_ERROR << "PipeEventWatcher init failed.";
+    }
 
     tid_ = std::this_thread::get_id(); // The actual thread id
 
