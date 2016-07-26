@@ -30,9 +30,6 @@ public:
     void SetMessageCallback(const MessageCallback& cb) {
         msg_fn_ = cb;
     }
-    void SetWriteCompleteCallback(const WriteCompleteCallback& cb) {
-        write_complete_fn_ = cb;
-    }
     void set_auto_reconnect(bool v) {
         auto_reconnect_.store(v);
     }
@@ -62,7 +59,7 @@ private:
     EventLoop* loop_;
     std::string remote_addr_;
     std::string name_;
-    std::atomic<bool> auto_reconnect_; // 自动重连标记，默认为 true
+    std::atomic<bool> auto_reconnect_; // 是否自动重连的标记，默认为 true
     Any context_;
 
     mutable std::mutex mutex_; // The guard of conn_
@@ -73,6 +70,5 @@ private:
 
     ConnectionCallback conn_fn_;
     MessageCallback msg_fn_;
-    WriteCompleteCallback write_complete_fn_;
 };
 }
