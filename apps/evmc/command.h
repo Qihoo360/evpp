@@ -44,6 +44,8 @@ public:
     virtual void OnGetCommandDone(int resp_code, const std::string& value) {}
     virtual void OnMultiGetCommandOneResponse(int resp_code, const std::string& key, const std::string& value) {}
     virtual void OnMultiGetCommandDone(int resp_code, const std::string& key, const std::string& value) {}
+    virtual void OnPrefixGetCommandDone(const int resp_code, std::string& key) {}
+	virtual void OnPrefixGetCommandOneResponse(std::string& key, std::string& value) {}
 
 private:
     virtual BufferPtr RequestBuffer() const = 0;
@@ -76,8 +78,7 @@ public:
     }
     virtual void OnSetCommandDone(int resp_code) {
         if (caller_loop()) {
-            caller_loop()->RunInLoop(std::bind(set_callback_,
-                                               key_, resp_code));
+            caller_loop()->RunInLoop(std::bind(set_callback_, key_, resp_code));
         } else {
             set_callback_(key_, resp_code);
         }
@@ -93,7 +94,7 @@ private:
     virtual BufferPtr RequestBuffer() const;
 };
 
-class GetCommand  : public Command {
+class GetCommand : public Command {
 public:
     GetCommand(evpp::EventLoop* evloop, uint16_t vbucket, const std::string& key, GetCallback callback)
         : Command(evloop, vbucket, next_thread_++)
@@ -127,6 +128,59 @@ private:
     virtual BufferPtr RequestBuffer() const;
 };
 
+class PrefixGetCommand  : public Command {
+public:
+    PrefixGetCommand(evpp::EventLoop* evloop, uint16_t vbucket, const std::string& key, PrefixGetCallback callback)
+        : Command(evloop, vbucket, next_thread_++), key_(key), mget_callback_(callback) {
+    }
+
+    virtual void OnError(int err_code) {
+        LOG_INFO << "PrefixGetCommand OnError id=" << id();
+        mget_result_.code = err_code;
+
+        if (caller_loop()) {
+            caller_loop()->RunInLoop(std::bind(mget_callback_, key_, mget_result_));
+        } else {
+            mget_callback_(key_, mget_result_);
+        }
+    }
+    virtual void OnPrefixGetCommandDone(const int resp_code, std::string& key);
+	virtual void OnPrefixGetCommandOneResponse(std::string& key, std::string& value);
+private:
+    std::string key_;
+    PrefixGetCallback mget_callback_;
+    PrefixGetResult mget_result_;
+    static std::atomic_int next_thread_;
+private:
+    virtual BufferPtr RequestBuffer() const;
+};
+
+class PrefixMultiGetCommand  : public Command {
+public:
+    PrefixMultiGetCommand(evpp::EventLoop* evloop, uint16_t vbucket, uint32_t th_hash, const std::vector<std::string>& keys, PrefixMultiGetCallback callback)
+        : Command(evloop, vbucket, th_hash), keys_(keys), mget_callback_(callback) {
+    }
+
+    virtual void OnError(int err_code) {
+        LOG_INFO << "prefixMultiGetCommand OnError id=" << id();
+        mget_all_prefix_result_.code = err_code;
+
+        if (caller_loop()) {
+            caller_loop()->RunInLoop(std::bind(mget_callback_, mget_all_prefix_result_));
+        } else {
+			mget_callback_(mget_all_prefix_result_);
+        }
+    }
+    virtual void OnPrefixGetCommandDone(const int resp_code, std::string& key);
+	virtual void OnPrefixGetCommandOneResponse(std::string& key, std::string& value);
+private:
+    std::vector<std::string> keys_;
+    PrefixMultiGetCallback mget_callback_;
+    PrefixGetResult mget_result_;
+    PrefixMultiGetResult mget_all_prefix_result_;
+private:
+    virtual BufferPtr RequestBuffer() const;
+};
 
 class MultiGetCommand  : public Command {
 public:
