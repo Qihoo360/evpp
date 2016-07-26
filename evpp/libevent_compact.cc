@@ -1,6 +1,10 @@
 #include "evpp/inner_pre.h"
 #include "evpp/libevent_headers.h"
 
+#include <map>
+#include <thread>
+#include <mutex>
+
 #ifdef H_LIBEVENT_VERSION_14
 struct event* event_new(struct event_base* base, int fd, short events,
                         void(*cb)(int, short, void*), void* arg) {
@@ -17,7 +21,7 @@ struct event* event_new(struct event_base* base, int fd, short events,
 }
 
 void event_free(struct event* ev) {
-    ::event_del(ev);
+    evpp::EventDel(ev);
     free(ev);
 }
 
@@ -30,3 +34,57 @@ struct evhttp_connection* evhttp_connection_base_new(struct event_base* base, st
 
 #endif
 
+namespace evpp {
+
+#ifdef H_DEBUG_MODE
+static std::map<struct event*, std::thread::id> evmap;
+static std::mutex mutex;
+#else
+    static int count;
+#endif
+
+int EventAdd(struct event* ev, const struct timeval* timeout) {
+#ifdef H_DEBUG_MODE
+    {
+        std::lock_guard<std::mutex> guard(mutex);
+        if (evmap.find(ev) == evmap.end()) {
+            auto id = std::this_thread::get_id();
+            evmap[ev] = id;
+        } else {
+            LOG_ERROR << "Event " << ev << " fd=" << ev->ev_fd << " event_add twice!";
+            assert("event_add twice");
+        }
+    }
+#endif
+    return event_add(ev, timeout);
+}
+
+int EventDel(struct event* ev) {
+#ifdef H_DEBUG_MODE
+    {
+        std::lock_guard<std::mutex> guard(mutex);
+        auto it = evmap.find(ev);
+        if (it == evmap.end()) {
+            LOG_ERROR << "Event " << ev << " fd=" << ev->ev_fd << " not exist in event loop, maybe event_del twice.";
+            assert("event_del twice");
+        } else {
+            auto id = std::this_thread::get_id();
+            if (id != it->second) {
+                LOG_ERROR << "Event " << ev << " fd=" << ev->ev_fd << " deleted in different thread.";
+                assert(it->second == id);
+            }
+            evmap.erase(it);
+        }
+    }
+#endif
+    return event_del(ev);
+}
+
+int GetActiveEventCount() {
+#ifdef H_DEBUG_MODE
+    return evmap.size();
+#endif
+    return 0;
+}
+
+}
