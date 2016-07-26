@@ -7,14 +7,14 @@ namespace evpp {
 
 std::string strerror(int e) {
 #ifdef H_OS_WINDOWS
-    LPVOID lpMsgBuf = NULL;
+    LPVOID buf = NULL;
     ::FormatMessageA(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&lpMsgBuf, 0, NULL);
+        NULL, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buf, 0, NULL);
 
-    if (lpMsgBuf) {
-        std::string s = (char*)lpMsgBuf;
-        LocalFree(lpMsgBuf);
+    if (buf) {
+        std::string s = (char*)buf;
+        LocalFree(buf);
         return s;
     }
 
@@ -32,7 +32,6 @@ int CreateNonblockingSocket() {
 
     /* Create listen socket */
     int fd = ::socket(AF_INET, SOCK_STREAM, 0);
-
     if (fd == -1) {
         serrno = errno;
         LOG_ERROR << "socket error " << strerror(serrno);
@@ -44,19 +43,15 @@ int CreateNonblockingSocket() {
     }
 
 #ifndef H_OS_WINDOWS
-
     if (fcntl(fd, F_SETFD, 1) == -1) {
         serrno = errno;
         LOG_FATAL << "fcntl(F_SETFD)" << strerror(serrno);
         goto out;
     }
-
 #endif
 
     SetKeepAlive(fd);
     SetReuseAddr(fd);
-    //::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
-    //::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
     return fd;
 out:
     EVUTIL_CLOSESOCKET(fd);
@@ -88,7 +83,6 @@ struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
     memset(&addr, 0, sizeof(addr));
     std::string a = address;
     size_t index = a.rfind(':');
-
     if (index == std::string::npos) {
         LOG_FATAL << "Address specified error [" << address << "]";
     }
