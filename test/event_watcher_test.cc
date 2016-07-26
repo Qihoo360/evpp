@@ -24,6 +24,7 @@ static void MyEventThread(struct event_base* base, evpp::TimerEventWatcher* ev) 
     ev->Init();
     ev->AsyncWait();
     event_base_loop(base, 0);
+    delete ev;// 确保初始化和析构过程在同一个线程中
 }
 }
 
@@ -31,14 +32,14 @@ TEST_UNIT(testTimerEventWatcher) {
     using namespace evtimer;
     struct event_base* base = event_base_new();
     evpp::Timestamp start = evpp::Timestamp::Now();
-    std::shared_ptr<evpp::TimerEventWatcher> ev(new evpp::TimerEventWatcher(base, std::bind(&Handle, base), g_timeout));
-    std::thread th(MyEventThread, base, ev.get());
+    evpp::TimerEventWatcher* ev(new evpp::TimerEventWatcher(base, std::bind(&Handle, base), g_timeout));
+    std::thread th(MyEventThread, base, ev);
     th.join();
     evpp::Duration cost = evpp::Timestamp::Now() - start;
     H_TEST_ASSERT(g_timeout <= cost);
     H_TEST_ASSERT(g_event_handler_called);
-    ev.reset();
     event_base_free(base);
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
 TEST_UNIT(testsocketpair) {
@@ -54,11 +55,14 @@ TEST_UNIT(testsocketpair) {
 }
 
 namespace evsignal {
+    static evpp::SignalEventWatcher* ev = NULL;
     static bool g_event_handler_called = false;
     static void Handle(evpp::EventLoopThread* thread) {
         LOG_INFO << "SIGINT caught.";
         g_event_handler_called = true;
         thread->Stop();
+        delete ev;// 确保初始化和析构过程在同一个线程中
+        ev = NULL;
     }
 
     static void WatchSignalInt(evpp::SignalEventWatcher* ev) {
@@ -72,8 +76,8 @@ TEST_UNIT(testSignalEventWatcher) {
     std::shared_ptr<evpp::EventLoopThread> thread(new evpp::EventLoopThread);
     thread->Start(true);
     evpp::EventLoop* loop = thread->event_loop();
-    std::shared_ptr<evpp::SignalEventWatcher> ev(new evpp::SignalEventWatcher(SIGINT, loop, std::bind(&Handle, thread.get())));
-    loop->RunInLoop(std::bind(&WatchSignalInt, ev.get()));
+    ev = new evpp::SignalEventWatcher(SIGINT, loop, std::bind(&Handle, thread.get()));
+    loop->RunInLoop(std::bind(&WatchSignalInt, ev));
     auto f = []() {
         LOG_INFO << "Send SIGINT ...";
         raise(SIGINT);
@@ -82,6 +86,7 @@ TEST_UNIT(testSignalEventWatcher) {
     while (!thread->IsStopped()) {
         usleep(1);
     }
+    thread.reset();
     H_TEST_ASSERT(g_event_handler_called);
-    ev.reset();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }

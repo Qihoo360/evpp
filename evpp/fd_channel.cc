@@ -24,9 +24,11 @@ FdChannel::~FdChannel() {
 }
 
 void FdChannel::Close() {
+    assert(event_);
     if (event_) {
-        if (event_initialized(event_)) {
-            ::event_del(event_);
+        assert(!attached_);
+        if (attached_) {
+            EventDel(event_);
         }
 
         delete(event_);
@@ -46,7 +48,7 @@ void FdChannel::AttachToLoop() {
     ::event_set(event_, fd_, events_ | EV_PERSIST, &FdChannel::HandleEvent, this);
     ::event_base_set(loop_->event_base(), event_);
 
-    if (::event_add(event_, NULL) == 0) {
+    if (EventAdd(event_, NULL) == 0) {
         LOG_TRACE << "this=" << this << " fd=" << fd_ << " watching event " << EventsToString();
         attached_ = true;
     } else {
@@ -84,7 +86,6 @@ void FdChannel::DisableReadEvent() {
 void FdChannel::DisableWriteEvent() {
     int events = events_;
     events_ &= (~kWritable);
-
     if (events_ != events) {
         Update();
     }
@@ -103,7 +104,7 @@ void FdChannel::DetachFromLoop() {
     assert(loop_->IsInLoopThread());
     assert(attached_);
 
-    if (::event_del(event_) == 0) {
+    if (EventDel(event_) == 0) {
         attached_ = false;
         LOG_TRACE << "DetachFromLoop this=" << this << " fd=" << fd_ << " detach from event loop";
     } else {
