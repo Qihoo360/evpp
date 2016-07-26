@@ -160,6 +160,15 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
 }
 
 
+std::string ToIPPort(const struct sockaddr* ss) {
+    return ToIPPort(sockaddr_in_cast(ss));
+}
+
+
+std::string ToIPPort(const struct sockaddr_in* ss) {
+    return ToIPPort(sockaddr_cast(ss));
+}
+
 void SetTimeout(int fd, uint32_t timeout_ms) {
 #ifdef H_OS_WINDOWS
     DWORD tv = timeout_ms;
