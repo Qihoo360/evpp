@@ -6,6 +6,7 @@
 #include "evpp/buffer.h"
 #include "evpp/tcp_conn.h"
 #include "evpp/timestamp.h"
+#include <command.h>
 
 namespace evmc {
 
@@ -24,6 +25,8 @@ private:
     BinaryCodec(const BinaryCodec&);
     const BinaryCodec& operator=(const BinaryCodec&);
 
+	void DecodePrefixGetPacket(const protocol_binary_response_header& resp,
+                                   evpp::Buffer* buf, CommandPtr& ptr);
     void OnResponsePacket(const protocol_binary_response_header& resp,
                           evpp::Buffer* buf);
 private:
