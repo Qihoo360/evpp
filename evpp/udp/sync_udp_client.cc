@@ -28,7 +28,7 @@ bool Client::Connect(const char* host, int port) {
 }
 
 bool Client::Connect(const char* addr/*host:port*/) {
-    struct sockaddr_in raddr = ParseFromIPPort(addr);
+    struct sockaddr_in raddr = sock::ParseFromIPPort(addr);
     return Connect(raddr);
 }
 
@@ -39,7 +39,7 @@ bool Client::Connect(const struct sockaddr& addr) {
 
 bool Client::Connect() {
     sockfd_ = socket(AF_INET, SOCK_DGRAM, 0);
-    SetReuseAddr(sockfd_);
+    sock::SetReuseAddr(sockfd_);
 
     socklen_t addrlen = sizeof(remote_addr_);
     int ret = ::connect(sockfd_, (struct sockaddr*)&remote_addr_, addrlen);
@@ -69,7 +69,7 @@ std::string Client::DoRequest(const std::string& data, uint32_t timeout_ms) {
         return "";
     }
 
-    SetTimeout(sockfd_, timeout_ms);
+    sock::SetTimeout(sockfd_, timeout_ms);
 
     size_t buf_size = 1472; // The UDP max payload size
     MessagePtr msg(new Message(sockfd_, buf_size));
