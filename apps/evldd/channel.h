@@ -14,7 +14,7 @@ public:
     explicit ChannelBase(const evpp::TCPConn* conn);
     virtual ~ChannelBase();
 
-    evpp::TCPConn* conn();
+    const evpp::TCPConn* conn() const;
 
     virtual PacketReader* reader() = 0;
     virtual PacketWriter* writer() = 0;
@@ -34,10 +34,10 @@ public:
     IncomingChannel(const evpp::TCPConn* conn, Server* owner);
     virtual ~IncomingChannel();
 
-    virtual PacketReader* reader() ;
-    virtual PacketWriter* writer() ;
+    virtual PacketReader* reader();
+    virtual PacketWriter* writer();
     
-    virtual void OnPacketDone(PacketReader* reader) ;
+    virtual void OnPacketDone(PacketReader* reader);
     virtual void OnPacketError(PacketReader* reader);
 
 private:
