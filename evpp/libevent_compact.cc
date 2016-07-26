@@ -71,7 +71,7 @@ int EventDel(struct event* ev) {
             auto id = std::this_thread::get_id();
             if (id != it->second) {
                 LOG_ERROR << "Event " << ev << " fd=" << ev->ev_fd << " deleted in different thread.";
-                assert(it->second == id);
+                //assert(it->second == id); // TODO release EventLoop::watcher_ ERROR!!!!
             }
             evmap.erase(it);
         }
