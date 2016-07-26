@@ -11,7 +11,7 @@ namespace evpp {
 Connector::Connector(EventLoop* l, const std::string& raddr, Duration timeout)
     : status_(kDisconnected), loop_(l), remote_addr_(raddr), timeout_(timeout) {
     LOG_INFO << "Connector::Connector this=" << this << " raddr=" << raddr;
-    raddr_ = ParseFromIPPort(remote_addr_.data());
+    raddr_ = sock::ParseFromIPPort(remote_addr_.data());
 }
 
 Connector::~Connector() {
@@ -50,10 +50,9 @@ void Connector::Start() {
 }
 
 void Connector::Connect() {
-    int fd = CreateNonblockingSocket();
+    int fd = sock::CreateNonblockingSocket();
     assert(fd >= 0);
-    int rc = ::connect(fd, sockaddr_cast(&raddr_), sizeof(raddr_));
-
+    int rc = ::connect(fd, sock::sockaddr_cast(&raddr_), sizeof(raddr_));
     if (rc != 0) {
         int serrno = errno;
 
@@ -96,8 +95,8 @@ void Connector::HandleWrite() {
 
     chan_->DisableAllEvent();
 
-    struct sockaddr_in addr = GetLocalAddr(chan_->fd());
-    std::string laddr = ToIPPort(sockaddr_storage_cast(&addr));
+    struct sockaddr_in addr = sock::GetLocalAddr(chan_->fd());
+    std::string laddr = sock::ToIPPort(&addr);
     conn_fn_(chan_->fd(), laddr);
     timer_->Cancel();
     status_ = kConnected;

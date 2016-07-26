@@ -15,14 +15,16 @@ static void OnResolved(const std::vector <struct in_addr>& addrs) {
 
 TEST_UNIT(testDNSResolver) {
     evpp::Duration delay(double(1.0)); // 1s
-    evpp::EventLoopThread t;
-    t.Start(true);
-    evpp::DNSResolver dns_resolver(t.event_loop(), "www.so.com", evpp::Duration(1.0), &OnResolved);
+    std::unique_ptr<evpp::EventLoopThread> t(new evpp::EventLoopThread);
+    t->Start(true);
+    evpp::DNSResolver dns_resolver(t->event_loop(), "www.so.com", evpp::Duration(1.0), &OnResolved);
     dns_resolver.Start();
 
     while (!resolved) {
         usleep(1);
     }
 
-    t.Stop(true);
+    t->Stop(true);
+    t.reset();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }

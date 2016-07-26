@@ -9,7 +9,6 @@ namespace http {
 Service::Service(EventLoop* l)
     : evhttp_(NULL), evhttp_bound_socket_(NULL), listen_loop_(l) {
     evhttp_ = evhttp_new(listen_loop_->event_base());
-
     if (!evhttp_) {
         return;
     }
@@ -97,7 +96,6 @@ void Service::HandleRequest(struct evhttp_request* req) {
     ctx->Init(this);
 
     HTTPRequestCallbackMap::iterator it = callbacks_.find(ctx->uri);
-
     if (it == callbacks_.end()) {
         DefaultHandleRequest(ctx);
         return;

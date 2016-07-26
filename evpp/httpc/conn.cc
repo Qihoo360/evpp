@@ -31,7 +31,6 @@ bool Conn::Init() {
     }
 
     evhttp_conn_ = evhttp_connection_base_new(loop_->event_base(), NULL, host_.c_str(), port_);
-
     if (!evhttp_conn_) {
         LOG_ERROR << "evhttp_connection_new failed.";
         return false;
@@ -43,11 +42,9 @@ bool Conn::Init() {
         evhttp_connection_set_timeout_tv(evhttp_conn_, &tv);
 #else
         double timeout_sec = timeout_.Seconds();
-
         if (timeout_sec < 1.0) {
             timeout_sec = 1.0;
         }
-
         evhttp_connection_set_timeout(evhttp_conn_, int(timeout_sec));
 #endif
     }
