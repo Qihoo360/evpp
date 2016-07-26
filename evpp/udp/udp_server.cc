@@ -31,10 +31,10 @@ public:
 
     bool Start(int p) {
         this->port_ = p;
-        this->fd_ = CreateUDPServer(p);
+        this->fd_ = sock::CreateUDPServer(p);
         this->status_ = kRunning;
         this->thread_.reset(new std::thread(std::bind(&Server::RecvingLoop, this->server_, this)));
-        SetTimeout(this->fd_, 500);
+        sock::SetTimeout(this->fd_, 500);
         LOG_TRACE << "start udp server at 0.0.0.0:" << port_;
         return true;
     }
@@ -174,7 +174,7 @@ void Server::RecvingLoop(RecvThread* thread) {
         socklen_t addr_len = sizeof(struct sockaddr);
         int readn = ::recvfrom(thread->fd(), (char*)recv_msg->WriteBegin(), recv_buf_size_, 0, recv_msg->mutable_remote_addr(), &addr_len);
         LOG_TRACE << "fd=" << thread->fd() << " port=" << thread->port()
-                  << " recv len=" << readn << " from " << ToIPPort(recv_msg->remote_addr());
+                  << " recv len=" << readn << " from " << sock::ToIPPort(recv_msg->remote_addr());
 
         if (readn >= 0) {
             recv_msg->WriteBytes(readn);
@@ -183,7 +183,7 @@ void Server::RecvingLoop(RecvThread* thread) {
                 if (IsRoundRobin()) {
                     loop = tpool_->GetNextLoop();
                 } else {
-                    loop = tpool_->GetNextLoopWithHash(sockaddr_in_cast(recv_msg->remote_addr())->sin_addr.s_addr);
+                    loop = tpool_->GetNextLoopWithHash(sock::sockaddr_in_cast(recv_msg->remote_addr())->sin_addr.s_addr);
                 }
                 loop->RunInLoop(std::bind(this->message_handler_, recv_msg));
             } else {
