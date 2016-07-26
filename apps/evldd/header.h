@@ -35,12 +35,13 @@ public:
         void Parse(const char* buf);
         bool IsValid() const;
 
-        uint8_t     type() const;
-        uint32_t    id() const;
-        uint16_t    body_type() const;
-        uint32_t    body_size() const;
-        uint8_t     ext_count() const;
-        uint16_t    ext_len() const;
+        //TODO Type has been used asn a enum
+        uint8_t     Type() const;
+        uint32_t    Id() const;
+        uint16_t    BodyType() const;
+        uint32_t    BodySize() const;
+        uint8_t     ExtCount() const;
+        uint16_t    ExtSize() const;
     private:
         const char* buf_;
     };
@@ -51,12 +52,12 @@ public:
 
         void Build();
         
-        void set_type(uint8_t type);
-        void set_id(uint32_t id);
-        void set_body_type(uint16_t body_type);
-        void set_body_size(uint32_t body_size);
-        void set_ext_count(uint8_t ext_count);
-        void set_ext_len(uint16_t ext_len);
+        void SetType(uint8_t type);
+        void SetId(uint32_t id);
+        void SetBodyType(uint16_t body_type);
+        void SetBodySize(uint32_t body_size);
+        void SetExtCount(uint8_t ext_count);
+        void SetExtSize(uint16_t ext_len);
     private:
         char* buf_;
     };
