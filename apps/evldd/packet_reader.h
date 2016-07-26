@@ -1,14 +1,16 @@
 #pragma once
 
+#include <evpp/tcp_conn.h>
+
 namespace evldd {
 
 class Packet;
 
 class PacketReader {
     enum ReadStat {
-        kHeader;
-        kBody;
-    }
+        kHeader,
+        kBody,
+    };
 public:
     PacketReader();
     virtual ~PacketReader();
@@ -29,7 +31,7 @@ protected:
 protected:
     ReadStat                read_stat_;
     Packet*                 packet_;
-}
+};
 
 
 }

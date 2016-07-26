@@ -6,6 +6,7 @@ namespace evpp {
 
 namespace evldd {
 
+class Server;
 class PacketReader;
 class PacketWriter;
 
@@ -26,7 +27,7 @@ public:
 
 protected:
     evpp::TCPConn*  conn_;
-}
+};
 
 class IncomingChannel : public ChannelBase {
 
@@ -40,10 +41,12 @@ public:
     virtual void OnPacketDone(PacketReader* reader);
     virtual void OnPacketError(PacketReader* reader);
 
+    virtual void Close();
+
 private:
     Server*                         owner_;
     std::shared_ptr<PacketReader>   reader_;
     std::shared_ptr<PacketWriter>   writer_;
-}
+};
 
 }
