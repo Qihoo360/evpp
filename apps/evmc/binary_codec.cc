@@ -78,7 +78,7 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
     if (!cmd || id != cmd->id()) {
         // TODO : id 不一致时候，如何处理?
 		buf->Retrieve(kHeaderLen + resp.response.bodylen);
-		LOG_WARN << "OnResponsePacket cmd/message mismatch.";
+		LOG_WARN << "OnResponsePacket cmd/message mismatch." << id;
         return;
     }
 
@@ -134,8 +134,11 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 		break;
 
 	case PROTOCOL_BINARY_CMD_PGETKQ: 
-        cmd = memc_client_->PopRunningCommand();
+        cmd = memc_client_->peek_running_command();
 		DecodePrefixGetPacket(resp, buf, cmd);
+		if (cmd->IsDone()) {
+			memc_client_->PopRunningCommand();
+		}
 		break;
 
     case PROTOCOL_BINARY_CMD_NOOP:
