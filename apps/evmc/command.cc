@@ -81,7 +81,6 @@ BufferPtr PrefixGetCommand::RequestBuffer() const {
 
 void PrefixGetCommand::OnPrefixGetCommandDone(const int resp_code, std::string& key) {
     mget_result_.code = resp_code;
-
     if (caller_loop()) {
         caller_loop()->RunInLoop(std::bind(mget_callback_, key_, mget_result_));
     } else {
@@ -161,7 +160,6 @@ BufferPtr MultiGetCommand::RequestBuffer() const {
         buf->Append((void*)&req, sizeof(req));
         buf->Append(keys_[i].data(), keys_[i].size());
     }
-
     return buf;
 }
 
@@ -192,6 +190,7 @@ void PrefixMultiGetCommand::OnPrefixGetCommandDone(const int resp_code, std::str
 	result.insert(std::make_pair(std::move(key), std::move(mget_result_)));
 	mget_result_.clear();
 	if (result.size() >= keys_.size()) {
+		is_done_ = true;
 		mget_all_prefix_result_.code = 0;
 		if (caller_loop()) {
 			caller_loop()->RunInLoop(std::bind(mget_callback_, mget_all_prefix_result_));

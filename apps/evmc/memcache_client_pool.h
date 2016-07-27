@@ -64,7 +64,9 @@ public:
     MultiGetCollector(evpp::EventLoop* caller_loop, int count, const MultiGetCallback& cb)
         : caller_loop_(caller_loop), collect_counter_(count), callback_(cb) {}
     void Collect(const MultiGetResult& res) {
-        collect_result_.code = res.code; // TODO : 部分失败时，code如何指定?
+		if (res.code == 0) {
+			collect_result_.code = res.code; //当有一个成功，则整个赋值为0。
+		}
 
         for (auto it = res.get_result_map_.begin(); it != res.get_result_map_.end(); ++it) {
             collect_result_.get_result_map_.insert(*it);
@@ -92,18 +94,34 @@ typedef std::shared_ptr<MultiGetCollector> MultiGetCollectorPtr;
 class PrefixMultiGetCollector {
 public:
     PrefixMultiGetCollector(evpp::EventLoop* caller_loop, int count, const PrefixMultiGetCallback& cb)
-        : caller_loop_(caller_loop), /*collect_counter_(count),*/ callback_(cb) {}
-    void Collect(const PrefixMultiGetResult& res) {
-		if (caller_loop_) {
-			caller_loop_->RunInLoop(std::bind(callback_, res));
-		} else {
-			callback_(res);
+        : caller_loop_(caller_loop), collect_counter_(count), callback_(cb) {}
+    void Collect(PrefixMultiGetResult& res) {
+		if (res.code == 0) { //只要其中一个返回成功，则code 指定为0。
+			collect_result_.code = 0;
+		}
+		auto& collect_result_map = collect_result_.get_result_map_;
+		auto& res_result_map = res.get_result_map_;
+		for (auto it = res_result_map.begin(); it != res_result_map.end(); ++it) {
+#ifdef DEBUG
+			if (collect_result_map.find(it) != collect_result_map.end()) {
+				LOG_WARNING << "one key maybe map two vbucket";
+			}
+#endif
+			collect_result_map.insert(std::make_pair(it->first, it->second));
+		}
+        LOG_DEBUG << "PrefixMultiGetCollector count=" << collect_counter_;
+		if (--collect_counter_ <= 0) {
+			if (caller_loop_) {
+				caller_loop_->RunInLoop(std::bind(callback_, collect_result_));
+			} else {
+				callback_(collect_result_);
+			}
 		}
 	}
 private:
     evpp::EventLoop* caller_loop_;
-    //int collect_counter_;
-    //PrefixMultiGetResult collect_result_;
+    int collect_counter_;
+    PrefixMultiGetResult collect_result_;
     PrefixMultiGetCallback callback_;
 };
 
