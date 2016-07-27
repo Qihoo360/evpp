@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mctypes.h"
+#include <glog/logging.h>
 
 namespace evmc {
 
@@ -46,6 +47,7 @@ public:
     virtual void OnMultiGetCommandDone(int resp_code, const std::string& key, const std::string& value) {}
     virtual void OnPrefixGetCommandDone(const int resp_code, std::string& key) {}
 	virtual void OnPrefixGetCommandOneResponse(std::string& key, std::string& value) {}
+	virtual bool IsDone() {return true;}
 
 private:
     virtual BufferPtr RequestBuffer() const = 0;
@@ -158,12 +160,23 @@ private:
 class PrefixMultiGetCommand  : public Command {
 public:
     PrefixMultiGetCommand(evpp::EventLoop* evloop, uint16_t vbucket, uint32_t th_hash, const std::vector<std::string>& keys, PrefixMultiGetCallback callback)
-        : Command(evloop, vbucket, th_hash), keys_(keys), mget_callback_(callback) {
+        : Command(evloop, vbucket, th_hash), keys_(keys), mget_callback_(callback), is_done_(false) {
     }
 
     virtual void OnError(int err_code) {
         LOG_INFO << "prefixMultiGetCommand OnError id=" << id();
         mget_all_prefix_result_.code = err_code;
+		PrefixGetResult res;
+		res.code = err_code;
+		auto & result_map = mget_all_prefix_result_.get_result_map_;
+		for (auto it = keys_.begin(); it != keys_.end(); ++it) {
+			if (result_map.find(*it) == result_map.end()) {
+				result_map.insert(std::make_pair(*it, res));
+			}
+		}
+		if (keys_.size() != result_map.size()) {
+			LOG(WARNING) << "recv some unrequested key info";
+		}
 
         if (caller_loop()) {
             caller_loop()->RunInLoop(std::bind(mget_callback_, mget_all_prefix_result_));
@@ -173,11 +186,13 @@ public:
     }
     virtual void OnPrefixGetCommandDone(const int resp_code, std::string& key);
 	virtual void OnPrefixGetCommandOneResponse(std::string& key, std::string& value);
+	virtual bool IsDone() { return is_done_; } 
 private:
     std::vector<std::string> keys_;
     PrefixMultiGetCallback mget_callback_;
     PrefixGetResult mget_result_;
     PrefixMultiGetResult mget_all_prefix_result_;
+	bool is_done_;
 private:
     virtual BufferPtr RequestBuffer() const;
 };
@@ -191,6 +206,15 @@ public:
     virtual void OnError(int err_code) {
         LOG_INFO << "MultiGetCommand OnError id=" << id();
         mget_result_.code = err_code;
+		auto & result_map = mget_result_.get_result_map_;
+        for (auto it = keys_.begin(); it != keys_.end(); ++it) {
+			if (result_map.find(*it) == result_map.end()) {
+				result_map.insert(std::make_pair(*it, GetResult(err_code, "not enough connections")));
+			}
+		}
+		if (keys_.size() != result_map.size()) {
+			LOG(WARNING) << "recv some unrequested key info";
+		}
 
         if (caller_loop()) {
             caller_loop()->RunInLoop(std::bind(mget_callback_, mget_result_));
