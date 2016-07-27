@@ -116,9 +116,7 @@ BufferPtr GetCommand::RequestBuffer() const {
 
 void MultiGetCommand::OnMultiGetCommandDone(int resp_code, const std::string& key, const std::string& value) {
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-		GetResult gt(resp_code, value);
-        mget_result_.get_result_map_.insert(std::make_pair(key, std::move(gt)));
-        //mget_result_.get_result_map_[key] = GetResult(resp_code, value);
+        mget_result_.get_result_map_.insert(std::make_pair(key, GetResult(resp_code, value)));
     }
 
     mget_result_.code = resp_code;
@@ -134,8 +132,7 @@ void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, const std::str
     LOG_INFO << "OnMultiGetCommandOneResponse " << key << " " << resp_code << " " << value;
 
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-		GetResult gt(resp_code, value);
-        mget_result_.get_result_map_.insert(std::make_pair(key, std::move(gt)));
+        mget_result_.get_result_map_.insert(std::make_pair(key, GetResult(resp_code, value)));
     }
 
     mget_result_.code = resp_code;
