@@ -27,9 +27,9 @@ enum {
 struct GetResult {
     GetResult() : code(ERR_CODE_UNDEFINED) {}
     GetResult(const GetResult& result) : code(result.code), value(result.value) {}
-    GetResult(GetResult&& result) : code(result.code), value(std::move(result.value)) {}
-    GetResult& operator=(GetResult&& result) {
-		code = code;
+    GetResult(const GetResult&& result) : code(result.code), value(std::move(result.value)) {}
+    GetResult& operator=(const GetResult&& result) {
+		code = result.code;
 		value = std::move(result.value);
 		return *this;
 	}
@@ -42,8 +42,8 @@ struct GetResult {
 struct MultiGetResult {
     MultiGetResult() : code(ERR_CODE_UNDEFINED) {}
     MultiGetResult(const MultiGetResult& result) : code(result.code), get_result_map_(result.get_result_map_) {}
-    MultiGetResult(MultiGetResult&& result) : code(result.code), get_result_map_(std::move(result.get_result_map_)) {}
-    MultiGetResult& operator=(MultiGetResult&& result) {
+    MultiGetResult(const MultiGetResult&& result) : code(result.code), get_result_map_(std::move(result.get_result_map_)) {}
+    MultiGetResult& operator=(const MultiGetResult&& result) {
 		code = result.code;
 		get_result_map_ = std::move(result.get_result_map_);
 		return *this;
@@ -59,8 +59,8 @@ struct PrefixGetResult {
 		code = result.code;
 		get_result_map_ = result.get_result_map_;   
 	}
-    PrefixGetResult(PrefixGetResult&& result) : code(result.code), get_result_map_(std::move(result.get_result_map_)) {}
-    PrefixGetResult& operator=(PrefixGetResult&& result) {
+    PrefixGetResult(const PrefixGetResult&& result) : code(result.code), get_result_map_(std::move(result.get_result_map_)) {}
+    PrefixGetResult& operator=(const PrefixGetResult&& result) {
 		code = result.code;
 		get_result_map_  = std::move(result.get_result_map_);
 		return *this;
@@ -80,11 +80,11 @@ struct PrefixMultiGetResult {
 		get_result_map_ = result.get_result_map_;
 	}
 
-    PrefixMultiGetResult(PrefixMultiGetResult&& result): code(result.code), 
+    PrefixMultiGetResult(const PrefixMultiGetResult&& result): code(result.code), 
 	get_result_map_(std::move(result.get_result_map_)) {
 	}
 
-   PrefixMultiGetResult& operator=(PrefixMultiGetResult&& result) {
+   PrefixMultiGetResult& operator=(const PrefixMultiGetResult&& result) {
 		code = result.code;
 		get_result_map_ = std::move(result.get_result_map_);
 		return *this;
