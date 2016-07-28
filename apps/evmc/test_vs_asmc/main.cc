@@ -20,7 +20,7 @@ static void MyEventThread() {
 }
 
 int main(int argc, char *argv[]) {
-	::google::ParseCommandLineFlags(&argc, &argv, true);  
+	::gflags::ParseCommandLineFlags(&argc, &argv, true);  
     ClusterCase* cs = new ClusterCase("./kill_storage_cluster.json", 0);
 
     std::thread th(MyEventThread);
