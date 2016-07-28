@@ -20,11 +20,10 @@ Connector::~Connector() {
     if (!IsConnected()) {
         // A connected tcp-connection's sockfd has been transfered to TCPConn.
         // But the sockfd of unconnected tcp-connections need to be closed by myself.
-        LOG_TRACE << "Connector::~Connector close(" << chan_->fd() << ")";
+        LOG_TRACE << "Connector::~Connector close(" << chan_->fd() << ")"; // TODO add release/own to FdChannel for fd_
         EVUTIL_CLOSESOCKET(chan_->fd());
     }
 
-    chan_->Close();
     chan_.reset();
 }
 
@@ -49,13 +48,28 @@ void Connector::Start() {
     Connect();
 }
 
+
+void Connector::Cancel() {
+    LOG_INFO << "Cancel to connect " << remote_addr_ << " status=" << StatusToString();
+    loop_->AssertInLoopThread();
+    if (dns_resolver_) {
+        dns_resolver_->Cancel();
+    }
+
+    assert(timer_);
+    timer_->Cancel();
+    chan_->DisableAllEvent();
+    chan_->Close();
+
+    //TODO whether do we need to close the fd_
+}
+
 void Connector::Connect() {
     int fd = sock::CreateNonblockingSocket();
     assert(fd >= 0);
     int rc = ::connect(fd, sock::sockaddr_cast(&raddr_), sizeof(raddr_));
     if (rc != 0) {
         int serrno = errno;
-
         if (!EVUTIL_ERR_CONNECT_RETRIABLE(serrno)) {
             HandleError();
             EVUTIL_CLOSESOCKET(fd);
@@ -81,7 +95,6 @@ void Connector::HandleWrite() {
     assert(status_ == kConnecting);
     int err = 0;
     socklen_t len = sizeof(len);
-
     if (getsockopt(chan_->fd(), SOL_SOCKET, SO_ERROR, (char*)&err, (socklen_t*)&len) != 0) {
         err = errno;
         LOG_ERROR << "getsockopt failed err=" << err << " " << strerror(err);
@@ -94,6 +107,7 @@ void Connector::HandleWrite() {
     }
 
     chan_->DisableAllEvent();
+    chan_->Close();
 
     struct sockaddr_in addr = sock::GetLocalAddr(chan_->fd());
     std::string laddr = sock::ToIPPort(&addr);
@@ -108,6 +122,7 @@ void Connector::HandleError() {
     status_ = kDisconnected;
 
     if (chan_) {
+        chan_->DisableAllEvent();
         chan_->Close();
     }
 
