@@ -6,7 +6,7 @@
 #include "evpp/invoke_timer.h"
 
 namespace evpp {
-EventLoop::EventLoop() : create_evbase_myself_(true) {
+EventLoop::EventLoop() : create_evbase_myself_(true), pending_functor_count_(0) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
     if (cfg) {
@@ -73,12 +73,13 @@ void EventLoop::Run() {
     if (rc == 1) {
         LOG_ERROR << "event_base_dispatch error: no event registered";
     } else if (rc == -1) {
-        LOG_FATAL << "event_base_dispatch error";
+        int serrno = errno;
+        LOG_ERROR << "event_base_dispatch error " << serrno << " " << strerror(serrno);
     }
 
-    //LOG_TRACE << "EventLoop stopped, tid: " << std::this_thread::get_id();
     watcher_.reset(); // 确保在同一个线程构造、初始化和析构
     running_ = false;
+    LOG_TRACE << "EventLoop stopped, tid: " << std::this_thread::get_id();
 }
 
 bool EventLoop::IsInLoopThread() const {
@@ -106,6 +107,7 @@ void EventLoop::StopInLoop() {
 
     timeval tv = Duration(0.5).TimeVal(); // 0.5 second
     event_base_loopexit(evbase_, &tv);
+    running_ = false;
 }
 
 void EventLoop::AfterFork() {
