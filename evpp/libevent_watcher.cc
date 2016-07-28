@@ -72,6 +72,7 @@ void EventWatcher::FreeEvent() {
 }
 
 void EventWatcher::Cancel() {
+    assert(event_);
     FreeEvent();
 
     if (cancel_callback_) {
