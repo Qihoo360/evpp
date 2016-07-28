@@ -28,11 +28,11 @@ public:
 		gettimeofday(&tv, NULL);
 		return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 	}
-	inline void begin() {
+	inline void Begin() {
 		gettimeofday(&begin_, NULL);
 	}
 
-	inline void end() {
+	inline void End() {
 		gettimeofday(&end_, NULL);
 	}
 	static void MsSleep(const int64_t t) {
@@ -86,6 +86,12 @@ private:
 	void ClusterMultiGetCallback(Timer t, const evmc::MultiGetResult& m);
 	void ClusterRemove(const std::string& key);
 	void ClusterRemoveCallback(Timer t, const std::string&key, int code);
+
+	void ClusterPrefixGet(const std::string& key);
+	void ClusterPrefixGetCallback(Timer t, const std::string& key, const evmc::PrefixGetResult& rt);
+
+	void ClusterPrefixMultiGet(const std::vector<std::string>& keys);
+	void ClusterPrefixMultiGetCallback(Timer t, const evmc::PrefixMultiGetResult& m);
 
 	void IncrCompletedNums(); 
 
