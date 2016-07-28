@@ -19,9 +19,8 @@ TCPServer::TCPServer(EventLoop* loop,
 TCPServer::~TCPServer() {
     LOG_TRACE << "TCPServer::~TCPServer()";
     assert(tpool_->IsStopped());
-    assert(!listener_->listening());
     assert(connections_.empty());
-    listener_.reset();
+    assert(!listener_);
     tpool_.reset();
 }
 
@@ -45,12 +44,14 @@ void TCPServer::Stop() {
 void TCPServer::StopInLoop() {
     LOG_TRACE << "Entering TCPServer::StopInLoop";
     listener_->Stop();
+    listener_.reset();
 
     for (auto it = connections_.begin(); it != connections_.end(); ++it) {
         it->second->Close();
     }
 
     tpool_->Stop(true);
+    assert(tpool_->IsStopped());
     LOG_TRACE << "TCPServer::StopInLoop exited";
 }
 
