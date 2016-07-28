@@ -28,11 +28,11 @@ public:
 private:
     void Publish(Command* cmd);
     void PublishInLoop(Command* cmd);
-
     void OnReady(Conn* conn);
     void OnPublishResponse(Conn* conn, const char* d, size_t len);
     Command* PopWaitACKCommand(Conn* conn);
     void PushWaitACKCommand(Conn* conn, Command* cmd);
+    ConnPtr GetNextConn();
 private:
     std::map<std::string/*host:port*/, ConnPtr>::iterator conn_;
     typedef std::pair<std::list<Command*>, size_t> CommandList;
