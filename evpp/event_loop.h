@@ -55,6 +55,9 @@ public:
     int pending_functor_count() const {
         return pending_functor_count_.load();
     }
+    bool IsStopped() const {
+        return !running();
+    }
 private:
     void StopInLoop();
     void Init();

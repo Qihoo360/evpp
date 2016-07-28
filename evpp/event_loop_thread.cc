@@ -11,7 +11,11 @@ EventLoopThread::EventLoopThread()
 
 EventLoopThread::~EventLoopThread() {
     if (thread_ && thread_->joinable()) {
-        thread_->join();
+        try {
+            thread_->join();
+        } catch (const std::system_error& e) {
+            LOG_ERROR << "Caught a system_error:" << e.what();
+        }
     }
 }
 
@@ -56,9 +60,15 @@ void EventLoopThread::Stop(bool wait_thread_exit) {
     event_loop_->Stop();
 
     if (wait_thread_exit) {
-        thread_->join();
         while (!IsStopped()) {
             usleep(1);
+        }
+        if (thread_->joinable()) {
+            try {
+                thread_->join();
+            } catch (const std::system_error& e) {
+                LOG_ERROR << "Caught a system_error:" << e.what();
+            }
         }
     }
 }
