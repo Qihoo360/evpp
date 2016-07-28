@@ -93,7 +93,9 @@
     <ClCompile Include="..\3rdparty\gtest\src\gtest_main.cc" />
     <ClCompile Include="..\test\any_test.cc" />
     <ClCompile Include="..\test\buffer_test.cc" />
-    <ClCompile Include="..\test\dns_resolver_test.cc" />
+    <ClCompile Include="..\test\dns_resolver_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\test\event_loop_test.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
@@ -103,9 +105,18 @@
     <ClCompile Include="..\test\event_loop_thread_test.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\test\evhttp_client_test.cc" />
-    <ClCompile Include="..\test\http_server_test.cc" />
-    <ClCompile Include="..\test\invoke_timer_test.cc" />
+    <ClCompile Include="..\test\evhttp_client_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\test\http_server_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\test\invoke_timer_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\test\tcp_client_reconnect_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\test\tcp_server_test.cc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
@@ -118,7 +129,9 @@
     </ClCompile>
     <ClCompile Include="..\test\glog_test.cc" />
     <ClCompile Include="..\test\udp_server_test.cc" />
-    <ClCompile Include="..\test\url_parser_test.cc" />
+    <ClCompile Include="..\test\url_parser_test.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\test\utility_test.cc" />
     <ClCompile Include="..\test\winmain.cc" />
   </ItemGroup>
