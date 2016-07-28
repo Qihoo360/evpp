@@ -84,6 +84,9 @@
     <ClCompile Include="..\test\udp_server_test.cc">
       <Filter>udp</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\tcp_client_reconnect_test.cc">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\test\test_common.h">

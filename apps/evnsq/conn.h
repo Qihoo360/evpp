@@ -23,7 +23,7 @@ namespace evnsq {
 
 class Command;
 class Client;
-class EVNSQ_EXPORT Conn {
+class EVNSQ_EXPORT Conn : public std::enable_shared_from_this<Conn> {
 public:
     enum Status {
         kDisconnected = 0,
@@ -34,7 +34,7 @@ public:
         kReady = 5, // Ready to do produce message to NSQD or consume message from NSQD
     };
 
-    typedef std::function<void(Conn*)> ConnectionCallback;
+    typedef std::function<void(const std::shared_ptr<Conn>& conn)> ConnectionCallback;
     typedef std::function<void(const char* d, size_t len)> PublishResponseCallback;
 public:
     Conn(Client* c, const Option& ops);
@@ -64,6 +64,7 @@ public:
     bool IsConnected() const {
         return status_ == kConnected;
     }
+    const std::string& remote_addr() const;
 private:
     void Reconnect();
     void OnConnection(const evpp::TCPConnPtr& conn);
@@ -82,12 +83,6 @@ private:
     MessageCallback msg_fn_;
     ConnectionCallback conn_fn_;
     PublishResponseCallback publish_response_cb_;
-
-    //         int64_t messagesInFlight
-    //             maxRdyCount      int64
-    //             rdyCount         int64
-    //             lastRdyCount     int64
-    //             lastMsgTimestamp int64
 };
 }
 
