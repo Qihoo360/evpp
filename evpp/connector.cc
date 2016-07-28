@@ -20,10 +20,13 @@ Connector::~Connector() {
     if (!IsConnected()) {
         // A connected tcp-connection's sockfd has been transfered to TCPConn.
         // But the sockfd of unconnected tcp-connections need to be closed by myself.
-        LOG_TRACE << "Connector::~Connector close(" << chan_->fd() << ")"; // TODO add release/own to FdChannel for fd_
+        LOG_TRACE << "Connector::~Connector close(" << chan_->fd() << ")";
+        assert(chan_->fd() > 0);
         EVUTIL_CLOSESOCKET(chan_->fd());
+        chan_->SetInvalidSocket();
     }
 
+    assert(chan_->fd() < 0);
     chan_.reset();
 }
 
@@ -60,8 +63,6 @@ void Connector::Cancel() {
     timer_->Cancel();
     chan_->DisableAllEvent();
     chan_->Close();
-
-    //TODO whether do we need to close the fd_
 }
 
 void Connector::Connect() {
@@ -106,13 +107,13 @@ void Connector::HandleWrite() {
         return;
     }
 
-    chan_->DisableAllEvent();
-    chan_->Close();
-
     struct sockaddr_in addr = sock::GetLocalAddr(chan_->fd());
     std::string laddr = sock::ToIPPort(&addr);
     conn_fn_(chan_->fd(), laddr);
     timer_->Cancel();
+    chan_->DisableAllEvent();
+    chan_->Close();
+    chan_->SetInvalidSocket();
     status_ = kConnected;
 }
 
