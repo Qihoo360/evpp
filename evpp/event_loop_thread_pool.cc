@@ -1,6 +1,6 @@
 #include "evpp/inner_pre.h"
 #include "evpp/event_loop_thread_pool.h"
-
+#include "evpp/event_loop.h"
 
 namespace evpp {
 
@@ -52,11 +52,13 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit) {
         t->Stop(wait_thread_exit);
     }
 
-    if (wait_thread_exit) {
+    if (thread_num_ > 0 && wait_thread_exit) {
         while (!IsStopped()) {
             usleep(1);
         }
     }
+
+    started_ = false;
 }
 
 bool EventLoopThreadPool::IsRunning() const {
@@ -68,10 +70,14 @@ bool EventLoopThreadPool::IsRunning() const {
         }
     }
 
-    return true;
+    return started_;
 }
 
 bool EventLoopThreadPool::IsStopped() const {
+    if (thread_num_ == 0) {
+        return !started_;
+    }
+
     for (uint32_t i = 0; i < thread_num_; ++i) {
         const EventLoopThreadPtr& t = threads_[i];
 
