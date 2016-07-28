@@ -68,19 +68,16 @@ void Producer::PublishInLoop(Command* c) {
     }
 
     assert(loop_->IsInLoopThread());
-
-    if (conn_ == conns_.end()) {
-        conn_ = conns_.begin();
+    auto conn = GetNextConn();
+    if (!conn.get()) {
+        //TODO
+        LOG_ERROR << "No available NSQD to use.";
+        return;
     }
-
-    assert(conn_ != conns_.end());
-    assert(conn_->second->IsReady());
+    conn->WriteCommand(c);
     published_count_++;
-    conn_->second->WriteCommand(c);
-    PushWaitACKCommand(conn_->second.get(), c);
+    PushWaitACKCommand(conn.get(), c);
     LOG_INFO << "Publish a message, command=" << c;
-
-    ++conn_; // Using next Conn
 }
 
 void Producer::OnReady(Conn* conn) {
@@ -136,4 +133,20 @@ void Producer::PushWaitACKCommand(Conn* conn, Command* cmd) {
     wait_ack_count_++;
     assert(cl.first.size() == cl.second);
 }
+
+ConnPtr Producer::GetNextConn() {
+    if (conns_.empty()) {
+        return ConnPtr();
+    }
+
+    if (conn_ == conns_.end()) {
+        conn_ = conns_.begin();
+    }
+    assert(conn_ != conns_.end());
+    assert(conn_->second->IsReady());
+    auto c = conn_->second;
+    ++conn_; // Using next Conn
+    return c;
+}
+
 }
