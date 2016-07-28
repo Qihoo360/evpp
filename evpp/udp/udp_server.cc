@@ -25,7 +25,11 @@ public:
         EVUTIL_CLOSESOCKET(fd_);
         fd_ = INVALID_SOCKET;
         if (this->thread_ && this->thread_->joinable()) {
-            this->thread_->join();
+            try {
+                thread_->join();
+            } catch (const std::system_error& e) {
+                LOG_ERROR << "Caught a system_error:" << e.what();
+            }
         }
     }
 
