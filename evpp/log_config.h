@@ -25,3 +25,10 @@
 #define CHECK_NOTNULL(val) LOG_ERROR << "'" #val "' Must be non NULL";
 #endif
 #endif // end of define __cplusplus
+
+#ifdef _DEBUG
+#ifdef assert
+#undef assert
+#endif
+#define assert(expr)  { if (!(expr)) { LOG_FATAL << #expr ;} }
+#endif
