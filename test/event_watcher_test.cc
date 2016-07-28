@@ -65,7 +65,7 @@ namespace evsignal {
         ev = NULL;
     }
 
-    static void WatchSignalInt(evpp::SignalEventWatcher* ev) {
+    static void WatchSignalInt() {
         ev->Init();
         ev->AsyncWait();
     }
@@ -77,7 +77,7 @@ TEST_UNIT(testSignalEventWatcher) {
     thread->Start(true);
     evpp::EventLoop* loop = thread->event_loop();
     ev = new evpp::SignalEventWatcher(SIGINT, loop, std::bind(&Handle, thread.get()));
-    loop->RunInLoop(std::bind(&WatchSignalInt, ev));
+    loop->RunInLoop(&WatchSignalInt);
     auto f = []() {
         LOG_INFO << "Send SIGINT ...";
         raise(SIGINT);
