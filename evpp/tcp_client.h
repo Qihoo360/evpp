@@ -49,6 +49,9 @@ public:
     const std::string& name() const {
         return name_;
     }
+    EventLoop* event_loop() const {
+        return loop_;
+    }
 private:
     void ConnectInLoop();
     void DisconnectInLoop();
@@ -57,7 +60,7 @@ private:
     void Reconnect();
 private:
     EventLoop* loop_;
-    std::string remote_addr_;
+    std::string remote_addr_; // host:port
     std::string name_;
     std::atomic<bool> auto_reconnect_; // 是否自动重连的标记，默认为 true
     Any context_;

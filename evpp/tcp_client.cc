@@ -44,6 +44,13 @@ void TCPClient::DisconnectInLoop() {
         assert(connector_ && !connector_->IsConnected());
     }
 
+    if (connector_->IsConnected() || connector_->IsDisconnected()) {
+        LOG_TRACE << "Do nothing, Connector::status=" << connector_->status();
+    } else {
+        // When connector_ is trying to connect to the remote server we should cancel it to release the resources.
+        connector_->Cancel();
+    }
+
     connector_.reset(); // Free connector_ in loop thread immediately
 }
 
