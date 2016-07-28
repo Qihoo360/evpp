@@ -53,6 +53,9 @@ void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& r
 		memcpy(x.buf, pv + pos, 4);
 		pos += 4;
 		klen = ntohl(x.len);
+		if ((pos + klen) >= buf_size) {
+			break;
+		}
 		std::string rkey(pv + pos, klen);
 		pos += klen;                                                                                                                                                                                                                                                      
 		if (pos >= buf_size || pos + 4 >= buf_size) {
@@ -61,8 +64,11 @@ void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& r
 		memcpy(x.buf, pv + pos, 4);
 		pos += 4;
 		vlen = ntohl(x.len);
+		if ((pos + vlen) >= buf_size) {
+			break;
+		}
 		std::string rval(pv + pos, vlen);
-		LOG(INFO) << key << ":" << size << " parse prefix:" << rkey << " get result, GetResult value: " << rval;
+		LOG_DEBUG << key << ":" << size << " parse prefix:" << rkey << " get result, GetResult value: " << rval;
 		ptr->OnPrefixGetCommandOneResponse(rkey, rval);
 		pos += vlen;
 	}
@@ -77,6 +83,11 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 
     if (!cmd || id != cmd->id()) {
         // TODO : id 不一致时候，如何处理?
+#ifdef DEBUG
+        const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
+        std::string value(pv, resp.response.bodylen - resp.response.extlen);
+		LOG_WARN << "unexpected packet info:" << value;
+#endif
 		buf->Retrieve(kHeaderLen + resp.response.bodylen);
 		LOG_WARN << "OnResponsePacket cmd/message mismatch." << id;
         return;
