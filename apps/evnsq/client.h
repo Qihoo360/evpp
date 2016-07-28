@@ -48,7 +48,7 @@ protected:
     void HandleLoopkupdHTTPResponse(
         const std::shared_ptr<evpp::httpc::Response>& response,
         evpp::httpc::Request* request);
-    void OnConnection(Conn* conn);
+    void OnConnection(const ConnPtr& conn);
     //void Subscribe();
     //void UpdateReady(int count);
 
@@ -58,6 +58,7 @@ protected:
     Option option_;
     std::string topic_;
     std::string channel_;
+    std::map<std::string/*host:port*/, ConnPtr> connecting_conns_; // The TCP connections with NSQD
     std::map<std::string/*host:port*/, ConnPtr> conns_; // The TCP connections with NSQD
     MessageCallback msg_fn_;
 
