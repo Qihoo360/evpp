@@ -16,6 +16,7 @@ public:
     Connector(EventLoop* loop, const std::string& remote_addr, Duration timeout);
     ~Connector();
     void Start();
+    void Cancel();
 public:
     void SetNewConnectionCallback(NewConnectionCallback cb) {
         conn_fn_ = cb;
@@ -25,6 +26,12 @@ public:
     }
     bool IsConnected() const {
         return status_ == kConnected;
+    }
+    bool IsDisconnected() const {
+        return status_ == kDisconnected;
+    }
+    int status() const {
+        return status_; 
     }
 private:
     void Connect();
