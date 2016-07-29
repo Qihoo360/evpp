@@ -95,7 +95,7 @@ void Service::HandleRequest(struct evhttp_request* req) {
     ContextPtr ctx(new Context(req));
     ctx->Init(this);
 
-    HTTPRequestCallbackMap::iterator it = callbacks_.find(ctx->uri);
+    auto it = callbacks_.find(ctx->uri);
     if (it == callbacks_.end()) {
         DefaultHandleRequest(ctx);
         return;

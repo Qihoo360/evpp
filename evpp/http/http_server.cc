@@ -95,18 +95,6 @@ void HTTPServer::Dispatch(const ContextPtr& ctx,
                           const HTTPSendResponseCallback& response_callback,
                           const HTTPRequestCallback& user_callback) {
     LOG_TRACE << "dispatch request " << ctx->req << " url=" << ctx->original_uri() << " in main thread";
-
-    // 将该HTTP请求调度到工作线程处理
-    auto f = [](const ContextPtr & context,
-                const HTTPSendResponseCallback & response_cb,
-    const HTTPRequestCallback & user_cb) {
-        LOG_TRACE << "process request " << context->req
-                  << " url=" << context->original_uri() << " in working thread";
-
-        // 在工作线程中执行，调用上层应用设置的回调函数来处理该HTTP请求
-        // 当上层应用处理完后，必须要调用 response_callback 来处理结果反馈回来，也就是会回到 Service::SendReply 函数中。
-        user_cb(context, response_cb);
-    };
     EventLoop* loop = NULL;
     if (IsRoundRobin()) {
         loop = tpool_->GetNextLoop();
@@ -114,6 +102,19 @@ void HTTPServer::Dispatch(const ContextPtr& ctx,
         uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
         loop = tpool_->GetNextLoopWithHash(hash);
     }
+
+    // 将该HTTP请求调度到工作线程处理
+    auto f = [](const ContextPtr & context,
+                const HTTPSendResponseCallback & response_cb,
+                const HTTPRequestCallback & user_cb) {
+        LOG_TRACE << "process request " << context->req
+            << " url=" << context->original_uri() << " in working thread";
+
+        // 在工作线程中执行，调用上层应用设置的回调函数来处理该HTTP请求
+        // 当上层应用处理完后，必须要调用 response_callback 来处理结果反馈回来，也就是会回到 Service::SendReply 函数中。
+        user_cb(context, response_cb);
+    };
+
     loop->RunInLoop(std::bind(f, ctx, response_callback, user_callback));
 }
 
