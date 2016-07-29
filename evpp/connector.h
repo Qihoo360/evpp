@@ -44,9 +44,15 @@ private:
     enum Status { kDisconnected, kDNSResolving, kDNSResolved, kConnecting, kConnected };
     Status status_;
     EventLoop* loop_;
+
     std::string remote_addr_; // host:port
     struct sockaddr_in raddr_;
+
     Duration timeout_;
+
+    int fd_;
+    bool own_fd_; // 是否拥有这fd。如果拥有，则有自己关闭这个fd
+
     std::unique_ptr<FdChannel> chan_;
     std::unique_ptr<TimerEventWatcher> timer_;
     std::unique_ptr<DNSResolver> dns_resolver_;
