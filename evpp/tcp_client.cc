@@ -26,14 +26,13 @@ TCPClient::~TCPClient() {
 }
 
 void TCPClient::Connect() {
-    loop_->RunInLoop(std::bind(&TCPClient::ConnectInLoop, this));
-}
-
-void TCPClient::ConnectInLoop() {
-    loop_->AssertInLoopThread();
-    connector_.reset(new Connector(loop_, remote_addr_, connecting_timeout_));
-    connector_->SetNewConnectionCallback(std::bind(&TCPClient::OnConnection, this, std::placeholders::_1, std::placeholders::_2));
-    connector_->Start();
+    auto f = [this]() {
+        loop_->AssertInLoopThread();
+        connector_.reset(new Connector(loop_, remote_addr_, connecting_timeout_));
+        connector_->SetNewConnectionCallback(std::bind(&TCPClient::OnConnection, this, std::placeholders::_1, std::placeholders::_2));
+        connector_->Start();
+    };
+    loop_->RunInLoop(std::bind(f));
 }
 
 void TCPClient::Disconnect() {

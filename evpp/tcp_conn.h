@@ -103,7 +103,6 @@ private:
     void SendInLoop(const Slice& message);
     void SendInLoop(const void* data, size_t len);
     void SendStringInLoop(const std::string& message);
-    void CloseInLoop();
     std::string StatusToString() const;
 private:
     EventLoop* loop_;
