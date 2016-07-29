@@ -9,34 +9,22 @@
 namespace evpp {
 namespace http {
 HTTPServer::HTTPServer(uint32_t thread_num) {
-    listen_thread_.reset(new EventLoopThread());
-    tpool_.reset(new EventLoopThreadPool(listen_thread_->event_loop(), thread_num));
-    http_.reset(new Service(listen_thread_->event_loop()));
+    tpool_.reset(new EventLoopThreadPool(NULL, thread_num));
 }
 
 HTTPServer::~HTTPServer() {
-    http_.reset();
-    listen_thread_.reset();
+//     http_.reset();
+//     listen_thread_.reset();
     tpool_.reset();
 }
 
 bool HTTPServer::Start(int port) {
-    if (!http_->Listen(port)) {
-        return false;
-    }
-
     bool rc = tpool_->Start(true);
     if (!rc) {
         return rc;
     }
 
-    listen_thread_->SetName("StandaloneHTTPServer-Main");
-
-    // 当 listen_thread_ 退出时，会调用该函数来停止 Service
-    auto http_close_fn = std::bind(&Service::Stop, http_);
-    rc = listen_thread_->Start(true,
-                               EventLoopThread::Functor(),
-                               http_close_fn);
+    rc = rc && StartListenThread(port);
 
     while (!IsRunning()) {
         usleep(1);
@@ -45,14 +33,72 @@ bool HTTPServer::Start(int port) {
     return rc;
 }
 
+
+bool HTTPServer::Start(std::vector<int> listen_ports) {
+    bool rc = tpool_->Start(true);
+    if (!rc) {
+        return rc;
+    }
+
+    for (size_t i = 0; i < listen_ports.size(); ++i) {
+        if (!StartListenThread(listen_ports[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool HTTPServer::StartListenThread(int port) {
+    ListenThread lt;
+    lt.t = std::make_shared<EventLoopThread>();
+    lt.t->SetName(std::string("StandaloneHTTPServer-Main-") + std::to_string(port));
+
+    lt.h = std::make_shared<Service>(lt.t->event_loop());
+    if (!lt.h->Listen(port)) {
+        LOG_ERROR << "http server listen at port " << port << " failed.";
+        return false;
+    }
+
+    // 当 ListenThread 退出时，会调用该函数来停止 Service
+    auto http_close_fn = std::bind(&Service::Stop, lt.h);
+    bool rc = lt.t->Start(true,
+                          EventLoopThread::Functor(),
+                          http_close_fn);
+    assert(lt.t->IsRunning());
+    for (auto it = callbacks_.begin(); it != callbacks_.end(); ++it) {
+        lt.h->RegisterHandler(it->first, it->second);
+    }
+    lt.h->RegisterDefaultHandler(default_callback_);
+    listen_threads_.push_back(lt);
+    return rc;
+}
+
 void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
-    listen_thread_->Stop();
+    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+        it->t->Stop();
+    }
     tpool_->Stop();
 
     // http_ 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
 
     if (wait_thread_exit) {
-        while (!listen_thread_->IsStopped() || !tpool_->IsStopped()) {
+        for (;;) {
+            bool stopped = true;
+            for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+                if (!it->t->IsStopped()) {
+                    stopped = false;
+                    break;
+                }
+            }
+
+            if (!tpool_->IsStopped()) {
+                stopped = false;
+            }
+
+            if (stopped) {
+                break;
+            }
+
             usleep(1);
         }
     }
@@ -60,48 +106,87 @@ void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
 
 
 void HTTPServer::Pause() {
-    listen_thread_->event_loop()->RunInLoop(std::bind(&Service::Pause, http_));
+    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+        EventLoop* loop = it->t->event_loop();
+        loop->RunInLoop(std::bind(&Service::Pause, it->h));
+    }
 }
 
 void HTTPServer::Continue() {
-    listen_thread_->event_loop()->RunInLoop(std::bind(&Service::Continue, http_));
+    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+        EventLoop* loop = it->t->event_loop();
+        loop->RunInLoop(std::bind(&Service::Continue, it->h));
+    }
 }
 
 bool HTTPServer::IsRunning() const {
-    return listen_thread_->IsRunning() && tpool_->IsRunning();
+    if (listen_threads_.empty()) {
+        return false;
+    }
+
+    if (!tpool_->IsRunning()) {
+        return false;
+    }
+
+    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+        if (!it->t->IsRunning()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool HTTPServer::IsStopped() const {
-    return listen_thread_->IsStopped() && tpool_->IsStopped();
+    assert(!listen_threads_.empty());
+    assert(tpool_);
+
+    if (!tpool_->IsStopped()) {
+        return false;
+    }
+
+    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+        if (!it->t->IsStopped()) {
+            return false;
+        }
+    }
 }
 
-bool HTTPServer::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
-    HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
-                                       std::placeholders::_1,
-                                       std::placeholders::_2,
-                                       callback);
-    return http_->RegisterHandler(uri, cb);
+void HTTPServer::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
+    if (IsRunning()) {
+        for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+            HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
+                                               it->h->event_loop(),
+                                               std::placeholders::_1,
+                                               std::placeholders::_2,
+                                               callback);
+            it->h->RegisterHandler(uri, cb);
+        }
+    }
+    callbacks_[uri] = callback;
 }
 
-bool HTTPServer::RegisterDefaultHandler(HTTPRequestCallback callback) {
-    HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
-                                       std::placeholders::_1,
-                                       std::placeholders::_2,
-                                       callback);
-    return http_->RegisterDefaultHandler(cb);
+void HTTPServer::RegisterDefaultHandler(HTTPRequestCallback callback) {
+    if (IsRunning()) {
+        for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+            HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
+                                               it->h->event_loop(),
+                                               std::placeholders::_1,
+                                               std::placeholders::_2,
+                                               callback);
+            it->h->RegisterDefaultHandler(cb);
+        }
+    }
+    default_callback_ = callback;
 }
 
-void HTTPServer::Dispatch(const ContextPtr& ctx,
+void HTTPServer::Dispatch(EventLoop* listening_loop,
+                          const ContextPtr& ctx,
                           const HTTPSendResponseCallback& response_callback,
                           const HTTPRequestCallback& user_callback) {
     LOG_TRACE << "dispatch request " << ctx->req << " url=" << ctx->original_uri() << " in main thread";
     EventLoop* loop = NULL;
-    if (IsRoundRobin()) {
-        loop = tpool_->GetNextLoop();
-    } else {
-        uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
-        loop = tpool_->GetNextLoopWithHash(hash);
-    }
+    loop = GetNextLoop(listening_loop, ctx);
+
 
     // 将该HTTP请求调度到工作线程处理
     auto f = [](const ContextPtr & context,
@@ -118,8 +203,25 @@ void HTTPServer::Dispatch(const ContextPtr& ctx,
     loop->RunInLoop(std::bind(f, ctx, response_callback, user_callback));
 }
 
-Service* HTTPServer::service() const {
-    return http_.get();
+
+EventLoop* HTTPServer::GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx) {
+    if (tpool_->thread_num() == 0) {
+        return default_loop;
+    }
+
+    if (IsRoundRobin()) {
+        return tpool_->GetNextLoop();
+    }
+    uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
+    return tpool_->GetNextLoopWithHash(hash);
+}
+
+Service* HTTPServer::service(int index) const {
+    if (index < int(listen_threads_.size())) {
+        return listen_threads_[index].h.get();
+    }
+
+    return NULL;
 }
 }
 }
