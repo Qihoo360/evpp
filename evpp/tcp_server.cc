@@ -12,7 +12,9 @@ TCPServer::TCPServer(EventLoop* loop,
     : loop_(loop)
     , listen_addr_(listen_addr)
     , name_(name)
-    , next_conn_id_(0) {
+    , next_conn_id_(0)
+    , conn_fn_(&internal::DefaultConnectionCallback)
+    , msg_fn_(&internal::DefaultMessageCallback) {
     tpool_.reset(new EventLoopThreadPool(loop_, thread_num));
 }
 
