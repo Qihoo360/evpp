@@ -53,7 +53,6 @@ public:
         return loop_;
     }
 private:
-    void ConnectInLoop();
     void DisconnectInLoop();
     void OnConnection(int sockfd, const std::string& laddr);
     void OnRemoveConnection(const TCPConnPtr& conn);
