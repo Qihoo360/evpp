@@ -61,9 +61,6 @@ public:
     int fd() const {
         return fd_;
     }
-    void SetInvalidSocket() {
-        fd_ = -1;
-    }
     std::string EventsToString() const;
 
 public:
