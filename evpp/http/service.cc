@@ -72,14 +72,12 @@ void Service::Continue() {
 #endif
 }
 
-bool Service::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
+void Service::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
     callbacks_[uri] = callback;
-    return true;
 }
 
-bool Service::RegisterDefaultHandler(HTTPRequestCallback callback) {
+void Service::RegisterDefaultHandler(HTTPRequestCallback callback) {
     default_callback_ = callback;
-    return true;
 }
 
 void Service::GenericCallback(struct evhttp_request* req, void* arg) {

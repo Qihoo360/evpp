@@ -20,9 +20,12 @@ public:
     void Continue();
 
     // uri 不能带有参数
-    bool RegisterHandler(const std::string& uri, HTTPRequestCallback callback);
-    bool RegisterDefaultHandler(HTTPRequestCallback callback);
+    void RegisterHandler(const std::string& uri, HTTPRequestCallback callback);
+    void RegisterDefaultHandler(HTTPRequestCallback callback);
 
+    EventLoop* event_loop() const {
+        return listen_loop_;
+    }
 private:
     static void GenericCallback(struct evhttp_request* req, void* arg);
     void HandleRequest(struct evhttp_request* req);
