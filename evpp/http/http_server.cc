@@ -13,8 +13,6 @@ HTTPServer::HTTPServer(uint32_t thread_num) {
 }
 
 HTTPServer::~HTTPServer() {
-//     http_.reset();
-//     listen_thread_.reset();
     tpool_.reset();
 }
 
@@ -79,12 +77,12 @@ void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
     }
     tpool_->Stop();
 
-    // http_ 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
-
     if (wait_thread_exit) {
         for (;;) {
             bool stopped = true;
             for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+                // 1. Service 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
+                // 2. EventLoopThread 对象必须调用 Stop
                 if (!it->t->IsStopped()) {
                     stopped = false;
                     break;
@@ -101,6 +99,12 @@ void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
 
             usleep(1);
         }
+
+        assert(tpool_->IsStopped());
+        for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+            assert(it->t->IsStopped());
+        }
+        assert(IsStopped());
     }
 }
 
