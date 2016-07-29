@@ -9,7 +9,7 @@
 
 namespace evpp {
 Connector::Connector(EventLoop* l, const std::string& raddr, Duration timeout)
-    : status_(kDisconnected), loop_(l), remote_addr_(raddr), timeout_(timeout) {
+    : status_(kDisconnected), loop_(l), remote_addr_(raddr), timeout_(timeout), fd_(-1), own_fd_(false) {
     LOG_INFO << "Connector::Connector this=" << this << " raddr=" << raddr;
     raddr_ = sock::ParseFromIPPort(remote_addr_.data());
 }
@@ -21,12 +21,13 @@ Connector::~Connector() {
         // A connected tcp-connection's sockfd has been transfered to TCPConn.
         // But the sockfd of unconnected tcp-connections need to be closed by myself.
         LOG_TRACE << "Connector::~Connector close(" << chan_->fd() << ")";
-        assert(chan_->fd() > 0);
-        EVUTIL_CLOSESOCKET(chan_->fd());
-        chan_->SetInvalidSocket();
+        assert(own_fd_);
+        assert(chan_->fd() == fd_);
+        EVUTIL_CLOSESOCKET(fd_);
+        fd_ = INVALID_SOCKET;
     }
 
-    assert(chan_->fd() < 0);
+    assert(fd_ < 0);
     chan_.reset();
 }
 
@@ -66,21 +67,21 @@ void Connector::Cancel() {
 }
 
 void Connector::Connect() {
-    int fd = sock::CreateNonblockingSocket();
-    assert(fd >= 0);
-    int rc = ::connect(fd, sock::sockaddr_cast(&raddr_), sizeof(raddr_));
+    fd_ = sock::CreateNonblockingSocket();
+    own_fd_ = true;
+    assert(fd_ >= 0);
+    int rc = ::connect(fd_, sock::sockaddr_cast(&raddr_), sizeof(raddr_));
     if (rc != 0) {
         int serrno = errno;
         if (!EVUTIL_ERR_CONNECT_RETRIABLE(serrno)) {
             HandleError();
-            EVUTIL_CLOSESOCKET(fd);
             return;
         }
     }
 
     status_ = kConnecting;
 
-    chan_.reset(new FdChannel(loop_, fd, false, true));
+    chan_.reset(new FdChannel(loop_, fd_, false, true));
     LOG_TRACE << "this=" << this << " new FdChannel p=" << chan_.get() << " fd=" << chan_->fd();
     chan_->SetWriteCallback(std::bind(&Connector::HandleWrite, this));
     chan_->AttachToLoop();
@@ -107,13 +108,15 @@ void Connector::HandleWrite() {
         return;
     }
 
+    assert(fd_ == chan_->fd());
     struct sockaddr_in addr = sock::GetLocalAddr(chan_->fd());
     std::string laddr = sock::ToIPPort(&addr);
     conn_fn_(chan_->fd(), laddr);
     timer_->Cancel();
     chan_->DisableAllEvent();
     chan_->Close();
-    chan_->SetInvalidSocket();
+    own_fd_ = false; // 将fd的所有权转移给TCPConn
+    fd_ = INVALID_SOCKET;
     status_ = kConnected;
 }
 
