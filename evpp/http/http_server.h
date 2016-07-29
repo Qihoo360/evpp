@@ -4,6 +4,7 @@
 #include "evpp/thread_dispatch_policy.h"
 
 namespace evpp {
+class EventLoop;
 class EventLoopThreadPool;
 class PipeEventWatcher;
 class EventLoopThread;
@@ -20,17 +21,18 @@ public:
 
     ~HTTPServer();
 
+    bool Start(std::vector<int> listen_ports);
     bool Start(int listen_port);
     void Stop(bool wait_thread_exit = false);
     void Pause();
     void Continue();
 
-    Service* service() const;
+    Service* service(int index = 0) const;
 public:
-    bool RegisterHandler(const std::string& uri,
+    void RegisterHandler(const std::string& uri,
                          HTTPRequestCallback callback);
 
-    bool RegisterDefaultHandler(HTTPRequestCallback callback);
+    void RegisterDefaultHandler(HTTPRequestCallback callback);
 public:
     bool IsRunning() const;
     bool IsStopped() const;
@@ -40,18 +42,29 @@ public:
     }
 
 private:
-    void Dispatch(const ContextPtr& ctx,
+    void Dispatch(EventLoop* listening_loop,
+                  const ContextPtr& ctx,
                   const HTTPSendResponseCallback& response_callback,
                   const HTTPRequestCallback& user_callback);
 
-private:
-    std::shared_ptr<Service>   http_;
+    EventLoop* GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx);
 
-    // 监听主线程，监听http请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
-    std::shared_ptr<EventLoopThread> listen_thread_;
+    bool StartListenThread(int port);
+private:
+    struct ListenThread {
+        std::shared_ptr<Service> h;
+
+        // 监听主线程，监听http请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
+        std::shared_ptr<EventLoopThread> t;
+    };
+    
+    std::vector<ListenThread> listen_threads_;
 
     // 工作线程池，处理请求
     std::shared_ptr<EventLoopThreadPool> tpool_;
+
+    HTTPRequestCallbackMap callbacks_;
+    HTTPRequestCallback default_callback_;
 };
 }
 
