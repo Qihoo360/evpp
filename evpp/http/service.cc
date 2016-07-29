@@ -141,7 +141,7 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
     std::shared_ptr<Response> pt(new Response(req, response_data));
 
     auto f = [this](const std::shared_ptr<Response>& response) {
-        assert(this->listen_loop_->IsInLoopThread());
+        assert(listen_loop_->IsInLoopThread());
         LOG_TRACE << "send http reply";
 
         if (!response->buffer) {

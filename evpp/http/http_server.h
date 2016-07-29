@@ -21,8 +21,8 @@ public:
 
     ~HTTPServer();
 
-    bool Start(std::vector<int> listen_ports);
     bool Start(int listen_port);
+    bool Start(std::vector<int> listen_ports);
     void Stop(bool wait_thread_exit = false);
     void Pause();
     void Continue();
