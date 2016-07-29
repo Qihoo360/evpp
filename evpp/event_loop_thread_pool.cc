@@ -62,6 +62,10 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit) {
 }
 
 bool EventLoopThreadPool::IsRunning() const {
+    if (!started_) {
+        return false;
+    }
+
     for (uint32_t i = 0; i < thread_num_; ++i) {
         const EventLoopThreadPtr& t = threads_[i];
 
