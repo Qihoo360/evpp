@@ -8,10 +8,17 @@
 
 namespace evpp {
 TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& n)
-    : loop_(l), remote_addr_(raddr), name_(n), auto_reconnect_(true), connecting_timeout_(3.0) {
+    : loop_(l)
+    , remote_addr_(raddr)
+    , name_(n)
+    , auto_reconnect_(true)
+    , connecting_timeout_(3.0)
+    , conn_fn_(&internal::DefaultConnectionCallback)
+    , msg_fn_(&internal::DefaultMessageCallback) {
 }
 
 TCPClient::~TCPClient() {
+    assert(!connector_.get());
     auto_reconnect_.store(false);
     TCPConnPtr c = conn();
     assert(c->IsDisconnected());

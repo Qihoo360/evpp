@@ -43,8 +43,8 @@ private:
     const std::string name_;
     std::unique_ptr<Listener> listener_;
     std::shared_ptr<EventLoopThreadPool> tpool_;
-    MessageCallback msg_fn_;
     ConnectionCallback conn_fn_;
+    MessageCallback msg_fn_;
 
     // always in loop thread
     uint64_t next_conn_id_;
