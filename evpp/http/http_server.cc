@@ -31,7 +31,6 @@ bool HTTPServer::Start(int port) {
     return rc;
 }
 
-
 bool HTTPServer::Start(std::vector<int> listen_ports) {
     bool rc = tpool_->Start(true);
     if (!rc) {
@@ -53,7 +52,9 @@ bool HTTPServer::StartListenThread(int port) {
 
     lt.h = std::make_shared<Service>(lt.t->event_loop());
     if (!lt.h->Listen(port)) {
-        LOG_ERROR << "http server listen at port " << port << " failed.";
+        int serrno = errno;
+        LOG_ERROR << "http server listen at port " << port << " failed. errno=" << serrno << " " << strerror(serrno);
+        lt.h->Stop();
         return false;
     }
 
@@ -73,6 +74,8 @@ bool HTTPServer::StartListenThread(int port) {
 
 void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
     for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+        // 1. Service 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
+        // 2. EventLoopThread 对象必须调用 Stop
         it->t->Stop();
     }
     tpool_->Stop();
@@ -81,8 +84,6 @@ void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
         for (;;) {
             bool stopped = true;
             for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-                // 1. Service 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
-                // 2. EventLoopThread 对象必须调用 Stop
                 if (!it->t->IsStopped()) {
                     stopped = false;
                     break;
@@ -107,7 +108,6 @@ void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
         assert(IsStopped());
     }
 }
-
 
 void HTTPServer::Pause() {
     for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
