@@ -60,7 +60,7 @@ struct PrefixGetResult {
 		get_result_map_ = result.get_result_map_;   
 	}
     PrefixGetResult(PrefixGetResult&& result) : code(result.code), get_result_map_(std::move(result.get_result_map_)) {}
-    PrefixGetResult& operator=(PrefixGetResult&& result) {
+	PrefixGetResult& operator=(PrefixGetResult&& result) {
 		code = result.code;
 		get_result_map_  = std::move(result.get_result_map_);
 		return *this;
@@ -73,8 +73,18 @@ struct PrefixGetResult {
 	}
 };
 
+typedef std::shared_ptr<PrefixGetResult> PrefixGetResultPtr;
+
 struct PrefixMultiGetResult {
     PrefixMultiGetResult() : code(ERR_CODE_UNDEFINED) {}
+    /*virtual ~PrefixMultiGetResult() {
+		if (!get_result_map_.empty()) {
+			auto it = get_result_map_.begin();
+			for (; it != get_result_map_.end(); ) {
+				get_result_map_.erase(it++);
+			}
+		}
+	}*/
     PrefixMultiGetResult(const PrefixMultiGetResult& result) {
 		code = result.code;
 		get_result_map_ = result.get_result_map_;
@@ -91,19 +101,20 @@ struct PrefixMultiGetResult {
 	}
 
     int code;
-	std::map<std::string, PrefixGetResult> get_result_map_;
+    std::map<std::string, PrefixGetResultPtr> get_result_map_;
 	void clear() {
 		code = ERR_CODE_UNDEFINED;
 		get_result_map_.clear();
 	}
 };
+typedef std::shared_ptr<PrefixMultiGetResult> PrefixMultiGetResultPtr;
 
 typedef std::function<void(const std::string& key, const GetResult& result)> GetCallback;
 typedef std::function<void(const std::string& key, int code)> SetCallback;
 typedef std::function<void(const std::string& key, int code)> RemoveCallback;
 typedef std::function<void(const MultiGetResult& result)> MultiGetCallback;
-typedef std::function<void(const std::string& key, const PrefixGetResult& result)> PrefixGetCallback;
-typedef std::function<void(PrefixMultiGetResult& result)> PrefixMultiGetCallback;
+typedef std::function<void(const std::string& key, const PrefixGetResultPtr result)> PrefixGetCallback;
+typedef std::function<void(const PrefixMultiGetResultPtr result)> PrefixMultiGetCallback;
 
 class MemcacheClient;
 typedef std::shared_ptr<MemcacheClient> MemcacheClientPtr;

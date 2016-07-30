@@ -80,17 +80,21 @@ BufferPtr PrefixGetCommand::RequestBuffer() const {
 }
 
 void PrefixGetCommand::OnPrefixGetCommandDone(const int resp_code, std::string& key) {
-    mget_result_.code = resp_code;
+    mget_result_->code = resp_code;
+	LOG_INFO << "OnPrefixGetCommandDone key=" << key;
     if (caller_loop()) {
-        caller_loop()->RunInLoop(std::bind(mget_callback_, key_, mget_result_));
+#if 0
+		mget_result_.get_result_map_.clear();
+#endif
+        caller_loop()->RunInLoop(std::bind(mget_callback_, std::move(key_),  mget_result_));
     } else {
-        mget_callback_(key_, mget_result_);
+        mget_callback_(key_, std::move(mget_result_));
     }
 }
 
 void PrefixGetCommand::OnPrefixGetCommandOneResponse(std::string& key,  std::string& value) {
-    LOG_INFO << "OnPrefixGetCommandOneResponse " << key << " " << " " << value;
-	mget_result_.get_result_map_.insert(std::make_pair(std::move(key), std::move(value)));
+    //LOG_INFO << "OnPrefixGetCommandOneResponse " << key << " " << " " << value;
+	mget_result_->get_result_map_.insert(std::make_pair(std::move(key), std::move(value)));
 }
 
 std::atomic_int GetCommand::next_thread_;
@@ -128,7 +132,6 @@ void MultiGetCommand::OnMultiGetCommandDone(int resp_code, const std::string& ke
 }
 
 void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, const std::string& key, const std::string& value) {
-    LOG_INFO << "OnMultiGetCommandOneResponse " << key << " " << resp_code << " " << value;
 
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
         mget_result_.get_result_map_.insert(std::make_pair(key, GetResult(resp_code, value)));
@@ -180,18 +183,20 @@ BufferPtr PrefixMultiGetCommand::RequestBuffer() const {
 
         buf->Append((void*)&req, sizeof(req));
         buf->Append(keys_[i].data(), keys_[i].size());
+		LOG_INFO << "try to send key=" << keys_[i];
     }
     return buf;
 }
 
 void PrefixMultiGetCommand::OnPrefixGetCommandDone(const int resp_code, std::string& key) {
     mget_result_.code = resp_code;
-	auto & result = mget_all_prefix_result_.get_result_map_;
-	result.insert(std::make_pair(std::move(key), std::move(mget_result_)));
+	auto & result = mget_all_prefix_result_->get_result_map_;
+    LOG_INFO << "OnPrefixGetCommandDone key=" << key << " ";
+	result.insert(std::make_pair(std::move(key), PrefixGetResultPtr(new PrefixGetResult(std::move(mget_result_)))));
 	mget_result_.clear();
 	if (result.size() >= keys_.size()) {
 		is_done_ = true;
-		mget_all_prefix_result_.code = 0;
+		mget_all_prefix_result_->code = 0;
 		if (caller_loop()) {
 			caller_loop()->RunInLoop(std::bind(mget_callback_, mget_all_prefix_result_));
 		} else {
@@ -201,7 +206,6 @@ void PrefixMultiGetCommand::OnPrefixGetCommandDone(const int resp_code, std::str
 }
 
 void PrefixMultiGetCommand::OnPrefixGetCommandOneResponse(std::string& key,  std::string& value) {
-    LOG_INFO << "OnPrefixGetCommandOneResponse " << key << " " << " " << value;
 	mget_result_.get_result_map_.insert(std::make_pair(std::move(key), std::move(value)));
 }
 
