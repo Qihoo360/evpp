@@ -94,13 +94,15 @@ typedef std::shared_ptr<MultiGetCollector> MultiGetCollectorPtr;
 class PrefixMultiGetCollector {
 public:
     PrefixMultiGetCollector(evpp::EventLoop* caller_loop, int count, const PrefixMultiGetCallback& cb)
-        : caller_loop_(caller_loop), collect_counter_(count), callback_(cb) {}
-    void Collect(PrefixMultiGetResult& res) {
-		if (res.code == 0) { //只要其中一个返回成功，则code 指定为0。
-			collect_result_.code = 0;
+        : caller_loop_(caller_loop), collect_counter_(count)
+		  , collect_result_(new PrefixMultiGetResult()), callback_(cb) {}
+    void Collect(const PrefixMultiGetResultPtr res) {
+		if (res->code == 0) { //只要其中一个返回成功，则code 指定为0。
+			collect_result_->code = 0;
 		}
-		auto& collect_result_map = collect_result_.get_result_map_;
-		auto& res_result_map = res.get_result_map_;
+		auto& collect_result_map = collect_result_->get_result_map_;
+		auto& res_result_map = res->get_result_map_;
+        LOG_DEBUG << "PrefixMultiGetCollector keysize=" << res_result_map.size();
 		for (auto it = res_result_map.begin(); it != res_result_map.end(); ++it) {
 #ifdef DEBUG
 			if (collect_result_map.find(it) != collect_result_map.end()) {
@@ -121,7 +123,7 @@ public:
 private:
     evpp::EventLoop* caller_loop_;
     int collect_counter_;
-    PrefixMultiGetResult collect_result_;
+    PrefixMultiGetResultPtr collect_result_;
     PrefixMultiGetCallback callback_;
 };
 
