@@ -1,3 +1,6 @@
+// Copy from muduo project http://github.com/chenshuo/muduo 
+// @see https://github.com/chenshuo/muduo/blob/master/muduo/net/Buffer.h and https://github.com/chenshuo/muduo/blob/master/muduo/net/Buffer.cc
+
 #pragma once
 
 #include "evpp/inner_pre.h"
@@ -91,8 +94,8 @@ public:
     }
 
     // TODO XXX Little-Endian/Big-Endian problem.
-#define bswap_64(x)                                     \
-    ((((x) & 0xff00000000000000ull) >> 56)      \
+#define bswap_64(x)                              \
+    ((((x) & 0xff00000000000000ull) >> 56)       \
      | (((x) & 0x00ff000000000000ull) >> 40)     \
      | (((x) & 0x0000ff0000000000ull) >> 24)     \
      | (((x) & 0x000000ff00000000ull) >> 8)      \
