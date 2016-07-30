@@ -1,3 +1,4 @@
+// Modeled after the time.Duration of Golang project.
 #pragma once
 
 #include "evpp/inner_pre.h"
