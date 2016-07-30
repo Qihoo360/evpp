@@ -153,6 +153,7 @@ bool HTTPServer::IsStopped() const {
             return false;
         }
     }
+    return true;
 }
 
 void HTTPServer::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
