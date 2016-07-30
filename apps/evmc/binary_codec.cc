@@ -46,13 +46,16 @@ void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& r
 		uint32_t len;
 		char buf[4];
 	} x;
+	LOG_DEBUG << "Begin to parse key=" << key;
 	while(pos < size) {
 		if (pos >= buf_size || pos + 4 >= buf_size) {
 			break;
 		}
-		memcpy(x.buf, pv + pos, 4);
+		//LOG_DEBUG << "parse inner begin key=" << key;
+		//memcpy(x.buf, pv + pos, 4);
+		klen = ntohl((*(uint32_t *)(pv + pos)));
 		pos += 4;
-		klen = ntohl(x.len);
+		//klen = ntohl(x.len);
 		if ((pos + klen) >= buf_size) {
 			break;
 		}
@@ -61,15 +64,17 @@ void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& r
 		if (pos >= buf_size || pos + 4 >= buf_size) {
 			break;
 		}
-		memcpy(x.buf, pv + pos, 4);
+		//memcpy(x.buf, pv + pos, 4);
+		vlen = ntohl(*(uint32_t *)(pv + pos));
 		pos += 4;
-		vlen = ntohl(x.len);
+		//vlen = ntohl(x.len);
 		if ((pos + vlen) >= buf_size) {
 			break;
 		}
 		std::string rval(pv + pos, vlen);
-		LOG_DEBUG << key << ":" << size << " parse prefix:" << rkey << " get result, GetResult value: " << rval;
+		//LOG_DEBUG << "key=" << key << ":" << size << " parse prefix:" << rkey << " get result, GetResult value: " << rval;
 		ptr->OnPrefixGetCommandOneResponse(rkey, rval);
+		//LOG_DEBUG << "parse inner end key=" << key;
 		pos += vlen;
 	}
 	ptr->OnPrefixGetCommandDone(ret, key);
@@ -80,10 +85,9 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
     uint32_t id  = resp.response.opaque;  // no need to call ntohl
     int opcode = resp.response.opcode;
     CommandPtr cmd = memc_client_->peek_running_command();
-
     if (!cmd || id != cmd->id()) {
         // TODO : id 不一致时候，如何处理?
-#ifdef DEBUG
+#if 0
         const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
         std::string value(pv, resp.response.bodylen - resp.response.extlen);
 		LOG_WARN << "unexpected packet info:" << value;
@@ -142,11 +146,13 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 	case PROTOCOL_BINARY_CMD_PGETK: 
         cmd = memc_client_->PopRunningCommand();
 		DecodePrefixGetPacket(resp, buf, cmd);
+        LOG_DEBUG << "OnResponsePacket PGETK";
 		break;
 
 	case PROTOCOL_BINARY_CMD_PGETKQ: 
         cmd = memc_client_->peek_running_command();
 		DecodePrefixGetPacket(resp, buf, cmd);
+        LOG_DEBUG << "OnResponsePacket PGETKQ";
 		if (cmd->IsDone()) {
 			memc_client_->PopRunningCommand();
 		}
