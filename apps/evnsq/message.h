@@ -3,6 +3,7 @@
 #include "evnsq_export.h"
 #include <evpp/exp.h>
 #include <evpp/buffer.h>
+#include <evpp/slice.h>
 
 namespace evnsq {
 
@@ -13,16 +14,25 @@ struct Message {
     int64_t timestamp;
     uint16_t attempts;
     std::string id; // with length equal to kMessageIDLen
-    const char* body;
-    size_t body_len;
+    evpp::Slice body;
 
+    // Decode deserializes data (as Buffer*) to this message
+    // message format:
+    // [x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x][x]...
+    // |       (int64)        ||    ||      (hex string encoded in ASCII)           || (binary)
+    // |       8-byte         ||    ||                 16-byte                      || N-byte
+    // ------------------------------------------------------------------------------------------...
+    //   nanosecond timestamp    ^^                   message ID                       message body
+    //                        (uint16)
+    //                         2-byte
+    //                        attempts
     void Decode(size_t message_len, evpp::Buffer* buf) {
         assert(buf->size() >= message_len);
         timestamp = buf->ReadInt64();
         attempts = buf->ReadInt16();
         id = buf->NextString(kMessageIDLen);
-        body_len = message_len - sizeof(timestamp) - sizeof(attempts) - kMessageIDLen;
-        body = buf->data(); // No copy
+        size_t body_len = message_len - sizeof(timestamp) - sizeof(attempts) - kMessageIDLen;
+        body = evpp::Slice(buf->data(), body_len); // No copy
         buf->Retrieve(body_len);
     }
 };
