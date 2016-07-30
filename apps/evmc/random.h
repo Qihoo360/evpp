@@ -12,7 +12,9 @@
 namespace evmc
 {
 
-// Copy from leveldb http://code.google.com/p/leveldb/source/browse/trunk/util/random.h
+// Copy from leveldb project 
+// @see https://github.com/google/leveldb/blob/master/util/random.h
+//
 // A very simple random number generator.  Not especially good at
 // generating truly random bits, but good enough for our needs in this
 // package.
