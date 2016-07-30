@@ -88,10 +88,10 @@ private:
 	void ClusterRemoveCallback(Timer t, const std::string&key, int code);
 
 	void ClusterPrefixGet(const std::string& key);
-	void ClusterPrefixGetCallback(Timer t, const std::string& key, const evmc::PrefixGetResult& rt);
+	void ClusterPrefixGetCallback(Timer t, const std::string& key, const evmc::PrefixGetResultPtr rt);
 
 	void ClusterPrefixMultiGet(const std::vector<std::string>& keys);
-	void ClusterPrefixMultiGetCallback(Timer t, const evmc::PrefixMultiGetResult& m);
+	void ClusterPrefixMultiGetCallback(Timer t, const evmc::PrefixMultiGetResultPtr m);
 
 	void IncrCompletedNums(); 
 
