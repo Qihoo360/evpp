@@ -105,7 +105,7 @@ public:
     }
 
     virtual void OnError(int err_code) {
-        LOG_INFO << "GetCommand OnError id=" << id();
+        LOG(WARNING) << "GetCommand OnError id=" << id();
 
         if (caller_loop()) {
             caller_loop()->RunInLoop(std::bind(get_callback_, key_,
@@ -133,12 +133,12 @@ private:
 class PrefixGetCommand  : public Command {
 public:
     PrefixGetCommand(evpp::EventLoop* evloop, uint16_t vbucket, const std::string& key, PrefixGetCallback callback)
-        : Command(evloop, vbucket, next_thread_++), key_(key), mget_callback_(callback) {
+        : Command(evloop, vbucket, next_thread_++), key_(key), mget_callback_(callback), mget_result_(new PrefixGetResult()) {
     }
 
     virtual void OnError(int err_code) {
-        LOG_INFO << "PrefixGetCommand OnError id=" << id();
-        mget_result_.code = err_code;
+        LOG(WARNING) << "PrefixGetCommand OnError id=" << id();
+        mget_result_->code = err_code;
 
         if (caller_loop()) {
             caller_loop()->RunInLoop(std::bind(mget_callback_, key_, mget_result_));
@@ -151,7 +151,7 @@ public:
 private:
     std::string key_;
     PrefixGetCallback mget_callback_;
-    PrefixGetResult mget_result_;
+    PrefixGetResultPtr mget_result_;
     static std::atomic_int next_thread_;
 private:
     virtual BufferPtr RequestBuffer() const;
@@ -160,13 +160,13 @@ private:
 class PrefixMultiGetCommand  : public Command {
 public:
     PrefixMultiGetCommand(evpp::EventLoop* evloop, uint16_t vbucket, uint32_t th_hash, const std::vector<std::string>& keys, PrefixMultiGetCallback callback)
-        : Command(evloop, vbucket, th_hash), keys_(keys), mget_callback_(callback), is_done_(false) {
+        : Command(evloop, vbucket, th_hash), keys_(keys), mget_callback_(callback), mget_all_prefix_result_(new PrefixMultiGetResult()), is_done_(false) {
     }
 
     virtual void OnError(int err_code) {
-        LOG_INFO << "prefixMultiGetCommand OnError id=" << id();
-        mget_all_prefix_result_.code = err_code;
-		PrefixGetResult res;
+        LOG(WARNING) << "prefixMultiGetCommand OnError id=" << id();
+        mget_all_prefix_result_->code = err_code;
+		/*PrefixGetResult res;
 		res.code = err_code;
 		auto & result_map = mget_all_prefix_result_.get_result_map_;
 		for (auto it = keys_.begin(); it != keys_.end(); ++it) {
@@ -175,8 +175,8 @@ public:
 			}
 		}
 		if (keys_.size() != result_map.size()) {
-			LOG(WARNING) << "recv some unrequested key info";
-		}
+			LOG(WARNING) << "recv some unexpected key info";
+		}*/
 
         if (caller_loop()) {
             caller_loop()->RunInLoop(std::bind(mget_callback_, mget_all_prefix_result_));
@@ -191,7 +191,7 @@ private:
     std::vector<std::string> keys_;
     PrefixMultiGetCallback mget_callback_;
     PrefixGetResult mget_result_;
-    PrefixMultiGetResult mget_all_prefix_result_;
+    PrefixMultiGetResultPtr mget_all_prefix_result_;
 	bool is_done_;
 private:
     virtual BufferPtr RequestBuffer() const;
@@ -204,7 +204,7 @@ public:
     }
 
     virtual void OnError(int err_code) {
-        LOG_INFO << "MultiGetCommand OnError id=" << id();
+        LOG(WARNING) << "MultiGetCommand OnError id=" << id();
         mget_result_.code = err_code;
 		auto & result_map = mget_result_.get_result_map_;
         for (auto it = keys_.begin(); it != keys_.end(); ++it) {
@@ -238,7 +238,7 @@ public:
         : Command(evloop, vbucket, next_thread_++), key_(key), remove_callback_(callback) {
     }
     virtual void OnError(int err_code) {
-        LOG_INFO << "RemoveCommand OnError id=" << id();
+        LOG(WARNING) << "RemoveCommand OnError id=" << id();
 
         if (caller_loop()) {
             caller_loop()->RunInLoop(std::bind(remove_callback_, key_, err_code));

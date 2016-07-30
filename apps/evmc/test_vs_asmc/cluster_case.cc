@@ -89,6 +89,7 @@ void ClusterCase::RunTask(const int packets_num_per_cycle) {
 					os.str("");
 					os << k++;
 					keys.push_back(os.str());
+					//LOG_INFO << "begin to call key=" << os.str();
 				}
 				ClusterPrefixMultiGet(keys);
 				break;
@@ -105,6 +106,7 @@ void ClusterCase::RunTask(const int packets_num_per_cycle) {
 				ClusterMultiGet(keys);
 				ClusterPrefixGet(key);
 				ClusterPrefixMultiGet(keys);
+				ClusterRemove(key);
 				break;
 			}
 
@@ -118,7 +120,7 @@ void ClusterCase::PrintResult() {
 	const int32_t size = cost_list_.size();
 	std::cout << "key size:" << FLAGS_key_size << ",request nums:" << FLAGS_packet_nums
 		<< ",qps:" << FLAGS_qps << ",type:" << FLAGS_test_type << ",multiget key size:" << FLAGS_multiget_nums << std::endl;
-	std::cout << "success samples:" << size - error_nums_ << ",error samples:" << error_nums_ << std::endl;
+	std::cout << "success samples:" << size - error_nums_ << ",error samples:" << error_nums_ << "query success samples:" << total_ <<  std::endl;
 	if (0 >= size) {
 		return;
 	}
@@ -127,6 +129,7 @@ void ClusterCase::PrintResult() {
 	int64_t sum = 0;
 	for (; it != cost_list_.end(); ++it) {
 		sum += *it;
+//		std::cout << "sum time " << *it << std::endl;
 	}
 	std::cout << "min cost:" << cost_list_[0] << " max cost:" << cost_list_[size - 1]  
 		<< " avg cost:" << double(sum) / double(cost_list_.size()) << std::endl;
@@ -205,6 +208,7 @@ void ClusterCase::ClusterGetCallback(Timer t, const std::string& key, const evmc
 		IncrCompletedNums(); 
 		return;
 	}
+	total_ += 1;
 	IncrCompletedNums(); 
 }
 
@@ -229,6 +233,7 @@ void ClusterCase::ClusterMultiGetCallback(Timer t, const  evmc::MultiGetResult &
 			error_nums_++;
 			continue;
 		} else {
+			total_ += 1;
 			LOG(INFO) << "MultiGet ret success, rtcode=" << rt.code << " key=" << it->first << ",value=" << rt.value;
 		}
 	}
@@ -266,19 +271,21 @@ void ClusterCase::ClusterPrefixGet(const std::string& key) {
                 this, t, std::placeholders::_1, std::placeholders::_2));
 }
 
-void ClusterCase::ClusterPrefixGetCallback(Timer t, const std::string& key, const evmc::PrefixGetResult& rt) {
+void ClusterCase::ClusterPrefixGetCallback(Timer t, const std::string& key, const evmc::PrefixGetResultPtr rt) {
 	t.End();
     cost_list_.push_back(t.Elapsedus());
-	if (0 != rt.code) {
-		LOG(WARNING) << "PrefixGet error key=" << key << " ret, retcode=" << rt.code;
+	//LOG_INFO << "OnPrefixGet success key=" << key;
+	if (0 != rt->code) {
+		LOG(WARNING) << "PrefixGet error key=" << key << " ret, retcode=" << rt->code;
 		error_nums_++;
 	} else {
-		auto & result_map = rt.get_result_map_;
+		auto & result_map = rt->get_result_map_;
 		for (auto it = result_map.begin(); it != result_map.end(); ++it) {
 			if (0 != it->first.compare(it->second)) {
 				LOG(WARNING) << "PrefixGet error key=" << key << " , key=" << it->first << " value=" << it->second;
 			} else {
-				LOG_INFO << "PrefixGet success key=" << key << " , key=" << it->first << " value=" << it->second;
+				total_ += 1;
+				//LOG_INFO << "PrefixGet success key=" << key << " , key=" << it->first << " value=" << it->second;
 			}
 		}
 	}
@@ -294,21 +301,23 @@ void ClusterCase::ClusterPrefixMultiGet(const std::vector<std::string>& keys) {
     mpc_->PrefixMultiGet(event_loop_, keys, std::bind(&ClusterPrefixMultiGetCallback, this, t, std::placeholders::_1));
 }
 
-void ClusterCase::ClusterPrefixMultiGetCallback(Timer t, const  evmc::PrefixMultiGetResult & m) {
+void ClusterCase::ClusterPrefixMultiGetCallback(Timer t, const evmc::PrefixMultiGetResultPtr m) {
 	t.End();
     cost_list_.push_back(t.Elapsedus());
-	if (m.code != 0) {
-		LOG(WARNING) << "PrefixMultiGet error, retcode =" << m.code;
+	//LOG_INFO << "time key=" << t.Elapsedus();
+	if (m->code != 0) {
+		LOG(WARNING) << "PrefixMultiGet error, retcode =" << m->code;
 		error_nums_++;
 	} else {
-		const auto & rts =  m.get_result_map_;
+		const auto & rts =  m->get_result_map_;
 		for (auto it = rts.begin(); it != rts.end(); ++it) {
-			auto & result_map = it->second.get_result_map_;
+			auto & result_map = it->second->get_result_map_;
 			for (auto iter = result_map.begin(); iter != result_map.end(); ++iter) {
 				if (0 != iter->first.compare(iter->second)) {
 					LOG(WARNING) << "PrefixMultiGet error key=" << it->first << " , key=" << iter->first << " value=" << iter->second;
 				} else {
-					LOG_INFO << "PrefixMultiGet success key=" << it->first << " , key=" << iter->first << " value=" << iter->second;
+					total_ += 1;
+			//		LOG_INFO << "PrefixMultiGet success key=" << it->first << " time=" << t.Elapsedus() << " , key=" << iter->first << " value=" << iter->second;
 				}
 			}
 		}

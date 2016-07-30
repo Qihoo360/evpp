@@ -56,7 +56,7 @@ uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const
 
         if (total_weight > 0) {
             server_id = weighted_items.upper_bound(rand() % total_weight)->second;
-            LOG_DEBUG << "SelectServerId selected_server_id=" << server_id << " last_id=" << last_id;
+            //LOG_DEBUG << "SelectServerId selected_server_id=" << server_id << " last_id=" << last_id;
         } else {
             return BAD_SERVER_ID;
         }
@@ -94,7 +94,7 @@ static hashkit_hash_algorithm_t algorithm(const std::string& alg) {
 
 uint16_t VbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
     uint32_t digest = libhashkit_digest(key, nkey, algorithm(algorithm_));
-    LOG_DEBUG << "GetVbucketByKey key=" << key << " hash=" << digest << " bucket=" << digest % vbucket_map_.size();
+    //LOG_DEBUG << "GetVbucketByKey key=" << key << " hash=" << digest << " bucket=" << digest % vbucket_map_.size();
     return digest % vbucket_map_.size();
 }
 
