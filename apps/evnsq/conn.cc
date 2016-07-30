@@ -25,7 +25,7 @@ Conn::~Conn() {}
 void Conn::Connect(const std::string& addr) {
     tcp_client_ = evpp::TCPClientPtr(new evpp::TCPClient(loop_, addr, std::string("NSQClient-") + addr));
     status_ = kConnecting;
-    tcp_client_->SetConnectionCallback(std::bind(&Conn::OnConnection, this, std::placeholders::_1));
+    tcp_client_->SetConnectionCallback(std::bind(&Conn::OnTCPConnectionEvent, this, std::placeholders::_1));
     tcp_client_->SetMessageCallback(std::bind(&Conn::OnRecv, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     tcp_client_->Connect();
 }
@@ -35,7 +35,7 @@ void Conn::Reconnect() {
     Connect(tcp_client_->remote_addr());
 }
 
-void Conn::OnConnection(const evpp::TCPConnPtr& conn) {
+void Conn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
     if (conn->IsConnected()) {
         assert(tcp_client_->conn() == conn);
         assert(status_ == kConnecting);

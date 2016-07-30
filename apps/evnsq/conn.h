@@ -67,7 +67,7 @@ public:
     const std::string& remote_addr() const;
 private:
     void Reconnect();
-    void OnConnection(const evpp::TCPConnPtr& conn);
+    void OnTCPConnectionEvent(const evpp::TCPConnPtr& conn);
     void OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp ts);
     void OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf);
     void Identify();
