@@ -23,7 +23,7 @@ void RequestHandler(const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSen
 int main(int argc, char* argv[]) {
     std::vector<int> ports = {9009, 23456, 23457};
     int port = 29099;
-    int thread_num = 0;
+    int thread_num = 2;
 
     if (argc > 1) {
         if (std::string("-h") == argv[1] || std::string("--h") == argv[1] || std::string("-help") == argv[1] || std::string("--help") == argv[1]) {
@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
         thread_num = atoi(argv[2]);
     }
     evpp::http::HTTPServer server(thread_num);
+    server.SetThreadDispatchPolicy(evpp::ThreadDispatchPolicy::kIPAddressHashing);
     server.RegisterDefaultHandler(&DefaultHandler);
     server.RegisterHandler("/echo", &RequestHandler);
     server.Start(ports);
