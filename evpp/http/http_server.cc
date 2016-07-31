@@ -42,6 +42,11 @@ bool HTTPServer::Start(std::vector<int> listen_ports) {
             return false;
         }
     }
+
+    while (!IsRunning()) {
+        usleep(1);
+    }
+
     return true;
 }
 
@@ -65,10 +70,21 @@ bool HTTPServer::StartListenThread(int port) {
                           http_close_fn);
     assert(lt.t->IsRunning());
     for (auto it = callbacks_.begin(); it != callbacks_.end(); ++it) {
-        lt.h->RegisterHandler(it->first, it->second);
+        HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
+                                           lt.h->event_loop(),
+                                           std::placeholders::_1,
+                                           std::placeholders::_2,
+                                           it->second);
+        lt.h->RegisterHandler(it->first, cb);
     }
-    lt.h->RegisterDefaultHandler(default_callback_);
+    HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
+                                       lt.h->event_loop(),
+                                       std::placeholders::_1,
+                                       std::placeholders::_2,
+                                       default_callback_);
+    lt.h->RegisterDefaultHandler(cb);
     listen_threads_.push_back(lt);
+    LOG_TRACE << "http server is running at " << port;
     return rc;
 }
 
@@ -157,30 +173,12 @@ bool HTTPServer::IsStopped() const {
 }
 
 void HTTPServer::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
-    if (IsRunning()) {
-        for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-            HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
-                                               it->h->event_loop(),
-                                               std::placeholders::_1,
-                                               std::placeholders::_2,
-                                               callback);
-            it->h->RegisterHandler(uri, cb);
-        }
-    }
+    assert(!IsRunning());
     callbacks_[uri] = callback;
 }
 
 void HTTPServer::RegisterDefaultHandler(HTTPRequestCallback callback) {
-    if (IsRunning()) {
-        for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-            HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
-                                               it->h->event_loop(),
-                                               std::placeholders::_1,
-                                               std::placeholders::_2,
-                                               callback);
-            it->h->RegisterDefaultHandler(cb);
-        }
-    }
+    assert(!IsRunning());
     default_callback_ = callback;
 }
 
@@ -217,8 +215,16 @@ EventLoop* HTTPServer::GetNextLoop(EventLoop* default_loop, const ContextPtr& ct
     if (IsRoundRobin()) {
         return tpool_->GetNextLoop();
     }
-    uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
-    return tpool_->GetNextLoopWithHash(hash);
+
+    const sockaddr*  sa = evhttp_connection_get_addr(ctx->req->evcon);
+    if (sa) {
+        const sockaddr_in* r = sock::sockaddr_in_cast(sa);
+        LOG_INFO << "http remote address " << sock::ToIPPort(r);
+        return tpool_->GetNextLoopWithHash(r->sin_addr.s_addr);
+    } else {
+        uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
+        return tpool_->GetNextLoopWithHash(hash);
+    }
 }
 
 Service* HTTPServer::service(int index) const {

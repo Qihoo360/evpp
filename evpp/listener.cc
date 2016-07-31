@@ -39,24 +39,21 @@ void Listener::Listen() {
 
     chan_.reset(new FdChannel(loop_, fd_, true, false));
     chan_->SetReadCallback(std::bind(&Listener::HandleAccept, this, std::placeholders::_1));
-    loop_->RunInLoop(std::bind(&FdChannel::AttachToLoop, chan_.get()));
+    chan_->AttachToLoop();
     listening_ = true;
     LOG_INFO << "TCPServer is running at " << addr_;
 }
 
 void Listener::HandleAccept(Timestamp ts) {
     LOG_INFO << __FUNCTION__ << " New connection";
-
     struct sockaddr_storage ss;
     socklen_t addrlen = sizeof(ss);
     int nfd = -1;
     if ((nfd = ::accept(fd_, (struct sockaddr*)&ss, &addrlen)) == -1) {
         int serrno = errno;
-
         if (serrno != EAGAIN && serrno != EINTR) {
-            LOG_WARN << __FUNCTION__ << "bad accept " << strerror(serrno);
+            LOG_WARN << __FUNCTION__ << " bad accept " << strerror(serrno);
         }
-
         return;
     }
 
