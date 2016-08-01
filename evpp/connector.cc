@@ -9,9 +9,9 @@
 
 namespace evpp {
 Connector::Connector(EventLoop* l, const std::string& raddr, Duration timeout)
-    : status_(kDisconnected), loop_(l), remote_addr_(raddr), timeout_(timeout) {
+    : status_(kDisconnected), loop_(l), remote_addr_(raddr), timeout_(timeout), fd_(-1), own_fd_(false) {
     LOG_INFO << "Connector::Connector this=" << this << " raddr=" << raddr;
-    raddr_ = ParseFromIPPort(remote_addr_.data());
+    raddr_ = sock::ParseFromIPPort(remote_addr_.data());
 }
 
 Connector::~Connector() {
@@ -21,10 +21,13 @@ Connector::~Connector() {
         // A connected tcp-connection's sockfd has been transfered to TCPConn.
         // But the sockfd of unconnected tcp-connections need to be closed by myself.
         LOG_TRACE << "Connector::~Connector close(" << chan_->fd() << ")";
-        EVUTIL_CLOSESOCKET(chan_->fd());
+        assert(own_fd_);
+        assert(chan_->fd() == fd_);
+        EVUTIL_CLOSESOCKET(fd_);
+        fd_ = INVALID_SOCKET;
     }
 
-    chan_->Close();
+    assert(fd_ < 0);
     chan_.reset();
 }
 
@@ -49,24 +52,36 @@ void Connector::Start() {
     Connect();
 }
 
-void Connector::Connect() {
-    int fd = CreateNonblockingSocket();
-    assert(fd >= 0);
-    int rc = ::connect(fd, sockaddr_cast(&raddr_), sizeof(raddr_));
 
+void Connector::Cancel() {
+    LOG_INFO << "Cancel to connect " << remote_addr_ << " status=" << StatusToString();
+    loop_->AssertInLoopThread();
+    if (dns_resolver_) {
+        dns_resolver_->Cancel();
+    }
+
+    assert(timer_);
+    timer_->Cancel();
+    chan_->DisableAllEvent();
+    chan_->Close();
+}
+
+void Connector::Connect() {
+    fd_ = sock::CreateNonblockingSocket();
+    own_fd_ = true;
+    assert(fd_ >= 0);
+    int rc = ::connect(fd_, sock::sockaddr_cast(&raddr_), sizeof(raddr_));
     if (rc != 0) {
         int serrno = errno;
-
         if (!EVUTIL_ERR_CONNECT_RETRIABLE(serrno)) {
             HandleError();
-            EVUTIL_CLOSESOCKET(fd);
             return;
         }
     }
 
     status_ = kConnecting;
 
-    chan_.reset(new FdChannel(loop_, fd, false, true));
+    chan_.reset(new FdChannel(loop_, fd_, false, true));
     LOG_TRACE << "this=" << this << " new FdChannel p=" << chan_.get() << " fd=" << chan_->fd();
     chan_->SetWriteCallback(std::bind(&Connector::HandleWrite, this));
     chan_->AttachToLoop();
@@ -82,7 +97,6 @@ void Connector::HandleWrite() {
     assert(status_ == kConnecting);
     int err = 0;
     socklen_t len = sizeof(len);
-
     if (getsockopt(chan_->fd(), SOL_SOCKET, SO_ERROR, (char*)&err, (socklen_t*)&len) != 0) {
         err = errno;
         LOG_ERROR << "getsockopt failed err=" << err << " " << strerror(err);
@@ -94,12 +108,15 @@ void Connector::HandleWrite() {
         return;
     }
 
-    chan_->DisableAllEvent();
-
-    struct sockaddr_in addr = GetLocalAddr(chan_->fd());
-    std::string laddr = ToIPPort(sockaddr_storage_cast(&addr));
+    assert(fd_ == chan_->fd());
+    struct sockaddr_in addr = sock::GetLocalAddr(chan_->fd());
+    std::string laddr = sock::ToIPPort(&addr);
     conn_fn_(chan_->fd(), laddr);
     timer_->Cancel();
+    chan_->DisableAllEvent();
+    chan_->Close();
+    own_fd_ = false; // 将fd的所有权转移给TCPConn
+    fd_ = INVALID_SOCKET;
     status_ = kConnected;
 }
 
@@ -109,6 +126,7 @@ void Connector::HandleError() {
     status_ = kDisconnected;
 
     if (chan_) {
+        chan_->DisableAllEvent();
         chan_->Close();
     }
 

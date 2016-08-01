@@ -56,6 +56,7 @@
     <ClInclude Include="..\apps\evmc\mctypes.h" />
     <ClInclude Include="..\apps\evmc\memcache_client.h" />
     <ClInclude Include="..\apps\evmc\memcache_client_pool.h" />
+    <ClInclude Include="..\apps\evmc\random.h" />
     <ClInclude Include="..\apps\evmc\vbucket_config.h" />
   </ItemGroup>
   <ItemGroup>
