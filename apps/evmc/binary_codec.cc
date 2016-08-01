@@ -51,11 +51,8 @@ void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& r
 		if (pos >= buf_size || pos + 4 >= buf_size) {
 			break;
 		}
-		//LOG_DEBUG << "parse inner begin key=" << key;
-		//memcpy(x.buf, pv + pos, 4);
 		klen = ntohl((*(uint32_t *)(pv + pos)));
 		pos += 4;
-		//klen = ntohl(x.len);
 		if ((pos + klen) >= buf_size) {
 			break;
 		}
@@ -64,17 +61,14 @@ void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& r
 		if (pos >= buf_size || pos + 4 >= buf_size) {
 			break;
 		}
-		//memcpy(x.buf, pv + pos, 4);
 		vlen = ntohl(*(uint32_t *)(pv + pos));
 		pos += 4;
-		//vlen = ntohl(x.len);
 		if ((pos + vlen) >= buf_size) {
 			break;
 		}
+
 		std::string rval(pv + pos, vlen);
-		//LOG_DEBUG << "key=" << key << ":" << size << " parse prefix:" << rkey << " get result, GetResult value: " << rval;
 		ptr->OnPrefixGetCommandOneResponse(rkey, rval);
-		//LOG_DEBUG << "parse inner end key=" << key;
 		pos += vlen;
 	}
 	ptr->OnPrefixGetCommandDone(ret, key);
@@ -87,11 +81,6 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
     CommandPtr cmd = memc_client_->peek_running_command();
     if (!cmd || id != cmd->id()) {
         // TODO : id 不一致时候，如何处理?
-#if 0
-        const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
-        std::string value(pv, resp.response.bodylen - resp.response.extlen);
-		LOG_WARN << "unexpected packet info:" << value;
-#endif
 		buf->Retrieve(kHeaderLen + resp.response.bodylen);
 		LOG_WARN << "OnResponsePacket cmd/message mismatch." << id;
         return;
@@ -144,19 +133,22 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
     break;
 
 	case PROTOCOL_BINARY_CMD_PGETK: 
-        cmd = memc_client_->PopRunningCommand();
+        cmd = memc_client_->peek_running_command();
 		DecodePrefixGetPacket(resp, buf, cmd);
-        LOG_DEBUG << "OnResponsePacket PGETK";
+		if (cmd->IsDone()) {
+			memc_client_->PopRunningCommand();
+		}
+        LOG_DEBUG << "OnResponsePacket PGETK, opaque=" << id;
 		break;
 
-	case PROTOCOL_BINARY_CMD_PGETKQ: 
+/*	case PROTOCOL_BINARY_CMD_PGETKQ: 
         cmd = memc_client_->peek_running_command();
 		DecodePrefixGetPacket(resp, buf, cmd);
         LOG_DEBUG << "OnResponsePacket PGETKQ";
 		if (cmd->IsDone()) {
 			memc_client_->PopRunningCommand();
 		}
-		break;
+		break;*/
 
     case PROTOCOL_BINARY_CMD_NOOP:
 
@@ -166,9 +158,7 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 	default:
         break;
 	}
-										
 
-    // memc_client_->set_last_command_id(id);
     buf->Retrieve(kHeaderLen + resp.response.bodylen);
 }
 
