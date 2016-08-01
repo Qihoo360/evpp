@@ -23,11 +23,11 @@ static void OnCount() {
 TEST_UNIT(testEventLoopThread) {
     evpp::Duration delay(double(1.0)); // 1s
     g_count.store(0);
-    evpp::EventLoopThread t;
-    t.Start();
+    std::unique_ptr<evpp::EventLoopThread> t(new evpp::EventLoopThread);
+    t->Start();
     usleep(1000);
     evpp::Timestamp begin = evpp::Timestamp::Now();
-    t.event_loop()->RunAfter(delay, &OnTimeout);
+    t->event_loop()->RunAfter(delay, &OnTimeout);
 
     while (!g_timeout) {
         usleep(1);
@@ -35,10 +35,12 @@ TEST_UNIT(testEventLoopThread) {
 
     evpp::Duration cost = evpp::Timestamp::Now() - begin;
     H_TEST_ASSERT(delay <= cost);
-    t.event_loop()->RunInLoop(&OnCount);
-    t.event_loop()->RunInLoop(&OnCount);
-    t.event_loop()->RunInLoop(&OnCount);
-    t.event_loop()->RunInLoop(&OnCount);
-    t.Stop(true);
+    t->event_loop()->RunInLoop(&OnCount);
+    t->event_loop()->RunInLoop(&OnCount);
+    t->event_loop()->RunInLoop(&OnCount);
+    t->event_loop()->RunInLoop(&OnCount);
+    t->Stop(true);
+    t.reset();
     H_TEST_ASSERT(g_count == 4);
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }

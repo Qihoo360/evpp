@@ -16,6 +16,7 @@ public:
     Connector(EventLoop* loop, const std::string& remote_addr, Duration timeout);
     ~Connector();
     void Start();
+    void Cancel();
 public:
     void SetNewConnectionCallback(NewConnectionCallback cb) {
         conn_fn_ = cb;
@@ -25,6 +26,12 @@ public:
     }
     bool IsConnected() const {
         return status_ == kConnected;
+    }
+    bool IsDisconnected() const {
+        return status_ == kDisconnected;
+    }
+    int status() const {
+        return status_; 
     }
 private:
     void Connect();
@@ -37,9 +44,15 @@ private:
     enum Status { kDisconnected, kDNSResolving, kDNSResolved, kConnecting, kConnected };
     Status status_;
     EventLoop* loop_;
+
     std::string remote_addr_; // host:port
     struct sockaddr_in raddr_;
+
     Duration timeout_;
+
+    int fd_;
+    bool own_fd_; // 是否拥有这fd。如果拥有，则有自己关闭这个fd
+
     std::unique_ptr<FdChannel> chan_;
     std::unique_ptr<TimerEventWatcher> timer_;
     std::unique_ptr<DNSResolver> dns_resolver_;

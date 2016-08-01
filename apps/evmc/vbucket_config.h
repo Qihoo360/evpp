@@ -6,10 +6,13 @@
 
 namespace evmc {
 
+class Random;
 extern const uint16_t BAD_SERVER_ID;
 
 class VbucketConfig {
 public:
+    VbucketConfig();
+    ~VbucketConfig();
     uint16_t GetVbucketByKey(const char* key, size_t nkey) const;
     uint16_t SelectServerId(uint16_t vbucket, uint16_t last_id) const;
     std::string GetServerAddrById(uint16_t server_id) const;
@@ -24,7 +27,8 @@ private:
     int replicas_;
     std::string algorithm_;
     std::vector<std::string> server_list_;
-    mutable std::vector<int> server_health_; // value为健康值,越高越健康，命中率越高
+    mutable std::vector<int> server_health_; // value为健康值，越高越好
+    Random* rand_;
 
     std::vector<std::vector<int> > vbucket_map_;
 };
