@@ -19,6 +19,9 @@
     <Filter Include="http">
       <UniqueIdentifier>{9d3887da-b6a3-4955-a8c7-a51e691960a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="udp">
+      <UniqueIdentifier>{b60c61e5-b770-42ff-8022-da1d38b15af0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\test\event_watcher_test.cc">
@@ -76,6 +79,15 @@
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\test\http_server_test.cc">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\udp_server_test.cc">
+      <Filter>udp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\tcp_client_reconnect_test.cc">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\http_server_test2.cc">
       <Filter>http</Filter>
     </ClCompile>
   </ItemGroup>

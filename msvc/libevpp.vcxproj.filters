@@ -29,6 +29,9 @@
     <Filter Include="http\server">
       <UniqueIdentifier>{2c7daa43-1fb2-4c03-be31-4566f44e29e4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="udp">
+      <UniqueIdentifier>{e7299b14-927d-41ca-acae-4db628107f59}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\evpp\inner_pre.cc">
@@ -108,6 +111,12 @@
     </ClCompile>
     <ClCompile Include="..\evpp\http\context.cc">
       <Filter>http\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\udp\udp_server.cc">
+      <Filter>udp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\udp\sync_udp_client.cc">
+      <Filter>udp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -229,6 +238,18 @@
       <Filter>http\server</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\memmem.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\udp\udp_message.h">
+      <Filter>udp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\udp\udp_server.h">
+      <Filter>udp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\udp\sync_udp_client.h">
+      <Filter>udp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\thread_dispatch_policy.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

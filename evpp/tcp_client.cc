@@ -8,10 +8,17 @@
 
 namespace evpp {
 TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& n)
-    : loop_(l), remote_addr_(raddr), name_(n), auto_reconnect_(true), connecting_timeout_(3.0) {
+    : loop_(l)
+    , remote_addr_(raddr)
+    , name_(n)
+    , auto_reconnect_(true)
+    , connecting_timeout_(3.0)
+    , conn_fn_(&internal::DefaultConnectionCallback)
+    , msg_fn_(&internal::DefaultMessageCallback) {
 }
 
 TCPClient::~TCPClient() {
+    assert(!connector_.get());
     auto_reconnect_.store(false);
     TCPConnPtr c = conn();
     assert(c->IsDisconnected());
@@ -19,14 +26,13 @@ TCPClient::~TCPClient() {
 }
 
 void TCPClient::Connect() {
-    loop_->RunInLoop(std::bind(&TCPClient::ConnectInLoop, this));
-}
-
-void TCPClient::ConnectInLoop() {
-    loop_->AssertInLoopThread();
-    connector_.reset(new Connector(loop_, remote_addr_, connecting_timeout_));
-    connector_->SetNewConnectionCallback(std::bind(&TCPClient::OnConnection, this, std::placeholders::_1, std::placeholders::_2));
-    connector_->Start();
+    auto f = [this]() {
+        loop_->AssertInLoopThread();
+        connector_.reset(new Connector(loop_, remote_addr_, connecting_timeout_));
+        connector_->SetNewConnectionCallback(std::bind(&TCPClient::OnConnection, this, std::placeholders::_1, std::placeholders::_2));
+        connector_->Start();
+    };
+    loop_->RunInLoop(std::bind(f));
 }
 
 void TCPClient::Disconnect() {
@@ -42,6 +48,13 @@ void TCPClient::DisconnectInLoop() {
     } else {
         // When connector_ is connecting to the remote server ...
         assert(connector_ && !connector_->IsConnected());
+    }
+
+    if (connector_->IsConnected() || connector_->IsDisconnected()) {
+        LOG_TRACE << "Do nothing, Connector::status=" << connector_->status();
+    } else {
+        // When connector_ is trying to connect to the remote server we should cancel it to release the resources.
+        connector_->Cancel();
     }
 
     connector_.reset(); // Free connector_ in loop thread immediately

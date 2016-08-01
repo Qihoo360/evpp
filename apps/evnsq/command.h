@@ -88,9 +88,7 @@ public:
     // the number of messages a client is willing to receive
     void Ready(int count) {
         name_ = "RDY";
-        char buf[16] = {};
-        snprintf(buf, sizeof buf, "%d", count);
-        params_.push_back(buf);
+        params_.push_back(std::to_string(count));
     }
 
     // Finish sets a new Command to indicate that
@@ -108,7 +106,7 @@ public:
         assert(id.size() == kMessageIDLen);
         name_ = "REQ";
         params_.push_back(id);
-        params_.push_back(evpp::cast<int>(int(delay.Milliseconds())));
+        params_.push_back(std::to_string(int(delay.Milliseconds())));
     }
 
     // Touch sets a new Command to reset the timeout for
