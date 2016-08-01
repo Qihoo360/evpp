@@ -8,10 +8,10 @@ PROJECT_ROOT_DIR=$(CURRENT_DIR)/../..
 THIRD_PARTY_DIR=$(PROJECT_ROOT_DIR)/3rdparty
 
 CPPFLAGS= -g -c -fPIC \
-		  -D_DEBUG -D_USE_GTEST \
+		  -O3 \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
-		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 \
+		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 -DGOOGLE_STRIP_LOG=1 \
 		  -I . \
 		  -I $(PROJECT_ROOT_DIR) \
 		  -I $(THIRD_PARTY_DIR)

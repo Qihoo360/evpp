@@ -7,6 +7,7 @@
 #include "evpp/buffer.h"
 #include "evpp/tcp_conn.h"
 #include "evpp/tcp_client.h"
+#include "glog/logging.h"
 
 namespace evmc {
 
@@ -54,12 +55,16 @@ struct MultiGetResult {
 };
 
 struct PrefixGetResult {
-    PrefixGetResult() : code(ERR_CODE_UNDEFINED) {}
+    PrefixGetResult() : code(ERR_CODE_UNDEFINED) {
+	}
+	virtual ~PrefixGetResult() {
+	}
     PrefixGetResult(const PrefixGetResult& result) { 
 		code = result.code;
 		get_result_map_ = result.get_result_map_;   
 	}
-    PrefixGetResult(PrefixGetResult&& result) : code(result.code), get_result_map_(std::move(result.get_result_map_)) {}
+    PrefixGetResult(PrefixGetResult&& result) : code(result.code), get_result_map_(std::move(result.get_result_map_)) {
+	}
 	PrefixGetResult& operator=(PrefixGetResult&& result) {
 		code = result.code;
 		get_result_map_  = std::move(result.get_result_map_);
@@ -76,15 +81,16 @@ struct PrefixGetResult {
 typedef std::shared_ptr<PrefixGetResult> PrefixGetResultPtr;
 
 struct PrefixMultiGetResult {
-    PrefixMultiGetResult() : code(ERR_CODE_UNDEFINED) {}
-    /*virtual ~PrefixMultiGetResult() {
-		if (!get_result_map_.empty()) {
+    PrefixMultiGetResult() : code(ERR_CODE_UNDEFINED) {
+	}
+    virtual ~PrefixMultiGetResult() {
+	/*	if (!get_result_map_.empty()) {
 			auto it = get_result_map_.begin();
 			for (; it != get_result_map_.end(); ) {
 				get_result_map_.erase(it++);
 			}
-		}
-	}*/
+		}*/
+	}
     PrefixMultiGetResult(const PrefixMultiGetResult& result) {
 		code = result.code;
 		get_result_map_ = result.get_result_map_;
