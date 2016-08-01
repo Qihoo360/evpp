@@ -239,7 +239,6 @@ void MemcacheClientPool::DoLaunchCommand(CommandPtr command) {
 
     command->set_server_id(server_id);
     std::string server_addr = vbconf->GetServerAddrById(server_id);
-	//LOG(INFO) << "vbucket:" << vbucket << " server_id=" << server_id << " server ip=" << server_addr;
     MemcClientMap* client_map = GetMemcClientMap(command->thread_hash());
 
     if (client_map == NULL) {
