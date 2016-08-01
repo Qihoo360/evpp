@@ -7,42 +7,39 @@
 
 namespace evpp {
 namespace httpc {
+const std::string Request::empty_ = "";
+
 Request::Request(ConnPool* pool, EventLoop* loop, const std::string& http_uri, const std::string& body)
     : pool_(pool), loop_(loop), uri_(http_uri), body_(body) {
-
 }
 
 Request::Request(EventLoop* loop, const std::string& http_url, const std::string& body, Duration timeout)
     : pool_(NULL), loop_(loop), body_(body) {
     //TODO performance compare
-#ifdef H_LIBEVENT_VERSION_14
-    URLParser p(http_url);
-    conn_.reset(new Conn(loop, p.host, port, timeout));
-
-    if (p.query.empty()) {
-        uri_ = p.path;
-    } else {
-        uri_ = p.path + "?" + p.query;
-    }
-
-#else
+#if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct evhttp_uri* evuri = evhttp_uri_parse(http_url.c_str());
     uri_ = evhttp_uri_get_path(evuri);
     const char* query = evhttp_uri_get_query(evuri);
-
     if (query && strlen(query) > 0) {
         uri_ += "?";
         uri_ += query;
     }
 
     int port = evhttp_uri_get_port(evuri);
-
     if (port < 0) {
         port = 80;
     }
 
     conn_.reset(new Conn(loop, evhttp_uri_get_host(evuri), port, timeout));
     evhttp_uri_free(evuri);
+#else
+    URLParser p(http_url);
+    conn_.reset(new Conn(loop, p.host, port, timeout));
+    if (p.query.empty()) {
+        uri_ = p.path;
+    } else {
+        uri_ = p.path + "?" + p.query;
+    }
 #endif
 }
 
@@ -68,7 +65,6 @@ void Request::ExecuteInLoop(const Handler& h) {
 
     if (conn_) {
         assert(pool_ == NULL);
-
         if (!conn_->Init()) {
             errmsg = "conn init fail";
             goto failed;
@@ -76,7 +72,6 @@ void Request::ExecuteInLoop(const Handler& h) {
     } else {
         assert(pool_);
         conn_ = pool_->Get(loop_);
-
         if (!conn_->Init()) {
             errmsg = "conn init fail";
             goto failed;
@@ -84,7 +79,6 @@ void Request::ExecuteInLoop(const Handler& h) {
     }
 
     req = evhttp_request_new(&Request::HandleResponse, this);
-
     if (!req) {
         errmsg = "evhttp_request_new fail";
         goto failed;
@@ -98,7 +92,6 @@ void Request::ExecuteInLoop(const Handler& h) {
 
     if (!body_.empty()) {
         req_type = EVHTTP_REQ_POST;
-
         if (evbuffer_add(req->output_buffer, body_.c_str(), body_.size())) {
             evhttp_request_free(req);
             errmsg = "evbuffer_add fail";
@@ -125,10 +118,8 @@ void Request::HandleResponse(struct evhttp_request* rsp, void* v) {
     assert(thiz);
 
     std::shared_ptr<Response> response;
-
     if (rsp) {
         response.reset(new Response(thiz, rsp));
-
         if (thiz->pool_) {
             thiz->pool_->Put(thiz->conn_);
         }

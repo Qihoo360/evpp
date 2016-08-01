@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 #include "evpp/inner_pre.h"
 #include "evpp/libevent_watcher.h"
@@ -17,6 +18,10 @@ public:
     typedef std::function<void()> Functor;
 public:
     EventLoop();
+
+    // 从一个已有的event_base对象创建EventLoop，
+    // 这样就可以将evpp::EventLoop方便的嵌入到别的基于libevent的已有框架中。
+    // 需要仔细处理 event_base_、watcher_等对象的释放问题
     explicit EventLoop(struct event_base* base);
     ~EventLoop();
 
@@ -32,10 +37,9 @@ public:
 
     void RunInLoop(const Functor& handler);
     void QueueInLoop(const Functor& handler);
-    void AddAfterLoopFunctor(const Functor& handler);
 
     struct event_base* event_base() {
-        return event_base_;
+        return evbase_;
     }
     bool IsInLoopThread() const;
     void AssertInLoopThread() const;
@@ -48,14 +52,20 @@ public:
     bool running() const {
         return running_;
     }
+    int pending_functor_count() const {
+        return pending_functor_count_.load();
+    }
+    bool IsStopped() const {
+        return !running();
+    }
 private:
     void StopInLoop();
     void Init();
     void DoPendingFunctors();
-    void DoAfterLoopFunctors();
 
 private:
-    struct event_base* event_base_;
+    struct event_base* evbase_;
+    bool create_evbase_myself_;
     std::thread::id tid_;
     Any context_;
     bool running_;
@@ -64,6 +74,7 @@ private:
     std::shared_ptr<PipeEventWatcher> watcher_;
     std::vector<Functor> pending_functors_; // @Guarded By mutex_
     bool calling_pending_functors_;
-    std::vector<Functor> after_loop_functors_; // @Guarded By mutex_
+
+    std::atomic<int> pending_functor_count_;
 };
 }

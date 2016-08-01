@@ -158,7 +158,7 @@ static void TestAll() {
 }
 
 
-TEST_UNIT(testHTTPServer) {
+TEST_UNIT(testHTTPServer1) {
     for (int i = 0; i < 3; ++i) {
         g_stopping = true;
         evpp::http::HTTPServer ph(i);

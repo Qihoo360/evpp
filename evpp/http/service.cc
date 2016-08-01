@@ -7,9 +7,8 @@
 namespace evpp {
 namespace http {
 Service::Service(EventLoop* l)
-    : evhttp_(NULL), listen_loop_(l) {
+    : evhttp_(NULL), evhttp_bound_socket_(NULL), listen_loop_(l) {
     evhttp_ = evhttp_new(listen_loop_->event_base());
-
     if (!evhttp_) {
         return;
     }
@@ -24,9 +23,16 @@ bool Service::Listen(int port) {
     assert(evhttp_);
     assert(listen_loop_->IsInLoopThread());
 
+#if LIBEVENT_VERSION_NUMBER >= 0x02001500
+    evhttp_bound_socket_ = evhttp_bind_socket_with_handle(evhttp_, "0.0.0.0", port);
+    if (!evhttp_bound_socket_) {
+        return false;
+    }
+#else
     if (evhttp_bind_socket(evhttp_, "0.0.0.0", port) != 0) {
         return false;
     }
+#endif
 
     evhttp_set_gencb(evhttp_, &Service::GenericCallback, this);
     return true;
@@ -45,14 +51,33 @@ void Service::Stop() {
     default_callback_ = HTTPRequestCallback();
 }
 
-bool Service::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
-    callbacks_[uri] = callback;
-    return true;
+
+void Service::Pause() {
+#if LIBEVENT_VERSION_NUMBER >= 0x02001500
+    if (evhttp_bound_socket_) {
+        evconnlistener_disable(evhttp_bound_socket_get_listener(evhttp_bound_socket_));
+    }
+#else
+    LOG_ERROR << "Not support!".
+#endif
 }
 
-bool Service::RegisterDefaultHandler(HTTPRequestCallback callback) {
+void Service::Continue() {
+#if LIBEVENT_VERSION_NUMBER >= 0x02001500
+    if (evhttp_bound_socket_) {
+        evconnlistener_enable(evhttp_bound_socket_get_listener(evhttp_bound_socket_));
+    }
+#else
+    LOG_ERROR << "Not support!".
+#endif
+}
+
+void Service::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
+    callbacks_[uri] = callback;
+}
+
+void Service::RegisterDefaultHandler(HTTPRequestCallback callback) {
     default_callback_ = callback;
-    return true;
 }
 
 void Service::GenericCallback(struct evhttp_request* req, void* arg) {
@@ -68,8 +93,7 @@ void Service::HandleRequest(struct evhttp_request* req) {
     ContextPtr ctx(new Context(req));
     ctx->Init(this);
 
-    HTTPRequestCallbackMap::iterator it = callbacks_.find(ctx->uri);
-
+    auto it = callbacks_.find(ctx->uri);
     if (it == callbacks_.end()) {
         DefaultHandleRequest(ctx);
         return;
@@ -117,8 +141,8 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
     std::shared_ptr<Response> pt(new Response(req, response_data));
 
     auto f = [this](const std::shared_ptr<Response>& response) {
-        assert(this->listen_loop_->IsInLoopThread());
-        LOG_TRACE << "send reply";
+        assert(listen_loop_->IsInLoopThread());
+        LOG_TRACE << "send http reply";
 
         if (!response->buffer) {
             evhttp_send_reply(response->req, HTTP_NOTFOUND, "Not Found", NULL);

@@ -5,10 +5,10 @@
 
 std::string message(512, 'x');
 
-std::atomic<uint64_t> recv_size = 0;
-std::atomic<uint64_t> send_size = 0;
-std::atomic<uint64_t> recv_count = 0;
-std::atomic<uint64_t> send_count = 0;
+std::atomic<uint64_t> recv_size(0);
+std::atomic<uint64_t> send_size(0);
+std::atomic<uint64_t> recv_count(0);
+std::atomic<uint64_t> send_count(0);
 
 
 void OnMessage(const evpp::TCPConnPtr& conn,
