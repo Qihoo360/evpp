@@ -134,7 +134,7 @@ public:
     }
 
     void AppendInt16(int16_t x) {
-        int16_t be16 = ::htons(x);
+        int16_t be16 = htons(x);
         Write(&be16, sizeof be16);
     }
 
@@ -154,7 +154,7 @@ public:
     }
 
     void PrependInt16(int16_t x) {
-        int16_t be16 = ::htons(x);
+        int16_t be16 = htons(x);
         Prepend(&be16, sizeof be16);
     }
 
@@ -294,7 +294,7 @@ public:
         assert(length() >= sizeof(int16_t));
         int16_t be16 = 0;
         ::memcpy(&be16, data(), sizeof be16);
-        return ::ntohs(be16);
+        return ntohs(be16);
     }
 
     int8_t PeekInt8() const {

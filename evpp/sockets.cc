@@ -70,7 +70,7 @@ struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
     }
 
     addr.sin_family = AF_INET;
-    addr.sin_port = ::htons(::atoi(&a[index + 1]));
+    addr.sin_port = htons(::atoi(&a[index + 1]));
     a[index] = '\0';
 
     if (::inet_pton(AF_INET, a.data(), &addr.sin_addr) <= 0) {
@@ -114,7 +114,7 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
             saddr = addr;
         }
 
-        port = ::ntohs(addr4->sin_port);
+        port = ntohs(addr4->sin_port);
     } else if (ss->ss_family == AF_INET6) {
         struct sockaddr_in6* addr6 = const_cast<struct sockaddr_in6*>(sockaddr_in6_cast(ss));
         char buf[INET6_ADDRSTRLEN] = {};
@@ -124,7 +124,7 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
             saddr = addr;
         }
 
-        port = ::ntohs(addr6->sin6_port);
+        port = ntohs(addr6->sin6_port);
     } else {
         LOG_ERROR << "unknown socket family connected";
         return std::string();
