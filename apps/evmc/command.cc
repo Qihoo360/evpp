@@ -81,11 +81,8 @@ BufferPtr PrefixGetCommand::RequestBuffer() const {
 
 void PrefixGetCommand::OnPrefixGetCommandDone(const int resp_code, std::string& key) {
     mget_result_->code = resp_code;
-	LOG_INFO << "OnPrefixGetCommandDone key=" << key;
+	LOG_DEBUG << "OnPrefixGetCommandDone key=" << key;
     if (caller_loop()) {
-#if 0
-		mget_result_.get_result_map_.clear();
-#endif
         caller_loop()->RunInLoop(std::bind(mget_callback_, std::move(key_),  mget_result_));
     } else {
         mget_callback_(key_, std::move(mget_result_));
@@ -93,7 +90,6 @@ void PrefixGetCommand::OnPrefixGetCommandDone(const int resp_code, std::string& 
 }
 
 void PrefixGetCommand::OnPrefixGetCommandOneResponse(std::string& key,  std::string& value) {
-    //LOG_INFO << "OnPrefixGetCommandOneResponse " << key << " " << " " << value;
 	mget_result_->get_result_map_.insert(std::make_pair(std::move(key), std::move(value)));
 }
 
@@ -170,12 +166,19 @@ BufferPtr PrefixMultiGetCommand::RequestBuffer() const {
     BufferPtr buf(new evpp::Buffer(50 * keys_.size()));  // 预分配长度多数情况够长
 
 	protocol_binary_request_header req;
-    for (size_t i = 0; i < keys_.size(); ++i) {
+	const int size = keys_.size();
+    for (int i = 0; i < size; ++i) {
         memset((void*)&req, 0, sizeof(req));
-        req.request.magic    = PROTOCOL_BINARY_REQ;
+        req.request.magic = PROTOCOL_BINARY_REQ;
 
-		req.request.opcode   = PROTOCOL_BINARY_CMD_PGETKQ;  
-        req.request.keylen = htons(uint16_t(keys_[i].size()));
+		/*if (i < size - 1) {
+			LOG_DEBUG << "CMD PGETKQ";
+			req.request.opcode   = PROTOCOL_BINARY_CMD_PGETK;  
+		} else {
+			req.request.opcode   = PROTOCOL_BINARY_CMD_PGETK;  
+		}*/
+		req.request.opcode   = PROTOCOL_BINARY_CMD_PGETK;  
+		req.request.keylen = htons(uint16_t(keys_[i].size()));
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
         req.request.vbucket  = htons(vbucket_id());
         req.request.opaque   = id();
@@ -183,7 +186,7 @@ BufferPtr PrefixMultiGetCommand::RequestBuffer() const {
 
         buf->Append((void*)&req, sizeof(req));
         buf->Append(keys_[i].data(), keys_[i].size());
-		LOG_INFO << "try to send key=" << keys_[i];
+		LOG_DEBUG << "try to send key=" << keys_[i];
     }
     return buf;
 }
@@ -191,8 +194,9 @@ BufferPtr PrefixMultiGetCommand::RequestBuffer() const {
 void PrefixMultiGetCommand::OnPrefixGetCommandDone(const int resp_code, std::string& key) {
     mget_result_.code = resp_code;
 	auto & result = mget_all_prefix_result_->get_result_map_;
-    LOG_INFO << "OnPrefixGetCommandDone key=" << key << " ";
-	result.insert(std::make_pair(std::move(key), PrefixGetResultPtr(new PrefixGetResult(std::move(mget_result_)))));
+    LOG_DEBUG << "OnPrefixGetCommandDone key=" << key << " ";
+	PrefixGetResultPtr prefix_get_result(new PrefixGetResult(std::move(mget_result_)));
+	result.insert(std::make_pair(std::move(key), prefix_get_result));
 	mget_result_.clear();
 	if (result.size() >= keys_.size()) {
 		is_done_ = true;
