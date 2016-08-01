@@ -58,5 +58,5 @@ t:
 install: $(TARGET_A) $(TARGET_SO) 
 
 clean:
-	rm -rf src/*.o src/*.d $(OBJS) $(DEPS) $(TARGET_SO) $(TARGET_A)
+	rm -rf $(OBJS) $(DEPS) $(TARGET_SO) $(TARGET_A)
 
