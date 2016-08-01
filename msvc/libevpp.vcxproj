@@ -37,6 +37,8 @@
     <ClCompile Include="..\evpp\tcp_client.cc" />
     <ClCompile Include="..\evpp\tcp_conn.cc" />
     <ClCompile Include="..\evpp\tcp_server.cc" />
+    <ClCompile Include="..\evpp\udp\sync_udp_client.cc" />
+    <ClCompile Include="..\evpp\udp\udp_server.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\evpp\any.h" />
@@ -76,8 +78,12 @@
     <ClInclude Include="..\evpp\tcp_client.h" />
     <ClInclude Include="..\evpp\tcp_conn.h" />
     <ClInclude Include="..\evpp\tcp_server.h" />
+    <ClInclude Include="..\evpp\thread_dispatch_policy.h" />
     <ClInclude Include="..\evpp\timestamp.h" />
     <ClInclude Include="..\evpp\timestamp.inl.h" />
+    <ClInclude Include="..\evpp\udp\sync_udp_client.h" />
+    <ClInclude Include="..\evpp\udp\udp_message.h" />
+    <ClInclude Include="..\evpp\udp\udp_server.h" />
     <ClInclude Include="..\evpp\utility.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

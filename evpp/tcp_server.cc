@@ -8,21 +8,21 @@ namespace evpp {
 TCPServer::TCPServer(EventLoop* loop,
                      const std::string& listen_addr,
                      const std::string& name,
-                     int thread_num)
+                     uint32_t thread_num)
     : loop_(loop)
     , listen_addr_(listen_addr)
     , name_(name)
+    , conn_fn_(&internal::DefaultConnectionCallback)
+    , msg_fn_(&internal::DefaultMessageCallback)
     , next_conn_id_(0) {
-    threads_dispatch_policy_ = kRoundRobin;
     tpool_.reset(new EventLoopThreadPool(loop_, thread_num));
 }
 
 TCPServer::~TCPServer() {
     LOG_TRACE << "TCPServer::~TCPServer()";
     assert(tpool_->IsStopped());
-    assert(!listener_->listening());
     assert(connections_.empty());
-    listener_.reset();
+    assert(!listener_);
     tpool_.reset();
 }
 
@@ -46,14 +46,14 @@ void TCPServer::Stop() {
 void TCPServer::StopInLoop() {
     LOG_TRACE << "Entering TCPServer::StopInLoop";
     listener_->Stop();
+    listener_.reset();
 
-    auto it = connections_.begin();
-    auto ite = connections_.end();
-    for (; it != ite; ++it) {
+    for (auto it = connections_.begin(); it != connections_.end(); ++it) {
         it->second->Close();
     }
 
     tpool_->Stop(true);
+    assert(tpool_->IsStopped());
     LOG_TRACE << "TCPServer::StopInLoop exited";
 }
 
@@ -62,9 +62,7 @@ void TCPServer::HandleNewConn(int sockfd,
                               const struct sockaddr_in* raddr) {
     assert(loop_->IsInLoopThread());
     EventLoop* io_loop = GetNextLoop(raddr);
-    char buf[64] = {};
-    snprintf(buf, sizeof buf, "-%s#%" PRIu64, remote_addr.c_str(), next_conn_id_++);
-    std::string n = name_ + buf;
+    std::string n = name_ + "-" + remote_addr + "#" + std::to_string(next_conn_id_++);
     TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
     assert(conn->type() == TCPConn::kIncoming);
     conn->SetMessageCallback(msg_fn_);
@@ -75,10 +73,9 @@ void TCPServer::HandleNewConn(int sockfd,
 }
 
 EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
-    if (threads_dispatch_policy_ == kRoundRobin) {
+    if (IsRoundRobin()) {
         return tpool_->GetNextLoop();
     } else {
-        assert(threads_dispatch_policy_ == kIPAddressHashing);
         return tpool_->GetNextLoopWithHash(raddr->sin_addr.s_addr);
     }
 }

@@ -17,17 +17,13 @@ bool Context::Init(Service* hsrv) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
         struct evbuffer* evbuf = evhttp_request_get_input_buffer(req);
         size_t buffer_size = evbuffer_get_length(evbuf);
-
         if (buffer_size > 0) {
             this->body = Slice((char*)evbuffer_pullup(evbuf, -1), buffer_size);
         }
-
 #else
-
         if (req->input_buffer->off > 0) {
             this->body = Slice((char*)req->input_buffer->buffer, req->input_buffer->off);
         }
-
 #endif
     }
 
@@ -35,7 +31,6 @@ bool Context::Init(Service* hsrv) {
     uri = evhttp_uri_get_path(req->uri_elems);
 #else
     const char* p = strchr(req->uri, '?');
-
     if (p != NULL) {
         uri = std::string(req->uri, p - req->uri);
     } else {

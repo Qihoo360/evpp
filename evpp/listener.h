@@ -11,9 +11,9 @@ class EVPP_EXPORT Listener {
 public:
     typedef std::function<
         void(int sockfd,
-             const std::string& /*ip:port*/,
+             const std::string& /*remote address with format "ip:port"*/,
              const struct sockaddr_in* /*remote addr*/)> NewConnectionCallback;
-    Listener(EventLoop* loop, const std::string& addr/*ip:port*/);
+    Listener(EventLoop* loop, const std::string& addr/*local listening ip:port*/);
     ~Listener();
 
     void Listen();

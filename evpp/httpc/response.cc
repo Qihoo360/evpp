@@ -12,23 +12,14 @@ Response::Response(Request* r, struct evhttp_request* evreq)
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct evbuffer* evbuf = evhttp_request_get_input_buffer(evreq);
     size_t buffer_size = evbuffer_get_length(evbuf);
-
     if (buffer_size > 0) {
         this->body_ = evpp::Slice((char*)evbuffer_pullup(evbuf, -1), buffer_size);
     }
-
 #else
-
     if (evreq->input_buffer->off > 0) {
         this->body_ = evpp::Slice((char*)evreq->input_buffer->buffer, evreq->input_buffer->off);
     }
-
 #endif
-
-//             struct evkeyval *header;
-//             TAILQ_FOREACH(header, r->input_headers, next) {
-//                 headers_[header->key] = header->value;
-//             }
 }
 
 
@@ -37,10 +28,13 @@ Response::Response(Request* r)
 }
 
 Response::~Response() {
-
 }
 
-} // httpc
-} // evpp
+const char* Response::FindHeader(const char* key) {
+    return evhttp_find_header(this->evreq_->input_headers, key);
+}
+
+}
+}
 
 
