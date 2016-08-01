@@ -39,7 +39,7 @@ void Listener::Listen() {
 
     chan_.reset(new FdChannel(loop_, fd_, true, false));
     chan_->SetReadCallback(std::bind(&Listener::HandleAccept, this, std::placeholders::_1));
-    chan_->AttachToLoop();
+    loop_->RunInLoop(std::bind(&FdChannel::AttachToLoop, chan_.get()));
     listening_ = true;
     LOG_INFO << "TCPServer is running at " << addr_;
 }
