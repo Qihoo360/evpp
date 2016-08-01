@@ -45,12 +45,11 @@ TCPConn::~TCPConn() {
 }
 
 void TCPConn::Close() {
-    loop_->RunInLoop(std::bind(&TCPConn::CloseInLoop, shared_from_this()));
-}
-
-void TCPConn::CloseInLoop() {
-    loop_->AssertInLoopThread();
-    HandleClose();
+    auto f = [](const TCPConnPtr& c) {
+        c->loop_->AssertInLoopThread();
+        c->HandleClose();
+    };
+    loop_->RunInLoop(std::bind(f, shared_from_this()));
 }
 
 void TCPConn::Send(const std::string& d) {
@@ -148,7 +147,6 @@ void TCPConn::SendInLoop(const void* data, size_t len) {
 
     if (remaining > 0) {
         size_t old_len = output_buffer_.length();
-
         if (old_len + remaining >= high_water_mark_
                 && old_len < high_water_mark_
                 && high_water_mark_fn_) {
@@ -196,7 +194,6 @@ void TCPConn::HandleWrite() {
     assert(!chan_->attached() || chan_->IsWritable());
 
     ssize_t n = ::send(fd_, output_buffer_.data(), output_buffer_.length(), MSG_NOSIGNAL);
-
     if (n > 0) {
         output_buffer_.Next(n);
 

@@ -4,16 +4,17 @@
 #include "evpp/sockets.h"
 
 namespace evpp {
+
 std::string strerror(int e) {
 #ifdef H_OS_WINDOWS
-    LPVOID lpMsgBuf = NULL;
+    LPVOID buf = NULL;
     ::FormatMessageA(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&lpMsgBuf, 0, NULL);
+        NULL, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buf, 0, NULL);
 
-    if (lpMsgBuf) {
-        std::string s = (char*)lpMsgBuf;
-        LocalFree(lpMsgBuf);
+    if (buf) {
+        std::string s = (char*)buf;
+        LocalFree(buf);
         return s;
     }
 
@@ -24,15 +25,15 @@ std::string strerror(int e) {
 #endif
 }
 
+namespace sock {
 int CreateNonblockingSocket() {
     int serrno = 0;
-    int on = 1;
+    //int on = 1;
 
     /* Create listen socket */
     int fd = ::socket(AF_INET, SOCK_STREAM, 0);
-    serrno = errno;
-
     if (fd == -1) {
+        serrno = errno;
         LOG_ERROR << "socket error " << strerror(serrno);
         return INVALID_SOCKET;
     }
@@ -42,21 +43,39 @@ int CreateNonblockingSocket() {
     }
 
 #ifndef H_OS_WINDOWS
-
     if (fcntl(fd, F_SETFD, 1) == -1) {
         serrno = errno;
         LOG_FATAL << "fcntl(F_SETFD)" << strerror(serrno);
         goto out;
     }
-
 #endif
 
-    ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
-    ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
+    SetKeepAlive(fd);
+    SetReuseAddr(fd);
     return fd;
 out:
     EVUTIL_CLOSESOCKET(fd);
     return INVALID_SOCKET;
+}
+
+int CreateUDPServer(int port) {
+    int fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd == -1) {
+        int serrno = errno;
+        LOG_ERROR << "socket error " << strerror(serrno);
+        return INVALID_SOCKET;
+    }
+    SetReuseAddr(fd);
+
+    std::string addr = std::string("0.0.0.0:") + std::to_string(port);
+    struct sockaddr_in local = ParseFromIPPort(addr.c_str());
+    if (::bind(fd, (struct sockaddr*)&local, sizeof(local))) {
+        int serrno = errno;
+        LOG_ERROR << "socket bind error " << strerror(serrno);
+        return INVALID_SOCKET;
+    }
+
+    return fd;
 }
 
 struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
@@ -64,7 +83,6 @@ struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
     memset(&addr, 0, sizeof(addr));
     std::string a = address;
     size_t index = a.rfind(':');
-
     if (index == std::string::npos) {
         LOG_FATAL << "Address specified error [" << address << "]";
     }
@@ -131,18 +149,50 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
     }
 
     if (!saddr.empty()) {
-        char buf[16] = {};
-        snprintf(buf, sizeof(buf), "%d", port);
-        saddr.append(":", 1).append(buf);
+        saddr.append(":", 1).append(std::to_string(port));
     }
 
     return saddr;
+}
+
+
+std::string ToIPPort(const struct sockaddr* ss) {
+    return ToIPPort(sockaddr_storage_cast(ss));
+}
+
+
+std::string ToIPPort(const struct sockaddr_in* ss) {
+    return ToIPPort(sockaddr_storage_cast(ss));
+}
+
+void SetTimeout(int fd, uint32_t timeout_ms) {
+#ifdef H_OS_WINDOWS
+    DWORD tv = timeout_ms;
+#else
+    struct timeval tv;
+    tv.tv_sec = timeout_ms / 1000;
+    tv.tv_usec = (timeout_ms % 1000) * 1000;
+#endif
+    int ret = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+    assert(ret == 0);
+    if (ret != 0) {
+        int err = errno;
+        LOG_ERROR << "setsockopt SO_RCVTIMEO ERROR " << err << strerror(err);
+    }
 }
 
 void SetKeepAlive(int fd) {
     int on = 1;
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
     assert(rc == 0);
+}
+
+void SetReuseAddr(int fd) {
+    int on = 1;
+    int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
+    assert(rc == 0);
+}
+
 }
 }
 

@@ -19,7 +19,7 @@ LDFLAGS= $(RTFLAGS) -lpthread \
 		 -levent -lglog
 
 
-SRCS := $(wildcard *.cc) $(wildcard httpc/*.cc) $(wildcard http/*.cc)
+SRCS := $(wildcard *.cc) $(wildcard httpc/*.cc) $(wildcard http/*.cc) $(wildcard udp/*.cc)
 OBJS := $(patsubst %.cc, %.o, $(SRCS)) $(CCOBJS)
 DEPS := $(patsubst %.o, %.d, $(OBJS))
 
@@ -58,5 +58,5 @@ t:
 install: $(TARGET_A) $(TARGET_SO) 
 
 clean:
-	rm -rf src/*.o src/*.d $(OBJS) $(DEPS) $(TARGET_SO) $(TARGET_A)
+	rm -rf $(OBJS) $(DEPS) $(TARGET_SO) $(TARGET_A)
 
