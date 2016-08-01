@@ -11,10 +11,7 @@ DNSResolver::DNSResolver(EventLoop* evloop, const std::string& host, Duration ti
 DNSResolver::~DNSResolver() {
     LOG_INFO << "DNSResolver::~DNSResolver tid=" << std::this_thread::get_id() << " this=" << this;
 
-    if (dnsbase_) {
-        evdns_base_free(dnsbase_, 0);
-        dnsbase_ = NULL;
-    }
+    assert(dnsbase_ == NULL);
 
     if (dns_req_) {
         dns_req_ = NULL;
@@ -48,7 +45,6 @@ void DNSResolver::SyncDNSResolve() {
     /* Look up the hostname. */
     struct addrinfo* answer = NULL;
     int err = getaddrinfo(host_.c_str(), NULL, &hints, &answer);
-
     if (err != 0) {
         LOG_ERROR << "getaddrinfo failed. err=" << err << " " << gai_strerror(err);
     } else {

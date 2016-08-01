@@ -25,7 +25,7 @@ Conn::~Conn() {}
 void Conn::Connect(const std::string& addr) {
     tcp_client_ = evpp::TCPClientPtr(new evpp::TCPClient(loop_, addr, std::string("NSQClient-") + addr));
     status_ = kConnecting;
-    tcp_client_->SetConnectionCallback(std::bind(&Conn::OnConnection, this, std::placeholders::_1));
+    tcp_client_->SetConnectionCallback(std::bind(&Conn::OnTCPConnectionEvent, this, std::placeholders::_1));
     tcp_client_->SetMessageCallback(std::bind(&Conn::OnRecv, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     tcp_client_->Connect();
 }
@@ -35,16 +35,21 @@ void Conn::Reconnect() {
     Connect(tcp_client_->remote_addr());
 }
 
-void Conn::OnConnection(const evpp::TCPConnPtr& conn) {
+void Conn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
     if (conn->IsConnected()) {
         assert(tcp_client_->conn() == conn);
         assert(status_ == kConnecting);
         Identify();
     } else {
+        status_ = kDisconnected;
         if (conn->IsDisconnecting()) {
             LOG_ERROR << "Connection to " << conn->remote_addr() << " was closed by remote server.";
         } else {
             LOG_ERROR << "Connect to " << conn->remote_addr() << " failed.";
+        }
+
+        if (conn_fn_) {
+            conn_fn_(shared_from_this());
         }
 
         status_ = kConnecting; // tcp_client_ will reconnect again automatically
@@ -76,7 +81,7 @@ void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timesta
                 status_ = kConnected;
 
                 if (conn_fn_) {
-                    conn_fn_(this);
+                    conn_fn_(shared_from_this());
                 }
             } else {
                 LOG_ERROR << "Identify ERROR";
@@ -92,11 +97,9 @@ void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timesta
         case evnsq::Conn::kSubscribing:
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 status_ = kReady;
-
                 if (conn_fn_) {
-                    conn_fn_(this);
+                    conn_fn_(shared_from_this());
                 }
-
                 LOG_INFO << "Successfully connected to nsqd " << conn->remote_addr();
                 UpdateReady(100); //TODO RDY count
             } else {
@@ -174,6 +177,10 @@ void Conn::Subscribe(const std::string& topic, const std::string& channel) {
     c.Subscribe(topic, channel);
     WriteCommand(&c);
     status_ = kSubscribing;
+}
+
+const std::string& Conn::remote_addr() const {
+    return tcp_client_->remote_addr();
 }
 
 void Conn::Identify() {

@@ -18,24 +18,20 @@ Listener::~Listener() {
 }
 
 void Listener::Listen() {
-    fd_ = CreateNonblockingSocket();
-
+    fd_ = sock::CreateNonblockingSocket();
     if (fd_ < 0) {
         return;
     }
 
-    struct sockaddr_in addr = ParseFromIPPort(addr_.data());
+    struct sockaddr_in addr = sock::ParseFromIPPort(addr_.data());
 
-    int ret = ::bind(fd_, sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
-
+    int ret = ::bind(fd_, sock::sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
     int serrno = errno;
-
     if (ret < 0) {
         LOG_FATAL << "bind error :" << strerror(serrno);
     }
 
     ret = ::listen(fd_, SOMAXCONN);
-
     if (ret < 0) {
         serrno = errno;
         LOG_FATAL << "Listen failed " << strerror(serrno);
@@ -50,18 +46,14 @@ void Listener::Listen() {
 
 void Listener::HandleAccept(Timestamp ts) {
     LOG_INFO << __FUNCTION__ << " New connection";
-
     struct sockaddr_storage ss;
     socklen_t addrlen = sizeof(ss);
     int nfd = -1;
-
     if ((nfd = ::accept(fd_, (struct sockaddr*)&ss, &addrlen)) == -1) {
         int serrno = errno;
-
         if (serrno != EAGAIN && serrno != EINTR) {
-            LOG_WARN << __FUNCTION__ << "bad accept " << strerror(serrno);
+            LOG_WARN << __FUNCTION__ << " bad accept " << strerror(serrno);
         }
-
         return;
     }
 
@@ -71,11 +63,9 @@ void Listener::HandleAccept(Timestamp ts) {
         return;
     }
 
-    int on = 1;
-    ::setsockopt(nfd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
+    sock::SetKeepAlive(nfd);
 
-    std::string raddr = ToIPPort(&ss);
-
+    std::string raddr = sock::ToIPPort(&ss);
     if (raddr.empty()) {
         EVUTIL_CLOSESOCKET(nfd);
         return;
