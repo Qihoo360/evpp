@@ -216,6 +216,7 @@ EventLoop* HTTPServer::GetNextLoop(EventLoop* default_loop, const ContextPtr& ct
         return tpool_->GetNextLoop();
     }
 
+#if LIBEVENT_VERSION_NUMBER >= 0x02010500
     const sockaddr*  sa = evhttp_connection_get_addr(ctx->req->evcon);
     if (sa) {
         const sockaddr_in* r = sock::sockaddr_in_cast(sa);
@@ -225,6 +226,10 @@ EventLoop* HTTPServer::GetNextLoop(EventLoop* default_loop, const ContextPtr& ct
         uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
         return tpool_->GetNextLoopWithHash(hash);
     }
+#else
+    uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
+    return tpool_->GetNextLoopWithHash(hash);
+#endif
 }
 
 Service* HTTPServer::service(int index) const {
