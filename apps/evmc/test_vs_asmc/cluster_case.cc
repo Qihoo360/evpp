@@ -54,6 +54,7 @@ void ClusterCase::RunTask(const int packets_num_per_cycle) {
 	}
 	
 	std::ostringstream os;
+	std::string prefix_key;
 	for (int j = 0; j < packets_num_per_cycle; ++j) {
 		switch (FLAGS_test_type) {
 			case 0:
@@ -96,17 +97,18 @@ void ClusterCase::RunTask(const int packets_num_per_cycle) {
 			case -1:
 				k = index_;
 				keys.clear();
-				MakeData(key, index_++, FLAGS_key_size);
-				ClusterSet(key, key);
-				ClusterGet(key);
+				MakeData(prefix_key, index_++, FLAGS_key_size);
+				//ClusterGet(key);
 				for (int num = 0; num < FLAGS_multiget_nums; ++num) {
 					MakeData(key, k++, FLAGS_key_size);
+					ClusterSet(key, key);
 					keys.push_back(key);
 				}
-				ClusterMultiGet(keys);
+				//index_ = k;
+				//ClusterMultiGet(keys);
 				ClusterPrefixGet(key);
 				ClusterPrefixMultiGet(keys);
-				ClusterRemove(key);
+				//ClusterRemove(key);
 				break;
 			}
 
@@ -184,7 +186,9 @@ void ClusterCase::ClusterSetCallback(Timer t, const std::string& key, int code) 
 		IncrCompletedNums(); 
 		return;
 	}
-    cost_list_.push_back(t.Elapsedus());
+	if (FLAGS_test_type != -1) {
+		cost_list_.push_back(t.Elapsedus());
+	}
 	IncrCompletedNums(); 
 	return;
 }
@@ -201,7 +205,9 @@ void ClusterCase::ClusterGet(const std::string& key) {
 
 void ClusterCase::ClusterGetCallback(Timer t, const std::string& key, const evmc::GetResult& rt) {
 	t.End();
-    cost_list_.push_back(t.Elapsedus());
+	if (FLAGS_test_type != -1) {
+		cost_list_.push_back(t.Elapsedus());
+	}
 	if (0 != rt.code || 0 != key.compare(rt.value)) {
 		error_nums_++;
 		LOG(WARNING) << "Get ret error, retcode=" << rt.code << ",key=" << key << ",value=" << rt.value;
@@ -237,7 +243,9 @@ void ClusterCase::ClusterMultiGetCallback(Timer t, const  evmc::MultiGetResult &
 			LOG(INFO) << "MultiGet ret success, rtcode=" << rt.code << " key=" << it->first << ",value=" << rt.value;
 		}
 	}
-    cost_list_.push_back(t.Elapsedus());
+	if (FLAGS_test_type != -1) {
+		cost_list_.push_back(t.Elapsedus());
+	}
 	IncrCompletedNums();
 }
 
@@ -257,7 +265,9 @@ void ClusterCase::ClusterRemoveCallback(Timer t, const std::string& key, int cod
 		IncrCompletedNums(); 
 		return;
 	}
-    cost_list_.push_back(t.Elapsedus());
+	if (FLAGS_test_type != -1) {
+		cost_list_.push_back(t.Elapsedus());
+	}
 	IncrCompletedNums();
 }
 
@@ -273,7 +283,9 @@ void ClusterCase::ClusterPrefixGet(const std::string& key) {
 
 void ClusterCase::ClusterPrefixGetCallback(Timer t, const std::string& key, const evmc::PrefixGetResultPtr rt) {
 	t.End();
-    cost_list_.push_back(t.Elapsedus());
+	if (FLAGS_test_type != -1) {
+		cost_list_.push_back(t.Elapsedus());
+	}
 	//LOG_INFO << "OnPrefixGet success key=" << key;
 	if (0 != rt->code) {
 		LOG(WARNING) << "PrefixGet error key=" << key << " ret, retcode=" << rt->code;
@@ -285,7 +297,7 @@ void ClusterCase::ClusterPrefixGetCallback(Timer t, const std::string& key, cons
 				LOG(WARNING) << "PrefixGet error key=" << key << " , key=" << it->first << " value=" << it->second;
 			} else {
 				total_ += 1;
-				//LOG_INFO << "PrefixGet success key=" << key << " , key=" << it->first << " value=" << it->second;
+				LOG_INFO << "PrefixGet success key=" << key << " , key=" << it->first << " value=" << it->second;
 			}
 		}
 	}
@@ -303,7 +315,9 @@ void ClusterCase::ClusterPrefixMultiGet(const std::vector<std::string>& keys) {
 
 void ClusterCase::ClusterPrefixMultiGetCallback(Timer t, const evmc::PrefixMultiGetResultPtr m) {
 	t.End();
-    cost_list_.push_back(t.Elapsedus());
+	if (FLAGS_test_type != -1) {
+		cost_list_.push_back(t.Elapsedus());
+	}
 	//LOG_INFO << "time key=" << t.Elapsedus();
 	if (m->code != 0) {
 		LOG(WARNING) << "PrefixMultiGet error, retcode =" << m->code;
@@ -317,7 +331,7 @@ void ClusterCase::ClusterPrefixMultiGetCallback(Timer t, const evmc::PrefixMulti
 					LOG(WARNING) << "PrefixMultiGet error key=" << it->first << " , key=" << iter->first << " value=" << iter->second;
 				} else {
 					total_ += 1;
-			//		LOG_INFO << "PrefixMultiGet success key=" << it->first << " time=" << t.Elapsedus() << " , key=" << iter->first << " value=" << iter->second;
+					LOG_INFO << "PrefixMultiGet success key=" << it->first << " time=" << t.Elapsedus() << " , key=" << iter->first << " value=" << iter->second;
 				}
 			}
 		}

@@ -104,11 +104,6 @@ public:
 		auto& res_result_map = res->get_result_map_;
         LOG_DEBUG << "PrefixMultiGetCollector keysize=" << res_result_map.size();
 		for (auto it = res_result_map.begin(); it != res_result_map.end(); ++it) {
-#ifdef DEBUG
-			if (collect_result_map.find(it) != collect_result_map.end()) {
-				LOG_WARNING << "one key maybe map two vbucket";
-			}
-#endif
 			collect_result_map.insert(std::make_pair(it->first, it->second));
 		}
         LOG_DEBUG << "PrefixMultiGetCollector count=" << collect_counter_;

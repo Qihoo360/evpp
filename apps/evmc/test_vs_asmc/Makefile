@@ -13,11 +13,10 @@ CURRENT_DIR= $(shell pwd)
 ROOT_DIR=$(shell cd ./../../.. && pwd)
 PREFIX=$(CURRENT_DIR)/../install
 
-CPPFLAGS= -g -c -fPIC \
+CPPFLAGS= -c -fPIC -O3 \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
-		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 \
-		  -I ../include\
+		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 -DGOOGLE_STRIP_LOG=1  -I ../include \
 		  -I .. \
 		  -I ../.. \
 		  -I $(ROOT_DIR) \

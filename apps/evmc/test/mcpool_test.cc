@@ -126,7 +126,7 @@ int main() {
   int count = 0;
   for(size_t i = 0; i < 1/*MAX_KEY*/; ++i) {
 	  mget_keys.clear();
-	  for (size_t j = 0; j < 1; j++) {
+	  for (size_t j = 1; j < 2; j++) {
 		  ss.str("");
 		  ss << j;
 		  mget_keys.push_back(ss.str());
