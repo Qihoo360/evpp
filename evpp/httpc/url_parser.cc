@@ -27,7 +27,6 @@ int URLParser::parse(const string& url_s) {
 
     static const string prot_end("://");
     it = search(url_s.begin(), url_s.end(), prot_end.begin(), prot_end.end());
-
     if (it != url_s.end()) {
         schema.reserve(distance(url_s.begin(), it));
         transform(url_s.begin(), it, back_inserter(schema), ptr_fun<int, int>(tolower)); // protocol is icase

@@ -1,6 +1,7 @@
 #include "vbucket_config.h"
 
 #include <map>
+#include <cassert>
 
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/document.h>
@@ -9,12 +10,20 @@
 
 #include <libhashkit/hashkit.h>
 
+#include "random.h"
 #include "evpp/exp.h"
 
 
 namespace evmc {
 
 const uint16_t BAD_SERVER_ID = 65535;
+
+VbucketConfig::VbucketConfig() : rand_(new Random(time(NULL))) {
+}
+
+VbucketConfig::~VbucketConfig() {
+    delete rand_;
+}
 
 enum {
     INIT_WEIGHT = 1000,
@@ -37,7 +46,6 @@ uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const
 
     const std::vector<int>& server_ids = vbucket_map_[vb];
 
-    // int server_id = ids[rand() % vbucket_map_[vb].size()];
     uint16_t server_id = BAD_SERVER_ID;
     {
         // 按健康权重选定server id
@@ -55,8 +63,8 @@ uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const
         }
 
         if (total_weight > 0) {
-            server_id = weighted_items.upper_bound(rand() % total_weight)->second;
-            //LOG_DEBUG << "SelectServerId selected_server_id=" << server_id << " last_id=" << last_id;
+            server_id = weighted_items.upper_bound(rand_->Next() % total_weight)->second;
+            LOG_DEBUG << "SelectServerId selected_server_id=" << server_id << " last_id=" << last_id;
         } else {
             return BAD_SERVER_ID;
         }
