@@ -73,7 +73,7 @@ void DNSResolver::Cancel() {
 void DNSResolver::AsyncWait() {
     LOG_INFO << "DNSResolver::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this;
     timer_.reset(new TimerEventWatcher(loop_, std::bind(&DNSResolver::OnTimeout, this), timeout_));
-    timer_->set_cancel_callback(std::bind(&DNSResolver::OnCanceled, this));
+    timer_->SeCancelCallback(std::bind(&DNSResolver::OnCanceled, this));
     timer_->Init();
     timer_->AsyncWait();
 }
@@ -169,7 +169,7 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         LOG_TRACE << host_ << " resolved a ip=" << inet_ntoa(a->sin_addr);
     }
     evutil_freeaddrinfo(addr);
-    timer_->set_cancel_callback(TimerEventWatcher::Handler());
+    timer_->SeCancelCallback(TimerEventWatcher::Handler());
     timer_->Cancel();
 
     LOG_INFO << "delete dns ctx";
