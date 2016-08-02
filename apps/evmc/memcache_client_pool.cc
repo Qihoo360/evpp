@@ -25,7 +25,7 @@ void MemcacheClientPool::OnReloadConfTimer() {
 
 bool MemcacheClientPool::DoReloadConf() {
     // atomic set
-    VbucketConfigPtr vbconf = std::make_shared<VbucketConfig>();
+    MultiModeVbucketConfigPtr vbconf = std::make_shared<MultiModeVbucketConfig>();
     bool success = vbconf->Load(vbucket_conf_file_.c_str());
 
     if (success) {
@@ -43,7 +43,7 @@ bool MemcacheClientPool::DoReloadConf() {
 }
 
 
-VbucketConfigPtr MemcacheClientPool::vbucket_config() {
+MultiModeVbucketConfigPtr MemcacheClientPool::vbucket_config() {
     // return std::atomic_load(&vbucket_config_);
 
     std::lock_guard<std::mutex> lock(vbucket_config_mutex_);
@@ -139,7 +139,7 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
     uint32_t thread_hash = next_thread_++;
     std::map<uint16_t, std::vector<std::string> > vbucket_keys;
 
-    VbucketConfigPtr vbconf = vbucket_config();
+    MultiModeVbucketConfigPtr vbconf = vbucket_config();
 	uint16_t vbucket = 0;
     for (size_t i = 0; i < keys.size(); ++i) {
         vbucket = vbconf->GetVbucketByKey(keys[i].c_str(), keys[i].size());
@@ -163,7 +163,7 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
     uint32_t thread_hash = next_thread_++;
     std::map<uint16_t, std::vector<std::string> > vbucket_keys;
 
-    VbucketConfigPtr vbconf = vbucket_config();
+    MultiModeVbucketConfigPtr vbconf = vbucket_config();
 	uint16_t vbucket = 0;
 	//uint16_t server_id = 0;
     for (size_t i = 0; i < keys.size(); ++i) {
@@ -231,7 +231,7 @@ void MemcacheClientPool::LaunchCommand(CommandPtr command) {
 
 void MemcacheClientPool::DoLaunchCommand(CommandPtr command) {
     uint16_t vbucket = command->vbucket_id();
-    VbucketConfigPtr vbconf = vbucket_config();
+    MultiModeVbucketConfigPtr vbconf = vbucket_config();
     uint16_t server_id = vbconf->SelectServerId(vbucket, command->server_id());
 
     if (server_id == BAD_SERVER_ID) {

@@ -12,6 +12,7 @@
 
 #include "random.h"
 #include "evpp/exp.h"
+#include "extract_vbucket_conf.h"
 
 
 namespace evmc {
@@ -29,6 +30,8 @@ enum {
     INIT_WEIGHT = 1000,
     MAX_WEIGHT = 1000000,
     MIN_WEIGHT = 100,
+	CLUSTER_MODE = 1,
+	STAND_ALONE_MODE = 2,
 };
 
 void VbucketConfig::OnVbucketResult(uint16_t vbucket, bool success) {
@@ -106,20 +109,20 @@ uint16_t VbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
     return digest % vbucket_map_.size();
 }
 
-bool VbucketConfig::Load(const char* json_file) {
+bool VbucketConfig::Load(const char* json_info) {
     rapidjson::Document d;
 
     // read vbucket config file and parse it with rapidjson
-    FILE* fp = fopen(json_file, "r");
+    /*FILE* fp = fopen(json_file, "r");
 
     if (!fp) {
         return false;
     }
 
     char buf[2048];
-    rapidjson::FileReadStream is(fp, buf, sizeof(buf));
-    d.ParseStream(is);
-    fclose(fp);
+    rapidjson::FileReadStream is(fp, buf, sizeof(buf));*/
+    d.Parse(json_info);
+    //fclose(fp);
 
     replicas_ = d["numReplicas"].GetInt();
     algorithm_ = d["hashAlgorithm"].GetString();
@@ -148,4 +151,78 @@ bool VbucketConfig::Load(const char* json_file) {
     return true;
 }
 
+bool MultiModeVbucketConfig::IsStandAlone(const char* serv) {
+	bool has_semicolon = false;
+	int i = 0;
+	char c = *(serv + i);
+	while (c != '\0') {
+		if (c == ':') {
+			has_semicolon = true; 
+		}
+		if (c == '/') {
+			break;
+		}
+		++i;
+		c = *(serv + i);
+	}
+	if (c == '\0' && has_semicolon) {
+		return true;
+	}
+	return false;
 }
+
+bool MultiModeVbucketConfig::Load(const char* json_file) {
+    if (IsStandAlone(json_file)) {
+		mode_ = STAND_ALONE_MODE;
+		single_server_.push_back(json_file);
+		return true;
+	}
+	else { 
+		mode_ = CLUSTER_MODE;
+		std::string context;
+		int ret = GetVbucketConf::GetVbucketConfContext(json_file, context);
+		if (ret == 0) {
+			return VbucketConfig::Load(context.c_str());
+		}
+		return false;
+	}
+}
+
+
+uint16_t MultiModeVbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
+	if (mode_ == STAND_ALONE_MODE) {
+		return 0;
+	} else {
+		return VbucketConfig::GetVbucketByKey(key, nkey);
+	}
+}
+
+
+uint16_t MultiModeVbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const {
+	if (mode_ == STAND_ALONE_MODE) {
+		return 0;
+	} else {
+		return VbucketConfig::SelectServerId(vbucket, last_id);
+	}
+}
+
+
+std::string MultiModeVbucketConfig::GetServerAddrById(uint16_t server_id) const {
+	if (mode_ == STAND_ALONE_MODE) {
+		assert(single_server_.size() == 1);
+		return single_server_[0];
+	} else {
+		return VbucketConfig::GetServerAddrById(server_id);
+	}
+}
+
+const std::vector<std::string>& MultiModeVbucketConfig::server_list() const {
+	if (mode_ == STAND_ALONE_MODE) {
+		return single_server_;
+	} else {
+		return VbucketConfig::server_list();
+	}
+}
+
+}
+
