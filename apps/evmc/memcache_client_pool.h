@@ -74,7 +74,7 @@ public:
         : caller_loop_(caller_loop), collect_counter_(count), callback_(cb) {}
     void Collect(const MultiGetResult& res) {
 		if (res.code == 0) {
-			collect_result_.code = res.code; //当有一个成功，则整个赋值为0。
+			collect_result_.code = res.code; //TODO 0 是什么含义？
 		}
 
         for (auto it = res.get_result_map_.begin(); it != res.get_result_map_.end(); ++it) {
@@ -106,8 +106,8 @@ public:
         : caller_loop_(caller_loop), collect_counter_(count)
 		  , collect_result_(new PrefixMultiGetResult()), callback_(cb) {}
     void Collect(const PrefixMultiGetResultPtr res) {
-		if (res->code == 0) { //只要其中一个返回成功，则code 指定为0。
-			collect_result_->code = 0;
+		if (res->code == 0) {
+			collect_result_->code = 0; //TODO 0 是什么含义？
 		}
 		auto& collect_result_map = collect_result_->get_result_map_;
 		auto& res_result_map = res->get_result_map_;
