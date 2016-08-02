@@ -10,8 +10,17 @@ typedef std::map<std::string, MemcacheClientPtr> MemcClientMap;
 class MemcacheClientPool {
 public:
     friend MemcacheClient;
-    MemcacheClientPool(const char* vbucket_conf, int concurrency, int timeout_ms)
-        : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, concurrency)
+
+    // @brief 
+    // @param[in] vbucket_conf - 有三种格式
+    //      1. memcached单实例模式，传入的参数应该 "host:port" 
+    //      2. memcached集群模式，传输的参数可以是vbucket conf url ： "http://host:port/vbucket_conf"
+    //      3. memcached集群模式，传输的参数可以是vbucket conf 本地文件： "/the/path/to/vbucket_conf"
+    // @param[in] thread_num - 
+    // @param[in] timeout_ms - 
+    // @return  - 
+    MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms)
+        : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
         , timeout_ms_(timeout_ms) {
     }
     virtual ~MemcacheClientPool();
