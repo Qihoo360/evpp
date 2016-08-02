@@ -39,7 +39,7 @@ void InvokeTimer::Cancel() {
 void InvokeTimer::AsyncWait(Duration timeout) {
     LOG_INFO << "InvokeTimer::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count();
     timer_ = new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimeout, this), timeout_);
-    timer_->set_cancel_callback(std::bind(&InvokeTimer::OnCanceled, this));
+    timer_->SeCancelCallback(std::bind(&InvokeTimer::OnCanceled, this));
     timer_->Init();
     timer_->AsyncWait();
 }
