@@ -85,7 +85,7 @@ void PrefixGetCommand::OnPrefixGetCommandDone(const int resp_code, std::string& 
     if (caller_loop()) {
         caller_loop()->RunInLoop(std::bind(mget_callback_, std::move(key_),  mget_result_));
     } else {
-        mget_callback_(key_, std::move(mget_result_));
+        mget_callback_(key_, mget_result_);
     }
 }
 
