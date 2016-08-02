@@ -47,7 +47,7 @@ private:
     void LaunchCommand(CommandPtr command);
     void OnReloadConfTimer();
     bool DoReloadConf();
-    VbucketConfigPtr vbucket_config();
+    MultiModeVbucketConfigPtr vbucket_config();
 
     MemcClientMap* GetMemcClientMap(int hash);
 private:
@@ -62,7 +62,7 @@ private:
     int timeout_ms_;
 
     // std::atomic<VbucketConfigPtr> vbucket_config_;
-    VbucketConfigPtr vbucket_config_;
+    MultiModeVbucketConfigPtr vbucket_config_;
     std::mutex vbucket_config_mutex_; // TODO : use rw mutex
 
     std::atomic_int next_thread_;
