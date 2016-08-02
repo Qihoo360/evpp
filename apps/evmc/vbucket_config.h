@@ -12,7 +12,7 @@ extern const uint16_t BAD_SERVER_ID;
 class VbucketConfig {
 public:
     VbucketConfig();
-    ~VbucketConfig();
+    virtual ~VbucketConfig();
     uint16_t GetVbucketByKey(const char* key, size_t nkey) const;
     uint16_t SelectServerId(uint16_t vbucket, uint16_t last_id) const;
     std::string GetServerAddrById(uint16_t server_id) const;
@@ -34,6 +34,21 @@ private:
 };
 
 typedef std::shared_ptr<VbucketConfig> VbucketConfigPtr;
+
+class MultiModeVbucketConfig : public VbucketConfig {
+	public:
+		uint16_t GetVbucketByKey(const char* key, size_t nkey) const;
+		uint16_t SelectServerId(uint16_t vbucket, uint16_t last_id) const;
+		std::string GetServerAddrById(uint16_t server_id) const;
+		const std::vector<std::string>& server_list() const;
+		bool Load(const char* json_file);
+	private:
+		bool IsStandAlone(const char *serv);
+	private:
+		int mode_;
+		std::vector<std::string> single_server_;
+};
+typedef std::shared_ptr<MultiModeVbucketConfig> MultiModeVbucketConfigPtr;
 
 }
 
