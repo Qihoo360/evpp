@@ -20,20 +20,15 @@ public:
     // @note It MUST be called in the event thread.
     void Cancel();
 
-public:
-    // @brief : set_cancel_callback
-    // @param[IN] const Handler & cb - The callback which will be called when this event is canceled.
+    // @brief :
+    // @param[IN] const Handler& cb - The callback which will be called when this event is canceled.
     // @return void -
-    void set_cancel_callback(const Handler& cb);
+    void SeCancelCallback(const Handler& cb);
 
 protected:
     // @note It MUST be called in the event thread.
     // @param timeout the maximum amount of time to wait for the event, or 0 to wait forever
     bool Watch(Duration timeout);
-
-    void set_evbase(struct event_base* evbase) {
-        evbase_ = evbase;
-    }
 
 protected:
     EventWatcher(struct event_base* evbase, const Handler& handler);
