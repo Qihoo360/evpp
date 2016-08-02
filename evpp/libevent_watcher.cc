@@ -80,7 +80,7 @@ void EventWatcher::Cancel() {
     }
 }
 
-void EventWatcher::set_cancel_callback(const Handler& cb) {
+void EventWatcher::SeCancelCallback(const Handler& cb) {
     cancel_callback_ = cb;
 }
 
