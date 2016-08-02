@@ -11,7 +11,9 @@ MemcacheClientPool::~MemcacheClientPool() {
 }
 
 void MemcacheClientPool::Stop(bool wait_thread_exit) {
-    loop_.Stop();
+	if (loop_.running()) {
+		loop_.Stop();
+	}
     loop_pool_.Stop(wait_thread_exit);
 }
 
