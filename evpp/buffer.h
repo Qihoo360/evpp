@@ -132,7 +132,7 @@ public:
     }
 
     void AppendInt32(int32_t x) {
-        int32_t be32 = ::htonl(x);
+        int32_t be32 = htonl(x);
         Write(&be32, sizeof be32);
     }
 
@@ -152,7 +152,7 @@ public:
     }
 
     void PrependInt32(int32_t x) {
-        int32_t be32 = ::htonl(x);
+        int32_t be32 = htonl(x);
         Prepend(&be32, sizeof be32);
     }
 
@@ -294,7 +294,7 @@ public:
         assert(length() >= sizeof(int32_t));
         int32_t be32 = 0;
         ::memcpy(&be32, data(), sizeof be32);
-        return ::ntohl(be32);
+        return ntohl(be32);
     }
 
     int16_t PeekInt16() const {
