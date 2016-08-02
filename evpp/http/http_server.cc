@@ -203,6 +203,7 @@ void HTTPServer::Dispatch(EventLoop* listening_loop,
         user_cb(context, response_cb);
     };
 
+    ctx->dispatched_loop = loop;
     loop->RunInLoop(std::bind(f, ctx, response_callback, user_callback));
 }
 

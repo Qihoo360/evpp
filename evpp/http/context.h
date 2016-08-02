@@ -8,6 +8,10 @@
 struct evhttp_request;
 
 namespace evpp {
+class EventLoop;
+}
+
+namespace evpp {
 namespace http {
 class Service;
 struct EVPP_EXPORT Context {
@@ -40,6 +44,7 @@ struct EVPP_EXPORT Context {
     Slice body;
 
     struct evhttp_request* req;
+    EventLoop* dispatched_loop;
 };
 
 typedef std::shared_ptr<Context> ContextPtr;
