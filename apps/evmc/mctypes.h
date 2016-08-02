@@ -49,8 +49,8 @@ struct MultiGetResult {
 		get_result_map_ = std::move(result.get_result_map_);
 		return *this;
 	}
-
-    int code;
+    
+    int code; // TODO 使用 enum 变量
     std::map<std::string, GetResult> get_result_map_;
 };
 
