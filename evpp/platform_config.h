@@ -118,9 +118,13 @@
 
 // get rid of Windows/Linux inconsistencies
 #ifdef H_OS_WINDOWS
-# define PRIu64     "I64u"
+#   ifndef PRIu64
+#       define PRIu64     "I64u"
+#   endif
 #else
-# define PRIu64     "lu"
+#   ifndef PRIu64
+#       define PRIu64     "lu"
+#   endif
 #endif
 
 // from google3/base/basictypes.h
