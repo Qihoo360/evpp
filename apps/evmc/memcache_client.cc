@@ -26,7 +26,7 @@ void MemcacheClient::PushRunningCommand(CommandPtr cmd) {
     if (!timeout_.IsZero()) {
         if (cmd_timer_) {
             cmd_timer_->Cancel();
-            LOG_DEBUG << "InvokeTimer canceled for " << " " << conn()->remote_addr();
+            //LOG_DEBUG << "InvokeTimer canceled for " << " " << conn()->remote_addr();
         }
 
         evpp::InvokeTimerPtr timer = exec_loop_->RunAfter(timeout_,
