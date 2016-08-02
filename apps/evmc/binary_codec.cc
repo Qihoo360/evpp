@@ -42,10 +42,10 @@ void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& r
 	const uint32_t size = resp.response.bodylen - resp.response.keylen - resp.response.extlen; 
 	const uint32_t buf_size = buf->size();
 	int ret = resp.response.status;
-	union {
-		uint32_t len;
-		char buf[4];
-	} x;
+// 	union {
+// 		uint32_t len;
+// 		char buf[4];
+// 	} x;
 	LOG_DEBUG << "Begin to parse key=" << key;
 	while(pos < size) {
 		if (pos >= buf_size || pos + 4 >= buf_size) {
