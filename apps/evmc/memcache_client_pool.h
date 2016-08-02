@@ -10,8 +10,17 @@ typedef std::map<std::string, MemcacheClientPtr> MemcClientMap;
 class MemcacheClientPool {
 public:
     friend MemcacheClient;
-    MemcacheClientPool(const char* vbucket_conf, int concurrency, int timeout_ms)
-        : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, concurrency)
+
+    // @brief 
+    // @param[in] vbucket_conf - 有三种格式
+    //      1. memcached单实例模式，传入的参数应该 "host:port" 
+    //      2. memcached集群模式，传输的参数可以是vbucket conf url ： "http://host:port/vbucket_conf"
+    //      3. memcached集群模式，传输的参数可以是vbucket conf 本地文件： "/the/path/to/vbucket_conf"
+    // @param[in] thread_num - 
+    // @param[in] timeout_ms - 
+    // @return  - 
+    MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms)
+        : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
         , timeout_ms_(timeout_ms) {
     }
     virtual ~MemcacheClientPool();
@@ -65,7 +74,7 @@ public:
         : caller_loop_(caller_loop), collect_counter_(count), callback_(cb) {}
     void Collect(const MultiGetResult& res) {
 		if (res.code == 0) {
-			collect_result_.code = res.code; //当有一个成功，则整个赋值为0。
+			collect_result_.code = res.code; //TODO 0 是什么含义？
 		}
 
         for (auto it = res.get_result_map_.begin(); it != res.get_result_map_.end(); ++it) {
@@ -97,8 +106,8 @@ public:
         : caller_loop_(caller_loop), collect_counter_(count)
 		  , collect_result_(new PrefixMultiGetResult()), callback_(cb) {}
     void Collect(const PrefixMultiGetResultPtr res) {
-		if (res->code == 0) { //只要其中一个返回成功，则code 指定为0。
-			collect_result_->code = 0;
+		if (res->code == 0) {
+			collect_result_->code = 0; //TODO 0 是什么含义？
 		}
 		auto& collect_result_map = collect_result_->get_result_map_;
 		auto& res_result_map = res->get_result_map_;
