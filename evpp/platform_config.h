@@ -74,18 +74,34 @@
 #endif
 
 //#define H_LINK_FILE_DEBUG_1( filename )   __pragma ( comment( lib , filename##"_d"##".lib" ))
-#define H_LINK_FILE_DEBUG_1( filename ) __pragma (comment( lib , filename##".lib" ))
-#define H_LINK_FILE_DEBUG_0( filename ) __pragma (comment( lib , filename##".lib" ))
+#ifndef H_LINK_FILE_DEBUG_1
+#   define H_LINK_FILE_DEBUG_1( filename ) __pragma (comment( lib , filename##".lib" ))
+#endif
+#ifndef H_LINK_FILE_DEBUG_0
+#   define H_LINK_FILE_DEBUG_0( filename ) __pragma (comment( lib , filename##".lib" ))
+#endif
 
-#define H_LINK_FILE_DEBUG_P(filename,y)   H_LINK_FILE_DEBUG_##y(filename)
+#ifndef H_LINK_FILE_DEBUG_P
+#   define H_LINK_FILE_DEBUG_P(filename,y)   H_LINK_FILE_DEBUG_##y(filename)
+#endif
 
-#define H_LINK_FILE_0(filename,y)
-#define H_LINK_FILE_1(filename,y)         H_LINK_FILE_DEBUG_P(filename,y)
+#ifndef H_LINK_FILE_0
+#   define H_LINK_FILE_0(filename,y)
+#endif
+#ifndef H_LINK_FILE_1
+#   define H_LINK_FILE_1(filename,y)         H_LINK_FILE_DEBUG_P(filename,y)
+#endif
 
-#define H_LINK_FILE_PP( filename , sys )  H_LINK_FILE_##sys( filename , H_LINK_FILE_DEBUG_FLAG )
-#define H_LINK_FILE_P( filename , sys )   H_LINK_FILE_PP( filename , sys )
+#ifndef H_LINK_FILE_PP
+#   define H_LINK_FILE_PP( filename , sys )  H_LINK_FILE_##sys( filename , H_LINK_FILE_DEBUG_FLAG )
+#endif
+#ifndef H_LINK_FILE_P
+#   define H_LINK_FILE_P( filename , sys )   H_LINK_FILE_PP( filename , sys )
+#endif
 
-#define H_LINK_LIB( filename )           H_LINK_FILE_P( filename , H_LINK_OS_FLAG )
+#ifndef H_LINK_LIB
+#   define H_LINK_LIB( filename )           H_LINK_FILE_P( filename , H_LINK_OS_FLAG )
+#endif 
 
 #ifdef H_OS_WINDOWS
 #define usleep(us) Sleep((us)/1000);
