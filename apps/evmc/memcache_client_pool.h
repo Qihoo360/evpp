@@ -52,7 +52,6 @@ private:
 private:
     void DoLaunchCommand(CommandPtr command);
 
-    thread_local static std::map<std::string, MemcacheClientPtr> memc_clients_;
     std::vector<MemcClientMap> memc_client_map_;
 
     std::string vbucket_conf_file_;
