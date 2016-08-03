@@ -17,12 +17,6 @@ void MemcacheClientPool::Stop(bool wait_thread_exit) {
     loop_pool_.Stop(wait_thread_exit);
 }
 
-static evpp::Duration reload_delay(300.0);
-void MemcacheClientPool::OnReloadConfTimer() {
-    DoReloadConf();
-    loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
-}
-
 bool MemcacheClientPool::DoReloadConf() {
     // atomic set
     MultiModeVbucketConfigPtr vbconf = std::make_shared<MultiModeVbucketConfig>();
@@ -61,7 +55,8 @@ bool MemcacheClientPool::Start() {
         return false;
     }
 
-    loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::OnReloadConfTimer, this));
+    static evpp::Duration reload_delay(300.0);
+    loop_pool_.GetNextLoop()->RunAfter(reload_delay, std::bind(&MemcacheClientPool::DoReloadConf, this));
 
     auto server_list = vbucket_config_->server_list();
 
