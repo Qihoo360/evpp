@@ -5,8 +5,6 @@
 
 namespace evmc {
 
-thread_local std::map<std::string, MemcacheClientPtr> MemcacheClientPool::memc_clients_;
-
 MemcacheClientPool::~MemcacheClientPool() {
 }
 
