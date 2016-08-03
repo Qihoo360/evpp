@@ -45,7 +45,6 @@ private:
 private:
     void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClientPtr memc_client);
     void LaunchCommand(CommandPtr command);
-    void OnReloadConfTimer();
     bool DoReloadConf();
     MultiModeVbucketConfigPtr vbucket_config();
 
