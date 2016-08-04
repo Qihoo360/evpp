@@ -124,6 +124,37 @@ void MemcacheClientPool::PrefixGet(evpp::EventLoop* caller_loop, const std::stri
 }
 
 
+class MultiGetCollector {
+public:
+    MultiGetCollector(evpp::EventLoop* caller_loop, int count, const MultiGetCallback& cb)
+        : caller_loop_(caller_loop), collect_counter_(count), callback_(cb) {}
+    void Collect(const MultiGetResult& res) {
+		if (res.code == 0) {
+			collect_result_.code = res.code; //TODO 0 是什么含义？
+		}
+
+        for (auto it = res.get_result_map_.begin(); it != res.get_result_map_.end(); ++it) {
+            collect_result_.get_result_map_.insert(*it);
+        }
+
+        LOG_DEBUG << "MultiGetCollector count=" << collect_counter_;
+
+        if (--collect_counter_ <= 0) {
+            if (caller_loop_) {
+                caller_loop_->RunInLoop(std::bind(callback_, collect_result_));
+            } else {
+                callback_(collect_result_);
+            }
+        }
+    }
+private:
+    evpp::EventLoop* caller_loop_;
+    int collect_counter_;
+    MultiGetResult collect_result_;
+    MultiGetCallback callback_;
+};
+typedef std::shared_ptr<MultiGetCollector> MultiGetCollectorPtr;
+
 void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback) {
     if (keys.size() <= 0) {
         return;
@@ -144,6 +175,58 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
     for (auto it = vbucket_keys.begin(); it != vbucket_keys.end(); ++it) {
         CommandPtr command(new MultiGetCommand(caller_loop, it->first, thread_hash, it->second,
                                                std::bind(&MultiGetCollector::Collect, collector, std::placeholders::_1)));
+        caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
+    }
+}
+
+class MultiGetCollector2 {
+public:
+    MultiGetCollector2(evpp::EventLoop* caller_loop, int count, std::map<std::string, std::string>* kvs, const MultiGetCallback2& cb)
+        : caller_loop_(caller_loop), collect_counter_(count), kvs_(kvs), callback_(cb) {}
+    void Collect(const MultiGetResult& res) {
+        for (auto it = res.get_result_map_.begin(); it != res.get_result_map_.end(); ++it) {
+            if (it->second.code == 0) {
+                kvs_->insert(std::make_pair(it->first, it->second.value));
+            }
+        }
+
+        LOG_DEBUG << "MultiGetCollector2 count=" << collect_counter_;
+
+        if (--collect_counter_ <= 0) {
+            if (caller_loop_) {
+                caller_loop_->RunInLoop(std::bind(callback_, *kvs_));
+            } else {
+                callback_(*kvs_);
+            }
+        }
+    }
+private:
+    evpp::EventLoop* caller_loop_;
+    int collect_counter_;
+    std::map<std::string, std::string>* kvs_;
+    MultiGetCallback2 callback_;
+};
+typedef std::shared_ptr<MultiGetCollector2> MultiGetCollector2Ptr;
+void MemcacheClientPool::MultiGet2(evpp::EventLoop* caller_loop, std::map<std::string, std::string>* kvs, MultiGetCallback2 callback) {
+    if (kvs->size() <= 0) {
+        return;
+    }
+
+    uint32_t thread_hash = next_thread_++;
+    std::map<uint16_t, std::vector<std::string> > vbucket_keys;
+
+    MultiModeVbucketConfigPtr vbconf = vbucket_config();
+	uint16_t vbucket = 0;
+    for (auto kvit = kvs->begin(); kvit != kvs->end(); ++kvit) {
+        vbucket = vbconf->GetVbucketByKey(kvit->first.c_str(), kvit->first.size());
+        vbucket_keys[vbucket].push_back(kvit->first);
+    }
+
+    MultiGetCollector2Ptr collector(new MultiGetCollector2(caller_loop, vbucket_keys.size(), kvs, callback));
+
+    for (auto it = vbucket_keys.begin(); it != vbucket_keys.end(); ++it) {
+        CommandPtr command(new MultiGetCommand(caller_loop, it->first, thread_hash, it->second,
+                                               std::bind(&MultiGetCollector2::Collect, collector, std::placeholders::_1)));
         caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
     }
 }
