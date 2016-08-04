@@ -35,7 +35,10 @@ public:
     void Remove(evpp::EventLoop* caller_loop, const std::string& key, RemoveCallback callback);
     void Get(evpp::EventLoop* caller_loop, const std::string& key, GetCallback callback);
     void PrefixGet(evpp::EventLoop* caller_loop, const std::string& key, PrefixGetCallback callback);
+
     void MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback);
+    void MultiGet2(evpp::EventLoop* caller_loop, std::map<std::string, std::string>* kvs, MultiGetCallback2 callback);
+
     void PrefixMultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, PrefixMultiGetCallback callback);
 private:
     // noncopyable
@@ -65,38 +68,6 @@ private:
 
     std::atomic_int next_thread_;
 };
-
-class MultiGetCollector {
-public:
-    MultiGetCollector(evpp::EventLoop* caller_loop, int count, const MultiGetCallback& cb)
-        : caller_loop_(caller_loop), collect_counter_(count), callback_(cb) {}
-    void Collect(const MultiGetResult& res) {
-		if (res.code == 0) {
-			collect_result_.code = res.code; //TODO 0 是什么含义？
-		}
-
-        for (auto it = res.get_result_map_.begin(); it != res.get_result_map_.end(); ++it) {
-            collect_result_.get_result_map_.insert(*it);
-        }
-
-        LOG_DEBUG << "MultiGetCollector count=" << collect_counter_;
-
-        if (--collect_counter_ <= 0) {
-            if (caller_loop_) {
-                caller_loop_->RunInLoop(std::bind(callback_, collect_result_));
-            } else {
-                callback_(collect_result_);
-            }
-        }
-    }
-private:
-    evpp::EventLoop* caller_loop_;
-    int collect_counter_;
-    MultiGetResult collect_result_;
-    MultiGetCallback callback_;
-};
-typedef std::shared_ptr<MultiGetCollector> MultiGetCollectorPtr;
-
 
 class PrefixMultiGetCollector {
 public:
