@@ -181,13 +181,11 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
 
 class MultiGetCollector2 {
 public:
-    MultiGetCollector2(evpp::EventLoop* caller_loop, int count, std::map<std::string, std::string>* kvs, const MultiGetCallback2& cb)
+    MultiGetCollector2(evpp::EventLoop* caller_loop, int count, std::map<std::string, GetResult>* kvs, const MultiGetCallback2& cb)
         : caller_loop_(caller_loop), collect_counter_(count), kvs_(kvs), callback_(cb) {}
     void Collect(const MultiGetResult& res) {
         for (auto it = res.get_result_map_.begin(); it != res.get_result_map_.end(); ++it) {
-            if (it->second.code == 0) {
-                kvs_->insert(std::make_pair(it->first, it->second.value));
-            }
+          kvs_->insert(*it);
         }
 
         LOG_DEBUG << "MultiGetCollector2 count=" << collect_counter_;
@@ -203,11 +201,11 @@ public:
 private:
     evpp::EventLoop* caller_loop_;
     int collect_counter_;
-    std::map<std::string, std::string>* kvs_;
+    std::map<std::string, GetResult>* kvs_;
     MultiGetCallback2 callback_;
 };
 typedef std::shared_ptr<MultiGetCollector2> MultiGetCollector2Ptr;
-void MemcacheClientPool::MultiGet2(evpp::EventLoop* caller_loop, std::map<std::string, std::string>* kvs, MultiGetCallback2 callback) {
+void MemcacheClientPool::MultiGet2(evpp::EventLoop* caller_loop, std::map<std::string, GetResult>* kvs, MultiGetCallback2 callback) {
     if (kvs->size() <= 0) {
         return;
     }
