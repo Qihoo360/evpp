@@ -5,8 +5,8 @@
 
 namespace evpp {
 namespace http {
-Context::Context(struct evhttp_request* r)
-    : req(r) {
+Context::Context(struct evhttp_request* r, EventLoop* l)
+    : req(r), dispatched_loop(l) {
 }
 
 Context::~Context() {
