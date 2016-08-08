@@ -123,7 +123,6 @@ void MemcacheClientPool::PrefixGet(evpp::EventLoop* caller_loop, const std::stri
     caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
 }
 
-
 class MultiGetCollector {
 public:
     MultiGetCollector(evpp::EventLoop* caller_loop, int count, const MultiGetCallback& cb)
@@ -183,8 +182,8 @@ class MultiGetCollector2 {
 public:
     MultiGetCollector2(evpp::EventLoop* caller_loop, int count, std::map<std::string, GetResult>* kvs, const MultiGetCallback2& cb)
         : caller_loop_(caller_loop), collect_counter_(count), kvs_(kvs), callback_(cb) {}
-    void Collect(const MultiGetResult& res) {
-        for (auto it = res.get_result_map_.begin(); it != res.get_result_map_.end(); ++it) {
+    void Collect(const std::map<std::string, GetResult>& res, int err_code) {
+        for (auto it = res.begin(); it != res.end(); ++it) {
           kvs_->insert(*it);
         }
 
@@ -192,9 +191,9 @@ public:
 
         if (--collect_counter_ <= 0) {
             if (caller_loop_) {
-                caller_loop_->RunInLoop(std::bind(callback_, *kvs_));
+                caller_loop_->RunInLoop(std::bind(callback_, *kvs_, err_code));
             } else {
-                callback_(*kvs_);
+                callback_(*kvs_, err_code);
             }
         }
     }
@@ -205,6 +204,7 @@ private:
     MultiGetCallback2 callback_;
 };
 typedef std::shared_ptr<MultiGetCollector2> MultiGetCollector2Ptr;
+
 void MemcacheClientPool::MultiGet2(evpp::EventLoop* caller_loop, std::map<std::string, GetResult>* kvs, MultiGetCallback2 callback) {
     if (kvs->size() <= 0) {
         return;
@@ -223,8 +223,8 @@ void MemcacheClientPool::MultiGet2(evpp::EventLoop* caller_loop, std::map<std::s
     MultiGetCollector2Ptr collector(new MultiGetCollector2(caller_loop, vbucket_keys.size(), kvs, callback));
 
     for (auto it = vbucket_keys.begin(); it != vbucket_keys.end(); ++it) {
-        CommandPtr command(new MultiGetCommand(caller_loop, it->first, thread_hash, it->second,
-                                               std::bind(&MultiGetCollector2::Collect, collector, std::placeholders::_1)));
+        CommandPtr command(new MultiGetCommand2(caller_loop, it->first, thread_hash, it->second,
+                                               std::bind(&MultiGetCollector2::Collect, collector, std::placeholders::_1, std::placeholders::_2)));
         caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
     }
 }
