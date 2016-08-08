@@ -162,6 +162,50 @@ BufferPtr MultiGetCommand::RequestBuffer() const {
     return buf;
 }
 
+void MultiGetCommand2::OnMultiGetCommandDone(int resp_code, const std::string& key, const std::string& value) {
+    if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
+        mget_result_.insert(std::make_pair(key, GetResult(resp_code, value)));
+    }
+
+    if (caller_loop()) {
+        caller_loop()->RunInLoop(std::bind(mget_callback_, mget_result_, resp_code));
+    } else {
+        mget_callback_(mget_result_, resp_code);
+    }
+}
+
+void MultiGetCommand2::OnMultiGetCommandOneResponse(int resp_code, const std::string& key, const std::string& value) {
+    if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
+        mget_result_.insert(std::make_pair(key, GetResult(resp_code, value)));
+    }
+}
+
+BufferPtr MultiGetCommand2::RequestBuffer() const {
+    BufferPtr buf(new evpp::Buffer(50 * keys_.size())); // 预分配长度大多数时候是足够的
+
+    for (size_t i = 0; i < keys_.size(); ++i) {
+        protocol_binary_request_header req;
+        memset((void*)&req, 0, sizeof(req));
+        req.request.magic    = PROTOCOL_BINARY_REQ;
+
+        if (i < keys_.size() - 1) {
+            req.request.opcode   = PROTOCOL_BINARY_CMD_GETKQ;
+        } else {
+            req.request.opcode   = PROTOCOL_BINARY_CMD_GETK;
+        }
+
+        req.request.keylen = htons(uint16_t(keys_[i].size()));
+        req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
+        req.request.vbucket  = htons(vbucket_id());
+        req.request.opaque   = id();
+        req.request.bodylen  = htonl(keys_[i].size());
+
+        buf->Append((void*)&req, sizeof(req));
+        buf->Append(keys_[i].data(), keys_[i].size());
+    }
+    return buf;
+}
+
 BufferPtr PrefixMultiGetCommand::RequestBuffer() const {
     BufferPtr buf(new evpp::Buffer(50 * keys_.size()));  // 预分配长度多数情况够长
 

@@ -232,6 +232,36 @@ private:
     virtual BufferPtr RequestBuffer() const;
 };
 
+class MultiGetCommand2 : public Command {
+public:
+    MultiGetCommand2(evpp::EventLoop* evloop, uint16_t vbucket, uint32_t th_hash, const std::vector<std::string>& keys, MultiGetCallback2 callback)
+        : Command(evloop, vbucket, th_hash), keys_(keys), mget_callback_(callback) {
+    }
+
+    virtual void OnError(int err_code) {
+        LOG(WARNING) << "MultiGetCommand OnError id=" << id();
+        for (auto it = keys_.begin(); it != keys_.end(); ++it) {
+			if (mget_result_.find(*it) == mget_result_.end()) {
+				mget_result_.insert(std::make_pair(*it, GetResult(err_code, "not enough connections")));
+			}
+		}
+
+        if (caller_loop()) {
+            caller_loop()->RunInLoop(std::bind(mget_callback_, mget_result_, err_code));
+        } else {
+            mget_callback_(mget_result_, err_code);
+        }
+    }
+    virtual void OnMultiGetCommandDone(int resp_code, const std::string& key, const std::string& value);
+    virtual void OnMultiGetCommandOneResponse(int resp_code, const std::string& key, const std::string& value);
+private:
+    std::vector<std::string> keys_;
+    MultiGetCallback2 mget_callback_;
+    std::map<std::string, GetResult> mget_result_;
+private:
+    virtual BufferPtr RequestBuffer() const;
+};
+
 class RemoveCommand  : public Command {
 public:
     RemoveCommand(evpp::EventLoop* evloop, uint16_t vbucket, const std::string& key, RemoveCallback callback)
