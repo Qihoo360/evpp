@@ -15,7 +15,7 @@ namespace evpp {
 namespace http {
 class Service;
 struct EVPP_EXPORT Context {
-    Context(struct evhttp_request* r);
+    Context(struct evhttp_request* r, EventLoop* l);
     ~Context();
 
     bool Init(Service* hsrv);
@@ -44,7 +44,7 @@ struct EVPP_EXPORT Context {
     Slice body;
 
     struct evhttp_request* req;
-    EventLoop* dispatched_loop;
+    EventLoop* dispatched_loop; // 具体的工作线程
 };
 
 typedef std::shared_ptr<Context> ContextPtr;
