@@ -113,7 +113,7 @@ BufferPtr GetCommand::RequestBuffer() const {
     return buf;
 }
 
-void MultiGetCommand::OnMultiGetCommandDone(int resp_code, const std::string& key, const std::string& value) {
+void MultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
         mget_result_.get_result_map_.insert(std::make_pair(key, GetResult(resp_code, value)));
     }
@@ -127,7 +127,7 @@ void MultiGetCommand::OnMultiGetCommandDone(int resp_code, const std::string& ke
     }
 }
 
-void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, const std::string& key, const std::string& value) {
+void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {
 
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
         mget_result_.get_result_map_.insert(std::make_pair(key, GetResult(resp_code, value)));
@@ -162,21 +162,25 @@ BufferPtr MultiGetCommand::RequestBuffer() const {
     return buf;
 }
 
-void MultiGetCommand2::OnMultiGetCommandDone(int resp_code, const std::string& key, const std::string& value) {
+void MultiGetCommand2::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-        mget_result_.insert(std::make_pair(key, GetResult(resp_code, value)));
+        mget_result_.insert(std::make_pair(std::move(key), 
+					std::make_shared<GetResult>(resp_code, std::move(value))));
     }
+	MultiGetMapResultPtr result = std::make_shared<MultiGetMapResult >(std::move(mget_result_));
+	mget_result_.clear();
 
     if (caller_loop()) {
-        caller_loop()->RunInLoop(std::bind(mget_callback_, mget_result_, resp_code));
+        caller_loop()->RunInLoop(std::bind(mget_callback_, result, resp_code));
     } else {
-        mget_callback_(mget_result_, resp_code);
+        mget_callback_(result, resp_code);
     }
 }
 
-void MultiGetCommand2::OnMultiGetCommandOneResponse(int resp_code, const std::string& key, const std::string& value) {
+void MultiGetCommand2::OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-        mget_result_.insert(std::make_pair(key, GetResult(resp_code, value)));
+        mget_result_.insert(std::make_pair(std::move(key), 
+					std::make_shared<GetResult>(resp_code, std::move(value))));
     }
 }
 
@@ -186,7 +190,7 @@ BufferPtr MultiGetCommand2::RequestBuffer() const {
     for (size_t i = 0; i < keys_.size(); ++i) {
         protocol_binary_request_header req;
         memset((void*)&req, 0, sizeof(req));
-        req.request.magic    = PROTOCOL_BINARY_REQ;
+        req.request.magic = PROTOCOL_BINARY_REQ;
 
         if (i < keys_.size() - 1) {
             req.request.opcode   = PROTOCOL_BINARY_CMD_GETKQ;
