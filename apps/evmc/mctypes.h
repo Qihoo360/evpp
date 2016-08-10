@@ -54,6 +54,10 @@ struct MultiGetResult {
     std::map<std::string, GetResult> get_result_map_;
 };
 
+typedef std::shared_ptr<GetResult> GetResultPtr;
+typedef std::map<std::string, GetResultPtr>  MultiGetMapResult;
+typedef std::shared_ptr<MultiGetMapResult> MultiGetMapResultPtr;
+
 struct PrefixGetResult {
     PrefixGetResult() : code(ERR_CODE_UNDEFINED) {
 	}
@@ -115,11 +119,12 @@ struct PrefixMultiGetResult {
 };
 typedef std::shared_ptr<PrefixMultiGetResult> PrefixMultiGetResultPtr;
 
+
 typedef std::function<void(const std::string& key, const GetResult& result)> GetCallback;
 typedef std::function<void(const std::string& key, int code)> SetCallback;
 typedef std::function<void(const std::string& key, int code)> RemoveCallback;
 typedef std::function<void(const MultiGetResult& result)> MultiGetCallback;
-typedef std::function<void(const std::map<std::string, GetResult>& result, int code)> MultiGetCallback2;
+typedef std::function<void(const MultiGetMapResultPtr& result, int code)> MultiGetCallback2;
 typedef std::function<void(const std::string& key, const PrefixGetResultPtr result)> PrefixGetCallback;
 typedef std::function<void(const PrefixMultiGetResultPtr result)> PrefixMultiGetCallback;
 

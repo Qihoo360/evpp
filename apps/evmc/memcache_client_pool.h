@@ -37,13 +37,15 @@ public:
     void PrefixGet(evpp::EventLoop* caller_loop, const std::string& key, PrefixGetCallback callback);
 
     void MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback);
-    void MultiGet2(evpp::EventLoop* caller_loop, std::map<std::string, GetResult>* kvs, MultiGetCallback2 callback);
+    void MultiGet2(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback2 callback);
+    void InnerMultiGet2(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback2 callback);
 
     void PrefixMultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, PrefixMultiGetCallback callback);
 private:
     // noncopyable
     MemcacheClientPool(const MemcacheClientPool&);
     const MemcacheClientPool& operator=(const MemcacheClientPool&);
+	static void MainEventThread();
 
 private:
     void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClientPtr memc_client);
@@ -59,6 +61,7 @@ private:
 
     std::string vbucket_conf_file_;
     evpp::EventLoop loop_;
+    static evpp::EventLoop *main_loop_;
     evpp::EventLoopThreadPool loop_pool_;
     int timeout_ms_;
 
