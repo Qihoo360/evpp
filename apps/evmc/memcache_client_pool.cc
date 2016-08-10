@@ -228,17 +228,18 @@ typedef std::shared_ptr<MultiGetCollector2> MultiGetCollector2Ptr;
 void MemcacheClientPool::MultiGet2(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback2 callback) {
     uint32_t thread_hash = next_thread_++;
 	evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(thread_hash);
-	loop->RunInLoop(std::bind(&MemcacheClientPool::InnerMultiGet2, this, caller_loop, std::ref(keys), callback));
+	loop->RunInLoop(std::bind(&MemcacheClientPool::InnerMultiGet2, this, caller_loop, thread_hash, std::ref(keys), callback));
 	return ;
 }
 
 
-void MemcacheClientPool::InnerMultiGet2(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback2 callback) {
+void MemcacheClientPool::InnerMultiGet2(evpp::EventLoop* caller_loop, uint32_t thr_hash, const std::vector<std::string>& keys, MultiGetCallback2 callback) {
     if (keys.size() <= 0) {
         return;
     }
 
-    uint32_t thread_hash = next_thread_++;
+    //uint32_t thread_hash = next_thread_++;
+    uint32_t thread_hash = thr_hash;
     std::map<uint16_t, std::vector<std::string> > vbucket_keys;
 
     MultiModeVbucketConfigPtr vbconf = vbucket_config();

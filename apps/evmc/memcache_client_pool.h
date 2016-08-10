@@ -38,7 +38,7 @@ public:
 
     void MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback);
     void MultiGet2(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback2 callback);
-    void InnerMultiGet2(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback2 callback);
+    void InnerMultiGet2(evpp::EventLoop* caller_loop, uint32_t thr_index, const std::vector<std::string>& keys, MultiGetCallback2 callback);
 
     void PrefixMultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, PrefixMultiGetCallback callback);
 private:
