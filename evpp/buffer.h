@@ -414,7 +414,7 @@ private:
             // move readable data to the front, make space inside buffer
             assert(reserved_prepend_size_ < read_index_);
             size_t readable = length();
-            memcpy(begin() + reserved_prepend_size_, begin() + read_index_, length());
+            memmove(begin() + reserved_prepend_size_, begin() + read_index_, length());
             read_index_ = reserved_prepend_size_;
             write_index_ = read_index_ + readable;
             assert(readable == length());
