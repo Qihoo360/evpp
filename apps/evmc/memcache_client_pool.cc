@@ -49,9 +49,7 @@ MultiModeVbucketConfigPtr MemcacheClientPool::vbucket_config() {
 }
 
 void MemcacheClientPool::MainEventThread() {
-	LOG_WARN << "main loop begin...";
 	main_loop_->Run();
-	LOG_WARN << "main loop exit...";
 }
 evpp::EventLoop * MemcacheClientPool::main_loop_ = NULL;
 bool MemcacheClientPool::Start() {
@@ -64,12 +62,12 @@ bool MemcacheClientPool::Start() {
     if (!ok) {
         return false;
     }
-	main_loop_ = new evpp::EventLoop;
-    std::thread th(MemcacheClientPool::MainEventThread);
-	th.detach();
-	while (!main_loop_->running()) {
-		usleep(1000);
-	}
+//	main_loop_ = new evpp::EventLoop;
+  //  std::thread th(MemcacheClientPool::MainEventThread);
+//	th.detach();
+//	while (!main_loop_->running()) {
+//		usleep(1000);
+//	}
 
 
     static evpp::Duration reload_delay(300.0);
