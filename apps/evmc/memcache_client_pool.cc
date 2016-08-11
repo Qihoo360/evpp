@@ -13,11 +13,6 @@ void MemcacheClientPool::Stop(bool wait_thread_exit) {
 	if (loop_.running()) {
 		loop_.Stop();
 	}
-	if (main_loop_->running()) {
-		main_loop_->Stop();
-	}
-
-
     loop_pool_.Stop(wait_thread_exit);
 }
 
