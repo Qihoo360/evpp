@@ -35,7 +35,7 @@ LDFLAGS= $(RTFLAGS) \
 		 -L /home/muyuwei/3rd/lib \
 		 -L .. \
 		 -lpthread -levmc \
-		 -levpp -leventd -lglog -lhashkit
+		 -levpp -levent -lglog -lhashkit
 
 DIRNAME=$(shell basename `pwd`)
 
