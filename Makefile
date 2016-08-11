@@ -2,6 +2,7 @@
 all : 
 	$(MAKE) -C evpp
 	$(MAKE) -C 3rdparty
+	$(MAKE) -C apps/evmc
 
 test : all
 	$(MAKE) -C test
