@@ -32,7 +32,7 @@ LDFLAGS= $(RTFLAGS) \
 		 -L $(ROOT_DIR)/3rdparty/libhashkit \
 		 -L .. \
 		 -lpthread -levmc \
-		 -levpp  -lglog -lgflags -lhashkit
+		 -levpp -levent  -lglog -lgflags -lhashkit
 
 DIRNAME=$(shell basename `pwd`)
 
