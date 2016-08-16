@@ -164,8 +164,7 @@ BufferPtr MultiGetCommand::RequestBuffer() const {
 
 void MultiGetCommand2::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-        mget_result_.insert(std::make_pair(std::move(key), 
-					std::make_shared<GetResult>(resp_code, std::move(value))));
+        mget_result_.insert(std::make_pair(std::move(key), GetResult(resp_code, std::move(value))));
     }
 	MultiGetMapResultPtr result = std::make_shared<MultiGetMapResult >(std::move(mget_result_));
 	mget_result_.clear();
@@ -179,8 +178,7 @@ void MultiGetCommand2::OnMultiGetCommandDone(int resp_code, std::string& key, st
 
 void MultiGetCommand2::OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-        mget_result_.insert(std::make_pair(std::move(key), 
-					std::make_shared<GetResult>(resp_code, std::move(value))));
+        mget_result_.insert(std::make_pair(std::move(key), GetResult(resp_code, std::move(value))));
     }
 }
 

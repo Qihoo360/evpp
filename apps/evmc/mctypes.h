@@ -55,7 +55,7 @@ struct MultiGetResult {
 };
 
 typedef std::shared_ptr<GetResult> GetResultPtr;
-typedef std::map<std::string, GetResultPtr>  MultiGetMapResult;
+typedef std::map<std::string, GetResult>  MultiGetMapResult;
 typedef std::shared_ptr<MultiGetMapResult> MultiGetMapResultPtr;
 
 struct PrefixGetResult {
