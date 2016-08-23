@@ -29,6 +29,7 @@ public:
 
     Service* service(int index = 0) const;
 public:
+    // uri 不能带有参数
     void RegisterHandler(const std::string& uri,
                          HTTPRequestCallback callback);
 
@@ -40,7 +41,6 @@ public:
     std::shared_ptr<EventLoopThreadPool> pool() const {
         return tpool_;
     }
-
 private:
     void Dispatch(EventLoop* listening_loop,
                   const ContextPtr& ctx,
