@@ -44,3 +44,8 @@ apps/evnsq/evnsqtail/evnsqtail
 3rdparty/libevent-2.1.5-beta/event_extra.dir/
 3rdparty/libevent-2.1.5-beta/libevent.VC.db
 
+evpp/libevpp.so.1
+evpp/libevpp.so.1.0
+rpm/backup-rpms/
+rpm/build/
+rpm/*.rpm
