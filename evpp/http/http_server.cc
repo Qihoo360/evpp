@@ -8,6 +8,7 @@
 
 namespace evpp {
 namespace http {
+
 HTTPServer::HTTPServer(uint32_t thread_num) {
     tpool_.reset(new EventLoopThreadPool(NULL, thread_num));
 }
@@ -190,7 +191,6 @@ void HTTPServer::Dispatch(EventLoop* listening_loop,
     EventLoop* loop = NULL;
     loop = GetNextLoop(listening_loop, ctx);
 
-
     // 将该HTTP请求调度到工作线程处理
     auto f = [](const ContextPtr & context,
                 const HTTPSendResponseCallback & response_cb,
@@ -199,7 +199,7 @@ void HTTPServer::Dispatch(EventLoop* listening_loop,
             << " url=" << context->original_uri() << " in working thread";
 
         // 在工作线程中执行，调用上层应用设置的回调函数来处理该HTTP请求
-        // 当上层应用处理完后，必须要调用 response_callback 来处理结果反馈回来，也就是会回到 Service::SendReply 函数中。
+        // 当上层应用处理完后，上层应用必须调用 response_cb 将处理结果反馈回来，也就是会回到 Service::SendReply 函数中。
         user_cb(context, response_cb);
     };
 
