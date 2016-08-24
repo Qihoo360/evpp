@@ -23,6 +23,6 @@
 #   endif
 #else
 #   define EVPP_EXPORT
-#endif // H_STATIC_LIB_
+#endif
 
 
