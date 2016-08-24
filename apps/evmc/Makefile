@@ -40,7 +40,7 @@ all : dependency $(TARGET) test
 check : $(TARGET)
 	./$^
 
-test :
+test : $(TARGET)
 	$(MAKE) -C test
 
 dependency :
