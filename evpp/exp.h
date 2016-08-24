@@ -2,8 +2,6 @@
 
 #include "platform_config.h"
 
-#include "libevent_watcher.h"
-
 #ifdef H_OS_WINDOWS
 H_LINK_LIB("libevpp")
 H_LINK_LIB("libglog_static")
