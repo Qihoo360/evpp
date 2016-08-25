@@ -8,11 +8,15 @@
 #include <thread>
 
 namespace evpp {
+
 class EventLoopThreadPool;
+class EventLoop;
+
 namespace udp {
+
 class EVPP_EXPORT Server : public ThreadDispatchPolicy {
 public:
-    typedef std::function<void(const MessagePtr& msg)> MessageHandler;
+    typedef std::function<void(EventLoop*, MessagePtr& msg)> MessageHandler;
 public:
     Server();
     ~Server();
