@@ -1,6 +1,7 @@
 #pragma once
 
 #include "platform_config.h"
+#include "log_config.h"
 
 #ifdef H_OS_WINDOWS
 H_LINK_LIB("libevpp")
