@@ -41,6 +41,7 @@ apps/evnsq/evnsqtail/evnsqtail
 3rdparty/libevent-2.1.5-beta/Win32/
 3rdparty/libevent-2.1.5-beta/libevent.VC.db
 3rdparty/libevent-2.1.5-beta/*.dir/
+3rdparty/libevent-2.1.5-beta/build/
 
 evpp/libevpp.so.1
 evpp/libevpp.so.1.0
