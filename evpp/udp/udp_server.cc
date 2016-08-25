@@ -189,9 +189,9 @@ void Server::RecvingLoop(RecvThread* thread) {
                 } else {
                     loop = tpool_->GetNextLoopWithHash(sock::sockaddr_in_cast(recv_msg->remote_addr())->sin_addr.s_addr);
                 }
-                loop->RunInLoop(std::bind(this->message_handler_, recv_msg));
+                loop->RunInLoop(std::bind(this->message_handler_, loop, recv_msg));
             } else {
-                this->message_handler_(recv_msg);
+                this->message_handler_(NULL, recv_msg);
             }
         } else {
             int eno = errno;
