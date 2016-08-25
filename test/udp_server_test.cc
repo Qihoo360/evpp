@@ -8,7 +8,7 @@ namespace {
     static int g_count = 0;
     static bool g_exit = false;
     static uint64_t g_timeout_ms = 1000;
-    static void OnMessage(evpp::udp::Server* udpsrv, const evpp::udp::MessagePtr msg) {
+    static void OnMessage(evpp::udp::Server* udpsrv, evpp::EventLoop* loop, const evpp::udp::MessagePtr msg) {
         g_count++;
         evpp::udp::SendMessage(msg);
         usleep(100);
@@ -30,7 +30,7 @@ TEST_UNIT(testUDPServer) {
     ports[0] = 53668;
     ports[1] = 53669;
     evpp::udp::Server* udpsrv = new evpp::udp::Server;
-    udpsrv->SetMessageHandler(std::bind(&OnMessage, udpsrv, std::placeholders::_1));
+    udpsrv->SetMessageHandler(std::bind(&OnMessage, udpsrv, std::placeholders::_1, std::placeholders::_2));
     H_TEST_ASSERT(udpsrv->Start(ports));
     usleep(100);//wait udpsrv started
 
@@ -65,7 +65,7 @@ TEST_UNIT(testUDPServerGraceStop) {
     Init();
     int port = 53669;
     evpp::udp::Server* udpsrv = new evpp::udp::Server;
-    udpsrv->SetMessageHandler(std::bind(&OnMessage, udpsrv, std::placeholders::_1));
+    udpsrv->SetMessageHandler(std::bind(&OnMessage, udpsrv, std::placeholders::_1, std::placeholders::_2));
     H_TEST_ASSERT(udpsrv->Start(port));
     usleep(100);//wait udpsrv started
 
