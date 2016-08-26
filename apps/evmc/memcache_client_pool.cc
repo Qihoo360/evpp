@@ -184,59 +184,43 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
     }
 }
 
-class MultiGetCollector2 {
-public:
-    MultiGetCollector2(evpp::EventLoop* caller_loop, int count, const MultiGetCallback2& cb)
-        : caller_loop_(caller_loop), collect_counter_(count), kvs_(std::make_shared<MultiGetMapResult>()), callback_(cb) {}
-    void Collect(const MultiGetMapResultPtr& res, int err_code) {
-        for (auto it = res->begin(); it != res->end(); ++it) {
-          kvs_->insert(*it);
-        }
-
-        LOG_DEBUG << "MultiGetCollector2 count=" << collect_counter_;
-
-        if (--collect_counter_ <= 0) {
-            if (caller_loop_) {
-                //callback_(kvs_, err_code);
-				//struct timeval tv;
-                caller_loop_->RunInLoop(std::bind(callback_, kvs_, err_code));
-            } else {
-                callback_(kvs_, err_code);
-            }
-        }
-    }
-private:
-    evpp::EventLoop* caller_loop_;
-    int collect_counter_;
-    MultiGetMapResultPtr kvs_;
-    MultiGetCallback2 callback_;
-};
-
-typedef std::shared_ptr<MultiGetCollector2> MultiGetCollector2Ptr;
+void MemcacheClientPool::MultiGetImpl(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, MultiGetCollector2Ptr& collector) {
+}
 
 void MemcacheClientPool::MultiGet2(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback2 callback) {
     if (keys.size() <= 0) {
         return;
     }
-
-    uint32_t thread_hash = next_thread_++;
+	const uint32_t thread_hash = next_thread_++;
+	MultiGetCollector2Ptr collector = multiget_collector_pool_->get_shared();
+	collector->Init(caller_loop, keys.size(), callback, thread_hash);
+	
     std::map<uint16_t, std::vector<std::string> > vbucket_keys;
-
     MultiModeVbucketConfigPtr vbconf = vbucket_config();
 	uint16_t vbucket = 0;
+    auto loop = loop_pool_.GetNextLoopWithHash(thread_hash);
+	if (vbconf->server_list().size() == 1) {
+        CommandPtr command = multiget_command_pool_->get_shared();
+		auto k = std::vector<std::string>(keys);
+		static_cast<MultiGetCommand2 *>(command.get())->Init(loop, vbucket, thread_hash, k, collector);
+		//static_cast<MultiGetCommand2 *>(command)->Init(loop, it->first, thread_hash, it->second, collector);
+        loop->RunInLoop(std::bind(&MemcacheClientPool::DoLaunchCommand, this, command));
+		return;
+	}
     for (auto key = keys.begin(); key != keys.end(); ++key) {
         vbucket = vbconf->GetVbucketByKey((*key).c_str(), (*key).size());
-        vbucket_keys[vbucket].push_back((*key));
+        vbucket_keys[vbucket].push_back(*key);
     }
-
-    MultiGetCollector2Ptr collector(new MultiGetCollector2(caller_loop, vbucket_keys.size(), callback));
 
 	//evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(thread_hash);
     for (auto it = vbucket_keys.begin(); it != vbucket_keys.end(); ++it) {
-        CommandPtr command(new MultiGetCommand2(caller_loop, it->first, thread_hash, it->second,
-					std::bind(&MultiGetCollector2::Collect, collector, std::placeholders::_1, std::placeholders::_2)));
-        caller_loop->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, this, command));
+        CommandPtr command = multiget_command_pool_->get_shared();
+		static_cast<MultiGetCommand2 *>(command.get())->Init(loop, it->first, thread_hash, it->second, collector);
+		//static_cast<MultiGetCommand2 *>(command)->Init(loop, it->first, thread_hash, it->second, collector);
+        loop->RunInLoop(std::bind(&MemcacheClientPool::DoLaunchCommand, this, command));
     }
+	//uint32_t thread_hash = next_thread_++;
+   //auto collector = MultiGetCollector2Ptr(new MultiGetCollector2);
 }
 
 void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, PrefixMultiGetCallback callback) {
@@ -249,7 +233,6 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
 
     MultiModeVbucketConfigPtr vbconf = vbucket_config();
 	uint16_t vbucket = 0;
-	//uint16_t server_id = 0;
     for (size_t i = 0; i < keys.size(); ++i) {
         vbucket = vbconf->GetVbucketByKey(keys[i].c_str(), keys[i].size());
         vbucket_keys[vbucket].push_back(keys[i]);
