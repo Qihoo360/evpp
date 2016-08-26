@@ -93,14 +93,19 @@ void Service::HandleRequest(struct evhttp_request* req) {
     ContextPtr ctx(new Context(req, listen_loop_));
     ctx->Init(this);
 
-    auto it = callbacks_.find(ctx->uri);
-    if (it == callbacks_.end()) {
+    if (callbacks_.empty()) {
         DefaultHandleRequest(ctx);
         return;
     }
 
-    // 此处会调度到 HTTPServer::Dispatch 函数中
-    it->second(listen_loop_, ctx, std::bind(&Service::SendReply, this, req, std::placeholders::_1));
+    auto it = callbacks_.find(ctx->uri);
+    if (it != callbacks_.end()) {
+        // 此处会调度到 HTTPServer::Dispatch 函数中
+        it->second(listen_loop_, ctx, std::bind(&Service::SendReply, this, req, std::placeholders::_1));
+        return;
+    } else {
+        DefaultHandleRequest(ctx);
+    }
 }
 
 void Service::DefaultHandleRequest(const ContextPtr& ctx) {
