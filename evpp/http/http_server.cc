@@ -72,16 +72,16 @@ bool Server::StartListenThread(int port) {
     assert(lt.t->IsRunning());
     for (auto it = callbacks_.begin(); it != callbacks_.end(); ++it) {
         HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
-                                           lt.h->event_loop(),
                                            std::placeholders::_1,
                                            std::placeholders::_2,
+                                           std::placeholders::_3,
                                            it->second);
         lt.h->RegisterHandler(it->first, cb);
     }
     HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
-                                       lt.h->event_loop(),
                                        std::placeholders::_1,
                                        std::placeholders::_2,
+                                       std::placeholders::_3,
                                        default_callback_);
     lt.h->RegisterDefaultHandler(cb);
     listen_threads_.push_back(lt);
@@ -184,15 +184,15 @@ void Server::RegisterDefaultHandler(HTTPRequestCallback callback) {
 }
 
 void Server::Dispatch(EventLoop* listening_loop,
-                          const ContextPtr& ctx,
-                          const HTTPSendResponseCallback& response_callback,
-                          const HTTPRequestCallback& user_callback) {
+                      const ContextPtr& ctx,
+                      const HTTPSendResponseCallback& response_callback,
+                      const HTTPRequestCallback& user_callback) {
     LOG_TRACE << "dispatch request " << ctx->req << " url=" << ctx->original_uri() << " in main thread";
     EventLoop* loop = NULL;
     loop = GetNextLoop(listening_loop, ctx);
 
     // 将该HTTP请求调度到工作线程处理
-    auto f = [](const ContextPtr & context,
+    auto f = [](EventLoop* l, const ContextPtr & context,
                 const HTTPSendResponseCallback & response_cb,
                 const HTTPRequestCallback & user_cb) {
         LOG_TRACE << "process request " << context->req
@@ -200,11 +200,10 @@ void Server::Dispatch(EventLoop* listening_loop,
 
         // 在工作线程中执行，调用上层应用设置的回调函数来处理该HTTP请求
         // 当上层应用处理完后，上层应用必须调用 response_cb 将处理结果反馈回来，也就是会回到 Service::SendReply 函数中。
-        user_cb(context, response_cb);
+        user_cb(l, context, response_cb);
     };
 
-    ctx->dispatched_loop = loop;
-    loop->RunInLoop(std::bind(f, ctx, response_callback, user_callback));
+    loop->RunInLoop(std::bind(f, loop, ctx, response_callback, user_callback));
 }
 
 
