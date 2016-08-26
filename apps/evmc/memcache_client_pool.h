@@ -24,8 +24,11 @@ public:
     // @return  - 
     MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms)
         : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
-        , timeout_ms_(timeout_ms), multiget_collector_pool_(new MultiGet2CollectorPool()),
+        , timeout_ms_(timeout_ms), 
+		multiget_collector_pool_(new MultiGet2CollectorPool()),
 		multiget_command_pool_(new MultiGet2CommandPool()) {
+		//multiget_collector_pool_(NULL),
+	    //multiget_command_pool_(NULL) {
     }
     virtual ~MemcacheClientPool();
 
