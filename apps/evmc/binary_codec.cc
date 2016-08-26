@@ -33,7 +33,7 @@ void BinaryCodec::OnCodecMessage(const evpp::TCPConnPtr& conn,
 
 
 void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& resp,
-                                   evpp::Buffer* buf, CommandPtr& ptr) {
+                                   evpp::Buffer* buf, CommandPtr ptr) {
 	const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
 	std::string key(pv, resp.response.keylen);
 	uint32_t pos = resp.response.keylen;
@@ -107,24 +107,25 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 
     case PROTOCOL_BINARY_CMD_GETK: {
         cmd = memc_client_->PopRunningCommand();
-
-        const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
-        std::string key(pv, resp.response.keylen);
-        std::string value(pv + resp.response.keylen, resp.response.bodylen - resp.response.keylen - resp.response.extlen);
+		const int extlen_getk = resp.response.extlen;
+		const int keylen_getk = resp.response.keylen;
+        const char* pv = buf->data() + sizeof(resp) + extlen_getk;
+        std::string key(pv, keylen_getk);
+        std::string value(pv + keylen_getk, resp.response.bodylen - keylen_getk - extlen_getk);
 
         cmd->OnMultiGetCommandDone(resp.response.status, key, value);
-        LOG_DEBUG << "OnResponsePacket GETK, opaque=" << id << " key=" << key << " value=" << value << " retcode=" << resp.response.status;
     }
     break;
 
     case PROTOCOL_BINARY_CMD_GETKQ: {
-        cmd = memc_client_->peek_running_command();
-        const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
-        std::string key(pv, resp.response.keylen);
-        std::string value(pv + resp.response.keylen, resp.response.bodylen - resp.response.keylen - resp.response.extlen);
+        //cmd = memc_client_->peek_running_command();
+		const int extlen = resp.response.extlen;
+		const int keylen = resp.response.keylen;
+        const char* pv = buf->data() + sizeof(resp) + extlen;
+        std::string key(pv, keylen);
+        std::string value(pv + keylen, resp.response.bodylen - keylen - extlen);
 
         cmd->OnMultiGetCommandOneResponse(resp.response.status, key, value);
-        LOG_DEBUG << "OnResponsePacket GETKQ, opaque=" << id << " key=" << key;
     }
     break;
 

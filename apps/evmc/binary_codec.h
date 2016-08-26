@@ -26,7 +26,7 @@ private:
     const BinaryCodec& operator=(const BinaryCodec&);
 
 	void DecodePrefixGetPacket(const protocol_binary_response_header& resp,
-                                   evpp::Buffer* buf, CommandPtr& ptr);
+                                   evpp::Buffer* buf, CommandPtr ptr);
     void OnResponsePacket(const protocol_binary_response_header& resp,
                           evpp::Buffer* buf);
 private:
