@@ -149,7 +149,7 @@ int main() {
 
 #endif
 
-	sleep(2);
+	usleep(2*1000*1000);
     g_loop->RunAfter(1.0, &StopLoop);
     th.join();
     mcp.Stop(true);
