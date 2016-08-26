@@ -101,6 +101,7 @@ typedef int ssize_t;
 
 #define EVUTIL_ERR_RW_RETRIABLE(e)                  \
     ((e) == WSAEWOULDBLOCK || \
+     (e) == WSAETIMEDOUT || \
      (e) == WSAEINTR)
 
 #define EVUTIL_ERR_CONNECT_RETRIABLE(e)                 \
