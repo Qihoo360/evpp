@@ -18,7 +18,7 @@
 #include "evpp/http/http_server.h"
 
 static bool g_stopping = false;
-static void RequestHandler(const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+static void RequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << " OK"
         << " ip=" << ctx->remote_ip << "\n"
@@ -27,7 +27,7 @@ static void RequestHandler(const evpp::http::ContextPtr& ctx, const evpp::http::
     cb(oss.str());
 }
 
-static void DefaultRequestHandler(const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+static void DefaultRequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     //std::cout << __func__ << " called ...\n";
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << "\n"
