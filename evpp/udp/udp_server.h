@@ -35,7 +35,7 @@ public:
         message_handler_ = handler;
     }
 
-    void SetEventLoopThreadPool(std::shared_ptr<EventLoopThreadPool>& pool) {
+    void SetEventLoopThreadPool(const std::shared_ptr<EventLoopThreadPool>& pool) {
         tpool_ = pool;
     }
 
