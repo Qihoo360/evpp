@@ -9,8 +9,16 @@ class Command  : public std::enable_shared_from_this<Command> {
 public:
     Command(evpp::EventLoop* evloop, uint16_t vbucket, uint32_t th_hash)
         : caller_loop_(evloop), id_(0)
-        , vbucket_id_(vbucket), thread_hash_(th_hash) {
+        , vbucket_id_(vbucket), thread_hash_(th_hash){
+			buf_.reserve(512);
     }
+    void Init(evpp::EventLoop* evloop, uint16_t vbucket, uint32_t th_hash) {
+		caller_loop_ = evloop;
+		vbucket_id_ = vbucket;
+		thread_hash_ = th_hash; 
+		buf_.clear();
+	}
+
     virtual ~Command() {}
 
     uint32_t id() const {
@@ -50,12 +58,14 @@ public:
 	virtual bool IsDone() {return true;}
 
 private:
-    virtual BufferPtr RequestBuffer() const = 0;
+    virtual BufferPtr RequestBuffer() = 0;
     evpp::EventLoop* caller_loop_;
     uint32_t id_;               // 并非全局id，只是各个memc_client内部的序号; mget的多个命令公用一个id
     uint16_t vbucket_id_;
     std::vector<uint16_t> server_id_history_;        // 执行时从多个备选server中所选定的server
     uint32_t thread_hash_;
+protected:
+	std::string buf_;
 };
 typedef std::shared_ptr<Command> CommandPtr;
 
@@ -93,7 +103,7 @@ private:
     SetCallback set_callback_;
     static std::atomic_int next_thread_;
 private:
-    virtual BufferPtr RequestBuffer() const;
+    virtual BufferPtr RequestBuffer() ;
 };
 
 class GetCommand : public Command {
@@ -127,7 +137,7 @@ private:
     GetCallback get_callback_;
     static std::atomic_int next_thread_;
 private:
-    virtual BufferPtr RequestBuffer() const;
+    virtual BufferPtr RequestBuffer() ;
 };
 
 class PrefixGetCommand  : public Command {
@@ -154,7 +164,7 @@ private:
     PrefixGetResultPtr mget_result_;
     static std::atomic_int next_thread_;
 private:
-    virtual BufferPtr RequestBuffer() const;
+    virtual BufferPtr RequestBuffer();
 };
 
 class PrefixMultiGetCommand  : public Command {
@@ -194,7 +204,7 @@ private:
     PrefixMultiGetResultPtr mget_all_prefix_result_;
 	bool is_done_;
 private:
-    virtual BufferPtr RequestBuffer() const;
+    virtual BufferPtr RequestBuffer();
 };
 
 class MultiGetCommand  : public Command {
@@ -229,33 +239,42 @@ private:
     MultiGetCallback mget_callback_;
     MultiGetResult mget_result_;
 private:
-    virtual BufferPtr RequestBuffer() const;
+    virtual BufferPtr RequestBuffer();
 };
 
 class MultiGetCommand2 : public Command {
 public:
-    MultiGetCommand2(evpp::EventLoop* evloop, uint16_t vbucket, uint32_t th_hash, std::vector<std::string>& keys, MultiGetCallback2 callback)
-        : Command(evloop, vbucket, th_hash), keys_(std::move(keys)), mget_callback_(callback) {
+    MultiGetCommand2()
+        : Command(NULL, 0, 0){
+    }
+	
+    void Init(evpp::EventLoop* evloop, uint16_t vbucket, uint32_t th_hash, std::vector<std::string>& keys,MultiGetCollector2Ptr collector) {
+		keys_ = std::move(keys);
+		collector_ = collector;
+		Command::Init(evloop, vbucket, th_hash);
     }
 
     virtual void OnError(int err_code) {
         LOG(WARNING) << "MultiGetCommand OnError id=" << id();
-		MultiGetMapResultPtr result = std::make_shared<MultiGetMapResult >(std::move(mget_result_));
-
-        if (caller_loop()) {
-            caller_loop()->RunInLoop(std::bind(mget_callback_, result, err_code));
-        } else {
-           mget_callback_(result, err_code);
-        }
+		for (auto it = keys_.begin(); it != keys_.end(); ++it) {
+			GetResult gt(err_code, std::string("get failed"));
+			collector_->Collect(*it, gt);
+		}
+//		MultiGetMapResultPtr result = std::make_shared<MultiGetMapResult >(std::move(mget_result_));
+//
+//        if (caller_loop()) {
+//            caller_loop()->RunInLoop(std::bind(mget_callback_, result, err_code));
+//        } else {
+//           mget_callback_(result, err_code);
+//        }
     }
     virtual void OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value);
     virtual void OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value);
 private:
     std::vector<std::string> keys_;
-    MultiGetCallback2 mget_callback_;
-    MultiGetMapResult mget_result_;
+	MultiGetCollector2Ptr collector_;
 private:
-    virtual BufferPtr RequestBuffer() const;
+    virtual BufferPtr RequestBuffer();
 };
 
 class RemoveCommand  : public Command {
@@ -284,7 +303,7 @@ private:
     RemoveCallback remove_callback_;
     static std::atomic_int next_thread_;
 private:
-    virtual BufferPtr RequestBuffer() const;
+    virtual BufferPtr RequestBuffer();
 };
 
 }
