@@ -192,7 +192,8 @@ void MemcacheClientPool::MultiGet2(evpp::EventLoop* caller_loop, const std::vect
         return;
     }
 	const uint32_t thread_hash = next_thread_++;
-	MultiGetCollector2Ptr collector = multiget_collector_pool_->get_shared();
+	//MultiGetCollector2Ptr collector = multiget_collector_pool_->get_shared();
+	MultiGetCollector2Ptr collector(new MultiGetCollector2());
 	collector->Init(caller_loop, keys.size(), callback, thread_hash);
 	
     std::map<uint16_t, std::vector<std::string> > vbucket_keys;
@@ -200,7 +201,8 @@ void MemcacheClientPool::MultiGet2(evpp::EventLoop* caller_loop, const std::vect
 	uint16_t vbucket = 0;
     auto loop = loop_pool_.GetNextLoopWithHash(thread_hash);
 	if (vbconf->server_list().size() == 1) {
-        CommandPtr command = multiget_command_pool_->get_shared();
+      //  CommandPtr command = multiget_command_pool_->get_shared();
+		CommandPtr command(new MultiGetCommand2());
 		auto k = std::vector<std::string>(keys);
 		static_cast<MultiGetCommand2 *>(command.get())->Init(loop, vbucket, thread_hash, k, collector);
 		//static_cast<MultiGetCommand2 *>(command)->Init(loop, it->first, thread_hash, it->second, collector);
