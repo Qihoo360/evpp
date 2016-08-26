@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
         port = atoi(argv[1]);
         thread_num = atoi(argv[2]);
     }
-    evpp::http::HTTPServer server(thread_num);
+    evpp::http::Server server(thread_num);
     server.SetThreadDispatchPolicy(evpp::ThreadDispatchPolicy::kIPAddressHashing);
     server.RegisterDefaultHandler(&DefaultHandler);
     server.RegisterHandler("/echo", &RequestHandler);
