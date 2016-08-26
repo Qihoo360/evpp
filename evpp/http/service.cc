@@ -100,12 +100,12 @@ void Service::HandleRequest(struct evhttp_request* req) {
     }
 
     // 此处会调度到 HTTPServer::Dispatch 函数中
-    it->second(ctx, std::bind(&Service::SendReply, this, req, std::placeholders::_1));
+    it->second(listen_loop_, ctx, std::bind(&Service::SendReply, this, req, std::placeholders::_1));
 }
 
 void Service::DefaultHandleRequest(const ContextPtr& ctx) {
     if (default_callback_) {
-        default_callback_(ctx, std::bind(&Service::SendReply, this, ctx->req, std::placeholders::_1));
+        default_callback_(listen_loop_, ctx, std::bind(&Service::SendReply, this, ctx->req, std::placeholders::_1));
     } else {
         evhttp_send_reply(ctx->req, HTTP_BADREQUEST, "Bad Request", NULL);
     }
