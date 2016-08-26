@@ -9,15 +9,15 @@
 namespace evpp {
 namespace http {
 
-HTTPServer::HTTPServer(uint32_t thread_num) {
+Server::Server(uint32_t thread_num) {
     tpool_.reset(new EventLoopThreadPool(NULL, thread_num));
 }
 
-HTTPServer::~HTTPServer() {
+Server::~Server() {
     tpool_.reset();
 }
 
-bool HTTPServer::Start(int port) {
+bool Server::Start(int port) {
     bool rc = tpool_->Start(true);
     if (!rc) {
         return rc;
@@ -32,7 +32,7 @@ bool HTTPServer::Start(int port) {
     return rc;
 }
 
-bool HTTPServer::Start(std::vector<int> listen_ports) {
+bool Server::Start(std::vector<int> listen_ports) {
     bool rc = tpool_->Start(true);
     if (!rc) {
         return rc;
@@ -51,7 +51,7 @@ bool HTTPServer::Start(std::vector<int> listen_ports) {
     return true;
 }
 
-bool HTTPServer::StartListenThread(int port) {
+bool Server::StartListenThread(int port) {
     ListenThread lt;
     lt.t = std::make_shared<EventLoopThread>();
     lt.t->SetName(std::string("StandaloneHTTPServer-Main-") + std::to_string(port));
@@ -71,14 +71,14 @@ bool HTTPServer::StartListenThread(int port) {
                           http_close_fn);
     assert(lt.t->IsRunning());
     for (auto it = callbacks_.begin(); it != callbacks_.end(); ++it) {
-        HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
+        HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
                                            lt.h->event_loop(),
                                            std::placeholders::_1,
                                            std::placeholders::_2,
                                            it->second);
         lt.h->RegisterHandler(it->first, cb);
     }
-    HTTPRequestCallback cb = std::bind(&HTTPServer::Dispatch, this,
+    HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
                                        lt.h->event_loop(),
                                        std::placeholders::_1,
                                        std::placeholders::_2,
@@ -89,7 +89,7 @@ bool HTTPServer::StartListenThread(int port) {
     return rc;
 }
 
-void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
+void Server::Stop(bool wait_thread_exit /*= false*/) {
     for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
         // 1. Service 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
         // 2. EventLoopThread 对象必须调用 Stop
@@ -126,21 +126,21 @@ void HTTPServer::Stop(bool wait_thread_exit /*= false*/) {
     }
 }
 
-void HTTPServer::Pause() {
+void Server::Pause() {
     for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
         EventLoop* loop = it->t->event_loop();
         loop->RunInLoop(std::bind(&Service::Pause, it->h));
     }
 }
 
-void HTTPServer::Continue() {
+void Server::Continue() {
     for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
         EventLoop* loop = it->t->event_loop();
         loop->RunInLoop(std::bind(&Service::Continue, it->h));
     }
 }
 
-bool HTTPServer::IsRunning() const {
+bool Server::IsRunning() const {
     if (listen_threads_.empty()) {
         return false;
     }
@@ -157,7 +157,7 @@ bool HTTPServer::IsRunning() const {
     return true;
 }
 
-bool HTTPServer::IsStopped() const {
+bool Server::IsStopped() const {
     assert(!listen_threads_.empty());
     assert(tpool_);
 
@@ -173,17 +173,17 @@ bool HTTPServer::IsStopped() const {
     return true;
 }
 
-void HTTPServer::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
+void Server::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
     assert(!IsRunning());
     callbacks_[uri] = callback;
 }
 
-void HTTPServer::RegisterDefaultHandler(HTTPRequestCallback callback) {
+void Server::RegisterDefaultHandler(HTTPRequestCallback callback) {
     assert(!IsRunning());
     default_callback_ = callback;
 }
 
-void HTTPServer::Dispatch(EventLoop* listening_loop,
+void Server::Dispatch(EventLoop* listening_loop,
                           const ContextPtr& ctx,
                           const HTTPSendResponseCallback& response_callback,
                           const HTTPRequestCallback& user_callback) {
@@ -208,7 +208,7 @@ void HTTPServer::Dispatch(EventLoop* listening_loop,
 }
 
 
-EventLoop* HTTPServer::GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx) {
+EventLoop* Server::GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx) {
     if (tpool_->thread_num() == 0) {
         return default_loop;
     }
@@ -233,7 +233,7 @@ EventLoop* HTTPServer::GetNextLoop(EventLoop* default_loop, const ContextPtr& ct
 #endif
 }
 
-Service* HTTPServer::service(int index) const {
+Service* Server::service(int index) const {
     if (index < int(listen_threads_.size())) {
         return listen_threads_[index].h.get();
     }

@@ -161,7 +161,7 @@ static void TestAll() {
 TEST_UNIT(testHTTPServer1) {
     for (int i = 0; i < 3; ++i) {
         g_stopping = true;
-        evpp::http::HTTPServer ph(i);
+        evpp::http::Server ph(i);
         ph.RegisterDefaultHandler(&DefaultRequestHandler);
         ph.RegisterHandler("/push/boot", &RequestHandler);
         bool r = ph.Start(g_listening_port);
