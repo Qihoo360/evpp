@@ -165,6 +165,30 @@ std::string ToIPPort(const struct sockaddr_in* ss) {
     return ToIPPort(sockaddr_storage_cast(ss));
 }
 
+
+EVPP_EXPORT std::string ToIP(const struct sockaddr* s) {
+    auto ss = sockaddr_storage_cast(s);
+    if (ss->ss_family == AF_INET) {
+        struct sockaddr_in* addr4 = const_cast<struct sockaddr_in*>(sockaddr_in_cast(ss));
+        char buf[INET_ADDRSTRLEN] = {};
+        const char* addr = ::inet_ntop(ss->ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
+        if (addr) {
+            return std::string(addr);
+        }
+    } else if (ss->ss_family == AF_INET6) {
+        struct sockaddr_in6* addr6 = const_cast<struct sockaddr_in6*>(sockaddr_in6_cast(ss));
+        char buf[INET6_ADDRSTRLEN] = {};
+        const char* addr = ::inet_ntop(ss->ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
+        if (addr) {
+            return std::string(addr);
+        }
+    } else {
+        LOG_ERROR << "unknown socket family connected";
+    }
+
+    return std::string();
+}
+
 void SetTimeout(int fd, uint32_t timeout_ms) {
 #ifdef H_OS_WINDOWS
     DWORD tv = timeout_ms;
