@@ -16,6 +16,10 @@ void Command::Launch(MemcacheClientPtr memc_client) {
     }
 
     BufferPtr buf = RequestBuffer();
+	if (!buf) {
+		memc_client->conn()->Send(buf_.c_str(), buf_.size());
+		return;
+	}
     memc_client->conn()->Send(buf->data(), buf->size());
 }
 
@@ -35,7 +39,7 @@ bool Command::ShouldRetry() const {
 }
 
 std::atomic_int SetCommand::next_thread_;
-BufferPtr SetCommand::RequestBuffer() const {
+BufferPtr SetCommand::RequestBuffer()  {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
 
@@ -60,7 +64,7 @@ BufferPtr SetCommand::RequestBuffer() const {
 }
 
 std::atomic_int PrefixGetCommand::next_thread_;
-BufferPtr PrefixGetCommand::RequestBuffer() const {
+BufferPtr PrefixGetCommand::RequestBuffer()  {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
 
@@ -79,7 +83,7 @@ BufferPtr PrefixGetCommand::RequestBuffer() const {
     return buf;
 }
 
-void PrefixGetCommand::OnPrefixGetCommandDone(const int resp_code, std::string& key) {
+void PrefixGetCommand::OnPrefixGetCommandDone( int resp_code, std::string& key) {
     mget_result_->code = resp_code;
 	LOG_DEBUG << "OnPrefixGetCommandDone key=" << key;
     if (caller_loop()) {
@@ -94,7 +98,7 @@ void PrefixGetCommand::OnPrefixGetCommandOneResponse(std::string& key,  std::str
 }
 
 std::atomic_int GetCommand::next_thread_;
-BufferPtr GetCommand::RequestBuffer() const {
+BufferPtr GetCommand::RequestBuffer()  {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
 
@@ -136,7 +140,7 @@ void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::string& k
     mget_result_.code = resp_code;
 }
 
-BufferPtr MultiGetCommand::RequestBuffer() const {
+BufferPtr MultiGetCommand::RequestBuffer()  {
     BufferPtr buf(new evpp::Buffer(50 * keys_.size())); // 预分配长度大多数时候是足够的
 
     for (size_t i = 0; i < keys_.size(); ++i) {
@@ -163,27 +167,22 @@ BufferPtr MultiGetCommand::RequestBuffer() const {
 }
 
 void MultiGetCommand2::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
-    if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-        mget_result_.insert(std::make_pair(std::move(key), GetResult(resp_code, std::move(value))));
-    }
-	MultiGetMapResultPtr result = std::make_shared<MultiGetMapResult >(std::move(mget_result_));
-	mget_result_.clear();
-
-    if (caller_loop()) {
-        caller_loop()->RunInLoop(std::bind(mget_callback_, result, resp_code));
-    } else {
-        mget_callback_(result, resp_code);
-    }
+//    if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
+		 GetResult gt(resp_code, std::move(value));
+		 collector_->Collect(key, gt);
+        //mget_result_.insert(std::make_pair(std::move(key), GetResult(resp_code, std::move(value))));
+ //   }
 }
 
 void MultiGetCommand2::OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {
-    if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-        mget_result_.insert(std::make_pair(std::move(key), GetResult(resp_code, std::move(value))));
-    }
+   // if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
+		 GetResult gt(resp_code, std::move(value));
+		 collector_->Collect(key, gt);
+        //mget_result_.insert(std::make_pair(std::move(key), GetResult(resp_code, std::move(value))));
+    //}
 }
 
-BufferPtr MultiGetCommand2::RequestBuffer() const {
-    BufferPtr buf(new evpp::Buffer(50 * keys_.size())); // 预分配长度大多数时候是足够的
+BufferPtr MultiGetCommand2::RequestBuffer() {
 
     for (size_t i = 0; i < keys_.size(); ++i) {
         protocol_binary_request_header req;
@@ -202,17 +201,17 @@ BufferPtr MultiGetCommand2::RequestBuffer() const {
         req.request.opaque   = id();
         req.request.bodylen  = htonl(keys_[i].size());
 
-        buf->Append((void*)&req, sizeof(req));
-        buf->Append(keys_[i].data(), keys_[i].size());
+        buf_.append((char*)&req, sizeof(req));
+        buf_.append(keys_[i].data(), keys_[i].size());
     }
-    return buf;
+	return BufferPtr();
 }
 
-BufferPtr PrefixMultiGetCommand::RequestBuffer() const {
+BufferPtr PrefixMultiGetCommand::RequestBuffer()  {
     BufferPtr buf(new evpp::Buffer(50 * keys_.size()));  // 预分配长度多数情况够长
 
 	protocol_binary_request_header req;
-	const int size = keys_.size();
+	 int size = keys_.size();
     for (int i = 0; i < size; ++i) {
         memset((void*)&req, 0, sizeof(req));
         req.request.magic = PROTOCOL_BINARY_REQ;
@@ -237,7 +236,7 @@ BufferPtr PrefixMultiGetCommand::RequestBuffer() const {
     return buf;
 }
 
-void PrefixMultiGetCommand::OnPrefixGetCommandDone(const int resp_code, std::string& key) {
+void PrefixMultiGetCommand::OnPrefixGetCommandDone( int resp_code, std::string& key) {
     mget_result_.code = resp_code;
 	auto & result = mget_all_prefix_result_->get_result_map_;
     LOG_DEBUG << "OnPrefixGetCommandDone key=" << key << " ";
@@ -260,7 +259,7 @@ void PrefixMultiGetCommand::OnPrefixGetCommandOneResponse(std::string& key,  std
 }
 
 std::atomic_int RemoveCommand::next_thread_;
-BufferPtr RemoveCommand::RequestBuffer() const {
+BufferPtr RemoveCommand::RequestBuffer()  {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
 

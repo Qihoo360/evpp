@@ -8,6 +8,7 @@
 #include "evpp/tcp_conn.h"
 #include "evpp/tcp_client.h"
 #include "glog/logging.h"
+#include "objectpool.hpp"
 
 namespace evmc {
 
@@ -130,5 +131,48 @@ typedef std::function<void(const PrefixMultiGetResultPtr result)> PrefixMultiGet
 
 class MemcacheClient;
 typedef std::shared_ptr<MemcacheClient> MemcacheClientPtr;
+
+class MultiGetCollector2 {
+public:
+    MultiGetCollector2():caller_loop_(NULL), collect_counter_(0){}
+    void Init(evpp::EventLoop* caller_loop, int count, const MultiGetCallback2& cb, const uint32_t thread_hash) {
+		caller_loop_ = caller_loop;
+		collect_counter_ = count;
+		thread_hash_ = thread_hash;
+		kvs_.reset();
+		kvs_ = std::make_shared<MultiGetMapResult>();
+		callback_ = cb;
+	}
+    void Collect(std::string & key, GetResult & result) {
+		if (collect_counter_ <= 0) {
+			LOG_WARN << "occur errors, repeat response";
+			return;
+		}
+		kvs_->insert(std::make_pair(std::move(key), std::move(result)));
+
+        LOG_DEBUG << "MultiGetCollector2 count=" << collect_counter_;
+
+        if (--collect_counter_ == 0) {
+            if (caller_loop_) {
+                //callback_(kvs_, err_code);
+				//struct timeval tv;
+                caller_loop_->RunInLoop(std::bind(callback_, kvs_, 0));
+            } else {
+                callback_(kvs_, 0);
+            }
+			kvs_.reset();
+        }
+    }
+public:
+	uint32_t thread_hash_;
+private:
+    evpp::EventLoop* caller_loop_;
+    int collect_counter_;
+    MultiGetMapResultPtr kvs_;
+    MultiGetCallback2 callback_;
+};
+typedef std::shared_ptr<MultiGetCollector2> MultiGetCollector2Ptr;
+typedef ObjectPool<MultiGetCollector2, MultiGetCollector2> MultiGet2CollectorPool;
+
 }
 

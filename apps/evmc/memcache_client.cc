@@ -88,8 +88,9 @@ void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
 
         if (mc_pool_ && cmd->ShouldRetry()) {
             // mc_pool_->LaunchCommand(cmd);
-            cmd->set_id(0);
-            cmd->caller_loop()->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, mc_pool_, cmd));
+            cmd->OnError(ERR_CODE_TIMEOUT);
+            //cmd->set_id(0);
+            //cmd->caller_loop()->RunInLoop(std::bind(&MemcacheClientPool::LaunchCommand, mc_pool_, cmd));
         } else {
             cmd->OnError(ERR_CODE_TIMEOUT);
         }
