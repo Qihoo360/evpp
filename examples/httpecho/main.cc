@@ -5,7 +5,7 @@
 #include "../echo/winmain-inl.h"
 #endif
 
-void DefaultHandler(const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+void DefaultHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << " OK"
         << " ip=" << ctx->remote_ip << "\n"
@@ -16,7 +16,7 @@ void DefaultHandler(const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSen
     cb(oss.str());
 }
 
-void RequestHandler(const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+void RequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     cb(ctx->body.ToString());
 }
 
