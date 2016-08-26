@@ -2,10 +2,13 @@
 
 #include "memcache_client.h"
 #include "vbucket_config.h"
+#include "command.h"
+#include "objectpool.hpp"
 
 namespace evmc {
 
 typedef std::map<std::string, MemcacheClientPtr> MemcClientMap;
+typedef ObjectPool<Command, MultiGetCommand2> MultiGet2CommandPool; 
 
 class MemcacheClientPool {
 public:
@@ -21,7 +24,8 @@ public:
     // @return  - 
     MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms)
         : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
-        , timeout_ms_(timeout_ms) {
+        , timeout_ms_(timeout_ms), multiget_collector_pool_(new MultiGet2CollectorPool()),
+		multiget_command_pool_(new MultiGet2CommandPool()) {
     }
     virtual ~MemcacheClientPool();
 
@@ -45,6 +49,7 @@ private:
     MemcacheClientPool(const MemcacheClientPool&);
     const MemcacheClientPool& operator=(const MemcacheClientPool&);
 	static void MainEventThread();
+	void MultiGetImpl(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, MultiGetCollector2Ptr& collector);
 
 private:
     void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClientPtr memc_client);
@@ -69,6 +74,8 @@ private:
     std::mutex vbucket_config_mutex_; // TODO : use rw mutex
 
     std::atomic_int next_thread_;
+	MultiGet2CollectorPool	* multiget_collector_pool_;
+	MultiGet2CommandPool * multiget_command_pool_;
 };
 
 class PrefixMultiGetCollector {
