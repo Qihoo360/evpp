@@ -45,11 +45,12 @@ TCPConn::~TCPConn() {
 }
 
 void TCPConn::Close() {
-    auto f = [](const TCPConnPtr& c) {
+    auto c = shared_from_this();
+    auto f = [c]() {
         c->loop_->AssertInLoopThread();
         c->HandleClose();
     };
-    loop_->RunInLoop(std::bind(f, shared_from_this()));
+    loop_->RunInLoop(f);
 }
 
 void TCPConn::Send(const std::string& d) {
