@@ -32,7 +32,7 @@ void TCPClient::Connect() {
         connector_->SetNewConnectionCallback(std::bind(&TCPClient::OnConnection, this, std::placeholders::_1, std::placeholders::_2));
         connector_->Start();
     };
-    loop_->RunInLoop(std::bind(f));
+    loop_->RunInLoop(f);
 }
 
 void TCPClient::Disconnect() {
