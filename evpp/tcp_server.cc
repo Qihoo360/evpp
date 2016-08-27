@@ -81,12 +81,12 @@ EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
 }
 
 void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
-    auto f = [this](const TCPConnPtr& c) {
+    auto f = [this, conn]() {
         // Remove the connection in the listener EventLoop
         assert(this->loop_->IsInLoopThread());
-        this->connections_.erase(c->name());
+        this->connections_.erase(conn->name());
     };
-    loop_->RunInLoop(std::bind(f, conn));
+    loop_->RunInLoop(f);
 }
 
 }

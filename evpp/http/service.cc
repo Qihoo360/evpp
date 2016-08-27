@@ -143,9 +143,9 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
     LOG_TRACE << "send reply in working thread";
 
     // 在工作线程中准备好响应报文
-    std::shared_ptr<Response> pt(new Response(req, response_data));
+    std::shared_ptr<Response> response(new Response(req, response_data));
 
-    auto f = [this](const std::shared_ptr<Response>& response) {
+    auto f = [this, response]() {
         assert(listen_loop_->IsInLoopThread());
         LOG_TRACE << "send http reply";
 
@@ -157,7 +157,7 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
         evhttp_send_reply(response->req, HTTP_OK, "OK", response->buffer);
     };
 
-    listen_loop_->RunInLoop(std::bind(f, pt));
+    listen_loop_->RunInLoop(f);
 }
 }
 }
