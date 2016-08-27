@@ -37,12 +37,12 @@ void Client::ConnectToNSQDs(const std::string& addrs/*host1:port1,host2:port2*/)
 }
 
 void Client::ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/) {
-    auto f = [this](const std::string & lookupd_url) {
+    auto f = [this, lookupd_url]() {
         // This object will be deleted in HandleLoopkupdHTTPResponse
         evpp::httpc::Request* r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
         r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
     };
-    loop_->RunEvery(evpp::Duration(1.0), std::bind(f, lookupd_url));
+    loop_->RunEvery(evpp::Duration(1.0), f);
 }
 
 void Client::ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/) {
