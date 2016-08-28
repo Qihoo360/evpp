@@ -92,38 +92,40 @@ bool Server::StartListenThread(int port) {
 void Server::Stop(bool wait_thread_exit /*= false*/) {
     for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
         // 1. Service 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
-        // 2. EventLoopThread 对象必须调用 Stop
+        // 2. EventLoopThread 对象必须调用 Stop 来停止
         it->t->Stop();
     }
     tpool_->Stop();
 
-    if (wait_thread_exit) {
-        for (;;) {
-            bool stopped = true;
-            for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-                if (!it->t->IsStopped()) {
-                    stopped = false;
-                    break;
-                }
-            }
+    if (!wait_thread_exit) {
+        return;
+    }
 
-            if (!tpool_->IsStopped()) {
+    for (;;) {
+        bool stopped = true;
+        for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+            if (!it->t->IsStopped()) {
                 stopped = false;
-            }
-
-            if (stopped) {
                 break;
             }
-
-            usleep(1);
         }
 
-        assert(tpool_->IsStopped());
-        for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-            assert(it->t->IsStopped());
+        if (!tpool_->IsStopped()) {
+            stopped = false;
         }
-        assert(IsStopped());
+
+        if (stopped) {
+            break;
+        }
+
+        usleep(1);
     }
+
+    assert(tpool_->IsStopped());
+    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+        assert(it->t->IsStopped());
+    }
+    assert(IsStopped());
 }
 
 void Server::Pause() {
@@ -187,6 +189,8 @@ void Server::Dispatch(EventLoop* listening_loop,
                       const ContextPtr& ctx,
                       const HTTPSendResponseCallback& response_callback,
                       const HTTPRequestCallback& user_callback) {
+    // 当前正在 HTTP 的监听线程中执行
+    assert(listening_loop->IsInLoopThread());
     LOG_TRACE << "dispatch request " << ctx->req << " url=" << ctx->original_uri() << " in main thread";
     EventLoop* loop = NULL;
     loop = GetNextLoop(listening_loop, ctx);
