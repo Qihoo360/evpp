@@ -38,12 +38,24 @@ inline std::string Message::remote_ip() const {
 }
 
 inline bool SendMessage(int fd, const struct sockaddr* addr, const char* d, size_t dlen) {
+    if (dlen == 0) {
+        return true;
+    }
+
     int sentn = ::sendto(fd, d, dlen, 0, addr, sizeof(*addr));
     if (sentn != (int)dlen) {
         return false;
     }
 
     return true;
+}
+
+inline bool SendMessage(int fd, const struct sockaddr* addr, const std::string& d) {
+    return SendMessage(fd, addr, d.data(), d.size());
+}
+
+inline bool SendMessage(int fd, const struct sockaddr* addr, const Slice& d) {
+    return SendMessage(fd, addr, d.data(), d.size());
 }
 
 inline bool SendMessage(const MessagePtr& msg) {
