@@ -70,13 +70,13 @@ bool Server::StartListenThread(int port) {
                           EventLoopThread::Functor(),
                           http_close_fn);
     assert(lt.t->IsRunning());
-    for (auto it = callbacks_.begin(); it != callbacks_.end(); ++it) {
-        HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
+    for (auto &c : callbacks_) {
+        auto cb = std::bind(&Server::Dispatch, this,
                                            std::placeholders::_1,
                                            std::placeholders::_2,
                                            std::placeholders::_3,
-                                           it->second);
-        lt.h->RegisterHandler(it->first, cb);
+                                           c.second);
+        lt.h->RegisterHandler(c.first, cb);
     }
     HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
                                        std::placeholders::_1,
@@ -90,10 +90,10 @@ bool Server::StartListenThread(int port) {
 }
 
 void Server::Stop(bool wait_thread_exit /*= false*/) {
-    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
+    for (auto &lt : listen_threads_) {
         // 1. Service 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
         // 2. EventLoopThread 对象必须调用 Stop 来停止
-        it->t->Stop();
+        lt.t->Stop();
     }
     tpool_->Stop();
 
@@ -103,8 +103,8 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
 
     for (;;) {
         bool stopped = true;
-        for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-            if (!it->t->IsStopped()) {
+        for (auto &lt : listen_threads_) {
+            if (!lt.t->IsStopped()) {
                 stopped = false;
                 break;
             }
@@ -122,23 +122,23 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
     }
 
     assert(tpool_->IsStopped());
-    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-        assert(it->t->IsStopped());
+    for (auto &lt : listen_threads_) {
+        assert(lt.t->IsStopped());
     }
     assert(IsStopped());
 }
 
 void Server::Pause() {
-    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-        EventLoop* loop = it->t->event_loop();
-        loop->RunInLoop(std::bind(&Service::Pause, it->h));
+    for (auto &lt : listen_threads_) {
+        EventLoop* loop = lt.t->event_loop();
+        loop->RunInLoop(std::bind(&Service::Pause, lt.h));
     }
 }
 
 void Server::Continue() {
-    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-        EventLoop* loop = it->t->event_loop();
-        loop->RunInLoop(std::bind(&Service::Continue, it->h));
+    for (auto &lt : listen_threads_) {
+        EventLoop* loop = lt.t->event_loop();
+        loop->RunInLoop(std::bind(&Service::Continue, lt.h));
     }
 }
 
@@ -151,8 +151,8 @@ bool Server::IsRunning() const {
         return false;
     }
 
-    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-        if (!it->t->IsRunning()) {
+    for (auto &lt : listen_threads_) {
+        if (!lt.t->IsRunning()) {
             return false;
         }
     }
@@ -167,8 +167,8 @@ bool Server::IsStopped() const {
         return false;
     }
 
-    for (auto it = listen_threads_.begin(); it != listen_threads_.end(); ++it) {
-        if (!it->t->IsStopped()) {
+    for (auto &lt : listen_threads_) {
+        if (!lt.t->IsStopped()) {
             return false;
         }
     }
