@@ -108,8 +108,8 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
     case PROTOCOL_BINARY_CMD_GETK: {
         cmd = memc_client_->PopRunningCommand();
 		const int extlen_getk = resp.response.extlen;
-		const int keylen_getk = resp.response.keylen;
-        const char* pv = buf->data() + sizeof(resp) + extlen_getk;
+		const int keylen_getk = resp.response.keylen; 
+		const char* pv = buf->data() + sizeof(resp) + extlen_getk;
         std::string key(pv, keylen_getk);
         std::string value(pv + keylen_getk, resp.response.bodylen - keylen_getk - extlen_getk);
 
