@@ -13,12 +13,13 @@
 #endif
 
 
-#ifdef H_OS_LINUX
+#ifndef H_OS_WINDOWS
 
-//TODO add sig_pipe
+//TODO ignore SIGPIPE add sig_pipe
 #include <signal.h>
 // set signal handler
 void sig_pipe(int id) {
+    // SIGPIPE
     //H_LOG_NAME_DEBUG( "", "a pipe arrived.");
     // do nothing.
     //printf( "signal pipe:%d", id );
@@ -37,6 +38,24 @@ void sig_child(int) {
 #include <mutex>
 
 namespace evpp {
+
+
+namespace {
+struct OnStartup {
+    OnStartup() {
+#ifndef H_OS_WINDOWS
+        if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+            LOG_ERROR << "SIGPIPE set failed.";
+            exit(-1);
+        }
+        LOG_INFO << "ignore SIGPIPE";
+#endif
+    }
+    ~OnStartup() {
+    }
+} __s_onstartup;
+}
+
 
 #ifdef H_DEBUG_MODE
 static std::map<struct event*, std::thread::id> evmap;
