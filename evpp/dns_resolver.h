@@ -11,7 +11,7 @@ class EventLoop;
 class TimerEventWatcher;
 class EVPP_EXPORT DNSResolver {
 public:
-    typedef std::function<void(const std::vector <struct in_addr>& addrs)> Functor;
+    typedef std::function<void(const std::vector<struct in_addr>& addrs)> Functor;
     DNSResolver(EventLoop* evloop, const std::string& host, Duration timeout, const Functor& f);
     ~DNSResolver();
     void Start();
