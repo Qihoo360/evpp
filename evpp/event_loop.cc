@@ -23,15 +23,21 @@ EventLoop::EventLoop() : create_evbase_myself_(true), pending_functor_count_(0) 
 
 EventLoop::EventLoop(struct event_base* base)
     : evbase_(base), create_evbase_myself_(false) {
+
     Init();
 
+    // 当从一个已有的 event_base 创建EventLoop对象时，就不会调用 EventLoop::Run 方法，所以需要在这里调用 watcher_ 的初始化工作。
+    InitEventWatcher();
+}
+
+void EventLoop::InitEventWatcher() {
     watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
     int rc = watcher_->Init();
     assert(rc);
     rc = rc && watcher_->AsyncWait();
     assert(rc);
     if (!rc) {
-        LOG_ERROR << "PipeEventWatcher init failed.";
+        LOG_FATAL << "PipeEventWatcher init failed.";
     }
 }
 
@@ -55,21 +61,15 @@ void EventLoop::Init() {
 }
 
 void EventLoop::Run() {
-    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
-    int rc = watcher_->Init();
-    assert(rc);
-    rc = rc && watcher_->AsyncWait();
-    assert(rc);
-    if (!rc) {
-        LOG_ERROR << "PipeEventWatcher init failed.";
-    }
-
     tid_ = std::this_thread::get_id(); // The actual thread id
+
+    // 在当前的EventLoop线程中初始化
+    InitEventWatcher();
 
     // 所有的事情都准备好之后，才置标记为true
     running_ = true;
-    rc = event_base_dispatch(evbase_);
 
+    int rc = event_base_dispatch(evbase_);
     if (rc == 1) {
         LOG_ERROR << "event_base_dispatch error: no event registered";
     } else if (rc == -1) {
