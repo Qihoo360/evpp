@@ -19,7 +19,7 @@ class CommandSingle {
 
 		void Collect(std::string & key, GetResult & result, bool is_done) {
 
-			kvs_->insert(std::make_pair(std::move(key), std::move(result)));
+			kvs_->emplace(std::move(key), std::move(result));
 
 			if (is_done) {
 				if (caller_loop_ && !caller_loop_->IsInLoopThread()) {

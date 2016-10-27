@@ -94,7 +94,7 @@ void PrefixGetCommand::OnPrefixGetCommandDone( int resp_code, std::string& key) 
 }
 
 void PrefixGetCommand::OnPrefixGetCommandOneResponse(std::string& key,  std::string& value) {
-	mget_result_->get_result_map_.insert(std::make_pair(std::move(key), std::move(value)));
+	mget_result_->get_result_map_.emplace(std::move(key), std::move(value));
 }
 
 std::atomic_int GetCommand::next_thread_;
@@ -119,7 +119,7 @@ BufferPtr GetCommand::RequestBuffer()  {
 
 void MultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-        mget_result_.get_result_map_.insert(std::make_pair(key, GetResult(resp_code, value)));
+        mget_result_.get_result_map_.emplace(std::move(key), GetResult(resp_code, value));
     }
 
     mget_result_.code = resp_code;
@@ -134,7 +134,7 @@ void MultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std
 void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {
 
     if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-        mget_result_.get_result_map_.insert(std::make_pair(key, GetResult(resp_code, value)));
+        mget_result_.get_result_map_.emplace(key, GetResult(resp_code, value));
     }
 
     mget_result_.code = resp_code;
@@ -241,7 +241,7 @@ void PrefixMultiGetCommand::OnPrefixGetCommandDone( int resp_code, std::string& 
 	auto & result = mget_all_prefix_result_->get_result_map_;
     LOG_DEBUG << "OnPrefixGetCommandDone key=" << key << " ";
 	PrefixGetResultPtr prefix_get_result(new PrefixGetResult(std::move(mget_result_)));
-	result.insert(std::make_pair(std::move(key), prefix_get_result));
+	result.emplace(std::move(key), prefix_get_result);
 	mget_result_.clear();
 	if (result.size() >= keys_.size()) {
 		is_done_ = true;
@@ -255,7 +255,7 @@ void PrefixMultiGetCommand::OnPrefixGetCommandDone( int resp_code, std::string& 
 }
 
 void PrefixMultiGetCommand::OnPrefixGetCommandOneResponse(std::string& key,  std::string& value) {
-	mget_result_.get_result_map_.insert(std::make_pair(std::move(key), std::move(value)));
+	mget_result_.get_result_map_.emplace(std::move(key), std::move(value));
 }
 
 std::atomic_int RemoveCommand::next_thread_;
