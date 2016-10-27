@@ -219,7 +219,7 @@ public:
 		auto & result_map = mget_result_.get_result_map_;
         for (auto it = keys_.begin(); it != keys_.end(); ++it) {
 			if (result_map.find(*it) == result_map.end()) {
-				result_map.insert(std::make_pair(*it, GetResult(err_code, "not enough connections")));
+				result_map.emplace(*it, GetResult(err_code, "not enough connections"));
 			}
 		}
 		if (keys_.size() != result_map.size()) {
