@@ -94,7 +94,7 @@ public:
 		auto& res_result_map = res->get_result_map_;
         LOG_DEBUG << "PrefixMultiGetCollector keysize=" << res_result_map.size();
 		for (auto it = res_result_map.begin(); it != res_result_map.end(); ++it) {
-			collect_result_map.insert(std::make_pair(it->first, it->second));
+			collect_result_map.emplace(it->first, it->second);
 		}
         LOG_DEBUG << "PrefixMultiGetCollector count=" << collect_counter_;
 		if (--collect_counter_ <= 0) {
