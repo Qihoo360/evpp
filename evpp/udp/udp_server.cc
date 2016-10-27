@@ -177,10 +177,10 @@ void Server::RecvingLoop(RecvThread* thread) {
         MessagePtr recv_msg(new Message(thread->fd(), recv_buf_size_));
         socklen_t addr_len = sizeof(struct sockaddr);
         int readn = ::recvfrom(thread->fd(), (char*)recv_msg->WriteBegin(), recv_buf_size_, 0, recv_msg->mutable_remote_addr(), &addr_len);
-        LOG_TRACE << "fd=" << thread->fd() << " port=" << thread->port()
-                  << " recv len=" << readn << " from " << sock::ToIPPort(recv_msg->remote_addr());
-
         if (readn >= 0) {
+            LOG_TRACE << "fd=" << thread->fd() << " port=" << thread->port()
+                << " recv len=" << readn << " from " << sock::ToIPPort(recv_msg->remote_addr());
+
             recv_msg->WriteBytes(readn);
             if (tpool_) {
                 EventLoop* loop = NULL;
@@ -189,9 +189,9 @@ void Server::RecvingLoop(RecvThread* thread) {
                 } else {
                     loop = tpool_->GetNextLoopWithHash(sock::sockaddr_in_cast(recv_msg->remote_addr())->sin_addr.s_addr);
                 }
-                loop->RunInLoop(std::bind(this->message_handler_, recv_msg));
+                loop->RunInLoop(std::bind(this->message_handler_, loop, recv_msg));
             } else {
-                this->message_handler_(recv_msg);
+                this->message_handler_(NULL, recv_msg);
             }
         } else {
             int eno = errno;
