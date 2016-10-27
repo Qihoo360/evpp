@@ -148,7 +148,7 @@ public:
 			LOG_WARN << "occur errors, repeat response";
 			return;
 		}
-		kvs_->insert(std::make_pair(std::move(key), std::move(result)));
+		kvs_->emplace(std::move(key), std::move(result));
 
         LOG_DEBUG << "MultiGetCollector2 count=" << collect_counter_;
 
