@@ -147,7 +147,7 @@ void EventLoop::RunInLoop(const Functor& functor) {
 void EventLoop::QueueInLoop(const Functor& cb) {
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        pending_functors_.push_back(cb);
+        pending_functors_.emplace_back(cb);
         ++pending_functor_count_;
     }
 
