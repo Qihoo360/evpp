@@ -13,8 +13,11 @@ class EventLoop;
 
 namespace evpp {
 namespace http {
+
 class Service;
+
 struct EVPP_EXPORT Context {
+public:
     Context(struct evhttp_request* r, EventLoop* l);
     ~Context();
 
@@ -32,7 +35,7 @@ struct EVPP_EXPORT Context {
 
 
 
-
+public:
     // 不带参数的URI, 例如: /status.html
     std::string uri;
 
@@ -44,7 +47,6 @@ struct EVPP_EXPORT Context {
     Slice body;
 
     struct evhttp_request* req;
-    EventLoop* dispatched_loop; // 具体的工作线程
 };
 
 typedef std::shared_ptr<Context> ContextPtr;
@@ -52,8 +54,9 @@ typedef std::shared_ptr<Context> ContextPtr;
 typedef std::function<void(const std::string& response_data)> HTTPSendResponseCallback;
 
 typedef std::function <
-void(const ContextPtr& ctx,
-     const HTTPSendResponseCallback& respcb) > HTTPRequestCallback;
+    void(EventLoop* loop,
+         const ContextPtr& ctx,
+         const HTTPSendResponseCallback& respcb) > HTTPRequestCallback;
 
 typedef std::map<std::string/*The uri*/, HTTPRequestCallback> HTTPRequestCallbackMap;
 }
