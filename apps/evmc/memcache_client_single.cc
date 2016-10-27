@@ -28,7 +28,7 @@ CommandSinglePtr MemcacheClientSingle::PeekRunningCommand() {
 
 void MemcacheClientSingle::PushRunningCommand(CommandSinglePtr& cmd) {
 	if (cmd) {
-		running_command_.push(cmd);
+		running_command_.emplace(cmd);
 	}
 }
 
@@ -40,7 +40,7 @@ void MemcacheClientSingle::PopRunningCommand() {
 
 void MemcacheClientSingle::PushWaitingCommand(CommandSinglePtr& cmd) {
         if (cmd) {
-			waiting_command_.push(cmd);
+			waiting_command_.emplace(cmd);
         }
 }
 
