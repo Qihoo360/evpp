@@ -9,6 +9,9 @@ namespace evpp {
 class EventLoop;
 class PipeEventWatcher;
 namespace http {
+
+// 一个可以嵌入到现有的EventLoop事件循环中的HTTP服务
+// Service 不能独立运行，必须附着在某个EventLoop中
 class EVPP_EXPORT Service {
 public:
     Service(EventLoop* loop);

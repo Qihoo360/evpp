@@ -1,8 +1,11 @@
 
 all : 
 	$(MAKE) -C evpp
-	$(MAKE) -C 3rdparty
-	$(MAKE) -C apps/evmc
+#	$(MAKE) -C 3rdparty
+#	$(MAKE) -C apps
+
+pkg :
+	$(MAKE) -C rpm
 
 test : all
 	$(MAKE) -C test
@@ -25,4 +28,4 @@ clean:
 	$(MAKE) clean -C 3rdparty
 
 
-.PHONY: all test check clean apps 3rdparty
+.PHONY: all test check clean apps 3rdparty pkg

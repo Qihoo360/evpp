@@ -8,12 +8,15 @@
 #include <thread>
 
 namespace evpp {
+
 class EventLoopThreadPool;
+class EventLoop;
+
 namespace udp {
+
 class EVPP_EXPORT Server : public ThreadDispatchPolicy {
 public:
-    typedef std::function<void(const MessagePtr& msg)> MessageHandler;
-
+    typedef std::function<void(EventLoop*, MessagePtr& msg)> MessageHandler;
 public:
     Server();
     ~Server();
@@ -32,7 +35,7 @@ public:
         message_handler_ = handler;
     }
 
-    void SetEventLoopThreadPool(std::shared_ptr<EventLoopThreadPool>& pool) {
+    void SetEventLoopThreadPool(const std::shared_ptr<EventLoopThreadPool>& pool) {
         tpool_ = pool;
     }
 
@@ -47,7 +50,7 @@ private:
 
     MessageHandler   message_handler_;
 
-    // 工作线程池，处理请求
+    // 工作线程池，用来处理UDP请求报文
     std::shared_ptr<EventLoopThreadPool> tpool_;
 
     size_t recv_buf_size_; // 接收udp包时开辟的缓冲区大小。最小值为1472，最大值为65535。默认值为1472。

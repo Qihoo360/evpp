@@ -1,4 +1,4 @@
-// Copy from muduo project http://github.com/chenshuo/muduo 
+// Modified from muduo project http://github.com/chenshuo/muduo
 // @see https://github.com/chenshuo/muduo/blob/master/muduo/net/Buffer.h and https://github.com/chenshuo/muduo/blob/master/muduo/net/Buffer.cc
 
 #pragma once

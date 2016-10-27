@@ -16,6 +16,7 @@ public:
     void set_remote_addr(const struct sockaddr& raddr);
     const struct sockaddr* remote_addr() const;
     struct sockaddr* mutable_remote_addr() { return sock::sockaddr_cast(&remote_addr_); }
+    std::string remote_ip() const;
 
     int sockfd() const { return sockfd_; }
 private:
@@ -32,13 +33,29 @@ inline const struct sockaddr* Message::remote_addr() const {
     return sock::sockaddr_cast(&remote_addr_);
 }
 
+inline std::string Message::remote_ip() const {
+    return sock::ToIP(remote_addr());
+}
+
 inline bool SendMessage(int fd, const struct sockaddr* addr, const char* d, size_t dlen) {
+    if (dlen == 0) {
+        return true;
+    }
+
     int sentn = ::sendto(fd, d, dlen, 0, addr, sizeof(*addr));
     if (sentn != (int)dlen) {
         return false;
     }
 
     return true;
+}
+
+inline bool SendMessage(int fd, const struct sockaddr* addr, const std::string& d) {
+    return SendMessage(fd, addr, d.data(), d.size());
+}
+
+inline bool SendMessage(int fd, const struct sockaddr* addr, const Slice& d) {
+    return SendMessage(fd, addr, d.data(), d.size());
 }
 
 inline bool SendMessage(const MessagePtr& msg) {
