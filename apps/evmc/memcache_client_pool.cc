@@ -66,7 +66,7 @@ bool MemcacheClientPool::Start() {
 
     // 须先构造memc_client_map_数组，再各个元素取地址，否则地址不稳定，可能崩溃
     for (uint32_t i = 0; i < loop_pool_.thread_num(); ++i) {
-        memc_client_map_.push_back(MemcClientMap());
+        memc_client_map_.emplace_back(MemcClientMap());
         evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(i);
 
         for (size_t svr = 0; svr < server_list.size(); ++svr) {
@@ -81,7 +81,7 @@ bool MemcacheClientPool::Start() {
                                                      std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
             tcp_client->Connect();
 
-            memc_client_map_.back().insert(std::make_pair(server_list[svr], memc_client));
+            memc_client_map_.back().emplace(server_list[svr], memc_client);
         }
     }
 
@@ -139,7 +139,7 @@ public:
 		}
 
         for (auto it = res.get_result_map_.begin(); it != res.get_result_map_.end(); ++it) {
-            collect_result_.get_result_map_.insert(*it);
+            collect_result_.get_result_map_.emplace(*it);
         }
 
         LOG_DEBUG << "MultiGetCollector count=" << collect_counter_;
@@ -172,7 +172,7 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
 	uint16_t vbucket = 0;
     for (size_t i = 0; i < keys.size(); ++i) {
         vbucket = vbconf->GetVbucketByKey(keys[i].c_str(), keys[i].size());
-        vbucket_keys[vbucket].push_back(keys[i]);
+        vbucket_keys[vbucket].emplace_back(keys[i]);
     }
 
     MultiGetCollectorPtr collector(new MultiGetCollector(caller_loop, vbucket_keys.size(), callback));
@@ -211,7 +211,7 @@ void MemcacheClientPool::MultiGet2(evpp::EventLoop* caller_loop, const std::vect
 	}
     for (auto key = keys.begin(); key != keys.end(); ++key) {
         vbucket = vbconf->GetVbucketByKey((*key).c_str(), (*key).size());
-        vbucket_keys[vbucket].push_back(*key);
+        vbucket_keys[vbucket].emplace_back(*key);
     }
 
 	//evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(thread_hash);
@@ -237,7 +237,7 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
 	uint16_t vbucket = 0;
     for (size_t i = 0; i < keys.size(); ++i) {
         vbucket = vbconf->GetVbucketByKey(keys[i].c_str(), keys[i].size());
-        vbucket_keys[vbucket].push_back(keys[i]);
+        vbucket_keys[vbucket].emplace_back(keys[i]);
     }
 
 	PrefixMultiGetCollectorPtr collector(new PrefixMultiGetCollector(caller_loop, vbucket_keys.size(), callback));
@@ -333,7 +333,7 @@ void MemcacheClientPool::DoLaunchCommand(CommandPtr command) {
                                                  std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         tcp_client->Connect();
 
-        client_map->insert(std::make_pair(server_addr, memc_client));
+        client_map->emplace(server_addr, memc_client);
 
         memc_client->push_waiting_command(command);
         return;
