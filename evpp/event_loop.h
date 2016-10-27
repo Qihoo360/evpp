@@ -59,8 +59,9 @@ public:
         return !running();
     }
 private:
-    void StopInLoop();
     void Init();
+    void InitEventWatcher();
+    void StopInLoop();
     void DoPendingFunctors();
 
 private:

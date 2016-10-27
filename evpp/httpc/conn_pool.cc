@@ -49,21 +49,19 @@ void ConnPool::Clear() {
         return;
     }
 
-    std::map<EventLoop*, std::vector<ConnPtr> > m;
+    std::map<EventLoop*, std::vector<ConnPtr> > map;
     if (!pool_.empty()) {
         std::lock_guard<std::mutex> guard(mutex_);
-        pool_.swap(m);
+        pool_.swap(map);
         assert(pool_.empty());
     }
 
     // 让Conn在自己所在的线程(EventLoop)中释放
-    auto it = m.begin();
-    auto ite = m.end();
-    for (; it != ite; ++it) {
-        for (size_t i = 0; i < it->second.size(); ++i) {
-            it->first->RunInLoop(std::bind(&Conn::Close, it->second[i]));
+    for (auto &m : map) {
+        for (auto &c : m.second) {
+            m.first->RunInLoop(std::bind(&Conn::Close, c));
         }
-        it->second.clear();
+        m.second.clear();
     }
 
     pool_.clear();
