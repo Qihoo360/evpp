@@ -18,6 +18,7 @@ EVPP_EXPORT struct sockaddr_in GetLocalAddr(int sockfd);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr_storage* ss);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr* ss);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr_in* ss);
+EVPP_EXPORT std::string ToIP(const struct sockaddr* ss);
 
 template<typename To, typename From>
 inline To implicit_cast(From const& f) {
