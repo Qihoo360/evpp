@@ -110,7 +110,7 @@ void MemcacheClientSingle::MultiGet2(evpp::EventLoop* caller_loop, const std::ve
         return;
     }
 	assert(loop_->IsInLoopThread());
-	CommandSinglePtr cmd(new CommandSingle(caller_loop, callback, thread_id_++));
+	CommandSinglePtr cmd(new CommandSingle(loop_, callback, thread_id_++));
 	Packet(keys, cmd->buf(), cmd->id());
 	SendData(cmd);
 }
