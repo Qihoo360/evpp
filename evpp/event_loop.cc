@@ -24,6 +24,7 @@ EventLoop::EventLoop() : create_evbase_myself_(true), pending_functors_(FLAGS_pe
 
 EventLoop::EventLoop(struct event_base* base)
     : evbase_(base), create_evbase_myself_(false), pending_functors_(FLAGS_pending_size) {
+
     Init();
 
     // 当从一个已有的 event_base 创建EventLoop对象时，就不会调用 EventLoop::Run 方法，所以需要在这里调用 watcher_ 的初始化工作。
