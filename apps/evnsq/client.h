@@ -47,10 +47,8 @@ protected:
     Client(evpp::EventLoop* loop, Type t, const std::string& topic, const std::string& channel, const Option& ops);
     void HandleLoopkupdHTTPResponse(
         const std::shared_ptr<evpp::httpc::Response>& response,
-        evpp::httpc::Request* request);
+        const std::shared_ptr<evpp::httpc::Request>& request);
     void OnConnection(const ConnPtr& conn);
-    //void Subscribe();
-    //void UpdateReady(int count);
 
 protected:
     evpp::EventLoop* loop_;
@@ -58,8 +56,8 @@ protected:
     Option option_;
     std::string topic_;
     std::string channel_;
-    std::map<std::string/*host:port*/, ConnPtr> connecting_conns_; // The TCP connections with NSQD
-    std::map<std::string/*host:port*/, ConnPtr> conns_; // The TCP connections with NSQD
+    std::map<std::string/*NSQD address "host:port"*/, ConnPtr> connecting_conns_; // The TCP connections which are connecting to NSQDs
+    std::map<std::string/*NSQD address "host:port"*/, ConnPtr> conns_; // The TCP connections which has established the connection with NSQDs
     MessageCallback msg_fn_;
 
     typedef std::function<void(Conn*)> ReadyToPublishCallback;
