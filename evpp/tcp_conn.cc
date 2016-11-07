@@ -166,7 +166,6 @@ void TCPConn::HandleRead(Timestamp recv_time) {
     loop_->AssertInLoopThread();
     int serrno = 0;
     ssize_t n = input_buffer_.ReadFromFD(chan_->fd(), &serrno);
-
     if (n > 0) {
         msg_fn_(shared_from_this(), &input_buffer_, recv_time);
     } else if (n == 0) {
@@ -174,6 +173,8 @@ void TCPConn::HandleRead(Timestamp recv_time) {
             // This is an outgoing connection, we own it and it's done. so close it
             HandleClose();
         } else {
+            // 解决半关闭连接问题：https://github.com/chenshuo/muduo/pull/117 
+
             // This is an incoming connection, we need to preserve the connection for a while so that we can reply to it.
             // And we set a timer to close the connection eventually.
             chan_->DisableReadEvent();
