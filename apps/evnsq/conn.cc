@@ -79,7 +79,6 @@ void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timesta
         case evnsq::Conn::kIdentifying:
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 status_ = kConnected;
-
                 if (conn_fn_) {
                     conn_fn_(shared_from_this());
                 }
@@ -87,7 +86,6 @@ void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timesta
                 LOG_ERROR << "Identify ERROR";
                 Reconnect();
             }
-
             break;
 
         case evnsq::Conn::kConnected:
@@ -105,7 +103,6 @@ void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timesta
             } else {
                 Reconnect();
             }
-
             break;
 
         case evnsq::Conn::kReady:
