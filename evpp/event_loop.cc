@@ -5,8 +5,9 @@
 #include "evpp/event_loop.h"
 #include "evpp/invoke_timer.h"
 
+DEFINE_int32(pending_size , 1024 * 50, "event loop pending queue size");
 namespace evpp {
-EventLoop::EventLoop() : create_evbase_myself_(true), pending_functor_count_(0) {
+EventLoop::EventLoop() : create_evbase_myself_(true), pending_functors_(FLAGS_pending_size), pending_functor_count_(0){
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
     if (cfg) {
@@ -22,22 +23,16 @@ EventLoop::EventLoop() : create_evbase_myself_(true), pending_functor_count_(0) 
 }
 
 EventLoop::EventLoop(struct event_base* base)
-    : evbase_(base), create_evbase_myself_(false) {
-
+    : evbase_(base), create_evbase_myself_(false), pending_functors_(FLAGS_pending_size) {
     Init();
 
-    // 当从一个已有的 event_base 创建EventLoop对象时，就不会调用 EventLoop::Run 方法，所以需要在这里调用 watcher_ 的初始化工作。
-    InitEventWatcher();
-}
-
-void EventLoop::InitEventWatcher() {
     watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
     int rc = watcher_->Init();
     assert(rc);
     rc = rc && watcher_->AsyncWait();
     assert(rc);
     if (!rc) {
-        LOG_FATAL << "PipeEventWatcher init failed.";
+        LOG_ERROR << "PipeEventWatcher init failed.";
     }
 }
 
@@ -61,15 +56,21 @@ void EventLoop::Init() {
 }
 
 void EventLoop::Run() {
-    tid_ = std::this_thread::get_id(); // The actual thread id
+    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
+    int rc = watcher_->Init();
+    assert(rc);
+    rc = rc && watcher_->AsyncWait();
+    assert(rc);
+    if (!rc) {
+        LOG_ERROR << "PipeEventWatcher init failed.";
+    }
 
-    // 在当前的EventLoop线程中初始化
-    InitEventWatcher();
+    tid_ = std::this_thread::get_id(); // The actual thread id
 
     // 所有的事情都准备好之后，才置标记为true
     running_ = true;
+    rc = event_base_dispatch(evbase_);
 
-    int rc = event_base_dispatch(evbase_);
     if (rc == 1) {
         LOG_ERROR << "event_base_dispatch error: no event registered";
     } else if (rc == -1) {
@@ -146,8 +147,11 @@ void EventLoop::RunInLoop(const Functor& functor) {
 
 void EventLoop::QueueInLoop(const Functor& cb) {
     {
-        std::lock_guard<std::mutex> lock(mutex_);
-        pending_functors_.emplace_back(cb);
+        //std::lock_guard<std::mutex> lock(mutex_);
+        //pending_functors_.emplace_back(cb);
+		auto f = new Functor(cb);
+		while(!pending_functors_.push(f)) {
+		}
         ++pending_functor_count_;
     }
 
@@ -157,18 +161,23 @@ void EventLoop::QueueInLoop(const Functor& cb) {
 }
 
 void EventLoop::DoPendingFunctors() {
-    std::vector<Functor> functors;
+    //std::vector<Functor> functors;
     calling_pending_functors_ = true;
 
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        functors.swap(pending_functors_);
-    }
+	Functor * f = NULL;
+	while (pending_functors_.pop(f)) {
+		(*f)();
+		delete f;
+	}
+    //{
+    //    std::lock_guard<std::mutex> lock(mutex_);
+    //    functors.swap(pending_functors_);
+    //}
 
-    for (size_t i = 0; i < functors.size(); ++i) {
-        functors[i]();
-        --pending_functor_count_;
-    }
+    //for (size_t i = 0; i < functors.size(); ++i) {
+    //    functors[i]();
+    //    --pending_functor_count_;
+    //}
 
     calling_pending_functors_ = false;
 }
