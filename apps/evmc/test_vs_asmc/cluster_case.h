@@ -91,7 +91,7 @@ private:
 	void ClusterPrefixGetCallback(Timer t, const std::string& key, const evmc::PrefixGetResultPtr rt);
 
 	void ClusterPrefixMultiGet(const std::vector<std::string>& keys);
-	void ClusterPrefixMultiGetCallback(Timer t, const evmc::PrefixMultiGetResultPtr m);
+	void ClusterPrefixMultiGetCallback(Timer t, const evmc::PrefixMultiGetResult& m);
 
 	void IncrCompletedNums(); 
 
