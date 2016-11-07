@@ -27,7 +27,7 @@ inline void StringSplit(
             start = pos + 1;
         } else if (pos == StringType::npos || (maxSplits && numSplits + 1 == maxSplits)) {
             // Copy the rest of the string
-            ret.push_back(StringType());
+            ret.emplace_back(StringType());
             *(ret.rbegin()) = StringType(str.data() + start, str.size() - start);
             break;
         } else {
