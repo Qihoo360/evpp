@@ -89,7 +89,7 @@ void Connector::Connect() {
 
 void Connector::HandleWrite() {
     if (status_ == kDisconnected) {
-        // 这里有可能是超时了，但回调时间已经派发到队列中，后面才调用。
+        // 这里有可能是超时了，但回调时间已经派发到队列中，后来才调用。
         LOG_INFO << "fd=" << chan_->fd() << " remote_addr=" << remote_addr_ << " receive write event when socket is closed";
         return;
     }
