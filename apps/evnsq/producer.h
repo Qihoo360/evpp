@@ -35,7 +35,7 @@ private:
     ConnPtr GetNextConn();
 private:
     std::map<std::string/*host:port*/, ConnPtr>::iterator conn_;
-    typedef std::pair<std::list<Command*>, size_t> CommandList;
+    typedef std::pair<std::list<Command*>, size_t/*Command count*/> CommandList;
 
     std::map<Conn*, CommandList> wait_ack_;
     ReadyCallback ready_fn_;

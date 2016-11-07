@@ -120,7 +120,8 @@ void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timesta
 
 void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) {
     if (frame_type == kFrameTypeResponse) {
-        if (message_len == 11 && strncmp(buf->data(), "_heartbeat_", 11) == 0) {
+        const size_t kHeartbeatLen = sizeof("_heartbeat_") - 1;
+        if (message_len == kHeartbeatLen && strncmp(buf->data(), "_heartbeat_", kHeartbeatLen) == 0) {
             LOG_TRACE << "recv heartbeat from nsqd " << tcp_client_->remote_addr();
             Command c;
             c.Nop();
@@ -133,31 +134,30 @@ void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) 
     switch (frame_type) {
     case kFrameTypeResponse:
         LOG_INFO << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
-
         if (client_->IsProducer() && publish_response_cb_) {
             publish_response_cb_(buf->data(), message_len);
         }
-
-        buf->Retrieve(message_len);
+        buf->Skip(message_len);
         break;
 
     case kFrameTypeMessage: {
         Message msg;
         msg.Decode(message_len, buf);
-
         if (msg_fn_) {
-            //TODO dispatch msg to a working thread pool
+            //TODO do we need to dispatch this msg to a working thread pool?
             if (msg_fn_(&msg) == 0) {
                 Finish(msg.id);
             } else {
                 Requeue(msg.id);
             }
         }
-
         return;
     }
 
     case kFrameTypeError:
+        LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
+        // TODO how to do this?
+        buf->Skip(message_len);
         break;
 
     default:
@@ -166,6 +166,7 @@ void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) 
 }
 
 void Conn::WriteCommand(const Command* c) {
+    // TODO : using a object pool to improve performance
     evpp::Buffer buf;
     c->WriteTo(&buf);
     tcp_client_->conn()->Send(&buf);
