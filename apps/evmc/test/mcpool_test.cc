@@ -18,9 +18,9 @@ static void OnTestGetDone(const std::string& key, const GetResult& res) {
 
 static void OnTestPrefixDone(const std::string& prefix_key, const PrefixGetResultPtr res) {
     LOG_INFO << "************** OnTestPrefixGetDone prefix=" << prefix_key << " code=" << res->code;
-    std::map<std::string, std::string>::const_iterator it = res->get_result_map_.begin();
+    std::map<std::string, std::string>::const_iterator it = res->result_map_.begin();
 
-    for (; it != res->get_result_map_.end(); ++it) {
+    for (; it != res->result_map_.end(); ++it) {
         LOG_INFO << "<<<<<<<<<<<<<< OnTestPrefixGetDone " << it->first << " " << it->second;
 	}
 }
@@ -37,12 +37,12 @@ static void OnTestMultiGetDone(const MultiGetResult& res) {
     }
 }
 
-static void OnTestPrefixMultiGetDone(PrefixMultiGetResultPtr res) {
+static void OnTestPrefixMultiGetDone(const PrefixMultiGetResult& res) {
 	  gettimeofday(&g_tv_end, NULL);
 	  LOG_INFO << "cost:" << (g_tv_end.tv_sec - g_tv_begin.tv_sec) * 1e6 + (g_tv_end.tv_usec - g_tv_end.tv_usec); 
-    LOG_INFO << ">>>>>>>>>>>>> OnTestPrefixMultiGetDone code=" << res->code;
-	auto it = res->get_result_map_.begin();
-	for (; it != res->get_result_map_.end(); ++it) {
+    LOG_INFO << ">>>>>>>>>>>>> OnTestPrefixMultiGetDone code=" << res.code;
+	auto it = res.get_result_map_.begin();
+	for (; it != res.get_result_map_.end(); ++it) {
 		OnTestPrefixDone(it->first, it->second);
 	}
 }

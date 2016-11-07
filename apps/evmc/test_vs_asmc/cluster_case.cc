@@ -219,6 +219,7 @@ void ClusterCase::ClusterGetCallback(Timer t, const std::string& key, const evmc
 }
 
 void ClusterCase::ClusterMultiGet(const std::vector<std::string>& keys) {
+
     if (NULL == mpc_) {
         return;
     }
@@ -235,12 +236,12 @@ void ClusterCase::ClusterMultiGetCallback(Timer t, const  evmc::MultiGetResult &
     for ( ; it != end; ++it) {
 		const evmc::GetResult& rt = it->second;
 		if (0 != rt.code || 0 != (it->first).compare(rt.value)) {
-			LOG(WARNING) << "MultiGet ret error, rtcode=" << rt.code << " key=" << it->first << ",value=" << rt.value;
+			//std::cout  << "MultiGet ret error, rtcode=" << rt.code << " key=" << it->first << ",value=" << rt.value << std::endl;
 			error_nums_++;
 			continue;
 		} else {
 			total_ += 1;
-			LOG(INFO) << "MultiGet ret success, rtcode=" << rt.code << " key=" << it->first << ",value=" << rt.value;
+			//std::cout << "MultiGet ret success, rtcode=" << rt.code << " key=" << it->first << ",value=" << rt.value << std::endl;
 		}
 	}
 	if (FLAGS_test_type != -1) {
@@ -288,16 +289,16 @@ void ClusterCase::ClusterPrefixGetCallback(Timer t, const std::string& key, cons
 	}
 	//LOG_INFO << "OnPrefixGet success key=" << key;
 	if (0 != rt->code) {
-		LOG(WARNING) << "PrefixGet error key=" << key << " ret, retcode=" << rt->code;
+//		LOG(WARNING) << "PrefixGet error key=" << key << " ret, retcode=" << rt->code;
 		error_nums_++;
 	} else {
-		auto & result_map = rt->get_result_map_;
+		auto & result_map = rt->result_map_;
 		for (auto it = result_map.begin(); it != result_map.end(); ++it) {
 			if (0 != it->first.compare(it->second)) {
-				LOG(WARNING) << "PrefixGet error key=" << key << " , key=" << it->first << " value=" << it->second;
+				//LOG(WARNING) << "PrefixGet error key=" << key << " , key=" << it->first << " value=" << it->second;
 			} else {
 				total_ += 1;
-				LOG_INFO << "PrefixGet success key=" << key << " , key=" << it->first << " value=" << it->second;
+				//LOG_ERROR << "PrefixGet success key=" << key << " , key=" << it->first << " value=" << it->second;
 			}
 		}
 	}
@@ -313,22 +314,22 @@ void ClusterCase::ClusterPrefixMultiGet(const std::vector<std::string>& keys) {
     mpc_->PrefixMultiGet(event_loop_, keys, std::bind(&ClusterPrefixMultiGetCallback, this, t, std::placeholders::_1));
 }
 
-void ClusterCase::ClusterPrefixMultiGetCallback(Timer t, const evmc::PrefixMultiGetResultPtr m) {
+void ClusterCase::ClusterPrefixMultiGetCallback(Timer t, const evmc::PrefixMultiGetResult& m) {
 	t.End();
 	if (FLAGS_test_type != -1) {
 		cost_list_.push_back(t.Elapsedus());
 	}
 	//LOG_INFO << "time key=" << t.Elapsedus();
-	if (m->code != 0) {
-		LOG(WARNING) << "PrefixMultiGet error, retcode =" << m->code;
+	if (m.code != 0) {
+		LOG(WARNING) << "PrefixMultiGet error, retcode =" << m.code;
 		error_nums_++;
 	} else {
-		const auto & rts =  m->get_result_map_;
+		const auto & rts =  m.get_result_map_;
 		for (auto it = rts.begin(); it != rts.end(); ++it) {
-			auto & result_map = it->second->get_result_map_;
+			auto & result_map = it->second->result_map_;
 			for (auto iter = result_map.begin(); iter != result_map.end(); ++iter) {
 				if (0 != iter->first.compare(iter->second)) {
-					LOG(WARNING) << "PrefixMultiGet error key=" << it->first << " , key=" << iter->first << " value=" << iter->second;
+					//LOG(WARNING) << "PrefixMultiGet error key=" << it->first << " , key=" << iter->first << " value=" << iter->second;
 				} else {
 					total_ += 1;
 					LOG_INFO << "PrefixMultiGet success key=" << it->first << " time=" << t.Elapsedus() << " , key=" << iter->first << " value=" << iter->second;
