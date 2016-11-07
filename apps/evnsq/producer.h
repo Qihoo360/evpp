@@ -44,9 +44,10 @@ private:
     int64_t published_ok_count_;
     int64_t published_failed_count_;
 
+    enum { kDefaultHighWaterMark = 1024 };
     bool hwm_triggered_; // The flag of high water mark
     HighWaterMarkCallback high_water_mark_fn_;
-    size_t high_water_mark_;
+    size_t high_water_mark_; // The default value is kDefaultHighWaterMark
 };
 
 

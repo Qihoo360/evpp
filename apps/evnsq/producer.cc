@@ -5,7 +5,6 @@
 #include "conn.h"
 
 namespace evnsq {
-static const size_t kHighWaterMark = 1024;
 
 Producer::Producer(evpp::EventLoop* loop, const Option& ops)
     : Client(loop, kProducer, "", "", ops)
@@ -14,7 +13,7 @@ Producer::Producer(evpp::EventLoop* loop, const Option& ops)
     , published_ok_count_(0)
     , published_failed_count_(0)
     , hwm_triggered_(false)
-    , high_water_mark_(kHighWaterMark) {
+    , high_water_mark_(kDefaultHighWaterMark) {
     conn_ = conns_.end();
     ready_to_publish_fn_ = std::bind(&Producer::OnReady, this, std::placeholders::_1);
 }
@@ -56,7 +55,7 @@ void Producer::SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t 
 }
 
 void Producer::PublishInLoop(Command* c) {
-    if (wait_ack_count_ > kHighWaterMark * conns_.size()) {
+    if (wait_ack_count_ > kDefaultHighWaterMark * conns_.size()) {
         LOG_WARN << "Too many messages are waiting a response ACK. Please try again later";
         hwm_triggered_ = true;
 
@@ -97,7 +96,7 @@ void Producer::OnPublishResponse(Conn* conn, const char* d, size_t len) {
         published_ok_count_++;
         delete c;
 
-        if (hwm_triggered_ && wait_ack_count_ < kHighWaterMark * conns_.size() / 2) {
+        if (hwm_triggered_ && wait_ack_count_ < kDefaultHighWaterMark * conns_.size() / 2) {
             LOG_TRACE << "We can publish more data now.";
             hwm_triggered_ = false;
 
@@ -139,6 +138,7 @@ ConnPtr Producer::GetNextConn() {
         return ConnPtr();
     }
 
+    // TODO FIXME : this iterator conn_ may be invalid when there is some connection broken up with NSQD
     if (conn_ == conns_.end()) {
         conn_ = conns_.begin();
     }
