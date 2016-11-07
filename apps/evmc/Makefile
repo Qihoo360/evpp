@@ -25,7 +25,7 @@ LDFLAGS= $(RTFLAGS) \
 		 -L$(PROJECT_ROOT_DIR)/evpp \
 		 -L$(THIRD_PARTY_DIR) \
 		 -lpthread \
-		 -levpp -levent -lglog -lhashkit
+		 -levpp -levent -lglog -lhashkit -ljemalloc 
 
 DIRNAME=$(shell basename `pwd`)
 
