@@ -3,12 +3,12 @@
 #include "memcache_client.h"
 #include "vbucket_config.h"
 #include "command.h"
-#include "objectpool.hpp"
+//#include "objectpool.hpp"
 
 namespace evmc {
 
 typedef std::map<std::string, MemcacheClientPtr> MemcClientMap;
-typedef ObjectPool<Command, MultiGetCommand2> MultiGet2CommandPool; 
+//typedef ObjectPool<Command, MultiGetCommand2> MultiGet2CommandPool; 
 
 class MemcacheClientPool {
 public:
@@ -24,9 +24,9 @@ public:
     // @return  - 
     MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms)
         : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
-        , timeout_ms_(timeout_ms), 
-		multiget_collector_pool_(new MultiGet2CollectorPool()),
-		multiget_command_pool_(new MultiGet2CommandPool()) {
+        , timeout_ms_(timeout_ms) { 
+//		multiget_collector_pool_(new MultiGet2CollectorPool()),
+//		multiget_command_pool_(new MultiGet2CommandPool()) {
 		//multiget_collector_pool_(NULL),
 	    //multiget_command_pool_(NULL) {
     }
@@ -44,7 +44,6 @@ public:
     void PrefixGet(evpp::EventLoop* caller_loop, const std::string& key, PrefixGetCallback callback);
 
     void MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback);
-    void MultiGet2(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback2 callback);
 
     void PrefixMultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, PrefixMultiGetCallback callback);
 private:
@@ -52,7 +51,6 @@ private:
     MemcacheClientPool(const MemcacheClientPool&);
     const MemcacheClientPool& operator=(const MemcacheClientPool&);
 	static void MainEventThread();
-	void MultiGetImpl(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, MultiGetCollector2Ptr& collector);
 
 private:
     void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClientPtr memc_client);
@@ -62,7 +60,7 @@ private:
 
     MemcClientMap* GetMemcClientMap(int hash);
 private:
-    void DoLaunchCommand(CommandPtr command);
+    void DoLaunchCommand(const int32_t thread_hash, CommandPtr command);
 
     std::vector<MemcClientMap> memc_client_map_;
 
@@ -74,45 +72,13 @@ private:
 
     // std::atomic<VbucketConfigPtr> vbucket_config_;
     MultiModeVbucketConfigPtr vbucket_config_;
-    std::mutex vbucket_config_mutex_; // TODO : use rw mutex
+    pthread_rwlock_t vbucket_config_mutex_; // TODO : use rw mutex
 
     std::atomic_int next_thread_;
-	MultiGet2CollectorPool	* multiget_collector_pool_;
-	MultiGet2CommandPool * multiget_command_pool_;
+	//MultiGet2CollectorPool	* multiget_collector_pool_;
+	//MultiGet2CommandPool * multiget_command_pool_;
 };
 
-class PrefixMultiGetCollector {
-public:
-    PrefixMultiGetCollector(evpp::EventLoop* caller_loop, int count, const PrefixMultiGetCallback& cb)
-        : caller_loop_(caller_loop), collect_counter_(count)
-		  , collect_result_(new PrefixMultiGetResult()), callback_(cb) {}
-    void Collect(const PrefixMultiGetResultPtr res) {
-		if (res->code == 0) {
-			collect_result_->code = 0; //TODO 0 是什么含义？
-		}
-		auto& collect_result_map = collect_result_->get_result_map_;
-		auto& res_result_map = res->get_result_map_;
-        LOG_DEBUG << "PrefixMultiGetCollector keysize=" << res_result_map.size();
-		for (auto it = res_result_map.begin(); it != res_result_map.end(); ++it) {
-			collect_result_map.emplace(it->first, it->second);
-		}
-        LOG_DEBUG << "PrefixMultiGetCollector count=" << collect_counter_;
-		if (--collect_counter_ <= 0) {
-			if (caller_loop_) {
-				caller_loop_->RunInLoop(std::bind(callback_, collect_result_));
-			} else {
-				callback_(collect_result_);
-			}
-		}
-	}
-private:
-    evpp::EventLoop* caller_loop_;
-    int collect_counter_;
-    PrefixMultiGetResultPtr collect_result_;
-    PrefixMultiGetCallback callback_;
-};
-
-typedef std::shared_ptr<PrefixMultiGetCollector> PrefixMultiGetCollectorPtr;
 }
 
 
