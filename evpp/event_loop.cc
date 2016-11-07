@@ -147,11 +147,16 @@ void EventLoop::RunInLoop(const Functor& functor) {
 
 void EventLoop::QueueInLoop(const Functor& cb) {
     {
+<<<<<<< HEAD
         //std::lock_guard<std::mutex> lock(mutex_);
         //pending_functors_.emplace_back(cb);
 		auto f = new Functor(cb);
 		while(!pending_functors_.push(f)) {
 		}
+=======
+        std::lock_guard<std::mutex> lock(mutex_);
+        pending_functors_.emplace_back(cb);
+>>>>>>> 61398403e90aae391a3b01edbbe836470232be68
         ++pending_functor_count_;
     }
 
