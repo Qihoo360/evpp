@@ -244,6 +244,7 @@ public:
     }
 
     virtual void OnError(int err_code) {
+<<<<<<< HEAD
 		LOG(WARNING) << "MultiGetCommand OnError id=" << id();
 		auto & keys = get_handler()->FindKeysByid(vbucket_id());
 		auto & result_map = get_handler()->get_result().get_result_map_;
@@ -252,6 +253,15 @@ public:
 			k = result_map.find(it);
 			assert(k != result_map.end());
 			k->second.code = err_code;
+=======
+        LOG(WARNING) << "MultiGetCommand OnError id=" << id();
+        mget_result_.code = err_code;
+		auto & result_map = mget_result_.get_result_map_;
+        for (auto it = keys_.begin(); it != keys_.end(); ++it) {
+			if (result_map.find(*it) == result_map.end()) {
+				result_map.emplace(*it, GetResult(err_code, "not enough connections"));
+			}
+>>>>>>> 61398403e90aae391a3b01edbbe836470232be68
 		}
 		const uint32_t finish = get_handler()->FinishedOne();
 		if ((finish + 1) >= get_handler()->vbucket_size()) {
