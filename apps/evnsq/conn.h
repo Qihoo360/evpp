@@ -23,6 +23,8 @@ namespace evnsq {
 
 class Command;
 class Client;
+
+// The class Conn represents a connection with one NSQD server
 class EVNSQ_EXPORT Conn : public std::enable_shared_from_this<Conn> {
 public:
     enum Status {
@@ -31,7 +33,7 @@ public:
         kIdentifying = 2,
         kConnected = 3, // Successfully connected to NSQD
         kSubscribing = 4,
-        kReady = 5, // Ready to do produce message to NSQD or consume message from NSQD
+        kReady = 5, // Ready to do produce messages to NSQD or consume messages from NSQD
     };
 
     typedef std::function<void(const std::shared_ptr<Conn>& conn)> ConnectionCallback;
