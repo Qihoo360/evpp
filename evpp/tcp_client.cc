@@ -63,7 +63,7 @@ void TCPClient::DisconnectInLoop() {
 
 void TCPClient::Reconnect() {
     LOG_INFO << "Try to reconnect to " << remote_addr_ << " in " << reconnect_interval_.Seconds() << "s again";
-    loop_->RunAfter(reconnect_interval_, std::bind(&TCPClient::Connect, this));
+    Connect();
 }
 
 void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
@@ -72,11 +72,6 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
         // 在某些场景下，需要将连接失败反馈给上层调用者
         // 注意：在无法连接到服务器时，由于客户端不断的重试，会导致上层调用者也会不断的收到该回调通知
         conn_fn_(TCPConnPtr(new TCPConn(loop_, "", sockfd, "", "")));
-
-        if (auto_reconnect_.load()) {
-            Reconnect();
-        }
-
         return;
     }
 
