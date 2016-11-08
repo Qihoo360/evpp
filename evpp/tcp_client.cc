@@ -12,6 +12,7 @@ TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& 
     , remote_addr_(raddr)
     , name_(n)
     , auto_reconnect_(true)
+    , reconnect_interval_(3.0)
     , connecting_timeout_(3.0)
     , conn_fn_(&internal::DefaultConnectionCallback)
     , msg_fn_(&internal::DefaultMessageCallback) {
@@ -28,7 +29,7 @@ TCPClient::~TCPClient() {
 void TCPClient::Connect() {
     auto f = [this]() {
         loop_->AssertInLoopThread();
-        connector_.reset(new Connector(loop_, remote_addr_, connecting_timeout_));
+        connector_.reset(new Connector(loop_, this));
         connector_->SetNewConnectionCallback(std::bind(&TCPClient::OnConnection, this, std::placeholders::_1, std::placeholders::_2));
         connector_->Start();
     };
@@ -61,8 +62,8 @@ void TCPClient::DisconnectInLoop() {
 }
 
 void TCPClient::Reconnect() {
-    LOG_INFO << "Try to reconnect to " << remote_addr_ << " again.";
-    return Connect();
+    LOG_INFO << "Try to reconnect to " << remote_addr_ << " in " << reconnect_interval_.Seconds() << "s again";
+    loop_->RunAfter(reconnect_interval_, std::bind(&TCPClient::Connect, this));
 }
 
 void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
