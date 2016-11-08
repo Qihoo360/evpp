@@ -56,5 +56,5 @@ $(TARGET) : $(OBJS)
 	$(CXX) $(CFLAGS) $(CPPFLAGS) $< -o $@
 
 clean:
-	rm -rf *.o *.d $(OBJS) $(DEPS) $(TARGET) *.tmp decoded.txt log
+	rm -rf *.o *.d core.* $(OBJS) $(DEPS) $(TARGET) *.tmp decoded.txt log
 
