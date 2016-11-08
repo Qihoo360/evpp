@@ -135,7 +135,9 @@ void Connector::HandleError() {
 
     if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
         conn_fn_(-1, "");
-    } else {
+    }
+
+    if (owner_tcp_client_->auto_reconnect()) {
         loop_->RunAfter(owner_tcp_client_->reconnect_interval(), std::bind(&Connector::Start, this));
     }
 }
