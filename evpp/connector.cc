@@ -16,7 +16,7 @@ Connector::Connector(EventLoop* l, TCPClient* client)
 }
 
 Connector::~Connector() {
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
 
     if (!IsConnected()) {
         // A connected tcp-connection's sockfd has been transfered to TCPConn.
@@ -34,7 +34,6 @@ Connector::~Connector() {
 
 void Connector::Start() {
     LOG_INFO << "Try to connect " << remote_addr_ << " status=" << StatusToString();
-        LOG_ERROR << "loop=" << loop_ << " auto reconnect in " << owner_tcp_client_->reconnect_interval().Seconds() << "s thread=" << std::this_thread::get_id();
     assert(loop_->IsInLoopThread());
 
     timer_.reset(new TimerEventWatcher(loop_, std::bind(&Connector::OnConnectTimeout, shared_from_this()), timeout_));
@@ -57,7 +56,7 @@ void Connector::Start() {
 
 void Connector::Cancel() {
     LOG_INFO << "Cancel to connect " << remote_addr_ << " status=" << StatusToString();
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     if (dns_resolver_) {
         dns_resolver_->Cancel();
     }
@@ -140,7 +139,7 @@ void Connector::HandleError() {
     }
 
     if (owner_tcp_client_->auto_reconnect()) {
-        LOG_ERROR << "loop=" << loop_ << " auto reconnect in " << owner_tcp_client_->reconnect_interval().Seconds() << "s thread=" << std::this_thread::get_id();
+        LOG_INFO << "loop=" << loop_ << " auto reconnect in " << owner_tcp_client_->reconnect_interval().Seconds() << "s thread=" << std::this_thread::get_id();
         loop_->RunAfter(owner_tcp_client_->reconnect_interval(), std::bind(&Connector::Start, shared_from_this()));
     }
 }

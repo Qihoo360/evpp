@@ -28,7 +28,7 @@ TCPClient::~TCPClient() {
 
 void TCPClient::Connect() {
     auto f = [this]() {
-        loop_->AssertInLoopThread();
+        assert(loop_->IsInLoopThread());
         connector_.reset(new Connector(loop_, this));
         connector_->SetNewConnectionCallback(std::bind(&TCPClient::OnConnection, this, std::placeholders::_1, std::placeholders::_2));
         connector_->Start();
@@ -41,7 +41,7 @@ void TCPClient::Disconnect() {
 }
 
 void TCPClient::DisconnectInLoop() {
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     auto_reconnect_.store(false);
 
     if (conn_) {
@@ -76,7 +76,7 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
     }
 
     LOG_INFO << "Successfully connected to " << remote_addr_;
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     TCPConnPtr c = TCPConnPtr(new TCPConn(loop_, name_, sockfd, laddr, remote_addr_));
     c->set_type(TCPConn::kOutgoing);
     c->SetMessageCallback(msg_fn_);
@@ -93,7 +93,7 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
 
 void TCPClient::OnRemoveConnection(const TCPConnPtr& c) {
     assert(c.get() == conn_.get());
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
 
     if (auto_reconnect_.load()) {
         Reconnect();
