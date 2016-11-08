@@ -34,9 +34,10 @@ Connector::~Connector() {
 
 void Connector::Start() {
     LOG_INFO << "Try to connect " << remote_addr_ << " status=" << StatusToString();
-    loop_->AssertInLoopThread();
+        LOG_ERROR << "loop=" << loop_ << " auto reconnect in " << owner_tcp_client_->reconnect_interval().Seconds() << "s thread=" << std::this_thread::get_id();
+    assert(loop_->IsInLoopThread());
 
-    timer_.reset(new TimerEventWatcher(loop_, std::bind(&Connector::OnConnectTimeout, this), timeout_));
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&Connector::OnConnectTimeout, shared_from_this()), timeout_));
     timer_->Init();
     timer_->AsyncWait();
 
@@ -45,7 +46,7 @@ void Connector::Start() {
         auto index = remote_addr_.rfind(':');
         assert(index != std::string::npos);
         auto host = std::string(remote_addr_.data(), index);
-        dns_resolver_.reset(new DNSResolver(loop_, host, timeout_, std::bind(&Connector::OnDNSResolved, this, std::placeholders::_1)));
+        dns_resolver_.reset(new DNSResolver(loop_, host, timeout_, std::bind(&Connector::OnDNSResolved, shared_from_this(), std::placeholders::_1)));
         dns_resolver_->Start();
         return;
     }
@@ -84,7 +85,7 @@ void Connector::Connect() {
 
     chan_.reset(new FdChannel(loop_, fd_, false, true));
     LOG_TRACE << "this=" << this << " new FdChannel p=" << chan_.get() << " fd=" << chan_->fd();
-    chan_->SetWriteCallback(std::bind(&Connector::HandleWrite, this));
+    chan_->SetWriteCallback(std::bind(&Connector::HandleWrite, shared_from_this()));
     chan_->AttachToLoop();
 }
 
@@ -122,6 +123,7 @@ void Connector::HandleWrite() {
 }
 
 void Connector::HandleError() {
+    assert(loop_->IsInLoopThread());
     int serrno = errno;
     LOG_ERROR << "status=" << StatusToString() << " errno=" << serrno << " " << strerror(serrno);
     status_ = kDisconnected;
@@ -138,7 +140,8 @@ void Connector::HandleError() {
     }
 
     if (owner_tcp_client_->auto_reconnect()) {
-        loop_->RunAfter(owner_tcp_client_->reconnect_interval(), std::bind(&Connector::Start, this));
+        LOG_ERROR << "loop=" << loop_ << " auto reconnect in " << owner_tcp_client_->reconnect_interval().Seconds() << "s thread=" << std::this_thread::get_id();
+        loop_->RunAfter(owner_tcp_client_->reconnect_interval(), std::bind(&Connector::Start, shared_from_this()));
     }
 }
 
