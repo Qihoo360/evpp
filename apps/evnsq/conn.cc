@@ -35,6 +35,10 @@ void Conn::Reconnect() {
     Connect(tcp_client_->remote_addr());
 }
 
+const std::string& Conn::remote_addr() const {
+    return tcp_client_->remote_addr();
+}
+
 void Conn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
     if (conn->IsConnected()) {
         assert(tcp_client_->conn() == conn);
@@ -52,7 +56,8 @@ void Conn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
             conn_fn_(shared_from_this());
         }
 
-        status_ = kConnecting; // tcp_client_ will reconnect again automatically
+        // tcp_client_ will reconnect to remote NSQD again automatically
+        status_ = kConnecting;
     }
 }
 
@@ -153,8 +158,7 @@ void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) 
 
     case kFrameTypeError:
         LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
-        // TODO how to do this?
-        buf->Skip(message_len);
+        Reconnect(); // TODO do we right?
         break;
 
     default:
@@ -169,16 +173,11 @@ void Conn::WriteCommand(const Command* c) {
     tcp_client_->conn()->Send(&buf);
 }
 
-
 void Conn::Subscribe(const std::string& topic, const std::string& channel) {
     Command c;
     c.Subscribe(topic, channel);
     WriteCommand(&c);
     status_ = kSubscribing;
-}
-
-const std::string& Conn::remote_addr() const {
-    return tcp_client_->remote_addr();
 }
 
 void Conn::Identify() {
