@@ -41,6 +41,11 @@ void Client::ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4
         std::shared_ptr<evpp::httpc::Request> r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
         r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
     };
+
+    // query nsqloopupd immediately right now
+    loop_->RunInLoop(f);
+
+    // query nsqloopupd periodic
     loop_->RunEvery(option_.query_nsqlookupd_interval, f);
 }
 
