@@ -80,7 +80,7 @@ void Listener::HandleAccept(Timestamp ts) {
 }
 
 void Listener::Stop() {
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     chan_->DisableAllEvent();
     chan_->Close();
     listening_ = false;
