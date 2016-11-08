@@ -34,9 +34,9 @@ void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
 
 int main(int argc, char* argv[]) {
     int opt = 0;
-    int digit_optind = 0;
+    //int digit_optind = 0;
     int option_index = 0;
-    char* optstring = "t:h:";
+    const char* optstring = "t:h:";
     static struct option long_options[] = {
         { "nsqd_tcp_addr", required_argument, NULL, 't' },
         { "lookupd_http_addr", required_argument, NULL, 'h' },
