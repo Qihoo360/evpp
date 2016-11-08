@@ -69,6 +69,7 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
     if (sockfd < 0) {
         LOG_INFO << "Failed to connect to " << remote_addr_ << ". errno=" << errno << " " << strerror(errno);
         // 在某些场景下，需要将连接失败反馈给上层调用者
+        // 注意：在无法连接到服务器时，由于客户端不断的重试，会导致上层调用者也会不断的收到该回调通知
         conn_fn_(TCPConnPtr(new TCPConn(loop_, "", sockfd, "", "")));
 
         if (auto_reconnect_.load()) {
