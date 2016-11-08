@@ -24,7 +24,7 @@ void DNSResolver::Start() {
 
 void DNSResolver::StartInLoop() {
     LOG_INFO << "DNSResolver::StartInLoop tid=" << std::this_thread::get_id() << " this=" << this;
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
 
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     AsyncDNSResolve();
