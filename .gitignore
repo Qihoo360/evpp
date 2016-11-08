@@ -36,6 +36,7 @@ core.*
 *.orig
 
 apps/evnsq/evnsqtail/evnsqtail
+apps/evnsq/test/evnsqtest
 
 3rdparty/libevent-2.1.5-beta/.vs/
 3rdparty/libevent-2.1.5-beta/Win32/
