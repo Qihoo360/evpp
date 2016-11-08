@@ -81,7 +81,7 @@ private:
     mutable std::mutex mutex_; // The guard of conn_
     TCPConnPtr conn_;
 
-    std::unique_ptr<Connector> connector_;
+    std::shared_ptr<Connector> connector_;
     Duration connecting_timeout_; // Default : 3 seconds
 
     ConnectionCallback conn_fn_;
