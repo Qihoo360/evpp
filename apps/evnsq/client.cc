@@ -15,8 +15,8 @@ namespace evnsq {
 static const std::string kNSQMagic = "  V2";
 static const std::string kOK = "OK";
 
-Client::Client(evpp::EventLoop* loop, Type t, const std::string& topic, const std::string& channel, const Option& ops)
-    : loop_(loop), type_(t), option_(ops), topic_(topic), channel_(channel) {}
+Client::Client(evpp::EventLoop* l, Type t, const std::string& topic, const std::string& channel, const Option& ops)
+    : loop_(l), type_(t), option_(ops), topic_(topic), channel_(channel) {}
 
 Client::~Client() {}
 
