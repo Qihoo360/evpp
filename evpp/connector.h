@@ -11,7 +11,7 @@ class FdChannel;
 class TimerEventWatcher;
 class DNSResolver;
 class TCPClient;
-class EVPP_EXPORT Connector {
+class EVPP_EXPORT Connector : public std::enable_shared_from_this<Connector> {
 public:
     typedef std::function<void(int sockfd, const std::string& /*local addr*/)> NewConnectionCallback;
     Connector(EventLoop* loop, TCPClient* client);
