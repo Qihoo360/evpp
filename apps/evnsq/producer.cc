@@ -147,7 +147,6 @@ ConnPtr Producer::GetNextConn() {
     auto c = conns_[current_conn_];
     assert(c->IsReady());
     ++current_conn_; // Using next Conn
-    LOG_INFO << "Got a connection " << c << " " << c->remote_addr();
     return c;
 }
 
