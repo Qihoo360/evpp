@@ -10,10 +10,11 @@ class EventLoop;
 class FdChannel;
 class TimerEventWatcher;
 class DNSResolver;
+class TCPClient;
 class EVPP_EXPORT Connector {
 public:
     typedef std::function<void(int sockfd, const std::string& /*local addr*/)> NewConnectionCallback;
-    Connector(EventLoop* loop, const std::string& remote_addr, Duration timeout);
+    Connector(EventLoop* loop, TCPClient* client);
     ~Connector();
     void Start();
     void Cancel();
@@ -44,6 +45,7 @@ private:
     enum Status { kDisconnected, kDNSResolving, kDNSResolved, kConnecting, kConnected };
     Status status_;
     EventLoop* loop_;
+    TCPClient* owner_tcp_client_;
 
     std::string remote_addr_; // host:port
     struct sockaddr_in raddr_;
