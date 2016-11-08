@@ -135,7 +135,8 @@ void Connector::HandleError() {
     if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
         conn_fn_(-1, "");
     } else {
-        loop_->RunAfter(1000, std::bind(&Connector::Start, this));//TODO Add retry times.
+        auto interval = Duration(3.0);
+        loop_->RunAfter(interval, std::bind(&Connector::Start, this));//TODO Add retry times.
     }
 }
 
