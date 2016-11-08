@@ -6,11 +6,12 @@
 #include "evpp/sockets.h"
 #include "evpp/libevent_headers.h"
 #include "evpp/dns_resolver.h"
+#include "evpp/tcp_client.h"
 
 namespace evpp {
-Connector::Connector(EventLoop* l, const std::string& raddr, Duration timeout)
-    : status_(kDisconnected), loop_(l), remote_addr_(raddr), timeout_(timeout), fd_(-1), own_fd_(false) {
-    LOG_INFO << "Connector::Connector this=" << this << " raddr=" << raddr;
+Connector::Connector(EventLoop* l, TCPClient* client)
+    : status_(kDisconnected), loop_(l), owner_tcp_client_(client), remote_addr_(client->remote_addr()), timeout_(client->connecting_timeout()), fd_(-1), own_fd_(false) {
+    LOG_INFO << "Connector::Connector this=" << this << " raddr=" << remote_addr_;
     raddr_ = sock::ParseFromIPPort(remote_addr_.data());
 }
 
@@ -135,8 +136,7 @@ void Connector::HandleError() {
     if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
         conn_fn_(-1, "");
     } else {
-        auto interval = Duration(3.0);
-        loop_->RunAfter(interval, std::bind(&Connector::Start, this));//TODO Add retry times.
+        loop_->RunAfter(owner_tcp_client_->reconnect_interval(), std::bind(&Connector::Start, this));
     }
 }
 
@@ -145,7 +145,6 @@ void Connector::OnConnectTimeout() {
     EVUTIL_SET_SOCKET_ERROR(ETIMEDOUT);
     HandleError();
 }
-
 
 void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
     if (addrs.empty()) {
@@ -158,7 +157,6 @@ void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
     status_ = kDNSResolved;
     Connect();
 }
-
 
 std::string Connector::StatusToString() const {
     H_CASE_STRING_BIGIN(status_);
