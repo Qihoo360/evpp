@@ -31,5 +31,8 @@ public:
 
     // Duration of time between heartbeats. This must be less than ReadTimeout
     evpp::Duration heartbeat_interval;// default:"30s"
+
+    // Duration of interval time to query nsqlookupd
+    evpp::Duration query_nsqlookupd_interval; // default:"30s"
 };
 }

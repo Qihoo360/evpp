@@ -8,45 +8,61 @@ namespace evnsq {
 
 Producer::Producer(evpp::EventLoop* loop, const Option& ops)
     : Client(loop, kProducer, "", "", ops)
+    , current_conn_(0)
     , wait_ack_count_(0)
     , published_count_(0)
     , published_ok_count_(0)
     , published_failed_count_(0)
     , hwm_triggered_(false)
     , high_water_mark_(kDefaultHighWaterMark) {
-    conn_ = conns_.end();
     ready_to_publish_fn_ = std::bind(&Producer::OnReady, this, std::placeholders::_1);
 }
 
 Producer::~Producer() {}
 
-void Producer::Publish(const std::string& topic, const std::string& msg) {
+bool Producer::Publish(const std::string& topic, const std::string& msg) {
     Command* cmd = new Command;
     cmd->Publish(topic, msg);
-    Publish(cmd);
+    return Publish(cmd);
 }
 
-void Producer::MultiPublish(const std::string& topic, const std::vector<std::string>& messages) {
+bool Producer::MultiPublish(const std::string& topic, const std::vector<std::string>& messages) {
     if (messages.empty()) {
-        return;
+        return true;
     }
 
     if (messages.size() == 1) {
-        Publish(topic, messages[0]);
-        return;
+        return Publish(topic, messages[0]);
     }
 
     Command* cmd = new Command;
     cmd->MultiPublish(topic, messages);
-    Publish(cmd);
+    return Publish(cmd);
 }
 
-void Producer::Publish(Command* cmd) {
+bool Producer::Publish(Command* cmd) {
+    if (wait_ack_count_ > kDefaultHighWaterMark * conns_.size()) {
+        LOG_WARN << "Too many messages are waiting a response ACK. Please try again later.";
+        hwm_triggered_ = true;
+
+        if (high_water_mark_fn_) {
+            high_water_mark_fn_(this, wait_ack_count_);
+        }
+
+        return false;
+    }
+
+    if (conns_.empty()) {
+        LOG_ERROR << "No available NSQD to use.";
+        return false;
+    }
+
     if (loop_->IsInLoopThread()) {
         PublishInLoop(cmd);
     } else {
         loop_->RunInLoop(std::bind(&Producer::PublishInLoop, this, cmd));
     }
+    return true;
 }
 
 void Producer::SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark) {
@@ -54,29 +70,17 @@ void Producer::SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t 
     high_water_mark_ = mark;
 }
 
-void Producer::PublishInLoop(Command* c) {
-    if (wait_ack_count_ > kDefaultHighWaterMark * conns_.size()) {
-        LOG_WARN << "Too many messages are waiting a response ACK. Please try again later";
-        hwm_triggered_ = true;
-
-        if (high_water_mark_fn_) {
-            high_water_mark_fn_(this, wait_ack_count_);
-        }
-
-        return;
-    }
-
+void Producer::PublishInLoop(Command* cmd) {
     assert(loop_->IsInLoopThread());
     auto conn = GetNextConn();
     if (!conn.get()) {
-        //TODO
         LOG_ERROR << "No available NSQD to use.";
         return;
     }
-    conn->WriteCommand(c);
+    conn->WriteCommand(cmd);
     published_count_++;
-    PushWaitACKCommand(conn.get(), c);
-    LOG_INFO << "Publish a message, command=" << c;
+    PushWaitACKCommand(conn.get(), cmd);
+    LOG_INFO << "Publish a message to " << conn->remote_addr() << " command=" << cmd;
 }
 
 void Producer::OnReady(Conn* conn) {
@@ -89,12 +93,12 @@ void Producer::OnReady(Conn* conn) {
 }
 
 void Producer::OnPublishResponse(Conn* conn, const char* d, size_t len) {
-    Command* c = PopWaitACKCommand(conn);
-
+    assert(loop_->IsInLoopThread());
+    Command* cmd = PopWaitACKCommand(conn);
     if (len == 2 && d[0] == 'O' && d[1] == 'K') {
-        LOG_INFO << "Get a PublishResponse message OK, command=" << c;
+        LOG_INFO << "Get a PublishResponse message OK, command=" << cmd;
         published_ok_count_++;
-        delete c;
+        delete cmd;
 
         if (hwm_triggered_ && wait_ack_count_ < kDefaultHighWaterMark * conns_.size() / 2) {
             LOG_TRACE << "We can publish more data now.";
@@ -109,9 +113,8 @@ void Producer::OnPublishResponse(Conn* conn, const char* d, size_t len) {
     }
 
     published_failed_count_++;
-    LOG_ERROR << "Publish command " << c << " failed : [" << std::string(d, len) << "]. Try again.";
-    conn_->second->WriteCommand(c);
-    PushWaitACKCommand(conn_->second.get(), c);
+    LOG_ERROR << "Publish command " << cmd << " failed. Try again.";
+    PublishInLoop(cmd);
 }
 
 Command* Producer::PopWaitACKCommand(Conn* conn) {
@@ -138,14 +141,13 @@ ConnPtr Producer::GetNextConn() {
         return ConnPtr();
     }
 
-    // TODO FIXME : this iterator conn_ may be invalid when there is some connection broken up with NSQD
-    if (conn_ == conns_.end()) {
-        conn_ = conns_.begin();
+    if (current_conn_ >= conns_.size()) {
+        current_conn_ = 0;
     }
-    assert(conn_ != conns_.end());
-    assert(conn_->second->IsReady());
-    auto c = conn_->second;
-    ++conn_; // Using next Conn
+    auto c = conns_[current_conn_];
+    assert(c->IsReady());
+    ++current_conn_; // Using next Conn
+    LOG_INFO << "Got a connection " << c << " " << c->remote_addr();
     return c;
 }
 

@@ -49,7 +49,9 @@ protected:
         const std::shared_ptr<evpp::httpc::Response>& response,
         const std::shared_ptr<evpp::httpc::Request>& request);
     void OnConnection(const ConnPtr& conn);
-
+private:
+    bool IsKnownNSQDAddress(const std::string& addr) const;
+    void MoveToConnectingList(const ConnPtr& conn);
 protected:
     evpp::EventLoop* loop_;
     Type type_;
@@ -57,7 +59,7 @@ protected:
     std::string topic_;
     std::string channel_;
     std::map<std::string/*NSQD address "host:port"*/, ConnPtr> connecting_conns_; // The TCP connections which are connecting to NSQDs
-    std::map<std::string/*NSQD address "host:port"*/, ConnPtr> conns_; // The TCP connections which has established the connection with NSQDs
+    std::vector<ConnPtr> conns_; // The TCP connections which has established the connection with NSQDs
     MessageCallback msg_fn_;
 
     typedef std::function<void(Conn*)> ReadyToPublishCallback;
