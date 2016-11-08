@@ -61,6 +61,7 @@ void TCPClient::DisconnectInLoop() {
 }
 
 void TCPClient::Reconnect() {
+    LOG_INFO << "Try to reconnect to " << remote_addr_ << " again.";
     return Connect();
 }
 

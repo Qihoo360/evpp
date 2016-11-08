@@ -18,15 +18,15 @@ public:
     ~Producer();
 
     // Thread safe
-    void Publish(const std::string& topic, const std::string& msg);
-    void MultiPublish(const std::string& topic, const std::vector<std::string>& messages);
+    bool Publish(const std::string& topic, const std::string& msg);
+    bool MultiPublish(const std::string& topic, const std::vector<std::string>& messages);
 
     void SetReadyCallback(const ReadyCallback& cb) {
         ready_fn_ = cb;
     }
     void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
 private:
-    void Publish(Command* cmd);
+    bool Publish(Command* cmd);
     void PublishInLoop(Command* cmd);
     void OnReady(Conn* conn);
     void OnPublishResponse(Conn* conn, const char* d, size_t len);
@@ -34,9 +34,8 @@ private:
     void PushWaitACKCommand(Conn* conn, Command* cmd);
     ConnPtr GetNextConn();
 private:
-    std::map<std::string/*host:port*/, ConnPtr>::iterator conn_;
+    size_t current_conn_; // current Conn position at Client::conns_
     typedef std::pair<std::list<Command*>, size_t/*Command count*/> CommandList;
-
     std::map<Conn*, CommandList> wait_ack_;
     ReadyCallback ready_fn_;
     size_t wait_ack_count_;
