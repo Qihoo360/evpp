@@ -30,6 +30,9 @@ public:
     void SetMessageCallback(const MessageCallback& cb) {
         msg_fn_ = cb;
     }
+    bool auto_reconnect() const {
+        return auto_reconnect_;
+    }
     void set_auto_reconnect(bool v) {
         auto_reconnect_.store(v);
     }
