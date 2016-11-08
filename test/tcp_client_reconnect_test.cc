@@ -41,7 +41,6 @@ namespace {
     }
 
     void DeleteTCPClient(evpp::TCPClient* client) {
-        client->Disconnect();
         delete client;
     }
 }
@@ -68,7 +67,8 @@ TEST_UNIT(testTCPClientReconnect) {
         tsrv.reset();
     }
     LOG_INFO << "XXXXXXXXXX connected_count=" << connected_count << " message_recved_count=" << message_recved_count;
-    tcp_client_thread->event_loop()->RunInLoop(std::bind(&DeleteTCPClient, client));
+    tcp_client_thread->event_loop()->RunInLoop(std::bind(&evpp::TCPClient::Disconnect, client));
+    tcp_client_thread->event_loop()->RunAfter(evpp::Duration(1.0), std::bind(&DeleteTCPClient, client));
     usleep(evpp::Duration(2.0).Microseconds());
     client = NULL;
     tcp_client_thread->Stop(true);
