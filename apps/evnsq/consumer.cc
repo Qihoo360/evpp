@@ -14,7 +14,9 @@
 
 namespace evnsq {
 Consumer::Consumer(evpp::EventLoop* l, const std::string& topic, const std::string& channel, const Option& ops)
-    : Client(l, kConsumer, topic, channel, ops) {
+    : Client(l, kConsumer, ops) {
+    set_topic(topic);
+    set_channel(channel);
 }
 
 Consumer::~Consumer() {

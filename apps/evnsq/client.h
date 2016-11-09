@@ -44,11 +44,13 @@ public:
         return loop_;
     }
 protected:
-    Client(evpp::EventLoop* loop, Type t, const std::string& topic, const std::string& channel, const Option& ops);
+    Client(evpp::EventLoop* loop, Type t, const Option& ops);
     void HandleLoopkupdHTTPResponse(
         const std::shared_ptr<evpp::httpc::Response>& response,
         const std::shared_ptr<evpp::httpc::Request>& request);
     void OnConnection(const ConnPtr& conn);
+    void set_topic(const std::string& t) { topic_ = t; }
+    void set_channel(const std::string& c) { channel_ = c; }
 private:
     bool IsKnownNSQDAddress(const std::string& addr) const;
     void MoveToConnectingList(const ConnPtr& conn);
