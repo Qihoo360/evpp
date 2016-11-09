@@ -148,7 +148,7 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
 	handler->set_vbucket_keys(vbucket_keys);
 
 	auto & vbucket_keys_d = handler->get_vbucket_keys();
-    for(auto it : vbucket_keys_d) {
+    for(auto& it : vbucket_keys_d) {
 		vbucket = it.first;
 		CommandPtr command(new MultiGetCommand(caller_loop, vbucket, handler));
 		LaunchCommand(command);
@@ -167,7 +167,7 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
 	PrefixMultiKeyGetHandlerPtr handler(new MultiKeyHandler<PrefixMultiGetResult, PrefixMultiGetCallback>(callback));
 	auto& result = handler->get_result().get_result_map_;
     for (size_t i = 0; i < size; ++i) {
-		auto &key = keys[i];
+		auto& key = keys[i];
         vbucket = vbconf->GetVbucketByKey(key.c_str(), key.size());
         vbucket_keys[vbucket].emplace_back(key);
 		result.emplace(key, PrefixGetResultPtr(new PrefixGetResult));
@@ -175,7 +175,7 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
 	handler->set_vbucket_keys(vbucket_keys);
 
 	auto & vbucket_keys_d = handler->get_vbucket_keys();
-    for(auto it : vbucket_keys_d) {
+    for(auto& it : vbucket_keys_d) {
 		vbucket = it.first;
 		CommandPtr command(new PrefixMultiGetCommand(caller_loop, vbucket, handler));
 		LaunchCommand(command);
