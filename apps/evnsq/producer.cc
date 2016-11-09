@@ -7,7 +7,7 @@
 namespace evnsq {
 
 Producer::Producer(evpp::EventLoop* l, const Option& ops)
-    : Client(l, kProducer, "", "", ops)
+    : Client(l, kProducer, ops)
     , current_conn_(0)
     , wait_ack_count_(0)
     , published_count_(0)
