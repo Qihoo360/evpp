@@ -28,8 +28,7 @@ public:
         kConsumer = 1,
         kProducer = 2,
     };
-
-    virtual ~Client();
+public:
     void ConnectToNSQD(const std::string& tcp_addr/*host:port*/);
     void ConnectToNSQDs(const std::string& tcp_addrs/*host1:port1,host2:port2*/);
     void ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/);
@@ -45,6 +44,7 @@ public:
     }
 protected:
     Client(evpp::EventLoop* loop, Type t, const Option& ops);
+    virtual ~Client();
     void HandleLoopkupdHTTPResponse(
         const std::shared_ptr<evpp::httpc::Response>& response,
         const std::shared_ptr<evpp::httpc::Request>& request);
