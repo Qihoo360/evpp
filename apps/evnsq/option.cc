@@ -7,7 +7,6 @@
 namespace evnsq {
 
 Option::Option() {
-    initialized = true;
     dial_timeout = evpp::Duration(1.0);
     read_timeout = evpp::Duration(60.0);
     write_timeout = evpp::Duration(1.0);
