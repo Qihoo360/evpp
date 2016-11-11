@@ -30,11 +30,11 @@ private:
     void PublishInLoop(Command* cmd);
     void OnReady(Conn* conn);
     void OnPublishResponse(Conn* conn, const char* d, size_t len);
-    Command* PopWaitACKCommand(Conn* conn);
     void PushWaitACKCommand(Conn* conn, Command* cmd);
+    Command* PopWaitACKCommand(Conn* conn);
     ConnPtr GetNextConn();
 private:
-    size_t current_conn_; // current Conn position at Client::conns_
+    size_t current_conn_index_; // current Conn position at Client::conns_
     typedef std::pair<std::list<Command*>, size_t/*Command count*/> CommandList;
     std::map<Conn*, CommandList> wait_ack_;
     ReadyCallback ready_fn_;
