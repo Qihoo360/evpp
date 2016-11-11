@@ -14,6 +14,13 @@
 namespace evnsq {
 class EVNSQ_EXPORT Command {
 public:
+    Command() : publish_(false) {}
+
+    // Query whether it is a publish command or not
+    bool IsPublish() const {
+        return publish_;
+    }
+
     // Identify sets a Command to provide information about the client.
     // After connecting, it is generally the first message sent.
     // See http://nsq.io/clients/tcp_protocol_spec.html#identify for information
@@ -62,6 +69,7 @@ public:
     // Publish sets a new Command to write a message to a given topic
     void Publish(const std::string& topic, const std::string& body) {
         assert(!topic.empty());
+        publish_ = true;
         name_ = "PUB";
         params_.push_back(topic);
         body_.push_back(body);
@@ -70,6 +78,7 @@ public:
     void MultiPublish(const std::string& topic, const std::vector<std::string>& messages) {
         assert(!topic.empty());
         assert(messages.size() > 1);
+        publish_ = true;
         name_ = "MPUB";
         params_.push_back(topic);
         body_ = messages;
@@ -133,11 +142,13 @@ public:
     // Serializes the Command to the supplied Buffer
     void WriteTo(evpp::Buffer* buf) const;
     void Reset() {
+        publish_ = false;
         name_.clear();
         params_.clear();
         body_.clear();
     }
 private:
+    bool publish_;
     std::string name_;
     std::vector<std::string> params_;
     std::vector<std::string> body_;
