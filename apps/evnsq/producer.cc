@@ -8,7 +8,7 @@ namespace evnsq {
 
 Producer::Producer(evpp::EventLoop* l, const Option& ops)
     : Client(l, kProducer, ops)
-    , current_conn_(0)
+    , current_conn_index_(0)
     , wait_ack_count_(0)
     , published_count_(0)
     , published_ok_count_(0)
@@ -86,6 +86,19 @@ void Producer::PublishInLoop(Command* cmd) {
 void Producer::OnReady(Conn* conn) {
     conn->SetPublishResponseCallback(std::bind(&Producer::OnPublishResponse, this, conn, std::placeholders::_1, std::placeholders::_2));
 
+    // TODO move this logic code to Conn object.
+    auto it = wait_ack_.find(conn);
+    if (it != wait_ack_.end() && !it->second.first.empty()) {
+        // When this NSQ connection is ready to publish message, 
+        // we need to discards all the messages which were cached by the old underlying tcp connections.
+        assert(wait_ack_count_ >= it->second.first.size());
+        assert(it->second.first.size() == it->second.second);
+        LOG_WARN << "Discards " << it->second.second << " NSQ messages. nsq_message_missing";
+        wait_ack_count_ -= it->second.second;
+        it->second.first.clear();
+        it->second.second = 0;
+    }
+
     // Only the first successful connection to NSQD can trigger this callback.
     if (ready_fn_ && conns_.size() == 1) {
         ready_fn_();
@@ -141,12 +154,12 @@ ConnPtr Producer::GetNextConn() {
         return ConnPtr();
     }
 
-    if (current_conn_ >= conns_.size()) {
-        current_conn_ = 0;
+    if (current_conn_index_ >= conns_.size()) {
+        current_conn_index_ = 0;
     }
-    auto c = conns_[current_conn_];
+    auto c = conns_[current_conn_index_];
     assert(c->IsReady());
-    ++current_conn_; // Using next Conn
+    ++current_conn_index_; // Using next Conn
     return c;
 }
 
