@@ -11,17 +11,18 @@ int OnMessage(const evnsq::Message* msg) {
 }
 
 void Publish(evnsq::Producer* producer) {
-    static const std::string topic = "test";
+    static const std::string topic1 = "test1";
+    static const std::string topic2 = "test2";
     static int i = 0;
     std::stringstream ss;
     ss << "a NSQ message, index=" << i++;
     std::string msg = ss.str();
-    producer->Publish(topic, msg);
+    producer->Publish(topic1, msg);
     LOG_INFO << "Publish : [" << msg << "]";
     std::vector<std::string> messages;
     messages.push_back(msg);
     messages.push_back(msg);
-    producer->MultiPublish(topic, messages);
+    producer->MultiPublish(topic2, messages);
 }
 
 void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
@@ -50,7 +51,7 @@ int main(int argc, char* argv[]) {
     nsqd_tcp_addr = "10.16.28.17:4150";
     //nsqd_tcp_addr = "weizili-L1:4150";
     //lookupd_http_url = "http://127.0.0.1:4161/lookup?topic=test";
-    lookupd_http_url = "http://10.16.28.17:4161/lookup?topic=test";
+    lookupd_http_url = "http://10.16.28.17:14561/nodes";
 
     while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1) {
         switch (opt) {
