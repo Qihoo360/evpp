@@ -52,10 +52,11 @@ private:
     bool StartListenThread(int port);
 private:
     struct ListenThread {
-        std::shared_ptr<Service> h;
+        // 监听主线程，监听HTTP请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
+        std::shared_ptr<EventLoopThread> thread;
 
-        // 监听主线程，监听http请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
-        std::shared_ptr<EventLoopThread> t;
+        // 每个线程运行一个HTTP Service用来监听HTTP请求
+        std::shared_ptr<Service> hserver;
     };
     
     std::vector<ListenThread> listen_threads_;
