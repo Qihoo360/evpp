@@ -42,6 +42,7 @@ public:
     evpp::EventLoop* loop() const {
         return loop_;
     }
+    //TODO How to close the connection
 protected:
     Client(evpp::EventLoop* loop, Type t, const Option& ops);
     virtual ~Client();

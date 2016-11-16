@@ -3,6 +3,9 @@
 #include <evnsq/producer.h>
 #include <evpp/event_loop.h>
 
+#include <chrono>
+#include <thread>
+
 #include <getopt.h>
 
 int OnMessage(const evnsq::Message* msg) {
@@ -15,10 +18,11 @@ void Publish(evnsq::Producer* producer) {
     static const std::string topic2 = "test2";
     static int i = 0;
     std::stringstream ss;
-    ss << "a NSQ message, index=" << i++;
+    ss << "a NSQ message, index=" << i++ << " ";
     std::string msg = ss.str();
+    msg.append(1000, 'x');
     producer->Publish(topic1, msg);
-    LOG_INFO << "Publish : [" << msg << "]";
+    //LOG_INFO << "Publish : [" << msg << "]";
     std::vector<std::string> messages;
     messages.push_back(msg);
     messages.push_back(msg);
@@ -26,7 +30,7 @@ void Publish(evnsq::Producer* producer) {
 }
 
 void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
-    loop->RunEvery(evpp::Duration(1.0), std::bind(&Publish, p));
+//    loop->RunEvery(evpp::Duration(0.001), std::bind(&Publish, p));
 //     for (int i = 0; i < 20; i++) {
 //         Publish(p);
 //     }
@@ -34,6 +38,8 @@ void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
 
 
 int main(int argc, char* argv[]) {
+    FLAGS_minloglevel = 2;
+    google::InitGoogleLogging(argv[0]);
     int opt = 0;
     //int digit_optind = 0;
     int option_index = 0;
@@ -80,6 +86,17 @@ int main(int argc, char* argv[]) {
         client.ConnectToNSQDs(nsqd_tcp_addr);
     }
 
+    auto f = [](evpp::EventLoop* loop, evnsq::Producer* client) {
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        for (;;) {
+            if (loop->pending_functor_count() > 10000) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            } else {
+                Publish(client);
+            }
+        }
+    };
+    std::thread publish_thread(std::bind(f, &loop, &client));
     loop.Run();
     return 0;
 }

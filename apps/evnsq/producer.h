@@ -25,20 +25,19 @@ public:
         ready_fn_ = cb;
     }
     void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
+    size_t high_water_mark() const {
+        return high_water_mark_;
+    }
 private:
-    bool Publish(Command* cmd);
-    void PublishInLoop(Command* cmd);
+    bool Publish(const CommandPtr& cmd);
+    bool PublishInLoop(const CommandPtr& cmd);
+    void OnPublishResponse(Conn* conn, const CommandPtr& cmd, bool successfull);
     void OnReady(Conn* conn);
-    void OnPublishResponse(Conn* conn, const char* d, size_t len);
-    void PushWaitACKCommand(Conn* conn, Command* cmd);
-    Command* PopWaitACKCommand(Conn* conn);
     ConnPtr GetNextConn();
+    void PrintStats();
 private:
     size_t current_conn_index_; // current Conn position at Client::conns_
-    typedef std::pair<std::list<Command*>, size_t/*Command count*/> CommandList;
-    std::map<Conn*, CommandList> wait_ack_;
     ReadyCallback ready_fn_;
-    size_t wait_ack_count_;
     int64_t published_count_;
     int64_t published_ok_count_;
     int64_t published_failed_count_;
