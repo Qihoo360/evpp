@@ -14,11 +14,19 @@
 namespace evnsq {
 class EVNSQ_EXPORT Command {
 public:
-    Command() : publish_(false) {}
+    Command() : publish_(false), retried_time_(0) {}
 
     // Query whether it is a publish command or not
     bool IsPublish() const {
         return publish_;
+    }
+
+    int retried_time() const {
+        return retried_time_;
+    }
+
+    void IncRetriedTime() {
+        ++retried_time_;
     }
 
     // Identify sets a Command to provide information about the client.
@@ -26,7 +34,8 @@ public:
     // See http://nsq.io/clients/tcp_protocol_spec.html#identify for information
     // on the supported options
     void Identify(const std::string& js) {
-        name_ = "IDENTIFY";
+        static const std::string kName = "IDENTIFY";
+        name_ = kName;
         body_.push_back(js);
     }
 
@@ -34,14 +43,16 @@ public:
     //
     // After `Identify`, this is usually the first message sent, if auth is used.
     void Auth(const  std::string& secret) {
-        name_ = "AUTH";
+        static const std::string kName = "AUTH";
+        name_ = kName;
         body_.push_back(secret);
     }
 
     // Register sets a new Command to add a topic/channel for the connected nsqd
     void Register(const std::string& topic, const std::string& channel) {
         assert(!topic.empty());
-        name_ = "REGISTER";
+        static const std::string kName = "REGISTER";
+        name_ = kName;
         params_.push_back(topic);
 
         if (!channel.empty()) {
@@ -52,7 +63,8 @@ public:
     // UnRegister sets a new Command to remove a topic/channel for the connected nsqd
     void UnRegister(const std::string& topic, const std::string& channel) {
         assert(!topic.empty());
-        name_ = "UNREGISTER";
+        static const std::string kName = "UNREGISTER";
+        name_ = kName;
         params_.push_back(topic);
 
         if (!channel.empty()) {
@@ -70,7 +82,8 @@ public:
     void Publish(const std::string& topic, const std::string& body) {
         assert(!topic.empty());
         publish_ = true;
-        name_ = "PUB";
+        static const std::string kName = "PUB";
+        name_ = kName;
         params_.push_back(topic);
         body_.push_back(body);
     }
@@ -79,7 +92,8 @@ public:
         assert(!topic.empty());
         assert(messages.size() > 1);
         publish_ = true;
-        name_ = "MPUB";
+        static const std::string kName = "MPUB";
+        name_ = kName;
         params_.push_back(topic);
         body_ = messages;
     }
@@ -88,7 +102,8 @@ public:
     void Subscribe(const std::string& topic, const std::string& channel) {
         assert(!topic.empty());
         assert(!channel.empty());
-        name_ = "SUB";
+        static const std::string kName = "SUB";
+        name_ = kName;
         params_.push_back(topic);
         params_.push_back(channel);
     }
@@ -104,7 +119,8 @@ public:
     // a given message (by id) has been processed successfully
     void Finish(const std::string& id) {
         assert(id.size() == kMessageIDLen);
-        name_ = "FIN";
+        static const std::string kName = "FIN";
+        name_ = kName;
         params_.push_back(id);
     }
 
@@ -113,7 +129,8 @@ public:
     // NOTE: a delay of 0 indicates immediate requeue
     void Requeue(const std::string& id, evpp::Duration delay) {
         assert(id.size() == kMessageIDLen);
-        name_ = "REQ";
+        static const std::string kName = "REQ";
+        name_ = kName;
         params_.push_back(id);
         params_.push_back(std::to_string(int(delay.Milliseconds())));
     }
@@ -121,8 +138,9 @@ public:
     // Touch sets a new Command to reset the timeout for
     // a given message (by id)
     void Touch(const std::string& id) {
+        static const std::string kName = "TOUCH";
+        name_ = kName;
         params_.push_back(id);
-        name_ = "TOUCH";
     }
 
     // StartClose sets a new Command to indicate that the
@@ -130,13 +148,15 @@ public:
     // send messages to a client in this state and the client is expected
     // finish pending messages and close the connection
     void StartClose() {
-        name_ = "CLS";
+        static const std::string kName = "CLS";
+        name_ = kName;
     }
 
     // Nop sets a new Command that has no effect server side.
     // Commonly used to respond to heartbeats
     void Nop() {
-        name_ = "NOP";
+        static const std::string kName = "NOP";
+        name_ = kName;
     }
 
     // Serializes the Command to the supplied Buffer
@@ -147,11 +167,17 @@ public:
         params_.clear();
         body_.clear();
     }
+
+    const std::vector<std::string>& body() const {
+        return body_;
+    }
 private:
     bool publish_;
+    int retried_time_;
     std::string name_;
     std::vector<std::string> params_;
     std::vector<std::string> body_;
 };
+typedef std::shared_ptr<Command> CommandPtr;
 }
 
