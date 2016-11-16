@@ -79,13 +79,13 @@ public:
     }
 
     // Publish sets a new Command to write a message to a given topic
-    void Publish(const std::string& topic, const std::string& body) {
+    void Publish(const std::string& topic, const std::string& message) {
         assert(!topic.empty());
         publish_ = true;
         static const std::string kName = "PUB";
         name_ = kName;
         params_.push_back(topic);
-        body_.push_back(body);
+        body_.push_back(message);
     }
 
     void MultiPublish(const std::string& topic, const std::vector<std::string>& messages) {
