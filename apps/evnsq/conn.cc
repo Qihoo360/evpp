@@ -12,13 +12,21 @@
 #include "command.h"
 #include "option.h"
 #include "client.h"
+#include "producer.h"
 
 namespace evnsq {
 static const std::string kNSQMagic = "  V2";
 static const std::string kOK = "OK";
 
 Conn::Conn(Client* c, const Option& ops)
-    : client_(c), loop_(c->loop()), option_(ops), status_(kDisconnected) {}
+    : client_(c)
+    , loop_(c->loop())
+    , option_(ops)
+    , status_(kDisconnected)
+    //, wait_ack_count_(0)
+    , published_count_(0)
+    , published_ok_count_(0)
+    , published_failed_count_(0) {}
 
 Conn::~Conn() {}
 
@@ -31,6 +39,13 @@ void Conn::Connect(const std::string& addr) {
 }
 
 void Conn::Reconnect() {
+    // Discards all the messages which were cached by the broken tcp connection.
+    if (!wait_ack_.empty()) {
+        LOG_WARN << "Discards " << wait_ack_.size() << " NSQ messages. nsq_message_missing";
+        published_failed_count_ += wait_ack_.size();
+        wait_ack_.clear();
+    }
+
     tcp_client_->Disconnect();
     Connect(tcp_client_->remote_addr());
 }
@@ -127,7 +142,7 @@ void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) 
             LOG_TRACE << "recv heartbeat from nsqd " << tcp_client_->remote_addr();
             Command c;
             c.Nop();
-            WriteCommand(&c);
+            WriteCommand(c);
             buf->Skip(message_len);
             return;
         }
@@ -136,8 +151,8 @@ void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) 
     switch (frame_type) {
     case kFrameTypeResponse:
         LOG_INFO << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
-        if (client_->IsProducer() && publish_response_cb_) {
-            publish_response_cb_(buf->data(), message_len);
+        if (client_->IsProducer()) {
+            OnPublishResponse(buf->data(), message_len);
         }
         buf->Skip(message_len);
         break;
@@ -166,17 +181,18 @@ void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) 
     }
 }
 
-void Conn::WriteCommand(const Command* c) {
+void Conn::WriteCommand(const Command& c) {
     // TODO : using a object pool to improve performance
     evpp::Buffer buf;
-    c->WriteTo(&buf);
+    c.WriteTo(&buf);
     tcp_client_->conn()->Send(&buf);
+
 }
 
 void Conn::Subscribe(const std::string& topic, const std::string& channel) {
     Command c;
     c.Subscribe(topic, channel);
-    WriteCommand(&c);
+    WriteCommand(c);
     status_ = kSubscribing;
 }
 
@@ -184,26 +200,79 @@ void Conn::Identify() {
     tcp_client_->conn()->Send(kNSQMagic);
     Command c;
     c.Identify(option_.ToJSON());
-    WriteCommand(&c);
+    WriteCommand(c);
     status_ = kIdentifying;
 }
 
 void Conn::Finish(const std::string& id) {
     Command c;
     c.Finish(id);
-    WriteCommand(&c);
+    WriteCommand(c);
 }
 
 void Conn::Requeue(const std::string& id) {
     Command c;
     c.Requeue(id, evpp::Duration(0));
-    WriteCommand(&c);
+    WriteCommand(c);
 }
 
 void Conn::UpdateReady(int count) {
     Command c;
     c.Ready(count);
-    WriteCommand(&c);
+    WriteCommand(c);
+}
+
+bool Conn::WritePublishCommand(const CommandPtr& c) {
+    assert(c->IsPublish());
+    assert(client_->IsProducer());
+    if (wait_ack_.size() >= static_cast<Producer*>(client_)->high_water_mark()) {
+        LOG_EVERY_N(WARNING, 100000) << "Too many messages are waiting a response ACK. Please try again later.";
+        //         hwm_triggered_ = true;
+        // 
+        //         if (high_water_mark_fn_) {
+        //             high_water_mark_fn_(this, wait_ack_count_);
+        //         }
+
+        return false;
+    }
+
+    evpp::Buffer buf; // TODO : using a object pool to improve performance
+    c->WriteTo(&buf);
+    tcp_client_->conn()->Send(&buf);
+    PushWaitACKCommand(c);
+    LOG_INFO << "Publish a message to " << remote_addr() << " command=" << c.get();
+    return true;
+}
+
+CommandPtr Conn::PopWaitACKCommand() {
+    CommandPtr c = *wait_ack_.begin();
+    wait_ack_.pop_front();
+    return c;
+}
+
+void Conn::PushWaitACKCommand(const CommandPtr& cmd) {
+    wait_ack_.push_back(cmd);
+    published_count_++;
+}
+
+void Conn::OnPublishResponse(const char* d, size_t len) {
+    CommandPtr cmd = PopWaitACKCommand();
+    if (len == 2 && d[0] == 'O' && d[1] == 'K') {
+        LOG_INFO << "Get a PublishResponse message 'OK', command=" << cmd.get();
+        published_ok_count_++;
+        publish_response_cb_(cmd, true);
+        return;
+    }
+
+    published_failed_count_++;
+    if (cmd->retried_time() >= 2) {
+        publish_response_cb_(cmd, false);
+        return;
+    }
+
+    cmd->IncRetriedTime();
+    LOG_ERROR << "Publish command " << cmd.get() << " failed. Try again.";
+    WritePublishCommand(cmd); // TODO This code will serialize Command more than twice. We need to cache the first serialization result to fix this performance problem
 }
 
 }
