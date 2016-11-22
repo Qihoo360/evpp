@@ -271,7 +271,7 @@ void Conn::OnPublishResponse(const char* d, size_t len) {
     }
 
     cmd->IncRetriedTime();
-    LOG_ERROR << "Publish command " << cmd.get() << " failed. Try again.";
+    LOG_ERROR << "Publish command " << cmd.get() << " failed : [" << std::string(d, len) << "]. Try again.";
     WritePublishCommand(cmd); // TODO This code will serialize Command more than twice. We need to cache the first serialization result to fix this performance problem
 }
 
