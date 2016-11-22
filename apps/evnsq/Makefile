@@ -7,7 +7,7 @@ CURRENT_DIR=$(shell echo `pwd`)
 SOURCE_DIR=$(CURRENT_DIR)
 EVPP_DIR=$(CURRENT_DIR)/../..
 
-CFLAGS=$(TOP_CFLAGS) -g -c -fPIC \
+CFLAGS=$(TOP_CFLAGS) -g -c -fPIC -O3 \
 	   -Wall -Wno-unused-parameter -Wno-unused-function -Wunused-variable -Wunused-value \
 	   -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings -Wsign-compare \
 	   -MMD -Winvalid-pch -fms-extensions -Wfloat-equal -Wextra -std=c++11\
