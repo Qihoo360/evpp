@@ -96,7 +96,7 @@ struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
         if (serrno == 0) {
             LOG_INFO << "[" << a.data() << "] is not a IP address. Maybe it is a hostname.";
         } else {
-            LOG_ERROR << "ParseFromIPPort failed : [" << a.data() << "] " << strerror(serrno);
+            LOG_ERROR << "ParseFromIPPort inet_pton(AF_INET, '" << a.data() << "', ..) failed : " << strerror(serrno);
         }
     }
 
