@@ -3,6 +3,8 @@
 #include <evnsq/producer.h>
 #include <evpp/event_loop.h>
 
+#include <glog/logging.h>
+
 #include <chrono>
 #include <thread>
 
@@ -36,12 +38,15 @@ void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
 //     }
 }
 
+#include <glog-0.3.4/src/base/commandlineflags.h>
+
+DEFINE_string(nsqd_tcp_addr, "10.16.28.17:4150", "The tcp address of NSQD");
+DEFINE_string(lookupd_http_url, "http://10.16.28.17:14561/nodes", "The URL address of nsqlookupd");
 
 int main(int argc, char* argv[]) {
-    FLAGS_minloglevel = 2;
     google::InitGoogleLogging(argv[0]);
+    FLAGS_minloglevel = 1;
     int opt = 0;
-    //int digit_optind = 0;
     int option_index = 0;
     const char* optstring = "t:h:";
     static struct option long_options[] = {
@@ -50,40 +55,40 @@ int main(int argc, char* argv[]) {
         { 0, 0, 0, 0 }
     };
 
-    std::string nsqd_tcp_addr;
-    std::string lookupd_http_url;
-
-    //nsqd_tcp_addr = "127.0.0.1:4150";
-    nsqd_tcp_addr = "10.16.28.17:4150";
-    //nsqd_tcp_addr = "weizili-L1:4150";
-    //lookupd_http_url = "http://127.0.0.1:4161/lookup?topic=test";
-    lookupd_http_url = "http://10.16.28.17:14561/nodes";
-
-    while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1) {
-        switch (opt) {
-        case 't':
-            nsqd_tcp_addr = optarg;
-            break;
-
-        case 'h':
-            lookupd_http_url = optarg;
-            break;
-
-        default:
-            printf("error argument [%s]\n", argv[optind]);
-            return -1;
-        }
-    }
+//     std::string nsqd_tcp_addr;
+//     std::string lookupd_http_url;
+// 
+//     //nsqd_tcp_addr = "127.0.0.1:4150";
+//     nsqd_tcp_addr = "10.16.28.17:4150";
+//     //nsqd_tcp_addr = "weizili-L1:4150";
+//     //lookupd_http_url = "http://127.0.0.1:4161/lookup?topic=test";
+//     lookupd_http_url = "http://10.16.28.17:14561/nodes";
+// 
+//     while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1) {
+//         switch (opt) {
+//         case 't':
+//             nsqd_tcp_addr = optarg;
+//             break;
+// 
+//         case 'h':
+//             lookupd_http_url = optarg;
+//             break;
+// 
+//         default:
+//             printf("error argument [%s]\n", argv[optind]);
+//             return -1;
+//         }
+//     }
 
     evpp::EventLoop loop;
     evnsq::Producer client(&loop, evnsq::Option());
     client.SetMessageCallback(&OnMessage);
     client.SetReadyCallback(std::bind(&OnReady, &loop, &client));
 
-    if (!lookupd_http_url.empty()) {
-        client.ConnectToLoopupds(lookupd_http_url);
+    if (!FLAGS_lookupd_http_url.empty()) {
+        client.ConnectToLoopupds(FLAGS_lookupd_http_url);
     } else {
-        client.ConnectToNSQDs(nsqd_tcp_addr);
+        client.ConnectToNSQDs(FLAGS_nsqd_tcp_addr);
     }
 
     auto f = [](evpp::EventLoop* loop, evnsq::Producer* client) {
