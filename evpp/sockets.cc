@@ -208,12 +208,14 @@ void SetKeepAlive(int fd) {
     int on = 1;
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
     assert(rc == 0);
+    (void)rc; // avoid compile warning
 }
 
 void SetReuseAddr(int fd) {
     int on = 1;
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
     assert(rc == 0);
+    (void)rc; // avoid compile warning
 }
 
 }
