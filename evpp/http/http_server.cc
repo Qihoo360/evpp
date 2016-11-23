@@ -123,6 +123,7 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
 
     assert(tpool_->IsStopped());
     for (auto &lt : listen_threads_) {
+        (void)lt; // avoid compile warning
         assert(lt.thread->IsStopped());
     }
     assert(IsStopped());
