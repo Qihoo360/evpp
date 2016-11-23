@@ -41,6 +41,7 @@ void Connector::Start() {
     timer_->AsyncWait();
 
     if (raddr_.sin_addr.s_addr == 0) {
+        LOG_INFO << "The remote address " << remote_addr_ << " is a host, try to resolve its IP address.";
         status_ = kDNSResolving;
         auto index = remote_addr_.rfind(':');
         assert(index != std::string::npos);
