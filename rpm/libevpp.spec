@@ -40,7 +40,7 @@ Requires: %{name} = %{version}-%{release}
 %build
 # your package build steps
 make clean
-make 
+make DEBUG=" -DNDEBUG -O3 -DGOOGLE_STRIP_LOG=1" -j4
 
 
 %install
