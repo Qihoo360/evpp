@@ -10,7 +10,13 @@
 
 namespace evpp {
 Connector::Connector(EventLoop* l, TCPClient* client)
-    : status_(kDisconnected), loop_(l), owner_tcp_client_(client), remote_addr_(client->remote_addr()), timeout_(client->connecting_timeout()), fd_(-1), own_fd_(false) {
+    : status_(kDisconnected)
+    , loop_(l)
+    , owner_tcp_client_(client)
+    , remote_addr_(client->remote_addr())
+    , timeout_(client->connecting_timeout())
+    , fd_(-1)
+    , own_fd_(false) {
     LOG_INFO << "Connector::Connector this=" << this << " raddr=" << remote_addr_;
     raddr_ = sock::ParseFromIPPort(remote_addr_.data());
 }
