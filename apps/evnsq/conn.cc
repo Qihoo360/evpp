@@ -185,8 +185,7 @@ void Conn::WriteCommand(const Command& c) {
     // TODO : using a object pool to improve performance
     evpp::Buffer buf;
     c.WriteTo(&buf);
-    tcp_client_->conn()->Send(&buf);
-
+    WriteBinaryCommand(&buf);
 }
 
 void Conn::Subscribe(const std::string& topic, const std::string& channel) {
@@ -238,13 +237,21 @@ bool Conn::WritePublishCommand(const CommandPtr& c) {
 
     evpp::Buffer buf; // TODO : using a object pool to improve performance
     c->WriteTo(&buf);
-    tcp_client_->conn()->Send(&buf);
+    WriteBinaryCommand(&buf);
     PushWaitACKCommand(c);
     LOG_INFO << "Publish a message to " << remote_addr() << " command=" << c.get();
     return true;
 }
 
+
+void Conn::WriteBinaryCommand(evpp::Buffer* buf) {
+    tcp_client_->conn()->Send(buf);
+}
+
 CommandPtr Conn::PopWaitACKCommand() {
+    if (wait_ack_.empty()) {
+        return CommandPtr();
+    }
     CommandPtr c = *wait_ack_.begin();
     wait_ack_.pop_front();
     return c;
@@ -261,6 +268,11 @@ void Conn::OnPublishResponse(const char* d, size_t len) {
         LOG_INFO << "Get a PublishResponse message 'OK', command=" << cmd.get();
         published_ok_count_++;
         publish_response_cb_(cmd, true);
+        return;
+    }
+
+    LOG_ERROR << "Publish message failed : [" << std::string(d, len) << "].";
+    if (!cmd.get()) {
         return;
     }
 
