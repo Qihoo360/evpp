@@ -117,20 +117,16 @@ void TCPConn::SendInLoop(const void* data, size_t len) {
     // if no data in output queue, writing directly
     if (!chan_->IsWritable() && output_buffer_.length() == 0) {
         nwritten = ::send(chan_->fd(), static_cast<const char*>(data), len, MSG_NOSIGNAL);
-
         if (nwritten >= 0) {
             remaining = len - nwritten;
-
             if (remaining == 0 && write_complete_fn_) {
                 loop_->QueueInLoop(std::bind(write_complete_fn_, shared_from_this()));
             }
         } else {
             int serrno = errno;
             nwritten = 0;
-
             if (!EVUTIL_ERR_RW_RETRIABLE(serrno)) {
                 LOG_ERROR << "SendInLoop write failed errno=" << serrno << " " << strerror(serrno);
-
                 if (serrno == EPIPE || serrno == ECONNRESET) {
                     write_error = true;
                 }
@@ -173,7 +169,7 @@ void TCPConn::HandleRead(Timestamp recv_time) {
             // This is an outgoing connection, we own it and it's done. so close it
             HandleClose();
         } else {
-            // 解决半关闭连接问题：https://github.com/chenshuo/muduo/pull/117 
+            // Fix the half-closing problem：https://github.com/chenshuo/muduo/pull/117 
 
             // This is an incoming connection, we need to preserve the connection for a while so that we can reply to it.
             // And we set a timer to close the connection eventually.
