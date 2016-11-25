@@ -31,7 +31,11 @@ void Client::ConnectToNSQD(const std::string& addr) {
 void Client::ConnectToNSQDs(const std::string& addrs/*host1:port1,host2:port2*/) {
     std::vector<std::string> v;
     evpp::StringSplit(addrs, ",", 0, v);
-    for (auto it = v.begin(); it != v.end(); ++it) {
+    ConnectToNSQDs(v);
+}
+
+void Client::ConnectToNSQDs(const std::vector<std::string>& tcp_addrs/*host:port*/) {
+    for (auto it = tcp_addrs.begin(); it != tcp_addrs.end(); ++it) {
         ConnectToNSQD(*it);
     }
 }
