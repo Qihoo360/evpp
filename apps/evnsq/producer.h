@@ -21,6 +21,9 @@ public:
     bool Publish(const std::string& topic, const std::string& msg);
     bool MultiPublish(const std::string& topic, const std::vector<std::string>& messages);
 
+    // A PUB/MPUB command which has already serialized.
+    bool PublishBinaryCommand(evpp::Buffer* buf);
+
     void SetReadyCallback(const ReadyCallback& cb) {
         ready_fn_ = cb;
     }
@@ -38,9 +41,9 @@ private:
 private:
     size_t current_conn_index_; // current Conn position at Client::conns_
     ReadyCallback ready_fn_;
-    int64_t published_count_;
-    int64_t published_ok_count_;
-    int64_t published_failed_count_;
+    size_t published_count_;
+    size_t published_ok_count_;
+    size_t published_failed_count_;
 
     enum { kDefaultHighWaterMark = 1024 };
     bool hwm_triggered_; // The flag of high water mark
