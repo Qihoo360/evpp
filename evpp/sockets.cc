@@ -91,7 +91,10 @@ struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
     addr.sin_port = htons(::atoi(&a[index + 1]));
     a[index] = '\0';
 
-    if (::inet_pton(AF_INET, a.data(), &addr.sin_addr) <= 0) {
+    int rc = ::inet_pton(AF_INET, a.data(), &addr.sin_addr);
+    if (rc == 0) {
+        LOG_INFO << "ParseFromIPPort inet_pton(AF_INET '" << a.data() << "', ...) rc=0. " << a.data() << " is not a valid IP address. Maybe it is a hostname.";
+    } else if (rc < 0) {
         int serrno = errno;
         if (serrno == 0) {
             LOG_INFO << "[" << a.data() << "] is not a IP address. Maybe it is a hostname.";
