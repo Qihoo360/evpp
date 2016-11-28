@@ -4,24 +4,20 @@
 
 #include "memcache_client.h"
 #include "vbucket_config.h"
+#include "likely.h"
 
 namespace evmc {
 
 void Command::Launch(MemcacheClientPtr memc_client) {
-    if (!memc_client->conn()) {
-        // TODO : 触发网络错误回调
-        LOG_ERROR << "Command bad memc_client " << memc_client << " id=" << id_;
-        return;
-    }
-	auto buf = RequestBuffer(); 
-    memc_client->conn()->Send(buf->data(), buf->size());
+	std::string buf;
+	RequestBuffer(buf); 
+    memc_client->conn()->Send(buf.data(), buf.size());
 }
 
 uint16_t Command::server_id() const {
-    if (server_id_history_.empty()) {
+    if (UNLIKELY(server_id_history_.empty())) {
         return BAD_SERVER_ID;
     }
-
     return server_id_history_.back();
 }
 
@@ -33,7 +29,7 @@ bool Command::ShouldRetry() const {
 }
 
 std::atomic_int SetCommand::next_thread_;
-BufferPtr SetCommand::RequestBuffer()  {
+void SetCommand::RequestBuffer(std::string& buf)  {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
 
@@ -47,18 +43,19 @@ BufferPtr SetCommand::RequestBuffer()  {
     size_t bodylen = req.request.extlen + key_.size() + value_.size();
     req.request.bodylen = htonl(static_cast<uint32_t>(bodylen));
 
-    BufferPtr buf(new evpp::Buffer(sizeof(protocol_binary_request_header) + key_.size()));
-    buf->Append((void*)&req, sizeof(req));
-    buf->AppendInt32(flags_);
-    buf->AppendInt32(expire_);
-    buf->Append(key_.data(), key_.size());
-    buf->Append(value_.data(), value_.size());
+    buf.resize(sizeof(protocol_binary_request_header) + key_.size());
+    buf.append((const char *)&req, sizeof(req));
+	auto flag = htonl(flags_);
+    buf.append((const char *)&flag, sizeof(flag));
+	auto expire = htonl(expire_);
+    buf.append((const char *)&expire, sizeof(expire));
+    buf.append(key_.data(), key_.size());
+    buf.append(value_.data(), value_.size());
 
-    return buf;
 }
 
 std::atomic_int PrefixGetCommand::next_thread_;
-BufferPtr PrefixGetCommand::RequestBuffer()  {
+void PrefixGetCommand::RequestBuffer(std::string& buf)  {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
 
@@ -70,10 +67,9 @@ BufferPtr PrefixGetCommand::RequestBuffer()  {
     req.request.opaque   = id();
     req.request.bodylen = htonl(key_.size());
 
-    BufferPtr buf(new evpp::Buffer(sizeof(protocol_binary_request_header) + key_.size()));
-    buf->Append((void*)&req, sizeof(req));
-    buf->Append(key_.data(), key_.size());
-    return buf;
+    buf.resize(sizeof(protocol_binary_request_header) + key_.size());
+    buf.append((const char *)&req, sizeof(req));
+    buf.append(key_.data(), key_.size());
 }
 
 void PrefixGetCommand::OnPrefixGetCommandDone() {
@@ -85,7 +81,7 @@ void PrefixGetCommand::OnPrefixGetCommandDone() {
 }
 
 std::atomic_int GetCommand::next_thread_;
-BufferPtr GetCommand::RequestBuffer()  {
+void GetCommand::RequestBuffer(std::string& buf)  {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
 
@@ -97,11 +93,9 @@ BufferPtr GetCommand::RequestBuffer()  {
     req.request.opaque   = id();
     req.request.bodylen = htonl(key_.size());
 
-    BufferPtr buf(new evpp::Buffer(sizeof(protocol_binary_request_header) + key_.size()));
-    buf->Append((void*)&req, sizeof(req));
-    buf->Append(key_.data(), key_.size());
-
-    return buf;
+    buf.resize(sizeof(protocol_binary_request_header) + key_.size());
+    buf.append((const char *)&req, sizeof(req));
+    buf.append(key_.data(), key_.size());
 }
 
 void MultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
@@ -126,13 +120,11 @@ void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::string& k
 	}
 }
 
-BufferPtr MultiGetCommand::RequestBuffer()  {
-	auto& keys = get_handler()->FindKeysByid(vbucket_id());
-	std::size_t keys_num = keys.size();
-    BufferPtr buf(new evpp::Buffer(50 * keys_num)); // 预分配长度大多数时候是足够的
-
+void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const uint16_t vbucket_id, const uint32_t id, std::string & buf) {
 	std::size_t size = 0;
 	protocol_binary_request_header req;
+	const std::size_t keys_num = keys.size();
+	buf.resize(65 * keys_num);
     for (size_t i = 0; i < keys_num; ++i) {
 		size = keys[i].size();
         memset((void*)&req, 0, sizeof(req));
@@ -146,23 +138,46 @@ BufferPtr MultiGetCommand::RequestBuffer()  {
 
         req.request.keylen = htons(uint16_t(size));
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-        req.request.vbucket  = htons(vbucket_id());
-        req.request.opaque   = id();
+        req.request.vbucket  = htons(vbucket_id);
+        req.request.opaque   = id;
         req.request.bodylen  = htonl(size);
 
-        buf->Append((void*)&req, sizeof(req));
-        buf->Append(keys[i].data(), size);
+        buf.append((const char *)&req, sizeof(req));
+        buf.append(keys[i].data(), size);
     }
-    return buf;
 }
 
-BufferPtr PrefixMultiGetCommand::RequestBuffer()  {
+void MultiGetCommand::RequestBuffer(std::string& buf)  {
 	auto& keys = get_handler()->FindKeysByid(vbucket_id());
-	std::size_t keys_num = keys.size();
-    BufferPtr buf(new evpp::Buffer(50 * keys_num)); // 预分配长度大多数时候是足够的
+	MultiGetCommand::PacketRequest(keys, vbucket_id(), id(), buf);
+}
 
+void SerialMultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
+	SerialMultiGetCommand::OnMultiGetCommandOneResponse(resp_code, key, value);
+	multiget_result_.code = SUC_CODE;
+	callback_(std::move(multiget_result_));
+}
+
+void SerialMultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {
+	GetResult get_result;
+    if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
+		get_result.code = resp_code;
+		get_result.value.swap(value);
+    } else {
+		get_result.code = resp_code;
+	}
+	multiget_result_.get_result_map_.emplace(std::move(key), std::move(get_result));
+}
+
+void SerialMultiGetCommand::Launch(MemcacheClientPtr memc_client) {
+    memc_client->conn()->Send(buf_.data(), buf_.size());
+}
+
+void PrefixMultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const uint16_t vbucket_id, const uint32_t id, std::string&  buf) {
 	std::size_t size = 0;
 	protocol_binary_request_header req;
+	const std::size_t keys_num = keys.size();
+	buf.resize(65 * keys_num);
     for (size_t i = 0; i < keys_num; ++i) {
 		size = keys[i].size();
         memset((void*)&req, 0, sizeof(req));
@@ -176,14 +191,18 @@ BufferPtr PrefixMultiGetCommand::RequestBuffer()  {
 
         req.request.keylen = htons(uint16_t(size));
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-        req.request.vbucket  = htons(vbucket_id());
-        req.request.opaque   = id();
+        req.request.vbucket  = htons(vbucket_id);
+        req.request.opaque   = id;
         req.request.bodylen  = htonl(size);
 
-        buf->Append((void*)&req, sizeof(req));
-        buf->Append(keys[i].data(), size);
+        buf.append((const char *)&req, sizeof(req));
+        buf.append(keys[i].data(), size);
     }
-    return buf;
+}
+
+void PrefixMultiGetCommand::RequestBuffer(std::string& buf)  {
+	auto& keys = get_handler()->FindKeysByid(vbucket_id());
+	PacketRequest(keys, vbucket_id(), id(), buf);
 }
 
 void PrefixMultiGetCommand::OnPrefixGetCommandDone() {
@@ -201,9 +220,8 @@ PrefixGetResultPtr& PrefixMultiGetCommand::GetResultContainerByKey(const std::st
 	return it->second;
 }
 
-
 std::atomic_int RemoveCommand::next_thread_;
-BufferPtr RemoveCommand::RequestBuffer()  {
+void RemoveCommand::RequestBuffer(std::string& buf)  {
     protocol_binary_request_header req;
     memset((void*)&req, 0, sizeof(req));
 
@@ -215,11 +233,9 @@ BufferPtr RemoveCommand::RequestBuffer()  {
     req.request.opaque   = id();
     req.request.bodylen = htonl(static_cast<uint32_t>(key_.size()));
 
-    BufferPtr buf(new evpp::Buffer(sizeof(protocol_binary_request_header) + key_.size()));
-    buf->Append((void*)&req, sizeof(req));
-    buf->Append(key_.data(), key_.size());
+    buf.append((const char *)&req, sizeof(req));
+    buf.append(key_.data(), key_.size());
 
-    return buf;
 }
 
 }

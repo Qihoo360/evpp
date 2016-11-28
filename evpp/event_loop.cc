@@ -83,10 +83,6 @@ void EventLoop::Run() {
     LOG_TRACE << "EventLoop stopped, tid: " << std::this_thread::get_id();
 }
 
-bool EventLoop::IsInLoopThread() const {
-    std::thread::id cur_tid = std::this_thread::get_id();
-    return cur_tid == tid_;
-}
 
 void EventLoop::Stop() {
     assert(running_);
