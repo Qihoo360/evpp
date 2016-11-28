@@ -23,6 +23,7 @@ enum {
     ERR_CODE_TIMEOUT = -1,
     ERR_CODE_NETWORK = -2,
     ERR_CODE_DISCONNECT = -3,
+    ERR_CODE_EMPTYKEY = -4,
     ERR_CODE_UNDEFINED = -100,
 };
 
@@ -95,7 +96,6 @@ typedef std::function<void(const std::string& key, const GetResult& result)> Get
 typedef std::function<void(const std::string& key, int code)> SetCallback;
 typedef std::function<void(const std::string& key, int code)> RemoveCallback;
 typedef std::function<void(const MultiGetResultT<GetResult>& result)> MultiGetCallback;
-typedef std::function<void(const MultiGetMapResultPtr& result, int code)> MultiGetCallback2;
 typedef std::function<void(const std::string& key, const PrefixGetResultPtr result)> PrefixGetCallback;
 typedef std::function<void(const PrefixMultiGetResult& result)> PrefixMultiGetCallback;
 
