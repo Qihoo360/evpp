@@ -13,6 +13,7 @@
 #include "random.h"
 #include "evpp/exp.h"
 #include "extract_vbucket_conf.h"
+#include "likely.h"
 
 
 namespace evmc {
@@ -91,38 +92,23 @@ uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const
     return server_id;
 }
 
-std::string VbucketConfig::GetServerAddrById(uint16_t server_id) const {
-    return server_list_[server_id];
-}
 
 static hashkit_hash_algorithm_t algorithm(const std::string& alg) {
     if (alg == "MD5") {
         return HASHKIT_HASH_MD5;
     }
-
     return HASHKIT_HASH_MAX;
 }
 
 uint16_t VbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
     uint32_t digest = libhashkit_digest(key, nkey, algorithm(algorithm_));
-    //LOG_DEBUG << "GetVbucketByKey key=" << key << " hash=" << digest << " bucket=" << digest % vbucket_map_.size();
     return digest % vbucket_map_.size();
 }
 
 bool VbucketConfig::Load(const char* json_info) {
     rapidjson::Document d;
 
-    // read vbucket config file and parse it with rapidjson
-    /*FILE* fp = fopen(json_file, "r");
-
-    if (!fp) {
-        return false;
-    }
-
-    char buf[2048];
-    rapidjson::FileReadStream is(fp, buf, sizeof(buf));*/
     d.Parse(json_info);
-    //fclose(fp);
 
     replicas_ = d["numReplicas"].GetInt();
     algorithm_ = d["hashAlgorithm"].GetString();
@@ -190,38 +176,33 @@ bool MultiModeVbucketConfig::Load(const char* json_file) {
 
 
 uint16_t MultiModeVbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
-	if (mode_ == STAND_ALONE_MODE) {
-		return 0;
-	} else {
+	if (mode_ != STAND_ALONE_MODE) {
 		return VbucketConfig::GetVbucketByKey(key, nkey);
 	}
+	return 0;
 }
 
 
 uint16_t MultiModeVbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const {
-	if (mode_ == STAND_ALONE_MODE) {
-		return 0;
-	} else {
+	if (mode_ != STAND_ALONE_MODE) {
 		return VbucketConfig::SelectServerId(vbucket, last_id);
 	}
+		return 0;
 }
 
-
-std::string MultiModeVbucketConfig::GetServerAddrById(uint16_t server_id) const {
-	if (mode_ == STAND_ALONE_MODE) {
-		assert(single_server_.size() == 1);
-		return single_server_[0];
-	} else {
+const std::string& MultiModeVbucketConfig::GetServerAddrById(uint16_t server_id) const {
+	if(mode_ != STAND_ALONE_MODE) {
 		return VbucketConfig::GetServerAddrById(server_id);
 	}
+	assert(single_server_.size() == 1);
+	return single_server_[0];
 }
 
 const std::vector<std::string>& MultiModeVbucketConfig::server_list() const {
-	if (mode_ == STAND_ALONE_MODE) {
-		return single_server_;
-	} else {
+	if (mode_ != STAND_ALONE_MODE) {
 		return VbucketConfig::server_list();
 	}
+	return single_server_;
 }
 
 }

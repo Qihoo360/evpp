@@ -73,7 +73,7 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
                                    evpp::Buffer* buf) {
     uint32_t id  = resp.response.opaque;  // no need to call ntohl
     int opcode = resp.response.opcode;
-    CommandPtr cmd = memc_client_->peek_running_command();
+    CommandPtr cmd = memc_client_->PeekRunningCommand();
     if (!cmd || id != cmd->id()) {
         // TODO : id 不一致时候，如何处理?
 		buf->Retrieve(kHeaderLen + resp.response.bodylen);
