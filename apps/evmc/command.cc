@@ -44,6 +44,7 @@ void SetCommand::RequestBuffer(std::string& buf)  {
     req.request.bodylen = htonl(static_cast<uint32_t>(bodylen));
 
     buf.resize(sizeof(protocol_binary_request_header) + key_.size());
+	buf.clear();
     buf.append((const char *)&req, sizeof(req));
 	auto flag = htonl(flags_);
     buf.append((const char *)&flag, sizeof(flag));
@@ -51,7 +52,6 @@ void SetCommand::RequestBuffer(std::string& buf)  {
     buf.append((const char *)&expire, sizeof(expire));
     buf.append(key_.data(), key_.size());
     buf.append(value_.data(), value_.size());
-
 }
 
 std::atomic_int PrefixGetCommand::next_thread_;
@@ -68,13 +68,15 @@ void PrefixGetCommand::RequestBuffer(std::string& buf)  {
     req.request.bodylen = htonl(key_.size());
 
     buf.resize(sizeof(protocol_binary_request_header) + key_.size());
+	buf.clear();
     buf.append((const char *)&req, sizeof(req));
     buf.append(key_.data(), key_.size());
 }
 
 void PrefixGetCommand::OnPrefixGetCommandDone() {
-    if (caller_loop()) {
-        caller_loop()->RunInLoop(std::bind(mget_callback_, std::move(key_),  mget_result_));
+	auto loop = caller_loop(); 
+	if (loop && !loop->IsInLoopThread()) {
+        loop->RunInLoop(std::bind(mget_callback_, std::move(key_),  mget_result_));
     } else {
         mget_callback_(key_, mget_result_);
     }
@@ -94,6 +96,7 @@ void GetCommand::RequestBuffer(std::string& buf)  {
     req.request.bodylen = htonl(key_.size());
 
     buf.resize(sizeof(protocol_binary_request_header) + key_.size());
+	buf.clear();
     buf.append((const char *)&req, sizeof(req));
     buf.append(key_.data(), key_.size());
 }
@@ -112,12 +115,8 @@ void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::string& k
 	auto  it = result_map.find(key);
 	assert(it != result_map.end());
 	auto & get_result = it->second;
-    if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-		get_result.code = resp_code;
-		get_result.value.swap(value);
-    } else {
-		get_result.code = resp_code;
-	}
+	get_result.code = resp_code;
+	get_result.value.swap(value);
 }
 
 void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const uint16_t vbucket_id, const uint32_t id, std::string & buf) {
@@ -125,6 +124,7 @@ void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const 
 	protocol_binary_request_header req;
 	const std::size_t keys_num = keys.size();
 	buf.resize(65 * keys_num);
+	buf.clear();
     for (size_t i = 0; i < keys_num; ++i) {
 		size = keys[i].size();
         memset((void*)&req, 0, sizeof(req));
@@ -160,12 +160,8 @@ void SerialMultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& ke
 
 void SerialMultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {
 	GetResult get_result;
-    if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS) {
-		get_result.code = resp_code;
-		get_result.value.swap(value);
-    } else {
-		get_result.code = resp_code;
-	}
+	get_result.code = resp_code;
+	get_result.value.swap(value);
 	multiget_result_.get_result_map_.emplace(std::move(key), std::move(get_result));
 }
 
@@ -178,6 +174,7 @@ void PrefixMultiGetCommand::PacketRequest(const std::vector<std::string>& keys, 
 	protocol_binary_request_header req;
 	const std::size_t keys_num = keys.size();
 	buf.resize(65 * keys_num);
+	buf.clear();
     for (size_t i = 0; i < keys_num; ++i) {
 		size = keys[i].size();
         memset((void*)&req, 0, sizeof(req));
@@ -233,9 +230,10 @@ void RemoveCommand::RequestBuffer(std::string& buf)  {
     req.request.opaque   = id();
     req.request.bodylen = htonl(static_cast<uint32_t>(key_.size()));
 
+    buf.resize(sizeof(protocol_binary_request_header) + key_.size());
+	buf.clear();
     buf.append((const char *)&req, sizeof(req));
     buf.append(key_.data(), key_.size());
-
 }
 
 }
