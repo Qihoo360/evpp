@@ -12,18 +12,17 @@ MemcacheClient::~MemcacheClient() {
 }
 
 void MemcacheClient::PushRunningCommand(CommandPtr& cmd) {
-    //exec_loop_->AssertInLoopThread();
     if (UNLIKELY(!cmd)) {
         return;
     }
 
-    if (LIKELY(cmd->id() == 0)) {
+    if (cmd->id() == 0) {
         cmd->set_id(next_id());
     }
     running_command_.emplace(cmd);
 
     if (UNLIKELY(!timeout_.IsZero() && !cmd_timer_)) {
-			LOG_DEBUG << "InvokeTimer for " << " " << conn()->remote_addr();
+			LOG_DEBUG << "Create Timer for " << " " << conn()->remote_addr();
 			cmd_timer_ = exec_loop_->RunAfter(timeout_, std::bind(&MemcacheClient::OnPacketTimeout, shared_from_this(), cmd->id()));
 	}
 }
@@ -50,9 +49,10 @@ CommandPtr MemcacheClient::PopWaitingCommand() {
 void MemcacheClient::OnResponseData(const evpp::TCPConnPtr& tcp_conn,
                                     evpp::Buffer* buf,
                                     evpp::Timestamp ts) {
-	if (codec_) {
+	if (!codec_) {
 			codec_ = new BinaryCodec(this);
 	}
+
 	codec_->OnCodecMessage(tcp_conn, buf, ts);
 }
 
@@ -62,9 +62,11 @@ void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
 		if (LIKELY(cmd->id() != cmd_id)) {
 			cmd_timer_->Cancel();
 			cmd_timer_ = exec_loop_->RunAfter(timeout_, std::bind(&MemcacheClient::OnPacketTimeout, shared_from_this(), cmd->id()));
-		return;
+			LOG_DEBUG << "Delete Timer for " << " " << conn()->remote_addr();
+			return;
 		}
 	} else {
+		LOG_DEBUG << "Delete Timer for " << " " << conn()->remote_addr();
 		cmd_timer_->Cancel();
 		cmd_timer_.reset();
 		return;

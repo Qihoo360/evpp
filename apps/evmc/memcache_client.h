@@ -40,9 +40,8 @@ public:
         return CommandPtr(running_command_.front());
     }
 
-    void PushWaitingCommand(CommandPtr& cmd) {
+    inline void PushWaitingCommand(CommandPtr& cmd) {
         if (LIKELY(cmd)) {
-            cmd->set_id(next_id());
             waiting_command_.push(cmd);
         }
     }

@@ -131,7 +131,6 @@ bool VbucketConfig::Load(const char* json_info) {
             vbucket_map_.back().push_back(ids[j].GetInt());
         }
 
-        LOG_DEBUG << "vbuckets[" << i << "].size= " << vbucket_map_.back().size();
     }
 
     return true;
