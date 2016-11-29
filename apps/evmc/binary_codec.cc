@@ -113,11 +113,11 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
         std::string value(pv + keylen_getk, resp.response.bodylen - keylen_getk - extlen_getk);
 
         cmd->OnMultiGetCommandDone(resp.response.status, key, value);
+        LOG_DEBUG << "OnResponsePacket MULTIGETK, opaque=" << id;
     }
     break;
 
     case PROTOCOL_BINARY_CMD_GETKQ: {
-        //cmd = memc_client_->peek_running_command();
 		const int extlen = resp.response.extlen;
 		const int keylen = resp.response.keylen;
         const char* pv = buf->data() + sizeof(resp) + extlen;
@@ -125,6 +125,7 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
         std::string value(pv + keylen, resp.response.bodylen - keylen - extlen);
 
         cmd->OnMultiGetCommandOneResponse(resp.response.status, key, value);
+        LOG_DEBUG << "OnResponsePacket MULTIGETQ, opaque=" << id;
 	}
     break;
 
@@ -144,7 +145,7 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
 		std::string key(pv, resp.response.keylen);
 		auto result_ptr = cmd->GetResultContainerByKey(key);
 		DecodePrefixGetPacket(resp, buf, result_ptr);
-        LOG_DEBUG << "OnResponsePacket PGETKQ";
+        LOG_DEBUG << "OnResponsePacket PGETKQ" << id;
 	}
 		break;
 
