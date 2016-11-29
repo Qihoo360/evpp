@@ -69,18 +69,18 @@ public:
 
     virtual void OnError(int err_code) {
         LOG_INFO << "SetCommand OnError id=" << id();
-        if (caller_loop()) {
-            caller_loop()->RunInLoop(std::bind(set_callback_,
+		auto loop = caller_loop(); 
+        if (loop && !loop->IsInLoopThread()) {
+            loop->RunInLoop(std::bind(set_callback_,
                                                std::move(key_), err_code));
         } else {
             set_callback_(key_, err_code);
         }
-		caller_loop()->RunInLoop(std::bind(set_callback_,
-					key_, err_code));
     }
     virtual void OnSetCommandDone(int resp_code) {
-        if (caller_loop()) {
-            caller_loop()->RunInLoop(std::bind(set_callback_, std::string(key_), resp_code));
+		auto loop = caller_loop(); 
+        if (loop && !loop->IsInLoopThread()) {
+            loop->RunInLoop(std::bind(set_callback_, std::string(key_), resp_code));
         } else {
             set_callback_(key_, resp_code);
         }
@@ -106,7 +106,8 @@ public:
 
     virtual void OnError(int err_code) {
         LOG(WARNING) << "GetCommand OnError id=" << id();
-        if (caller_loop()) {
+		auto loop = caller_loop(); 
+        if (loop && !loop->IsInLoopThread()) {
             caller_loop()->RunInLoop(std::bind(get_callback_, std::move(key_),
                                                GetResult(err_code, std::string())));
         } else {
@@ -114,7 +115,8 @@ public:
         }
     }
     virtual void OnGetCommandDone(int resp_code, const std::string& value) {
-        if (caller_loop()) {
+		auto loop = caller_loop(); 
+        if (loop && !loop->IsInLoopThread()) {
             caller_loop()->RunInLoop(std::bind(get_callback_, std::move(key_),
                                                GetResult(resp_code, value)));
         } else {
@@ -138,8 +140,9 @@ public:
     virtual void OnError(int err_code) {
         LOG(WARNING) << "PrefixGetCommand OnError id=" << id();
         mget_result_->code = err_code;
-        if (caller_loop()) {
-            caller_loop()->RunInLoop(std::bind(mget_callback_, std::move(key_), std::move(mget_result_)));
+		auto loop = caller_loop(); 
+        if (loop && !loop->IsInLoopThread()) {
+            loop->RunInLoop(std::bind(mget_callback_, std::move(key_), std::move(mget_result_)));
         } else {
             mget_callback_(key_, mget_result_);
         }
@@ -267,7 +270,7 @@ public:
     }
 
     virtual void OnError(int err_code) {
-		LOG(WARNING) << "MultiGetCommand OnError id=" << id();
+		LOG(WARNING) << "MultiGetCommand OnError id =" << id();
 		multiget_result_.code = err_code;
 		callback_(multiget_result_);
 	}
@@ -323,15 +326,17 @@ public:
     virtual void OnError(int err_code) {
         LOG(WARNING) << "RemoveCommand OnError id=" << id();
 
-        if (caller_loop()) {
-            caller_loop()->RunInLoop(std::bind(remove_callback_, std::move(key_), err_code));
+		auto loop = caller_loop(); 
+        if (loop && !loop->IsInLoopThread()) {
+            loop->RunInLoop(std::bind(remove_callback_, std::move(key_), err_code));
         } else {
             remove_callback_(key_, err_code);
         }
     }
     virtual void OnRemoveCommandDone(int resp_code) {
-        if (caller_loop()) {
-            caller_loop()->RunInLoop(std::bind(remove_callback_, std::move(key_), resp_code));
+		auto loop = caller_loop(); 
+        if (loop && !loop->IsInLoopThread()) {
+            loop->RunInLoop(std::bind(remove_callback_, std::move(key_), resp_code));
         } else {
             remove_callback_(key_, resp_code);
         }
