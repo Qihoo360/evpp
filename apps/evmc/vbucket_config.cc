@@ -117,18 +117,18 @@ bool VbucketConfig::Load(const char* json_info) {
     LOG_DEBUG << "server count = " << servers.Size();
 
     for (rapidjson::SizeType i = 0; i < servers.Size(); i++) {
-        server_list_.push_back(servers[i].GetString());
-        server_health_.push_back(INIT_WEIGHT);
+        server_list_.emplace_back(servers[i].GetString());
+        server_health_.emplace_back(INIT_WEIGHT);
     }
 
     rapidjson::Value& vbuckets = d["vBucketMap"];
 
     for (rapidjson::SizeType i = 0; i < vbuckets.Size(); i++) {
         rapidjson::Value& ids = vbuckets[i];
-        vbucket_map_.push_back(std::vector<int>());
+        vbucket_map_.emplace_back(std::vector<int>());
 
         for (rapidjson::SizeType j = 0; j < ids.Size(); j++) {
-            vbucket_map_.back().push_back(ids[j].GetInt());
+            vbucket_map_.back().emplace_back(ids[j].GetInt());
         }
 
     }
@@ -159,7 +159,7 @@ bool MultiModeVbucketConfig::IsStandAlone(const char* serv) {
 bool MultiModeVbucketConfig::Load(const char* json_file) {
     if (IsStandAlone(json_file)) {
 		mode_ = STAND_ALONE_MODE;
-		single_server_.push_back(json_file);
+		single_server_.emplace_back(json_file);
 		return true;
 	}
 	else { 
