@@ -74,7 +74,7 @@ void PrefixGetCommand::RequestBuffer(std::string& buf)  {
 void PrefixGetCommand::OnPrefixGetCommandDone() {
 	auto loop = caller_loop(); 
 	if (loop && !loop->IsInLoopThread()) {
-        loop->RunInLoop(std::bind(mget_callback_, std::move(key_),  mget_result_));
+        loop->RunInLoop(std::bind(mget_callback_, std::move(key_),  std::move(mget_result_)));
     } else {
         mget_callback_(key_, mget_result_);
     }
