@@ -20,6 +20,7 @@ typedef std::shared_ptr<evpp::TimerEventWatcher> TimerEventPtr;
 
 enum {
 	SUC_CODE = 0,
+	NOT_FIND_CODE = 1,
     ERR_CODE_TIMEOUT = -1,
     ERR_CODE_NETWORK = -2,
     ERR_CODE_DISCONNECT = -3,
