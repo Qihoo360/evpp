@@ -1,7 +1,5 @@
 #include "command.h"
-
 #include <memcached/protocol_binary.h>
-
 #include "memcache_client.h"
 #include "vbucket_config.h"
 #include "likely.h"
