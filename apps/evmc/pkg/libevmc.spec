@@ -18,8 +18,8 @@ source: %{_module_name}.tar.gz
 buildrequires: libevent-devel >= 2.0.0
 requires: libevent20 >= 2.0.0
 %endif
-requires: libjemalloc
-requires: libglog
+requires: jemalloc
+requires: glog
 
 buildroot: %{_tmppath}/%{name}-%{version}-%{release}-%(%{__id_u} -n)
 Autoreq: no
