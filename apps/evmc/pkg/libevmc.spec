@@ -108,6 +108,7 @@ popd
 %{includepath}/evmc/libhashkit/*.h
 %{includepath}/evmc/memcached/*.h
 %{includepath}/evmc/rapidjson/*.h
+%{libpath}/lib*.* 
 
 %pre
 # pre-install scripts
