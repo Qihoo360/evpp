@@ -45,7 +45,7 @@ cd %{_builddir}/apps/evmc
 # your package build steps
 make clean
 #make %{?_smp_mflags}
-make 
+make DEBUG_FLAGS="-DNDEBUG -O3"
 
 
 %install
