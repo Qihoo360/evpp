@@ -80,7 +80,7 @@ public:
     virtual void OnSetCommandDone(int resp_code) {
 		auto loop = caller_loop(); 
         if (loop && !loop->IsInLoopThread()) {
-            loop->RunInLoop(std::bind(set_callback_, std::string(key_), resp_code));
+            loop->RunInLoop(std::bind(set_callback_, std::move(key_), resp_code));
         } else {
             set_callback_(key_, resp_code);
         }
@@ -109,7 +109,7 @@ public:
 		auto loop = caller_loop(); 
         if (loop && !loop->IsInLoopThread()) {
             caller_loop()->RunInLoop(std::bind(get_callback_, std::move(key_),
-                                               GetResult(err_code, std::string())));
+                                               std::move(GetResult(err_code, std::string()))));
         } else {
             get_callback_(key_, GetResult(err_code, std::string()));
         }
@@ -118,7 +118,7 @@ public:
 		auto loop = caller_loop(); 
         if (loop && !loop->IsInLoopThread()) {
             caller_loop()->RunInLoop(std::bind(get_callback_, std::move(key_),
-                                               GetResult(resp_code, value)));
+                                               std::move(GetResult(resp_code, value))));
         } else {
             get_callback_(key_, GetResult(resp_code, value));
         }
