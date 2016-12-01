@@ -35,7 +35,6 @@ void BinaryCodec::OnCodecMessage(const evpp::TCPConnPtr& conn,
 void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& resp,
                                    evpp::Buffer* buf, PrefixGetResultPtr& ptr) {
 	const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
-	//std::string key(pv, resp.response.keylen);
 	uint32_t pos = resp.response.keylen;
 	uint32_t klen = 0;
 	uint32_t vlen = 0;
