@@ -20,9 +20,9 @@ public:
     // @param[in] thread_num - 
     // @param[in] timeout_ms - 
     // @return  - 
-    MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms)
+    MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms, const char * key_filter = "+")
         : MemcacheClientBase(vbucket_conf), vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
-        , timeout_ms_(timeout_ms) { 
+        , timeout_ms_(timeout_ms), key_filter_(key_filter) { 
     }
     virtual ~MemcacheClientPool();
 
@@ -67,6 +67,7 @@ private:
 
     MultiModeVbucketConfigPtr vbucket_config_;
     pthread_rwlock_t vbucket_config_mutex_; // TODO : use rw mutex
+	std::string key_filter_;
 
     std::atomic_int next_thread_;
 };
