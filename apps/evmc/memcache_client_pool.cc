@@ -6,6 +6,12 @@
 
 namespace evmc {
 
+#define GET_FILTER_KEY_POS(name, key) \
+	name = key.find(key_filter_); \
+	if (name == std::string::npos) { \
+		name = key.size() - 1; \
+	} 
+
 MemcacheClientPool::~MemcacheClientPool() {
 }
 
@@ -52,25 +58,34 @@ bool MemcacheClientPool::Start() {
 
 void MemcacheClientPool::Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, uint32_t flags,
                              uint32_t expire, SetCallback callback) {
-    const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), key.size());
+
+	std::size_t pos = 0;
+	GET_FILTER_KEY_POS(pos, key)
+    const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), pos);
     CommandPtr command = std::make_shared<SetCommand>(caller_loop, vbucket, key, value, flags, expire, callback);
 	LaunchCommand(command);
 }
 
 void MemcacheClientPool::Remove(evpp::EventLoop* caller_loop, const std::string& key, RemoveCallback callback) {
-    const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), key.size());
+	std::size_t pos = 0;
+	GET_FILTER_KEY_POS(pos, key)
+    const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), pos);
     CommandPtr command = std::make_shared<RemoveCommand>(caller_loop, vbucket, key, callback);
 	LaunchCommand(command);
 }
 
 void MemcacheClientPool::Get(evpp::EventLoop* caller_loop, const std::string& key, GetCallback callback) {
-    const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), key.size());
+	std::size_t pos = 0;
+	GET_FILTER_KEY_POS(pos, key)
+    const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), pos);
     CommandPtr command = std::make_shared<GetCommand>(caller_loop, vbucket, key, callback);
 	LaunchCommand(command);
 }
 
 void MemcacheClientPool::PrefixGet(evpp::EventLoop* caller_loop, const std::string& key, PrefixGetCallback callback) {
-    const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), key.size());
+	std::size_t pos = 0;
+	GET_FILTER_KEY_POS(pos, key)
+    const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), pos);
     CommandPtr command = std::make_shared<PrefixGetCommand>(caller_loop, vbucket, key, callback);
 	LaunchCommand(command);
 }
@@ -88,9 +103,11 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
 	uint16_t vbucket = 0;
 	MultiKeyGetHandlerPtr handler = std::make_shared<MultiKeyHandler<MultiGetResult, MultiGetCallback> > (callback);
 	auto& result = handler->get_result();
+	std::size_t pos = 0;
     for (size_t i = 0; i < size; ++i) {
 		auto &key = keys[i];
-        vbucket = vbconf->GetVbucketByKey(key.c_str(), key.size());
+		GET_FILTER_KEY_POS(pos, key)
+        vbucket = vbconf->GetVbucketByKey(key.c_str(), pos);
         vbucket_keys[vbucket].emplace_back(key);
 		result.emplace(key, GetResult());
     }
@@ -117,9 +134,11 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
 	uint16_t vbucket = 0;
 	PrefixMultiKeyGetHandlerPtr handler = std::make_shared<MultiKeyHandler<PrefixMultiGetResult, PrefixMultiGetCallback> >(callback);
 	auto& result = handler->get_result();
+	std::size_t pos = 0;
     for (size_t i = 0; i < size; ++i) {
 		auto& key = keys[i];
-        vbucket = vbconf->GetVbucketByKey(key.c_str(), key.size());
+		GET_FILTER_KEY_POS(pos, key)
+        vbucket = vbconf->GetVbucketByKey(key.c_str(), pos);
         vbucket_keys[vbucket].emplace_back(key);
 		result.emplace(key, std::make_shared<PrefixGetResult>());
     }
