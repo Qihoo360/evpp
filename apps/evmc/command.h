@@ -244,7 +244,7 @@ public:
     virtual void OnError(int err_code) {
 		LOG(WARNING) << "MultiGetCommand OnError id=" << id();
 		auto & keys = get_handler()->FindKeysByid(vbucket_id());
-		auto & result_map = get_handler()->get_result().get_result_map_;
+		auto & result_map = get_handler()->get_result();
 		auto k = result_map.begin();
 		for (auto& it : keys) {
 			k = result_map.find(it);
@@ -271,7 +271,6 @@ public:
 
     virtual void OnError(int err_code) {
 		LOG(WARNING) << "MultiGetCommand OnError id =" << id();
-		multiget_result_.code = err_code;
 		callback_(multiget_result_);
 	}
     virtual void OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value);
@@ -299,7 +298,7 @@ public:
     virtual void OnError(int err_code) {
         LOG(WARNING) << "prefixMultiGetCommand OnError id=" << id();
 		auto & keys = get_handler()->FindKeysByid(vbucket_id());
-		auto & result_map = get_handler()->get_result().get_result_map_;
+		auto & result_map = get_handler()->get_result();
 		auto k = result_map.begin();
 		for (auto& it : keys) {
 			k = result_map.find(it);
