@@ -9,7 +9,7 @@ namespace evmc {
 #define GET_FILTER_KEY_POS(name, key) \
 	name = key.find(key_filter_); \
 	if (name == std::string::npos) { \
-		name = key.size() - 1; \
+		name = key.size(); \
 	} 
 
 MemcacheClientPool::~MemcacheClientPool() {
