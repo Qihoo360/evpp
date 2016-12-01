@@ -15,12 +15,11 @@ namespace evmc {
 // TODO
 // - embedded & standalone
 
-typedef std::shared_ptr<evpp::Buffer> BufferPtr;
 typedef std::shared_ptr<evpp::TimerEventWatcher> TimerEventPtr;
 
 enum {
-	SUC_CODE = 0,
-	NOT_FIND_CODE = 1,
+	SUC_RET = 0,
+	NOT_FIND_RET = 1,
     ERR_CODE_TIMEOUT = -1,
     ERR_CODE_NETWORK = -2,
     ERR_CODE_DISCONNECT = -3,
@@ -44,7 +43,7 @@ struct GetResult {
     std::string value;
 };
 
-template <class T>
+/*template <class T>
 struct MultiGetResultT {
     MultiGetResultT() : code(ERR_CODE_UNDEFINED) {}
     MultiGetResultT(const MultiGetResultT& result) : code(result.code), get_result_map_(result.get_result_map_) { }
@@ -57,12 +56,12 @@ struct MultiGetResultT {
     
     int code; // TODO 使用 enum 变量
     std::map<std::string, T> get_result_map_;
-};
+};*/
 
 typedef std::shared_ptr<GetResult> GetResultPtr;
-typedef std::map<std::string, GetResult>  MultiGetMapResult;
-typedef std::shared_ptr<MultiGetMapResult> MultiGetMapResultPtr;
-typedef MultiGetResultT<GetResult> MultiGetResult;
+typedef std::map<std::string, GetResult>  MultiGetResult;
+/*typedef std::shared_ptr<MultiGetMapResult> MultiGetResultPtr;
+typedef MultiGetResultT<GetResult> MultiGetResult;*/
 
 struct PrefixGetResult {
     PrefixGetResult() : code(ERR_CODE_UNDEFINED) {
@@ -90,16 +89,15 @@ struct PrefixGetResult {
 
 typedef std::shared_ptr<PrefixGetResult> PrefixGetResultPtr;
 
-typedef MultiGetResultT<PrefixGetResultPtr> PrefixMultiGetResult;
+typedef std::map<std::string, PrefixGetResultPtr> PrefixMultiGetResult;
 
 
 typedef std::function<void(const std::string& key, const GetResult& result)> GetCallback;
 typedef std::function<void(const std::string& key, int code)> SetCallback;
 typedef std::function<void(const std::string& key, int code)> RemoveCallback;
-typedef std::function<void(const MultiGetResultT<GetResult>& result)> MultiGetCallback;
+typedef std::function<void(const MultiGetResult& result)> MultiGetCallback;
 typedef std::function<void(const std::string& key, const PrefixGetResultPtr result)> PrefixGetCallback;
 typedef std::function<void(const PrefixMultiGetResult& result)> PrefixMultiGetCallback;
-
 class MemcacheClient;
 typedef std::shared_ptr<MemcacheClient> MemcacheClientPtr;
 
