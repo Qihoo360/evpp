@@ -50,8 +50,6 @@ bool MemcacheClientPool::Start() {
     return ok;
 }
 
-
-
 void MemcacheClientPool::Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, uint32_t flags,
                              uint32_t expire, SetCallback callback) {
     const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), key.size());
@@ -80,7 +78,6 @@ void MemcacheClientPool::PrefixGet(evpp::EventLoop* caller_loop, const std::stri
 void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback) {
     if (UNLIKELY(keys.size() <= 0)) {
 		MultiGetResult result;
-		result.code = ERR_CODE_EMPTYKEY;
 		caller_loop->RunInLoop(std::bind(callback, std::move(result)));
         return;
     }
@@ -90,7 +87,7 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
     MultiModeVbucketConfig* vbconf = vbucket_config();
 	uint16_t vbucket = 0;
 	MultiKeyGetHandlerPtr handler = std::make_shared<MultiKeyHandler<MultiGetResult, MultiGetCallback> > (callback);
-	auto& result = handler->get_result().get_result_map_;
+	auto& result = handler->get_result();
     for (size_t i = 0; i < size; ++i) {
 		auto &key = keys[i];
         vbucket = vbconf->GetVbucketByKey(key.c_str(), key.size());
@@ -110,7 +107,6 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
 void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, PrefixMultiGetCallback callback) {
     if (UNLIKELY(keys.size() <= 0)) {
 		PrefixMultiGetResult result;
-		result.code = ERR_CODE_EMPTYKEY;
 		caller_loop->RunInLoop(std::bind(callback, std::move(result)));
         return;
     }
@@ -120,7 +116,7 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
     MultiModeVbucketConfig* vbconf = vbucket_config();
 	uint16_t vbucket = 0;
 	PrefixMultiKeyGetHandlerPtr handler = std::make_shared<MultiKeyHandler<PrefixMultiGetResult, PrefixMultiGetCallback> >(callback);
-	auto& result = handler->get_result().get_result_map_;
+	auto& result = handler->get_result();
     for (size_t i = 0; i < size; ++i) {
 		auto& key = keys[i];
         vbucket = vbconf->GetVbucketByKey(key.c_str(), key.size());
