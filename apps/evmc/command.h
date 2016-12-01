@@ -176,11 +176,11 @@ class MultiKeyHandler {
 			return finished_vbucket_nums_;
 		}
 
-		inline const uint32_t  FinishedOne()  {
+		inline uint32_t  FinishedOne()  {
 			return finished_vbucket_nums_++;
 		}
 
-		inline const std::size_t vbucket_size() const {
+		inline  std::size_t vbucket_size() const {
 			return vbucket_size_;
 		}
 
