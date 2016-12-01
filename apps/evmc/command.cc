@@ -101,7 +101,6 @@ void GetCommand::RequestBuffer(std::string& buf)  {
 
 void MultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
 	OnMultiGetCommandOneResponse(resp_code, key, value);
-    get_handler()->get_result().code = resp_code;
 	const uint32_t finish = get_handler()->FinishedOne();
 	if ((finish + 1) >= get_handler()->vbucket_size()) {
 		caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), std::move(get_handler()->get_result())));
@@ -109,7 +108,7 @@ void MultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std
 }
 
 void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {
-	auto & result_map = get_handler()->get_result().get_result_map_;
+	auto & result_map = get_handler()->get_result();
 	auto  it = result_map.find(key);
 	assert(it != result_map.end());
 	auto & get_result = it->second;
@@ -152,7 +151,6 @@ void MultiGetCommand::RequestBuffer(std::string& buf)  {
 
 void SerialMultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
 	SerialMultiGetCommand::OnMultiGetCommandOneResponse(resp_code, key, value);
-	multiget_result_.code = SUC_CODE;
 	callback_(std::move(multiget_result_));
 }
 
@@ -160,7 +158,7 @@ void SerialMultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::str
 	GetResult get_result;
 	get_result.code = resp_code;
 	get_result.value.swap(value);
-	multiget_result_.get_result_map_.emplace(std::move(key), std::move(get_result));
+	multiget_result_.emplace(std::move(key), std::move(get_result));
 }
 
 void SerialMultiGetCommand::Launch(MemcacheClientPtr memc_client) {
@@ -203,13 +201,12 @@ void PrefixMultiGetCommand::RequestBuffer(std::string& buf)  {
 void PrefixMultiGetCommand::OnPrefixGetCommandDone() {
 	const uint32_t finish = get_handler()->FinishedOne();
 	if ((finish + 1) >= get_handler()->vbucket_size()) {
-		get_handler()->get_result().code = SUC_CODE;  
 		caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), std::move(get_handler()->get_result())));
 	}
 }
 	
 PrefixGetResultPtr& PrefixMultiGetCommand::GetResultContainerByKey(const std::string& key) {
-	auto & result_map = get_handler()->get_result().get_result_map_;
+	auto & result_map = get_handler()->get_result();
 	auto  it = result_map.find(key);
 	assert(it != result_map.end());
 	return it->second;
