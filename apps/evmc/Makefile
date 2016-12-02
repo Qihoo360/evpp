@@ -12,7 +12,7 @@ CPPFLAGS= -g -c -fPIC \
 		  $(DEBUG_FLAGS) \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
-		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 -DGOOGLE_STRIP_LOG=1 \
+		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 -DGOOGLE_STRIP_LOG=2 \
 		  -I . \
 		  -I $(PROJECT_ROOT_DIR) \
 		  -I $(THIRD_PARTY_DIR)
