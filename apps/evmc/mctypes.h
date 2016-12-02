@@ -24,12 +24,11 @@ enum {
     ERR_CODE_NETWORK = -2,
     ERR_CODE_DISCONNECT = -3,
     ERR_CODE_EMPTYKEY = -4,
-    ERR_CODE_UNDEFINED = -100,
 };
 
 
 struct GetResult {
-    GetResult() : code(ERR_CODE_UNDEFINED) {}
+    GetResult() : code(NOT_FIND_RET) {}
     GetResult(const GetResult& result) : code(result.code), value(result.value) {}
     GetResult(GetResult&& result) : code(result.code), value(std::move(result.value)) {}
     GetResult& operator=(GetResult&& result) {
@@ -43,28 +42,11 @@ struct GetResult {
     std::string value;
 };
 
-/*template <class T>
-struct MultiGetResultT {
-    MultiGetResultT() : code(ERR_CODE_UNDEFINED) {}
-    MultiGetResultT(const MultiGetResultT& result) : code(result.code), get_result_map_(result.get_result_map_) { }
-    MultiGetResultT(MultiGetResultT&& result) : code(result.code), get_result_map_(std::move(result.get_result_map_)) {}
-    MultiGetResultT& operator=(MultiGetResultT&& result) {
-		code = result.code;
-		get_result_map_ = std::move(result.get_result_map_);
-		return *this;
-	}
-    
-    int code; // TODO 使用 enum 变量
-    std::map<std::string, T> get_result_map_;
-};*/
-
 typedef std::shared_ptr<GetResult> GetResultPtr;
 typedef std::map<std::string, GetResult>  MultiGetResult;
-/*typedef std::shared_ptr<MultiGetMapResult> MultiGetResultPtr;
-typedef MultiGetResultT<GetResult> MultiGetResult;*/
 
 struct PrefixGetResult {
-    PrefixGetResult() : code(ERR_CODE_UNDEFINED) {
+    PrefixGetResult() : code(NOT_FIND_RET) {
 	}
 	virtual ~PrefixGetResult() {
 	}
@@ -82,7 +64,7 @@ struct PrefixGetResult {
     int code;
     std::map<std::string, std::string> result_map_;
 	void clear() {
-		code = ERR_CODE_UNDEFINED;
+		code = NOT_FIND_RET;
 		result_map_.clear();
 	}
 };
