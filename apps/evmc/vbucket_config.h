@@ -26,6 +26,13 @@ public:
     inline const std::vector<std::string>& server_list() const {
         return server_list_;
     };
+	void clear() {
+		replicas_ = 0;
+		algorithm_.clear();
+		server_health_.clear();
+		server_list_.clear();
+		vbucket_map_.clear();
+	}
 private:
     int replicas_;
     std::string algorithm_;
@@ -45,6 +52,10 @@ class MultiModeVbucketConfig : public VbucketConfig {
 		const std::string& GetServerAddrById(uint16_t server_id) const;
 		const std::vector<std::string>& server_list() const;
 		bool Load(const char* json_file);
+		void clear() {
+			single_server_.clear();
+			VbucketConfig::clear();
+		}
 	private:
 		bool IsStandAlone(const char *serv);
 	private:
