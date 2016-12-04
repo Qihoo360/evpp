@@ -57,18 +57,17 @@ void MemcacheClient::OnResponseData(const evpp::TCPConnPtr& tcp_conn,
 }
 
 void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
+	cmd_timer_->Cancel();
+	cmd_timer_.reset();
 	if (!running_command_.empty()) {
         CommandPtr cmd(running_command_.front());
 		if (LIKELY(cmd->id() != cmd_id)) {
-			cmd_timer_->Cancel();
 			cmd_timer_ = exec_loop_->RunAfter(timeout_, std::bind(&MemcacheClient::OnPacketTimeout, shared_from_this(), cmd->id()));
 			LOG_DEBUG << "Delete Timer for " << " " << conn()->remote_addr();
 			return;
 		}
 	} else {
 		LOG_DEBUG << "Delete Timer for " << " " << conn()->remote_addr();
-		cmd_timer_->Cancel();
-		cmd_timer_.reset();
 		return;
 	}
 
