@@ -22,7 +22,7 @@ class MemcacheClient : public std::enable_shared_from_this<MemcacheClient> {
 public:
     MemcacheClient(evpp::EventLoop* evloop, evpp::TCPClient* tcp_client, MemcacheClientBase* mcpool = NULL, const int timeout_ms = 249)
         : id_seq_(0), exec_loop_(evloop), tcp_client_(tcp_client)
-        , mc_pool_(mcpool), timeout_(timeout_ms / 1000.0), codec_(NULL) {
+        , mc_pool_(mcpool), timeout_(timeout_ms / 1000.0), codec_(NULL), timer_canceled_(true) {
     }
     virtual ~MemcacheClient();
 
@@ -73,8 +73,10 @@ private:
     evpp::Duration timeout_;
 
     evpp::InvokeTimerPtr cmd_timer_;
+    evpp::InvokeTimerPtr cmd_timer_bakup_;
 
     BinaryCodec* codec_;
+	bool  timer_canceled_;
 
     std::queue<CommandPtr> running_command_;
     std::queue<CommandPtr> waiting_command_;
