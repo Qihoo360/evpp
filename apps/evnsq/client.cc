@@ -31,13 +31,18 @@ void Client::ConnectToNSQD(const std::string& addr) {
 void Client::ConnectToNSQDs(const std::string& addrs/*host1:port1,host2:port2*/) {
     std::vector<std::string> v;
     evpp::StringSplit(addrs, ",", 0, v);
-    for (auto it = v.begin(); it != v.end(); ++it) {
+    ConnectToNSQDs(v);
+}
+
+void Client::ConnectToNSQDs(const std::vector<std::string>& tcp_addrs/*host:port*/) {
+    for (auto it = tcp_addrs.begin(); it != tcp_addrs.end(); ++it) {
         ConnectToNSQD(*it);
     }
 }
 
 void Client::ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/) {
     auto f = [this, lookupd_url]() {
+        LOG_INFO << "query nsqlookupd " << lookupd_url;
         std::shared_ptr<evpp::httpc::Request> r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
         r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
     };
