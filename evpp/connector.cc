@@ -152,7 +152,7 @@ void Connector::OnConnectTimeout() {
 
 void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
     if (addrs.empty()) {
-        LOG_ERROR << "DNS Resolve failed. host=" << remote_addr_;
+        LOG_ERROR << "DNS Resolve failed. host=" << dns_resolver_->host();
         HandleError();
         return;
     }
