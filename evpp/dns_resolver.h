@@ -16,6 +16,9 @@ public:
     ~DNSResolver();
     void Start();
     void Cancel();
+    const std::string& host() const {
+        return host_;
+    }
 private:
     void StartInLoop();
     void SyncDNSResolve();
