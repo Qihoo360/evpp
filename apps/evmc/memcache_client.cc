@@ -21,9 +21,10 @@ void MemcacheClient::PushRunningCommand(CommandPtr& cmd) {
     }
     running_command_.emplace(cmd);
 
-    if (UNLIKELY(!timeout_.IsZero() && !cmd_timer_)) {
+    if (UNLIKELY(!timeout_.IsZero() && timer_canceled_)) {
 			LOG_DEBUG << "Create Timer for " << " " << conn()->remote_addr();
 			cmd_timer_ = exec_loop_->RunAfter(timeout_, std::bind(&MemcacheClient::OnPacketTimeout, shared_from_this(), cmd->id()));
+		    timer_canceled_ = false;
 	}
 }
 
@@ -57,13 +58,15 @@ void MemcacheClient::OnResponseData(const evpp::TCPConnPtr& tcp_conn,
 }
 
 void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
-	cmd_timer_->Cancel();
-	cmd_timer_.reset();
+	//cmd_timer_->Cancel();
+	//cmd_timer_.reset();
+	timer_canceled_ = true;
 	if (!running_command_.empty()) {
         CommandPtr cmd(running_command_.front());
 		if (LIKELY(cmd->id() != cmd_id)) {
+			cmd_timer_bakup_.swap(cmd_timer_);
 			cmd_timer_ = exec_loop_->RunAfter(timeout_, std::bind(&MemcacheClient::OnPacketTimeout, shared_from_this(), cmd->id()));
-			LOG_DEBUG << "Delete Timer for " << " " << conn()->remote_addr();
+		    timer_canceled_ = false;
 			return;
 		}
 	} else {
