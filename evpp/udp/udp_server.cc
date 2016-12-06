@@ -36,6 +36,9 @@ public:
     bool Start(int p) {
         this->port_ = p;
         this->fd_ = sock::CreateUDPServer(p);
+        if (this->fd_ < 0) {
+            return false;
+        }
         this->status_ = kRunning;
         this->thread_.reset(new std::thread(std::bind(&Server::RecvingLoop, this->server_, this)));
         sock::SetTimeout(this->fd_, 500);

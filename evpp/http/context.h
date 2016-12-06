@@ -33,8 +33,6 @@ public:
 
     static std::string FindClientIP(const char* uri);
 
-
-
 public:
     // 不带参数的URI, 例如: /status.html
     std::string uri;
