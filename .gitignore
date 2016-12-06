@@ -25,6 +25,7 @@ msvc/*.suo
 msvc/.vs/
 msvc/libevpp.VC.VC.opendb
 msvc/libevpp.VC.db
+msvc/evnsq-test.vcxproj.filters
 
 test/evpp
 examples/echo/simple_echo
@@ -49,3 +50,4 @@ evpp/libevpp.so.1.0
 rpm/backup-rpms/
 rpm/build/
 rpm/*.rpm
+

@@ -10,7 +10,13 @@
 
 namespace evpp {
 Connector::Connector(EventLoop* l, TCPClient* client)
-    : status_(kDisconnected), loop_(l), owner_tcp_client_(client), remote_addr_(client->remote_addr()), timeout_(client->connecting_timeout()), fd_(-1), own_fd_(false) {
+    : status_(kDisconnected)
+    , loop_(l)
+    , owner_tcp_client_(client)
+    , remote_addr_(client->remote_addr())
+    , timeout_(client->connecting_timeout())
+    , fd_(-1)
+    , own_fd_(false) {
     LOG_INFO << "Connector::Connector this=" << this << " raddr=" << remote_addr_;
     raddr_ = sock::ParseFromIPPort(remote_addr_.data());
 }
@@ -41,6 +47,7 @@ void Connector::Start() {
     timer_->AsyncWait();
 
     if (raddr_.sin_addr.s_addr == 0) {
+        LOG_INFO << "The remote address " << remote_addr_ << " is a host, try to resolve its IP address.";
         status_ = kDNSResolving;
         auto index = remote_addr_.rfind(':');
         assert(index != std::string::npos);
