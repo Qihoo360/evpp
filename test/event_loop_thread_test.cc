@@ -24,7 +24,7 @@ TEST_UNIT(testEventLoopThread) {
     evpp::Duration delay(double(1.0)); // 1s
     g_count.store(0);
     std::unique_ptr<evpp::EventLoopThread> t(new evpp::EventLoopThread);
-    t->Start();
+    t->Start(true);
     usleep(1000);
     evpp::Timestamp begin = evpp::Timestamp::Now();
     t->event_loop()->RunAfter(delay, &OnTimeout);
