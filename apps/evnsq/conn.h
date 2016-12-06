@@ -53,6 +53,7 @@ public:
         publish_response_cb_ = cb;
     }
     bool WritePublishCommand(const CommandPtr& cmd);
+    void WriteBinaryCommand(evpp::Buffer* buf);
     void Subscribe(const std::string& topic, const std::string& channel);
 
     void set_status(Status s) {
