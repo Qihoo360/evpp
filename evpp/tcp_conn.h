@@ -109,7 +109,7 @@ private:
     int fd_;
     std::string name_;
     std::string local_addr_; // the local address of ip:port
-    std::string remote_addr_; // the remote address of  ip:port
+    std::string remote_addr_; // the remote address of ip:port
     std::unique_ptr<FdChannel> chan_;
     Buffer input_buffer_;
     Buffer output_buffer_;
