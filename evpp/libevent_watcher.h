@@ -23,7 +23,7 @@ public:
     // @brief :
     // @param[IN] const Handler& cb - The callback which will be called when this event is canceled.
     // @return void -
-    void SeCancelCallback(const Handler& cb);
+    void SetCancelCallback(const Handler& cb);
 
 protected:
     // @note It MUST be called in the event thread.

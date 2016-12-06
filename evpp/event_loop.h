@@ -44,10 +44,16 @@ public:
     bool IsInLoopThread() const;
     void AssertInLoopThread() const;
     void set_context(const Any& c) {
-        context_ = c;
+        context_[0] = c;
     }
     const Any& context() const {
-        return context_;
+        return context_[0];
+    }
+    void set_context(int index, const Any& c) {
+        context_[index] = c;
+    }
+    const Any& context(int index) const {
+        return context_[index];
     }
     bool running() const {
         return running_;
@@ -57,6 +63,9 @@ public:
     }
     bool IsStopped() const {
         return !running();
+    }
+    const std::thread::id& tid() const {
+        return tid_;
     }
 private:
     void Init();
@@ -68,7 +77,8 @@ private:
     struct event_base* evbase_;
     bool create_evbase_myself_;
     std::thread::id tid_;
-    Any context_;
+    enum { kContextCount = 64, };
+    Any context_[kContextCount];
     bool running_;
 
     std::mutex mutex_;
