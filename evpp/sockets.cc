@@ -71,7 +71,7 @@ int CreateUDPServer(int port) {
     struct sockaddr_in local = ParseFromIPPort(addr.c_str());
     if (::bind(fd, (struct sockaddr*)&local, sizeof(local))) {
         int serrno = errno;
-        LOG_ERROR << "socket bind error " << strerror(serrno);
+        LOG_ERROR << "socket bind error=" << serrno << " " << strerror(serrno);
         return INVALID_SOCKET;
     }
 
