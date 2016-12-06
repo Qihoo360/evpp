@@ -50,9 +50,11 @@ public:
         return context_[0];
     }
     void set_context(int index, const Any& c) {
+        assert(index < kContextCount && index >= 0);
         context_[index] = c;
     }
     const Any& context(int index) const {
+        assert(index < kContextCount && index >= 0);
         return context_[index];
     }
     bool running() const {
