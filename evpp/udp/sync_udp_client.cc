@@ -38,7 +38,7 @@ bool Client::Connect(const struct sockaddr& addr) {
 }
 
 bool Client::Connect() {
-    sockfd_ = socket(AF_INET, SOCK_DGRAM, 0);
+    sockfd_ = ::socket(AF_INET, SOCK_DGRAM, 0);
     sock::SetReuseAddr(sockfd_);
 
     socklen_t addrlen = sizeof(remote_addr_);
@@ -49,7 +49,7 @@ bool Client::Connect() {
         struct sockaddr_in *paddr = (struct sockaddr_in*)&remote_addr_;
         LOG_ERROR << "Failed to connect to remote IP="
             << inet_ntoa(paddr->sin_addr)
-            << ", port=" << ntohs(paddr->sin_port)
+            << ", port=" << ::ntohs(paddr->sin_port)
             << ", errno=" << errno << " " << strerror(errno);
         return false;
     }
@@ -114,7 +114,7 @@ bool Client::Send(const std::string& msg, const struct sockaddr_in& addr) {
 bool Client::Send(const char* msg, size_t len, const struct sockaddr_in& addr) {
     Client c;
     if (!c.Connect(addr)) {
-        return "";
+        return false;
     }
 
     return c.Send(msg, len);
