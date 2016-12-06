@@ -5,8 +5,8 @@
 #include "evpp/libevent_headers.h"
 
 namespace evpp {
-DNSResolver::DNSResolver(EventLoop* evloop, const std::string& host, Duration timeout, const Functor& f)
-    : loop_(evloop), dnsbase_(NULL), dns_req_(NULL), host_(host), timeout_(timeout), functor_(f) {}
+DNSResolver::DNSResolver(EventLoop* evloop, const std::string& h, Duration timeout, const Functor& f)
+    : loop_(evloop), dnsbase_(NULL), dns_req_(NULL), host_(h), timeout_(timeout), functor_(f) {}
 
 DNSResolver::~DNSResolver() {
     LOG_INFO << "DNSResolver::~DNSResolver tid=" << std::this_thread::get_id() << " this=" << this;
