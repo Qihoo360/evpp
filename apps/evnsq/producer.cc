@@ -41,18 +41,21 @@ bool Producer::MultiPublish(const std::string& topic, const std::vector<std::str
     return Publish(cmd);
 }
 
-bool Producer::Publish(const CommandPtr& cmd) {
-//     if (wait_ack_count_ > high_water_mark_ * conns_.size()) {
-//         LOG_WARN << "Too many messages are waiting a response ACK. Please try again later.";
-//         hwm_triggered_ = true;
-// 
-//         if (high_water_mark_fn_) {
-//             high_water_mark_fn_(this, wait_ack_count_);
-//         }
-// 
-//         return false;
-//     }
 
+bool Producer::PublishBinaryCommand(evpp::Buffer* buf) {
+    assert(loop_->IsInLoopThread());
+    auto conn = GetNextConn();
+    if (!conn.get()) {
+        LOG_ERROR << "No available NSQD to use.";
+        return false;
+    }
+
+    published_count_ += 1;
+    conn->WriteBinaryCommand(buf);
+    return true;
+}
+
+bool Producer::Publish(const CommandPtr& cmd) {
     if (conns_.empty()) {
         LOG_ERROR << "No available NSQD to use.";
         return false;
@@ -98,10 +101,15 @@ void Producer::OnReady(Conn* conn) {
 }
 
 void Producer::OnPublishResponse(Conn* conn, const CommandPtr& cmd, bool successfull) {
+    size_t count = 1;
+    if (cmd.get()) {
+        count = cmd->body().size();
+    }
+
     if (successfull) {
-        published_ok_count_ += cmd->body().size();
+        published_ok_count_ += count;
     } else {
-        published_failed_count_ += cmd->body().size();
+        published_failed_count_ += count;
     }
 }
 

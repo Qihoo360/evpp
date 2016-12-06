@@ -38,8 +38,10 @@ void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
 
 
 int main(int argc, char* argv[]) {
-    FLAGS_minloglevel = 2;
     google::InitGoogleLogging(argv[0]);
+
+    FLAGS_stderrthreshold=0;
+
     int opt = 0;
     //int digit_optind = 0;
     int option_index = 0;
