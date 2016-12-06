@@ -27,8 +27,8 @@ TEST_UNIT(testUDPServer) {
     LOG_TRACE << __func__;
     Init();
     std::vector<int> ports(2, 0);
-    ports[0] = 53668;
-    ports[1] = 53669;
+    ports[0] = 5368;
+    ports[1] = 5369;
     evpp::udp::Server* udpsrv = new evpp::udp::Server;
     udpsrv->SetMessageHandler(std::bind(&OnMessage, udpsrv, std::placeholders::_1, std::placeholders::_2));
     H_TEST_ASSERT(udpsrv->Start(ports));
