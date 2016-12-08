@@ -8,7 +8,7 @@ PROJECT_ROOT_DIR=$(CURRENT_DIR)/../..
 THIRD_PARTY_DIR=$(PROJECT_ROOT_DIR)/3rdparty
 
 DEBUG_FLAGS=-DNDEBUG -O3
-CPPFLAGS= -g -c -fPIC \
+CPPFLAGS=  -c -fPIC \
 		  $(DEBUG_FLAGS) \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
