@@ -90,13 +90,13 @@ bool MemcacheClientBase::Start(bool is_reload) {
 			return false;
 		}
 		vbconf_cur_ = vbconf_2_;
-		load_thread_ = new std::thread(MemcacheClientBase::LoadThread, this);
+		/*load_thread_ = new std::thread(MemcacheClientBase::LoadThread, this);
 		assert(load_thread_);
 		evpp::Duration reload_delay(120.0);
 		while(!load_loop_->running()) {
 			usleep(1000);
 		}
-		load_loop_->RunEvery(reload_delay, std::bind(&MemcacheClientBase::DoReloadConf, this));
+		load_loop_->RunEvery(reload_delay, std::bind(&MemcacheClientBase::DoReloadConf, this));*/
 	}
     return true;
 }
