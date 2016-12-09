@@ -153,8 +153,9 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
 }
 
 void MemcacheClientPool::LaunchCommand(CommandPtr& command) {
-    const uint32_t thread_hash = next_thread_++;
-	auto loop = loop_pool_.GetNextLoopWithHash(thread_hash);
+    //const uint32_t thread_hash = next_thread_++;
+	//auto loop = loop_pool_.GetNextLoopWithHash(thread_hash);
+	auto loop = loop_pool_.GetNextLoopWithHash(rand());
     loop->RunInLoop(
         std::bind(&MemcacheClientPool::DoLaunchCommand, this, loop, command));
 }
