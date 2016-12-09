@@ -120,8 +120,13 @@ void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const 
 	std::size_t size = 0;
 	protocol_binary_request_header req;
 	const std::size_t keys_num = keys.size();
-	buf.resize(65 * keys_num);
-	buf.clear();
+	int total_size = 0;
+	for (std::size_t i = 0; i < keys_num; ++i) {
+		total_size += keys[i].size() + sizeof(protocol_binary_request_header);
+	}
+	buf.resize(total_size);
+	//buf.clear();
+	int index = 0;
     for (size_t i = 0; i < keys_num; ++i) {
 		size = keys[i].size();
         memset((void*)&req, 0, sizeof(req));
@@ -139,8 +144,12 @@ void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const 
         req.request.opaque   = id;
         req.request.bodylen  = htonl(size);
 
-        buf.append((const char *)&req, sizeof(req));
-        buf.append(keys[i].data(), size);
+        //buf.append((const char *)&req, sizeof(req));
+        //buf.append(keys[i].data(), size);
+		memcpy(&buf[index],(const char *)&req, sizeof(protocol_binary_request_header));
+		index += sizeof(protocol_binary_request_header);
+        memcpy(&buf[index], keys[i].data(), size);
+		index += index;
     }
 }
 
