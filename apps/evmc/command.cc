@@ -102,7 +102,7 @@ void GetCommand::RequestBuffer(std::string& buf)  {
 void MultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
 	OnMultiGetCommandOneResponse(resp_code, key, value);
 	const uint32_t finish = get_handler()->FinishedOne();
-	if ((finish + 1) >= get_handler()->vbucket_size()) {
+	if ((finish + 1) >= get_handler()->serverid_size()) {
 		caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), std::move(get_handler()->get_result())));
 	}
 }
@@ -116,7 +116,8 @@ void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::string& k
 	get_result.value.swap(value);
 }
 
-void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const uint16_t vbucket_id, const uint32_t id, std::string & buf) {
+void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys, 
+		const std::vector<uint16_t>& vbuckets, const uint32_t id, std::string & buf) {
 	std::size_t size = 0;
 	protocol_binary_request_header req;
 	const std::size_t keys_num = keys.size();
@@ -125,7 +126,6 @@ void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const 
 		total_size += keys[i].size() + sizeof(protocol_binary_request_header);
 	}
 	buf.resize(total_size);
-	//buf.clear();
 	int index = 0;
     for (size_t i = 0; i < keys_num; ++i) {
 		size = keys[i].size();
@@ -140,22 +140,20 @@ void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const 
 
         req.request.keylen = htons(uint16_t(size));
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-        req.request.vbucket  = htons(vbucket_id);
+        req.request.vbucket  = htons(vbuckets[i]);
         req.request.opaque   = id;
         req.request.bodylen  = htonl(size);
 
-        //buf.append((const char *)&req, sizeof(req));
-        //buf.append(keys[i].data(), size);
 		memcpy(&buf[index],(const char *)&req, sizeof(protocol_binary_request_header));
 		index += sizeof(protocol_binary_request_header);
         memcpy(&buf[index], keys[i].data(), size);
-		index += index;
+		index += size;
     }
 }
 
 void MultiGetCommand::RequestBuffer(std::string& buf)  {
-	auto& keys = get_handler()->FindKeysByid(vbucket_id());
-	MultiGetCommand::PacketRequest(keys, vbucket_id(), id(), buf);
+	auto info = get_handler()->FindInfoByid(server_id());
+	MultiGetCommand::PacketRequest(info.keys, info.vbuckets, id(), buf);
 }
 
 void SerialMultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
@@ -178,8 +176,12 @@ void PrefixMultiGetCommand::PacketRequest(const std::vector<std::string>& keys, 
 	std::size_t size = 0;
 	protocol_binary_request_header req;
 	const std::size_t keys_num = keys.size();
-	buf.resize(65 * keys_num);
-	buf.clear();
+	int total_size = 0;
+	for (std::size_t i = 0; i < keys_num; ++i) {
+		total_size += keys[i].size() + sizeof(protocol_binary_request_header);
+	}
+	buf.resize(total_size);
+	int index = 0;
     for (size_t i = 0; i < keys_num; ++i) {
 		size = keys[i].size();
         memset((void*)&req, 0, sizeof(req));
@@ -197,8 +199,10 @@ void PrefixMultiGetCommand::PacketRequest(const std::vector<std::string>& keys, 
         req.request.opaque   = id;
         req.request.bodylen  = htonl(size);
 
-        buf.append((const char *)&req, sizeof(req));
-        buf.append(keys[i].data(), size);
+		memcpy(&buf[index], (const char *)&req, sizeof(req));
+		index += sizeof(req);
+		memcpy(&buf[index], keys[i].data(), size);
+		index += size;
     }
 }
 
@@ -209,7 +213,7 @@ void PrefixMultiGetCommand::RequestBuffer(std::string& buf)  {
 
 void PrefixMultiGetCommand::OnPrefixGetCommandDone() {
 	const uint32_t finish = get_handler()->FinishedOne();
-	if ((finish + 1) >= get_handler()->vbucket_size()) {
+	if ((finish + 1) >= get_handler()->serverid_size()) {
 		caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), std::move(get_handler()->get_result())));
 	}
 }
