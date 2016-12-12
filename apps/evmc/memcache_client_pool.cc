@@ -7,7 +7,7 @@
 namespace evmc {
 
 #define GET_FILTER_KEY_POS(name, key) \
-	name = key.find(key_filter_); \
+	name = key.find(key_filter_[0]); \
 	if (name == std::string::npos) { \
 		name = key.size(); \
 	} 
@@ -97,26 +97,32 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
         return;
     }
 	const std::size_t size = keys.size();
-    std::map<uint16_t, std::vector<std::string> > vbucket_keys;
+    std::map<uint16_t, IdInfo> serverid_keys;
 
     MultiModeVbucketConfig* vbconf = vbucket_config();
 	uint16_t vbucket = 0;
+	uint16_t server_id = 0;
 	MultiKeyGetHandlerPtr handler = std::make_shared<MultiKeyHandler<MultiGetResult, MultiGetCallback> > (callback);
 	auto& result = handler->get_result();
 	std::size_t pos = 0;
+
     for (size_t i = 0; i < size; ++i) {
 		auto &key = keys[i];
 		GET_FILTER_KEY_POS(pos, key)
         vbucket = vbconf->GetVbucketByKey(key.c_str(), pos);
-        vbucket_keys[vbucket].emplace_back(key);
+		server_id = vbconf->SelectServerId(vbucket, BAD_SERVER_ID);
+		auto& item = serverid_keys[server_id];
+        item.keys.emplace_back(key);
+        item.vbuckets.emplace_back(vbucket);
 		result.emplace(key, GetResult());
     }
-	handler->set_vbucket_keys(vbucket_keys);
+	handler->set_serverid_keys(serverid_keys);
 
-	auto & vbucket_keys_d = handler->get_vbucket_keys();
-    for(auto& it : vbucket_keys_d) {
-		vbucket = it.first;
-		CommandPtr command = std::make_shared<MultiGetCommand>(caller_loop, vbucket, handler);
+	auto& serverid_keys_d = handler->get_serverid_keys();
+    for(auto& it : serverid_keys_d) {
+		server_id = it.first;
+		CommandPtr command = std::make_shared<MultiGetCommand>(caller_loop, server_id, handler);
+		command->set_server_id(server_id);
 		LaunchCommand(command);
 	}
 }
@@ -128,6 +134,35 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
         return;
     }
 	const std::size_t size = keys.size();
+    std::map<uint16_t, IdInfo> serverid_keys;
+
+    MultiModeVbucketConfig* vbconf = vbucket_config();
+	uint16_t vbucket = 0;
+	uint16_t server_id = 0;
+	PrefixMultiKeyGetHandlerPtr handler = std::make_shared<MultiKeyHandler<PrefixMultiGetResult, PrefixMultiGetCallback> >(callback);
+	auto& result = handler->get_result();
+	std::size_t pos = 0;
+
+    for (size_t i = 0; i < size; ++i) {
+		auto &key = keys[i];
+		GET_FILTER_KEY_POS(pos, key)
+        vbucket = vbconf->GetVbucketByKey(key.c_str(), pos);
+		server_id = vbconf->SelectServerId(vbucket, BAD_SERVER_ID);
+		auto& item = serverid_keys[server_id];
+        item.keys.emplace_back(key);
+        item.vbuckets.emplace_back(vbucket);
+		result.emplace(key, std::make_shared<PrefixGetResult>());
+    }
+	handler->set_serverid_keys(serverid_keys);
+
+	auto & serverid_keys_d = handler->get_serverid_keys();
+    for(auto& it : serverid_keys_d) {
+		server_id = it.first;
+		CommandPtr command = std::make_shared<PrefixMultiGetCommand>(caller_loop, vbucket, handler);
+		command->set_server_id(server_id);
+		LaunchCommand(command);
+	}
+	/*const std::size_t size = keys.size();
     std::map<uint16_t, std::vector<std::string> > vbucket_keys;
 
     MultiModeVbucketConfig* vbconf = vbucket_config();
@@ -149,12 +184,10 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
 		vbucket = it.first;
 		CommandPtr command = std::make_shared<PrefixMultiGetCommand>(caller_loop, vbucket, handler);
 		LaunchCommand(command);
-	}
+	}*/
 }
 
 void MemcacheClientPool::LaunchCommand(CommandPtr& command) {
-    //const uint32_t thread_hash = next_thread_++;
-	//auto loop = loop_pool_.GetNextLoopWithHash(thread_hash);
 	auto loop = loop_pool_.GetNextLoopWithHash(rand());
     loop->RunInLoop(
         std::bind(&MemcacheClientPool::DoLaunchCommand, this, loop, command));
@@ -162,16 +195,19 @@ void MemcacheClientPool::LaunchCommand(CommandPtr& command) {
 
 void MemcacheClientPool::DoLaunchCommand(evpp::EventLoop * loop, CommandPtr command) {
     MultiModeVbucketConfig* vbconf = vbucket_config();
-    uint16_t vbucket = command->vbucket_id(); 
-	uint16_t server_id = vbconf->SelectServerId(vbucket, command->server_id());
 
-    if (UNLIKELY(server_id == BAD_SERVER_ID)) {
-		LOG_ERROR << "bad server id";
-        command->OnError(ERR_CODE_DISCONNECT);
-        return;
-    }
+	if (UNLIKELY(!command->ShouldRetry())) { //重试 需要重新算serverid
+		uint16_t vbucket = command->vbucket_id(); 
+		uint16_t server_id = vbconf->SelectServerId(vbucket, command->server_id());
+		if (UNLIKELY(server_id == BAD_SERVER_ID)) {
+			LOG_ERROR << "bad server id";
+			command->OnError(ERR_CODE_DISCONNECT);
+			return;
+		}
+		command->set_server_id(server_id);
+	}
 
-    command->set_server_id(server_id);
+	uint16_t server_id = command->server_id();
     std::string server_addr = vbconf->GetServerAddrById(server_id);
     MemcClientMap* client_map = GetMemcClientMap(loop);
 
