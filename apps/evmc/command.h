@@ -158,36 +158,46 @@ private:
     virtual void RequestBuffer(std::string& str);
 };
 
+struct IdInfo{
+	std::vector<std::string> keys;
+	std::vector<uint16_t> vbuckets;
+};
 
 template<class Result, class Callback>
 class MultiKeyHandler {
 	public:
 		MultiKeyHandler(const Callback& callback, uint32_t finished_nums = 0) 
-			:finished_vbucket_nums_(finished_nums), vbucket_size_(0),
+			:finished_serverid_nums_(finished_nums), serverid_size_(0),
 			mget_callback_(callback) {
 			}
 
-		inline void set_vbucket_keys(std::map<uint16_t, std::vector<std::string> >& vbucket_keys) {
-			vbucket_keys_.swap(vbucket_keys);
-			vbucket_size_ = vbucket_keys_.size();
+		inline void set_serverid_keys(std::map<uint16_t, IdInfo>& serverid_keys) {
+			serverid_keys_.swap(serverid_keys);
+			serverid_size_ = serverid_keys_.size();
 		}
 
-		inline uint32_t finished_vbucket_nums() {
-			return finished_vbucket_nums_;
+		inline uint32_t finished_serverid_nums() {
+			return finished_serverid_nums_;
 		}
 
 		inline uint32_t  FinishedOne()  {
-			return finished_vbucket_nums_++;
+			return finished_serverid_nums_++;
 		}
 
-		inline  std::size_t vbucket_size() const {
-			return vbucket_size_;
+		inline  std::size_t serverid_size() const {
+			return serverid_size_;
+		}
+
+		IdInfo& FindInfoByid(const int16_t id) {
+			auto it = serverid_keys_.find(id);
+			assert(it != serverid_keys_.end());
+			return it->second;
 		}
 
 		std::vector<std::string>& FindKeysByid(const int16_t id) {
-			auto it = vbucket_keys_.find(id);
-			assert(it != vbucket_keys_.end());
-			return it->second;
+			auto it = serverid_keys_.find(id);
+			assert(it != serverid_keys_.end());
+			return it->second.keys;
 		}
 
 		inline Callback& get_callback() {
@@ -198,15 +208,15 @@ class MultiKeyHandler {
 			return mget_result_;
 		}
 
-		inline std::map<uint16_t, std::vector<std::string> >& get_vbucket_keys() {
-			return vbucket_keys_; 
+		inline std::map<uint16_t, IdInfo>& get_serverid_keys() {
+			return serverid_keys_; 
 		}
 
 	private:
-		std::map<uint16_t, std::vector<std::string> > vbucket_keys_;
+		std::map<uint16_t, IdInfo> serverid_keys_;
 		uint32_t thread_ticket_;
-		std::atomic_uint finished_vbucket_nums_;
-		std::size_t vbucket_size_;
+		std::atomic_uint finished_serverid_nums_;
+		std::size_t serverid_size_;
 		Callback mget_callback_;
 		Result mget_result_;
 };
@@ -252,11 +262,11 @@ public:
 			k->second.code = err_code;
 		}
 		const uint32_t finish = get_handler()->FinishedOne();
-		if ((finish + 1) >= get_handler()->vbucket_size()) {
+		if ((finish + 1) >= get_handler()->serverid_size()) {
 			caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), std::move(get_handler()->get_result())));
 		}
 	}
-	static void PacketRequest(const std::vector<std::string>& keys,const uint16_t vbucket_id, const uint32_t id, std::string &  buf);
+	static void PacketRequest(const std::vector<std::string>& keys,const std::vector<uint16_t>& vbuckets, const uint32_t id, std::string &  buf);
     virtual void OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value);
     virtual void OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value);
 private:
@@ -277,7 +287,8 @@ public:
     virtual void OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value);
 	virtual void Launch(MemcacheClientPtr memc_client);
 	inline void  PacketRequests(const std::vector<std::string>& keys) {
-		MultiGetCommand::PacketRequest(keys, 0, id(), buf_);
+		std::vector<uint16_t> vec(keys.size(), 0);
+		MultiGetCommand::PacketRequest(keys, vec, id(), buf_);
 	}
 private:
     virtual void RequestBuffer(std::string& buf) {}
@@ -306,7 +317,7 @@ public:
 			k->second->code = err_code;
 		}
 		const uint32_t finish = get_handler()->FinishedOne();
-		if ((finish + 1) >= get_handler()->vbucket_size()) {
+		if ((finish + 1) >= get_handler()->serverid_size()) {
 			caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), get_handler()->get_result()));
 		}
     }

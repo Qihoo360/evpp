@@ -78,6 +78,7 @@ void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
 
         if (mc_pool_ && cmd->ShouldRetry()) {
             cmd->set_id(0);
+			LOG_ERROR << "connection " << conn()->remote_addr() << " not on service, so retry";
             cmd->caller_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, mc_pool_, cmd));
         } else {
             cmd->OnError(ERR_CODE_TIMEOUT);
