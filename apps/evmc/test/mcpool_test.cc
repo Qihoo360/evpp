@@ -39,9 +39,9 @@ static void OnTestMultiGetDone(const MultiGetResult& res) {
 }
 
 static void OnTestPrefixMultiGetDone(const PrefixMultiGetResult& res) {
-	  gettimeofday(&g_tv_end, NULL);
-	  LOG_INFO << "cost:" << (g_tv_end.tv_sec - g_tv_begin.tv_sec) * 1e6 + (g_tv_end.tv_usec - g_tv_end.tv_usec); 
-    LOG_INFO << ">>>>>>>>>>>>> OnTestPrefixMultiGetDone";
+	gettimeofday(&g_tv_end, NULL);
+	LOG_INFO << "cost:" << (g_tv_end.tv_sec - g_tv_begin.tv_sec) * 1e6 + (g_tv_end.tv_usec - g_tv_end.tv_usec); 
+	LOG_INFO << ">>>>>>>>>>>>> OnTestPrefixMultiGetDone";
 	auto it = res.begin();
 	for (; it != res.end(); ++it) {
 		OnTestPrefixDone(it->first, it->second);
@@ -90,7 +90,7 @@ int main() {
     //VbucketConfTest();
     //return 0;
 
-#if 1
+#if 0
     g_loop = new evpp::EventLoop;
     std::thread th(MyEventThread);
 	while(!g_loop->running()) {
@@ -115,19 +115,29 @@ int main() {
        std::stringstream ss;
        //ss << "test" << i;
        //usleep(1000);
-	   ss << i;
+	   ss << "test+" << i;
 	   std::string key(ss.str());
 	   //key.resize(12, 'T');
 	  // mcp.PrefixGet(g_loop, ss.str(), &OnTestPrefixDone);
       //mcp.Get(g_loop, key, &OnTestGetDone);
-	  mcp.Set(g_loop, key, key, &OnTestSetDone);
+	  //mcp.Set(g_loop, key, key, &OnTestSetDone);
+      //mcp.Get(g_loop, key, &OnTestGetDone);
 	  mget_keys.push_back(key);
       //mcp.Get(g_loop, key, &OnTestGetDone);
-	  //mcp.Remove(g_loop, key, &OnTestRemoveDone);
+	  mcp.Remove(g_loop, key, &OnTestRemoveDone);
       //mcp.Get(g_loop, key, &OnTestGetDone);
 	  //mcp.Set(g_loop, key, key, &OnTestSetDone);
    }
-  mcp.MultiGet(g_loop, mget_keys, &OnTestMultiGetDone);
+//   mcp.PrefixGet(g_loop, "test", &OnTestPrefixDone);
+   mcp.MultiGet(g_loop, mget_keys, &OnTestMultiGetDone);
+   mget_keys.clear();
+   std::stringstream ps;
+   ps << "test";
+   mget_keys.push_back(ps.str());
+   mget_keys.push_back(ps.str());
+   mget_keys.push_back(ps.str());
+
+   mcp.PrefixMultiGet(g_loop, mget_keys, &OnTestPrefixMultiGetDone);
 
   std::stringstream ss;
   int count = 0;
