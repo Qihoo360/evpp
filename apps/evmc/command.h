@@ -321,9 +321,9 @@ public:
 			caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), get_handler()->get_result()));
 		}
     }
-	static void PacketRequest(const std::vector<std::string>& keys, const uint16_t vbucket_id, const uint32_t id, std::string & buf);
+	static void PacketRequest(const std::vector<std::string>& keys, const std::vector<uint16_t>& vbuckets, const uint32_t id, std::string&  buf);
 	virtual PrefixGetResultPtr& GetResultContainerByKey(const std::string& key);
-    virtual void OnPrefixGetCommandDone();
+	virtual void OnPrefixGetCommandDone();
 private:
     virtual void RequestBuffer(std::string& buf);
 };
