@@ -41,15 +41,19 @@ void SetCommand::RequestBuffer(std::string& buf)  {
     size_t bodylen = req.request.extlen + key_.size() + value_.size();
     req.request.bodylen = htonl(static_cast<uint32_t>(bodylen));
 
-    buf.resize(sizeof(protocol_binary_request_header) + key_.size());
-	buf.clear();
-    buf.append((const char *)&req, sizeof(req));
+    buf.resize(sizeof(protocol_binary_request_header) + sizeof(uint32_t) + sizeof(uint32_t) + key_.size() + value_.size());
+	int index = 0;
+    memcpy(&buf[index], (const char *)&req, sizeof(req));
+	index += sizeof(req);
 	auto flag = htonl(flags_);
-    buf.append((const char *)&flag, sizeof(flag));
+	memcpy(&buf[index], (const char *)&flag, sizeof(flag));
+	index += sizeof(flag);
 	auto expire = htonl(expire_);
-    buf.append((const char *)&expire, sizeof(expire));
-    buf.append(key_.data(), key_.size());
-    buf.append(value_.data(), value_.size());
+	memcpy(&buf[index], (const char *)&expire, sizeof(expire));
+	index += sizeof(expire);
+	memcpy(&buf[index], key_.data(), key_.size());
+	index += key_.size();
+	memcpy(&buf[index], value_.data(), value_.size());
 }
 
 std::atomic_int PrefixGetCommand::next_thread_;
@@ -66,9 +70,10 @@ void PrefixGetCommand::RequestBuffer(std::string& buf)  {
     req.request.bodylen = htonl(key_.size());
 
     buf.resize(sizeof(protocol_binary_request_header) + key_.size());
-	buf.clear();
-    buf.append((const char *)&req, sizeof(req));
-    buf.append(key_.data(), key_.size());
+	int index = 0;
+	memcpy(&buf[index], (const char *)&req, sizeof(req));
+	index += sizeof(req);
+	memcpy(&buf[index], key_.data(), key_.size());
 }
 
 void PrefixGetCommand::OnPrefixGetCommandDone() {
@@ -94,9 +99,10 @@ void GetCommand::RequestBuffer(std::string& buf)  {
     req.request.bodylen = htonl(key_.size());
 
     buf.resize(sizeof(protocol_binary_request_header) + key_.size());
-	buf.clear();
-    buf.append((const char *)&req, sizeof(req));
-    buf.append(key_.data(), key_.size());
+	int index = 0;
+	memcpy(&buf[index], (const char *)&req, sizeof(req));
+	index += sizeof(req);
+	memcpy(&buf[index], key_.data(), key_.size());
 }
 
 void MultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {
@@ -239,9 +245,10 @@ void RemoveCommand::RequestBuffer(std::string& buf)  {
     req.request.bodylen = htonl(static_cast<uint32_t>(key_.size()));
 
     buf.resize(sizeof(protocol_binary_request_header) + key_.size());
-	buf.clear();
-    buf.append((const char *)&req, sizeof(req));
-    buf.append(key_.data(), key_.size());
+	int index = 0;
+	memcpy(&buf[index], (const char *)&req, sizeof(req));
+	index += sizeof(req);
+	memcpy(&buf[index], key_.data(), key_.size());
 }
 
 }
