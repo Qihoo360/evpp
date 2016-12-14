@@ -88,7 +88,7 @@ void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
             break;
         }
     }
-    LOG_WARN << "OnPacketTimeout post, waiting=" << waiting_command_.size()
+    LOG_ERROR << "OnPacketTimeout post, waiting=" << waiting_command_.size()
              << " running=" << running_command_.size();
 }
 
