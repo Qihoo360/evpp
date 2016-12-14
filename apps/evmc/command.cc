@@ -152,7 +152,7 @@ void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys,
 }
 
 void MultiGetCommand::RequestBuffer(std::string& buf)  {
-	auto info = get_handler()->FindInfoByid(server_id());
+	auto& info = get_handler()->FindInfoByid(server_id());
 	MultiGetCommand::PacketRequest(info.keys, info.vbuckets, id(), buf);
 }
 
@@ -172,7 +172,7 @@ void SerialMultiGetCommand::Launch(MemcacheClientPtr memc_client) {
     memc_client->conn()->Send(buf_.data(), buf_.size());
 }
 
-void PrefixMultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const uint16_t vbucket_id, const uint32_t id, std::string&  buf) {
+void PrefixMultiGetCommand::PacketRequest(const std::vector<std::string>& keys, const std::vector<uint16_t>& vbuckets, const uint32_t id, std::string&  buf) {
 	std::size_t size = 0;
 	protocol_binary_request_header req;
 	const std::size_t keys_num = keys.size();
@@ -195,7 +195,7 @@ void PrefixMultiGetCommand::PacketRequest(const std::vector<std::string>& keys, 
 
         req.request.keylen = htons(uint16_t(size));
         req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;
-        req.request.vbucket  = htons(vbucket_id);
+        req.request.vbucket  = htons(vbuckets[i]);
         req.request.opaque   = id;
         req.request.bodylen  = htonl(size);
 
@@ -206,9 +206,9 @@ void PrefixMultiGetCommand::PacketRequest(const std::vector<std::string>& keys, 
     }
 }
 
-void PrefixMultiGetCommand::RequestBuffer(std::string& buf)  {
-	auto& keys = get_handler()->FindKeysByid(vbucket_id());
-	PacketRequest(keys, vbucket_id(), id(), buf);
+void PrefixMultiGetCommand::RequestBuffer(std::string& buf) {
+	auto& info = get_handler()->FindInfoByid(server_id());
+	PacketRequest(info.keys, info.vbuckets, id(), buf);
 }
 
 void PrefixMultiGetCommand::OnPrefixGetCommandDone() {
