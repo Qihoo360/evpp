@@ -175,7 +175,7 @@ int main() {
 	while(!g_loop->running()) {
 		usleep(1000);
 	}
-    MemcacheClientSerial mcp("123.125.160.25:20099", 200);
+    MemcacheClientSerial mcp("X.X.X.X:20099", 200);
     assert(mcp.Start(g_loop));
 	usleep(2*1000*1000);
 	std::string key("test");
