@@ -70,7 +70,7 @@ void MemcacheClientSerial::LaunchCommand(CommandPtr& command) {
     if (!conn || conn->status() == evpp::TCPConn::kConnecting) {
 		memclient_->PushWaitingCommand(command);
     } else {
-		assert(loop_->IsInLoopThread());
+		//assert(loop_->IsInLoopThread());
 		LOG_ERROR << "connected to server, but some problems occurs!";
 		command->OnError(ERR_CODE_NETWORK);
 	}
