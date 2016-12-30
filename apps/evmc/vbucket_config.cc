@@ -49,6 +49,9 @@ uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const
     uint16_t vb = vbucket % vbucket_map_.size();
 
     const std::vector<int>& server_ids = vbucket_map_[vb];
+	if (last_id == BAD_SERVER_ID) {
+		return server_ids[0];
+	}
 
     uint16_t server_id = BAD_SERVER_ID;
     {

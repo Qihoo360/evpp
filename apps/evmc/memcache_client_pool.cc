@@ -98,9 +98,14 @@ void MemcacheClientPool::PrefixGet(evpp::EventLoop* caller_loop, const std::stri
 	SET_SERVERID(vbucket, command)
 	LaunchCommand(command);
 }
+/*
+void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, MultiGetCallback& callback) {
+	auto loop = loop_pool_.GetNextLoopWithHash(rand());
+    loop->RunInLoop(
+        std::bind(&MemcacheClientPool::MultiGetImpl, this, caller_loop, std::move(keys), callback));
+}*/
 
-
-void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback) {
+void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, MultiGetCallback& callback) {
     if (UNLIKELY(keys.size() <= 0)) {
 		MultiGetResult result;
 		caller_loop->RunInLoop(std::bind(callback, std::move(result)));
@@ -124,7 +129,7 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vecto
 		auto& item = serverid_keys[server_id];
         item.keys.emplace_back(key);
         item.vbuckets.emplace_back(vbucket);
-		result.emplace(key, GetResult());
+		result.emplace(std::move(key), std::move(GetResult()));
     }
 	handler->set_serverid_keys(serverid_keys);
 
@@ -175,6 +180,7 @@ void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, const std:
 }
 
 void MemcacheClientPool::LaunchCommand(CommandPtr& command) {
+	//const int thread = next_thread_++;
 	auto loop = loop_pool_.GetNextLoopWithHash(rand());
     loop->RunInLoop(
         std::bind(&MemcacheClientPool::DoLaunchCommand, this, loop, command));
