@@ -15,7 +15,7 @@ public:
     virtual ~VbucketConfig();
     uint16_t GetVbucketByKey(const char* key, size_t nkey) const;
     uint16_t SelectServerId(uint16_t vbucket, uint16_t last_id) const;
-    //std::string GetServerAddrById(uint16_t server_id) const;
+	uint16_t SelectServerFirstId(uint16_t vbucket) const;
 
 	inline const std::string& GetServerAddrById(uint16_t server_id) const {
 		return server_list_[server_id];
@@ -51,6 +51,7 @@ class MultiModeVbucketConfig : public VbucketConfig {
 		uint16_t SelectServerId(uint16_t vbucket, uint16_t last_id) const;
 		const std::string& GetServerAddrById(uint16_t server_id) const;
 		const std::vector<std::string>& server_list() const;
+		uint16_t SelectServerFirstId(uint16_t vbucket) const;
 		bool Load(const char* json_file);
 		void clear() {
 			single_server_.clear();
