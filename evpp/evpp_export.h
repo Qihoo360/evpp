@@ -12,8 +12,8 @@
 
 //! Module symbol export
 #ifdef H_WINDOWS_API
-#   ifndef  H_STATIC_LIB_LIBEVENTPP
-#       ifdef  H_LIBEVENTPP_EXPORTS
+#   ifndef  H_STATIC_LIB_EVPP
+#       ifdef  H_EVPP_EXPORTS
 #           define EVPP_EXPORT __declspec(dllexport)
 #       else
 #           define EVPP_EXPORT __declspec(dllimport)
