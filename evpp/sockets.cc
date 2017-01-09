@@ -168,7 +168,7 @@ std::string ToIPPort(const struct sockaddr_in* ss) {
 }
 
 
-EVPP_EXPORT std::string ToIP(const struct sockaddr* s) {
+std::string ToIP(const struct sockaddr* s) {
     auto ss = sockaddr_storage_cast(s);
     if (ss->ss_family == AF_INET) {
         struct sockaddr_in* addr4 = const_cast<struct sockaddr_in*>(sockaddr_in_cast(ss));
