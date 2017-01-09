@@ -96,6 +96,7 @@ std::string Client::DoRequest(const std::string& remote_ip, int port, const std:
 }
 
 bool Client::Send(const char* msg, size_t len) {
+    // TODO use 'send' to improve performance??
     int sentn = ::sendto(sockfd(),
                             msg,
                             len, 0, &remote_addr_, sizeof(remote_addr_));
