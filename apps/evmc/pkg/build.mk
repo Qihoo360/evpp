@@ -10,7 +10,7 @@ THIRD_PARTY_DIR = $(ROOT_DIR)/../../3rdparty
 HASHKIT_DIR = $(ROOT_DIR)/../../3rdparty/libhashkit
 MEMCACHE_DIR = $(ROOT_DIR)/../../3rdparty/memcached
 JSON_DIR = $(ROOT_DIR)/../../3rdparty/rapidjson
-COMMITVERSION  = $(shell git log --format=%H -n1 | cut -b 1-8 )
+COMMITVERSION  = $(shell git rev-list --all|wc -l)
 MAJOR := 1
 MINOR := 0
 FULL := $(MAJOR).$(MINOR)
