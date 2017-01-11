@@ -22,10 +22,18 @@ public:
     ~Server();
 
     bool Start(int listen_port);
-    bool Start(std::vector<int> listen_ports); // 为每个监听端口分别启动一个线程
+    bool Start(const std::vector<int>& listen_ports); // 为每个监听端口分别启动一个线程
     void Stop(bool wait_thread_exit = false);
     void Pause();
     void Continue();
+
+    //! \brief these functions to support fork for multiprocess program
+    //! \brief call Init->fork process-> call AfterFork-> call StartWithPreInited
+    bool Init(int listen_port);
+    bool Init(const std::vector<int>& listen_ports);
+    bool AfterFork();
+    bool StartWithPreInited();
+
 
     Service* service(int index = 0) const;
 public:
@@ -49,7 +57,6 @@ private:
 
     EventLoop* GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx);
 
-    bool StartListenThread(int port);
 private:
     struct ListenThread {
         // 监听主线程，监听HTTP请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
