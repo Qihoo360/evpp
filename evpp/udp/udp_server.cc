@@ -33,16 +33,20 @@ public:
         }
     }
 
-    bool Start(int p) {
+    bool Listen(int p) {
         this->port_ = p;
         this->fd_ = sock::CreateUDPServer(p);
         if (this->fd_ < 0) {
+            LOG_ERROR << "listen error";
             return false;
         }
-        this->status_ = kRunning;
-        this->thread_.reset(new std::thread(std::bind(&Server::RecvingLoop, this->server_, this)));
         sock::SetTimeout(this->fd_, 500);
-        LOG_TRACE << "start udp server at 0.0.0.0:" << port_;
+        return true;
+    }
+
+    bool Run() {
+        this->thread_.reset(new std::thread(std::bind(&Server::RecvingLoop, this->server_, this)));
+        this->status_ = kRunning;
         return true;
     }
 
@@ -101,26 +105,58 @@ Server::Server() : recv_buf_size_(1472) {}
 Server::~Server() {
 }
 
-bool Server::Start(std::vector<int> ports) {
+bool Server::Start(const std::vector<int>& ports) {
+    if (!Init(ports)) {
+        return false;
+    }
+    if (!StartWithPreInited()) {
+        return false;
+    }
+    return true;
+}
+
+bool Server::Start(int port) {
+    if (!Init(port)) {
+        return false;
+    }
+    if (recv_threads_.size() >= 2) {
+        LOG_ERROR << "shouldn't be called twice";
+        return false;
+    }
+    if (!StartWithPreInited()) {
+        return false;
+    }
+    return true;
+}
+
+bool Server::Init(int port) {
+    RecvThreadPtr t(new RecvThread(this));
+    bool ret = t->Listen(port);
+    assert(ret);
+    recv_threads_.push_back(t);
+    return ret;
+}
+
+bool Server::Init(const std::vector<int>& ports) {
     for (auto it = ports.begin(); it != ports.end(); ++it) {
-        if (!Start(*it)) {
+        if (!Init(*it)) {
             return false;
         }
     }
     return true;
 }
 
-bool Server::Start(int port) {
+bool Server::StartWithPreInited() {
     if (!message_handler_) {
         LOG_ERROR << "MessageHandler DO NOT set!";
         return false;
     }
-
-    RecvThreadPtr t(new RecvThread(this));
-    bool ret = t->Start(port);
-    assert(ret);
-    recv_threads_.push_back(t);
-    return ret;
+    for (auto &rt : recv_threads_) {
+        if (!rt->Run()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void Server::Stop(bool wait_thread_exit) {
