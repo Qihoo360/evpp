@@ -49,7 +49,7 @@ bool Client::Connect() {
         struct sockaddr_in *paddr = (struct sockaddr_in*)&remote_addr_;
         LOG_ERROR << "Failed to connect to remote IP="
             << inet_ntoa(paddr->sin_addr)
-            << ", port=" << ::ntohs(paddr->sin_port)
+            << ", port=" << ntohs(paddr->sin_port)
             << ", errno=" << errno << " " << strerror(errno);
         return false;
     }
