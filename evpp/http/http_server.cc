@@ -21,11 +21,13 @@ bool Server::Start(int port) {
     if (!Init(port)) {
         return false;
     }
-
+    if (listen_threads_.size() >= 2) {
+        LOG_ERROR << "shouldn't be called twice";
+        return false;
+    }
     if (!StartWithPreInited()) {
         return false;
     }
-
     return true;
 }
 
@@ -33,11 +35,9 @@ bool Server::Start(const std::vector<int>& listen_ports) {
     if (!Init(listen_ports)) {
         return false;
     }
-
     if (!StartWithPreInited()) {
         return false;
     }
-
     return true;
 }
 
