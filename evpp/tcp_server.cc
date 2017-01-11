@@ -27,7 +27,16 @@ TCPServer::~TCPServer() {
 }
 
 bool TCPServer::Start() {
-    tpool_->Start(true);
+    if (!Init()) {
+        return false;
+    }
+    if (!StartWithPreInited()) {
+        return false;
+    }
+    return true;
+}
+
+bool TCPServer::Init() {
     listener_.reset(new Listener(loop_, listen_addr_));
     listener_->Listen();
     listener_->SetNewConnectionCallback(
@@ -37,6 +46,10 @@ bool TCPServer::Start() {
                   std::placeholders::_2,
                   std::placeholders::_3));
     return true;
+}
+
+bool TCPServer::StartWithPreInited() {
+    return tpool_->Start(true);
 }
 
 void TCPServer::Stop() {
