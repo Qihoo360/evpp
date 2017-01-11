@@ -18,75 +18,91 @@ Server::~Server() {
 }
 
 bool Server::Start(int port) {
-    bool rc = tpool_->Start(true);
-    if (!rc) {
-        return rc;
+    if (!Init(port)) {
+        return false;
     }
 
-    rc = rc && StartListenThread(port);
-
-    while (!IsRunning()) {
-        usleep(1);
-    }
-
-    return rc;
-}
-
-bool Server::Start(std::vector<int> listen_ports) {
-    bool rc = tpool_->Start(true);
-    if (!rc) {
-        return rc;
-    }
-
-    for (size_t i = 0; i < listen_ports.size(); ++i) {
-        if (!StartListenThread(listen_ports[i])) {
-            return false;
-        }
-    }
-
-    while (!IsRunning()) {
-        usleep(1);
+    if (!StartWithPreInited()) {
+        return false;
     }
 
     return true;
 }
 
-bool Server::StartListenThread(int port) {
-    ListenThread lt;
-    lt.thread = std::make_shared<EventLoopThread>();
-    lt.thread->SetName(std::string("StandaloneHTTPServer-Main-") + std::to_string(port));
-
-    lt.hserver = std::make_shared<Service>(lt.thread->event_loop());
-    if (!lt.hserver->Listen(port)) {
-        int serrno = errno;
-        LOG_ERROR << "http server listen at port " << port << " failed. errno=" << serrno << " " << strerror(serrno);
-        lt.hserver->Stop();
+bool Server::Start(const std::vector<int>& listen_ports) {
+    if (!Init(listen_ports)) {
         return false;
     }
 
-    // 当 ListenThread 退出时，会调用该函数来停止 Service
-    auto http_close_fn = std::bind(&Service::Stop, lt.hserver);
-    bool rc = lt.thread->Start(true,
-                          EventLoopThread::Functor(),
-                          http_close_fn);
-    assert(lt.thread->IsRunning());
-    for (auto &c : callbacks_) {
-        auto cb = std::bind(&Server::Dispatch, this,
-                                           std::placeholders::_1,
-                                           std::placeholders::_2,
-                                           std::placeholders::_3,
-                                           c.second);
-        lt.hserver->RegisterHandler(c.first, cb);
+    if (!StartWithPreInited()) {
+        return false;
     }
-    HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
-                                       std::placeholders::_1,
-                                       std::placeholders::_2,
-                                       std::placeholders::_3,
-                                       default_callback_);
-    lt.hserver->RegisterDefaultHandler(cb);
+
+    return true;
+}
+
+bool Server::Init(int listen_port) {
+    ListenThread lt;
+    lt.thread = std::make_shared<EventLoopThread>();
+    lt.thread->SetName(std::string("StandaloneHTTPServer-Main-") + std::to_string(listen_port));
+
+    lt.hserver = std::make_shared<Service>(lt.thread->event_loop());
+    if (!lt.hserver->Listen(listen_port)) {
+        int serrno = errno;
+        LOG_ERROR << "http server listen at port " << listen_port << " failed. errno=" << serrno << " " << strerror(serrno);
+        lt.hserver->Stop();
+        return false;
+    }
     listen_threads_.push_back(lt);
-    LOG_TRACE << "http server is running at " << port;
+    return true;
+}
+
+bool Server::Init(const std::vector<int>& listen_ports) {
+    bool rc = true;
+    for (auto lp : listen_ports) {
+        rc &= Init(lp);
+    }
     return rc;
+}
+
+bool Server::AfterFork() {
+    for (auto &lt : listen_threads_) {
+        lt.thread->event_loop()->AfterFork();
+    }
+    return true;
+}
+
+bool Server::StartWithPreInited() {
+    bool rc = tpool_->Start(true);
+    for (auto &lt : listen_threads_) {
+        auto http_close_fn = std::bind(&Service::Stop, lt.hserver);
+        rc &= lt.thread->Start(true,
+                EventLoopThread::Functor(),
+                http_close_fn);
+        assert(lt.thread->IsRunning());
+        for (auto &c : callbacks_) {
+            auto cb = std::bind(&Server::Dispatch, this,
+                    std::placeholders::_1,
+                    std::placeholders::_2,
+                    std::placeholders::_3,
+                    c.second);
+            lt.hserver->RegisterHandler(c.first, cb);
+        }
+        HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
+                std::placeholders::_1,
+                std::placeholders::_2,
+                std::placeholders::_3,
+                default_callback_);
+        lt.hserver->RegisterDefaultHandler(cb);
+        if (!rc) {
+            return false;
+        }
+    }
+    while (!IsRunning()) {
+        usleep(1);
+    }
+    LOG_TRACE << "http server is running" ;
+    return true;
 }
 
 void Server::Stop(bool wait_thread_exit /*= false*/) {
