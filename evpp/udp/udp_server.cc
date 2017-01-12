@@ -106,6 +106,10 @@ Server::~Server() {
 }
 
 bool Server::Start(const std::vector<int>& ports) {
+    if (recv_threads_.size() != 0) {
+        LOG_ERROR << "shouldn't be called twice";
+        return false;
+    }
     if (!Init(ports)) {
         return false;
     }
