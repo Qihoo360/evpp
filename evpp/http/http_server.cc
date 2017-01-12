@@ -32,6 +32,10 @@ bool Server::Start(int port) {
 }
 
 bool Server::Start(const std::vector<int>& listen_ports) {
+    if (listen_threads_.size() != 0) {
+        LOG_ERROR << "shouldn't be called twice";
+        return false;
+    }
     if (!Init(listen_ports)) {
         return false;
     }
