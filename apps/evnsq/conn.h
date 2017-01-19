@@ -25,6 +25,9 @@ namespace evnsq {
 
 class Client;
 
+// http://nsq.io/clients/tcp_protocol_spec.html
+// http://wiki.jikexueyuan.com/project/nsq-guide/tcp_protocol_spec.html
+
 // The class Conn represents a connection with one NSQD server
 class EVNSQ_EXPORT Conn : public std::enable_shared_from_this<Conn> {
 public:
