@@ -54,8 +54,8 @@ Go to `evpp/3rdparty/libevent-release-2.1.7-rc`
 	$ start libevent.sln
 	... # here you can use Visual Studio 2015 to compile the three libevent project event,event_core,event_extra in debug and release mode.
 	$ cd ../../
-	$ cp libevent-release-2.1.7-rc/build/lib/Debug/*.lib ../msvc/bin/Debug/
-	$ cp libevent-release-2.1.7-rc/build/lib/Release/*.lib ../msvc/bin/Release/
+	$ cp libevent-release-2.1.7-rc/build/lib/Debug/*.* ../msvc/bin/Debug/
+	$ cp libevent-release-2.1.7-rc/build/lib/Release/*.* ../msvc/bin/Release/
 	$ cp -rf libevent-release-2.1.7-rc/include/event2 wininclude/
 	$ cp -rf libevent-release-2.1.7-rc/build/include/event2/event-config.h wininclude/event2
 
