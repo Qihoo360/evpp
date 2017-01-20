@@ -46,7 +46,6 @@ public:
 
     bool Run() {
         this->thread_.reset(new std::thread(std::bind(&Server::RecvingLoop, this->server_, this)));
-        this->status_ = kRunning;
         return true;
     }
 
@@ -207,6 +206,7 @@ bool Server::IsStopped() const {
 }
 
 void Server::RecvingLoop(RecvThread* thread) {
+    thread->SetStatus(kRunning);
     while (true) {
         if (thread->IsPaused()) {
             usleep(1);
