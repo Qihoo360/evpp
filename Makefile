@@ -1,8 +1,8 @@
 
+SUBDIRS = evpp test examples apps 3rdparty
+
 all : 
-	$(MAKE) -C evpp
-#	$(MAKE) -C 3rdparty
-#	$(MAKE) -C apps
+	for t in $(SUBDIRS); do $(MAKE) -C $$t; done
 
 pkg :
 	$(MAKE) -C rpm
@@ -21,11 +21,9 @@ check : all
 	$(MAKE) check -C test
 
 clean:
-	$(MAKE) clean -C evpp
-	$(MAKE) clean -C test
-	$(MAKE) clean -C examples
-	$(MAKE) clean -C apps
-	$(MAKE) clean -C 3rdparty
+	for t in $(SUBDIRS); do $(MAKE) clean -C $$t; done
 
+fmt:
+	for t in $(SUBDIRS); do $(MAKE) fmt -C $$t; done
 
-.PHONY: all test check clean apps 3rdparty pkg
+.PHONY: all test check clean apps 3rdparty pkg fmt
