@@ -5,7 +5,9 @@
 #include "../echo/winmain-inl.h"
 #endif
 
-void DefaultHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+void DefaultHandler(evpp::EventLoop* loop,
+                    const evpp::http::ContextPtr& ctx,
+                    const evpp::http::HTTPSendResponseCallback& cb) {
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << " OK"
         << " ip=" << ctx->remote_ip << "\n"
@@ -16,7 +18,9 @@ void DefaultHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, co
     cb(oss.str());
 }
 
-void RequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+void RequestHandler(evpp::EventLoop* loop,
+                    const evpp::http::ContextPtr& ctx,
+                    const evpp::http::HTTPSendResponseCallback& cb) {
     cb(ctx->body.ToString());
 }
 
@@ -26,7 +30,10 @@ int main(int argc, char* argv[]) {
     int thread_num = 2;
 
     if (argc > 1) {
-        if (std::string("-h") == argv[1] || std::string("--h") == argv[1] || std::string("-help") == argv[1] || std::string("--help") == argv[1]) {
+        if (std::string("-h") == argv[1] ||
+            std::string("--h") == argv[1] ||
+            std::string("-help") == argv[1] ||
+            std::string("--help") == argv[1]) {
             std::cout << "usage : " << argv[0] << " <listen_port> <thread_num>\n";
             std::cout << " e.g. : " << argv[0] << " 8080 24\n";
             return 0;
