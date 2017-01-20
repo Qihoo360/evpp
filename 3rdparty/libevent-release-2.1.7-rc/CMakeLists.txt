@@ -119,6 +119,8 @@ option(EVENT__DISABLE_THREAD_SUPPORT
 option(EVENT__DISABLE_OPENSSL
     "Define if libevent should build without support for OpenSSL encrpytion" OFF)
 
+set(EVENT__DISABLE_OPENSSL 1)
+
 option(EVENT__DISABLE_BENCHMARK
     "Defines if libevent should build without the benchmark exectuables" OFF)
 
