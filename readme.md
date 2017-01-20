@@ -15,55 +15,118 @@ evpp
 1. Thread pool
 1. Timer
 
+# [Quick Start](quick_start.md)
 
-# Dependency open source code
+# Usage
 
-1. libevent
-2. glog 
+## A echo TCP server
 
-# How to compile it
+```cpp
+#include <evpp/exp.h>
+#include <evpp/tcp_server.h>
+#include <evpp/buffer.h>
+#include <evpp/tcp_conn.h>
 
-## Compile evpp on Windows using Microsoft Visual Studio 2015
+void OnMessage(const evpp::TCPConnPtr& conn,
+               evpp::Buffer* msg,
+               evpp::Timestamp ts) {
+    std::string s = msg->NextAllString();
+    LOG_INFO << "Received a message [" << s << "]";
+    conn->Send(s);
 
-### Install compiling tool chain
-1. `CMake` for windows. You can download it from [https://cmake.org/download/](https://cmake.org/download/)
-2. Microsoft `Visual Studio 2015` or higher version. You can download it from [https://www.visualstudio.com/](https://www.visualstudio.com/)
+    if (s == "quit" || s == "exit") {
+        conn->Close();
+    }
+}
 
-### Download the source of evpp
 
-	$ git clone https://github.com/Qihoo360/evpp
+void OnConnection(const evpp::TCPConnPtr& conn) {
+    if (conn->IsConnected()) {
+        LOG_INFO << "Accept a new connection from " << conn->remote_addr();
+    } else {
+        LOG_INFO << "Disconnected from " << conn->remote_addr();
+    }
+}
 
-### Compile third-party dependent open source code
 
-The `evpp` source is dependent with `libevent`, we suggest you choose the lastest version of libevent. 
-Right now, Jan 2017, the latest version of libevent is `2.1.7-rc`.
+int main(int argc, char* argv[]) {
+    std::string port = "9099";
+    if (argc == 2) {
+        port = argv[1];
+    }
+    std::string addr = std::string("0.0.0.0:") + port;
+    evpp::EventLoop loop;
+    evpp::TCPServer server(&loop, addr, "TCPEcho", 0);
+    server.SetMessageCallback(&OnMessage);
+    server.SetConnectionCallback(&OnConnection);
+    server.Start();
+    loop.Run();
+    return 0;
+}
+```
 
-Go to `evpp/3rdparty/libevent-release-2.1.7-rc`
+### A echo HTTP server
 
-	$ cd evpp/3rdparty/libevent-release-2.1.7-rc
-	$ vim CMakeList.txt # Add 'set(EVENT__DISABLE_OPENSSL 1)' to disable OPENSSL support
-	$ md build && cd build
-	$ cmake -G "Visual Studio 14" ..
-	$ start libevent.sln
-	... # here you can use Visual Studio 2015 to compile the three libevent project event,event_core,event_extra in debug and release mode.
-	$ cd ../../
-	$ cp libevent-release-2.1.7-rc/build/lib/Debug/*.lib ../msvc/bin/Debug/
-	$ cp libevent-release-2.1.7-rc/build/lib/Release/*.lib ../msvc/bin/Release/
-	$ cp -rf libevent-release-2.1.7-rc/include/event2 wininclude/
-	$ cp -rf libevent-release-2.1.7-rc/build/include/event2/event-config.h wininclude/event2
+```cpp
+#include <evpp/exp.h>
+#include <evpp/http/http_server.h>
 
-## Compile evpp on Linux
+void DefaultHandler(evpp::EventLoop* loop,
+                    const evpp::http::ContextPtr& ctx,
+                    const evpp::http::HTTPSendResponseCallback& cb) {
+    std::stringstream oss;
+    oss << "func=" << __FUNCTION__ << " OK"
+        << " ip=" << ctx->remote_ip << "\n"
+        << " uri=" << ctx->uri << "\n"
+        << " body=" << ctx->body.ToString() << "\n";
+    ctx->AddResponseHeader("Content-Type", "application/octet-stream");
+    ctx->AddResponseHeader("Server", "evpp");
+    cb(oss.str());
+}
 
-### Install compiling tool chain
-1. gcc (GCC) 4.8+
-2. GNU Make 3.8
+void RequestHandler(evpp::EventLoop* loop,
+                    const evpp::http::ContextPtr& ctx,
+                    const evpp::http::HTTPSendResponseCallback& cb) {
+    cb(ctx->body.ToString());
+}
 
-### Download the source of evpp
+int main(int argc, char* argv[]) {
+    std::vector<int> ports = {9009, 23456, 23457};
+    int port = 29099;
+    int thread_num = 2;
 
-	$ git clone https://github.com/Qihoo360/evpp
+    if (argc > 1) {
+        if (std::string("-h") == argv[1] ||
+            std::string("--h") == argv[1] ||
+            std::string("-help") == argv[1] ||
+            std::string("--help") == argv[1]) {
+            std::cout << "usage : " << argv[0] << " <listen_port> <thread_num>\n";
+            std::cout << " e.g. : " << argv[0] << " 8080 24\n";
+            return 0;
+        }
+    }
 
-### Compile third-party dependent open source code
+    if (argc == 2) {
+        port = atoi(argv[1]);
+    }
+    ports.push_back(port);
 
+    if (argc == 3) {
+        port = atoi(argv[1]);
+        thread_num = atoi(argv[2]);
+    }
+    evpp::http::Server server(thread_num);
+    server.SetThreadDispatchPolicy(evpp::ThreadDispatchPolicy::kIPAddressHashing);
+    server.RegisterDefaultHandler(&DefaultHandler);
+    server.RegisterHandler("/echo", &RequestHandler);
+    server.Start(ports);
+    while (!server.IsStopped()) {
+        usleep(1);
+    }
+    return 0;
+}
+
+```
 
 # Thanks
 
