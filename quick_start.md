@@ -49,7 +49,6 @@ Right now, Jan 2017, the latest version of libevent is `2.1.7-rc`.
 Go to `evpp/3rdparty/libevent-release-2.1.7-rc`
 
 	$ cd evpp/3rdparty/libevent-release-2.1.7-rc
-	$ vim CMakeList.txt # Add 'set(EVENT__DISABLE_OPENSSL 1)' to disable OPENSSL support
 	$ md build && cd build
 	$ cmake -G "Visual Studio 14" ..
 	$ start libevent.sln
@@ -59,6 +58,10 @@ Go to `evpp/3rdparty/libevent-release-2.1.7-rc`
 	$ cp libevent-release-2.1.7-rc/build/lib/Release/*.lib ../msvc/bin/Release/
 	$ cp -rf libevent-release-2.1.7-rc/include/event2 wininclude/
 	$ cp -rf libevent-release-2.1.7-rc/build/include/event2/event-config.h wininclude/event2
+
+PS: We have modified the source code of libevent-release-2.1.7-rc as bellow:
+	libevent-release-2.1.7-rc/CMakeList.txt : Add 'set(EVENT__DISABLE_OPENSSL 1)' to disable OPENSSL support
+	libevent-release-2.1.7-rc/cmake/VersionViaGit.cmake : Comments '#find_package(Git)' and '#include(FindGit)'
 
 ### Compile evpp
 
