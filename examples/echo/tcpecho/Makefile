@@ -5,7 +5,7 @@ CXX := g++
 
 CURRENT_DIR=$(shell echo `pwd`)
 SOURCE_DIR=$(CURRENT_DIR)
-EVPP_DIR=$(CURRENT_DIR)/../..
+EVPP_DIR=$(CURRENT_DIR)/../../..
 
 CPPFLAGS= -g -c -fPIC \
 		  -D_DEBUG -D_USE_GTEST \
@@ -48,3 +48,6 @@ $(TARGET) : $(OBJS)
 clean:
 	rm -rf *.o *.d $(OBJS) $(DEPS) $(TARGET) *.tmp decoded.txt log
 
+fmt:
+	$(ASTYLE) *.cc *.h
+	rm -rf *.orig
