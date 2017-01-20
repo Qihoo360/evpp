@@ -19,7 +19,7 @@
 #    message("        stage=${EVENT_GIT___VERSION_STAGE}")
 # endif()
 
-include(FindGit)
+#include(FindGit)
 
 macro(event_fuzzy_version_from_git)
 	set(EVENT_GIT___VERSION_FOUND FALSE)
@@ -30,7 +30,7 @@ macro(event_fuzzy_version_from_git)
 	set(EVENT_GIT___VERSION_PATCH 7)
 	set(EVENT_GIT___VERSION_STAGE "beta")
 
-	find_package(Git)
+	#find_package(Git)
 
 	if (GIT_FOUND)
 		execute_process(
