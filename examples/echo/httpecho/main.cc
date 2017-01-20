@@ -2,7 +2,7 @@
 #include <evpp/http/http_server.h>
 
 #ifdef _WIN32
-#include "../echo/winmain-inl.h"
+#include "../tcpecho/winmain-inl.h"
 #endif
 
 void DefaultHandler(evpp::EventLoop* loop,
