@@ -61,7 +61,7 @@ void TCPServer::StopInLoop() {
     listener_->Stop();
     listener_.reset();
 
-    for (auto &c : connections_) {
+    for (auto& c : connections_) {
         c.second->Close();
     }
 
@@ -94,7 +94,7 @@ EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
 }
 
 void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
-    auto f = [=]() {
+    auto f = [ = ]() {
         // Remove the connection in the listener EventLoop
         assert(this->loop_->IsInLoopThread());
         this->connections_.erase(conn->name());
