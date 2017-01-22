@@ -168,6 +168,24 @@ bool Server::Init(const std::vector<int>& ports) {
     return true;
 }
 
+
+bool Server::Init(const std::string& listen_ports/*like "53,5353,1053"*/) {
+    std::vector<std::string> vec;
+    StringSplit(listen_ports, ",", 0, vec);
+
+    std::vector<int> v;
+    for (auto& s : vec) {
+        int i = std::atoi(s.c_str());
+        if (i <= 0) {
+            LOG_ERROR << "Cannot convert [" << s << "] to a integer. 'listen_ports' format wrong.";
+            return false;
+        }
+        v.push_back(i);
+    }
+
+    return Init(v);
+}
+
 bool Server::StartWithPreInited() {
     if (!message_handler_) {
         LOG_ERROR << "MessageHandler DO NOT set!";
