@@ -1,3 +1,5 @@
+include ../build.mk/astyle.mk
+
 CXX := g++
 
 CURRENT_DIR=$(shell echo `pwd`)
@@ -45,3 +47,6 @@ $(TARGET) : $(OBJS)
 clean:
 	rm -rf *.o *.d core.* $(OBJS) $(DEPS) $(TARGET) *.tmp decoded.txt log
 
+fmt:
+	$(ASTYLE) *.cc *.h
+	rm -rf *.orig
