@@ -32,7 +32,7 @@ public:
         return status_ == kDisconnected;
     }
     int status() const {
-        return status_; 
+        return status_;
     }
 private:
     void Connect();
