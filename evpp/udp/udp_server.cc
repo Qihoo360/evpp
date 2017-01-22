@@ -2,6 +2,7 @@
 #include "evpp/libevent_headers.h"
 #include "evpp/event_loop.h"
 #include "evpp/event_loop_thread_pool.h"
+#include "evpp/utility.h"
 
 #include "udp_server.h"
 
@@ -130,6 +131,24 @@ bool Server::Start(int port) {
         return false;
     }
     return true;
+}
+
+
+bool Server::Start(const std::string& listen_ports) {
+    std::vector<std::string> vec;
+    StringSplit(listen_ports, ",", 0, vec);
+
+    std::vector<int> v;
+    for (auto& s : vec) {
+        int i = std::atoi(s.c_str());
+        if (i <= 0) {
+            LOG_ERROR << "Cannot convert [" << s << "] to a integer. 'listen_ports' format wrong.";
+            return false;
+        }
+        v.push_back(i);
+    }
+
+    return Start(v);
 }
 
 bool Server::Init(int port) {
