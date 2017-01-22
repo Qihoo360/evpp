@@ -31,7 +31,7 @@ void FdChannel::Close() {
             EventDel(event_);
         }
 
-        delete(event_);
+        delete (event_);
         event_ = NULL;
     }
 }
