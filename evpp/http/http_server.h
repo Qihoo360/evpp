@@ -22,6 +22,7 @@ public:
     ~Server();
 
     bool Start(int listen_port);
+    bool Start(const std::string& listen_ports);
     bool Start(const std::vector<int>& listen_ports); // 为每个监听端口分别启动一个线程
     void Stop(bool wait_thread_exit = false);
     void Pause();
