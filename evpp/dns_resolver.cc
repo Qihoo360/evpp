@@ -103,7 +103,7 @@ void DNSResolver::AsyncDNSResolve() {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP; /* We want a TCP socket */
     hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
-    
+
     dnsbase_ = evdns_base_new(loop_->event_base(), 1);
     dns_req_ = evdns_getaddrinfo(dnsbase_
                                  , host_.c_str()
@@ -121,8 +121,8 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         if (errcode != EVUTIL_EAI_CANCEL) {
             timer_->Cancel();
             LOG_ERROR << "dns resolve failed, "
-                << ", error code: " << errcode
-                << ", error msg: " << evutil_gai_strerror(errcode);
+                      << ", error code: " << errcode
+                      << ", error msg: " << evutil_gai_strerror(errcode);
         } else {
             LOG_WARN << "dns resolve cancel, may be timeout";
         }

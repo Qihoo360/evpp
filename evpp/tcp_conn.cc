@@ -169,7 +169,7 @@ void TCPConn::HandleRead(Timestamp recv_time) {
             // This is an outgoing connection, we own it and it's done. so close it
             HandleClose();
         } else {
-            // Fix the half-closing problem£ºhttps://github.com/chenshuo/muduo/pull/117 
+            // Fix the half-closing problem£ºhttps://github.com/chenshuo/muduo/pull/117
 
             // This is an incoming connection, we need to preserve the connection for a while so that we can reply to it.
             // And we set a timer to close the connection eventually.
