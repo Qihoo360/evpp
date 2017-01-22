@@ -11,7 +11,7 @@
 void DefaultHandler(evpp::EventLoop* loop, evpp::udp::MessagePtr& msg) {
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << " OK"
-        << " body=" << msg->NextAllString() << "\n";
+        << " body=" << std::string(msg->data(), msg->size()) << "\n";
     evpp::udp::SendMessage(msg);
 }
 
