@@ -28,7 +28,7 @@ msvc/libevpp.VC.db
 msvc/evnsq-test.vcxproj.filters
 
 test/evpp-test
-examples/echo/simple_echo
+examples/echo/*/simple_echo
 examples/pingpong/client/pingpong_client
 examples/pingpong/server/pingpong_server
 core.*
