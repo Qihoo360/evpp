@@ -52,6 +52,33 @@ bool TCPServer::StartWithPreInited() {
     return tpool_->Start(true);
 }
 
+
+bool TCPServer::IsRunning() const {
+    if (!loop_->IsRunning()) {
+        return false;
+    }
+
+    if (!tpool_->IsRunning()) {
+        return false;
+    }
+
+    assert(loop_->IsRunning() && tpool_->IsRunning());
+    return true;
+}
+
+bool TCPServer::IsStopped() const {
+    if (!loop_->IsStopped()) {
+        return false;
+    }
+
+    if (!tpool_->IsStopped()) {
+        return false;
+    }
+
+    assert(loop_->IsStopped() && tpool_->IsStopped());
+    return true;
+}
+
 void TCPServer::Stop() {
     loop_->RunInLoop(std::bind(&TCPServer::StopInLoop, this));
 }
