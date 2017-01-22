@@ -22,6 +22,7 @@ public:
     ~Server();
 
     bool Start(int port);
+    bool Start(const std::string& listen_ports);
     bool Start(const std::vector<int>& ports);
     void Stop(bool wait_thread_exit);
 
