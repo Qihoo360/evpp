@@ -31,9 +31,9 @@ int main(int argc, char* argv[]) {
 
     if (argc > 1) {
         if (std::string("-h") == argv[1] ||
-            std::string("--h") == argv[1] ||
-            std::string("-help") == argv[1] ||
-            std::string("--help") == argv[1]) {
+                std::string("--h") == argv[1] ||
+                std::string("-help") == argv[1] ||
+                std::string("--help") == argv[1]) {
             std::cout << "usage : " << argv[0] << " <listen_port> <thread_num>\n";
             std::cout << " e.g. : " << argv[0] << " 8080 24\n";
             return 0;
