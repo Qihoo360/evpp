@@ -19,7 +19,7 @@ public:
               uint32_t thread_num);
     ~TCPServer();
     bool Start();
-    void Stop();
+    void Stop(); // TODO ADD a parameter : bool wait_until_stopped
 
     bool Init();
     bool StartWithPreInited();
@@ -34,6 +34,9 @@ public:
     void SetMessageCallback(MessageCallback cb) {
         msg_fn_ = cb;
     }
+
+    bool IsRunning() const;
+    bool IsStopped() const;
 
 private:
     void StopInLoop();
