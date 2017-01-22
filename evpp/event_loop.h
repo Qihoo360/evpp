@@ -63,6 +63,9 @@ public:
     int pending_functor_count() const {
         return pending_functor_count_.load();
     }
+    bool IsRunning() const {
+        return running();
+    }
     bool IsStopped() const {
         return !running();
     }
