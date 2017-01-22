@@ -1,10 +1,16 @@
 
+SUBDIRS = echo/tcpecho \
+		  echo/httpecho \
+		  pingpong/server \
+		  pingpong/client \
+
 all : 
-	$(MAKE) -C echo
-	$(MAKE) -C pingpong/server
-	$(MAKE) -C pingpong/client
+	for t in $(SUBDIRS); do $(MAKE) -C $$t; done
 
 clean:
-	$(MAKE) clean -C echo
-	$(MAKE) clean -C pingpong/server
-	$(MAKE) clean -C pingpong/client
+	for t in $(SUBDIRS); do $(MAKE) clean -C $$t; done
+
+fmt:
+	for t in $(SUBDIRS); do $(MAKE) fmt -C $$t; done
+
+.PHONY: all test check clean apps 3rdparty pkg fmt

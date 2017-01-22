@@ -48,3 +48,6 @@ $(TARGET) : $(OBJS)
 clean:
 	rm -rf *.o *.d $(OBJS) $(DEPS) $(TARGET) *.tmp decoded.txt log
 
+fmt:
+	$(ASTYLE) *.cc 
+	rm -rf *.orig
