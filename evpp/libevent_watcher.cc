@@ -66,7 +66,7 @@ void EventWatcher::FreeEvent() {
             EventDel(event_);
         }
 
-        delete(event_);
+        delete (event_);
         event_ = NULL;
     }
 }
