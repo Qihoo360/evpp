@@ -175,7 +175,7 @@ TEST_UNIT(testFindClientIP) {
     struct TestCase {
         std::string uri;
         std::string ip;
-    } cases[] = { 
+    } cases[] = {
         {"/abc?clientip=", ""},
         {"/abc?clientip=123.1.1.9", "123.1.1.9"},
         {"/abc?clientip=123.1.1.9&a=b", "123.1.1.9"},

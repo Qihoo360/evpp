@@ -5,22 +5,22 @@
 #include <evpp/udp/udp_server.h>
 
 namespace {
-    static int g_count = 0;
-    static bool g_exit = false;
-    static uint64_t g_timeout_ms = 1000;
-    static void OnMessage(evpp::udp::Server* udpsrv, evpp::EventLoop* loop, const evpp::udp::MessagePtr msg) {
-        g_count++;
-        evpp::udp::SendMessage(msg);
-        usleep(100);
-        if (memcmp(msg->data(), "stop", msg->size()) == 0) {
-            g_exit = true;
-        }
+static int g_count = 0;
+static bool g_exit = false;
+static uint64_t g_timeout_ms = 1000;
+static void OnMessage(evpp::udp::Server* udpsrv, evpp::EventLoop* loop, const evpp::udp::MessagePtr msg) {
+    g_count++;
+    evpp::udp::SendMessage(msg);
+    usleep(100);
+    if (memcmp(msg->data(), "stop", msg->size()) == 0) {
+        g_exit = true;
     }
+}
 
-    static void Init() {
-        g_count = 0;
-        g_exit = false;
-    }
+static void Init() {
+    g_count = 0;
+    g_exit = false;
+}
 }
 
 TEST_UNIT(testUDPServer) {
