@@ -13,36 +13,36 @@
 #include <thread>
 
 namespace {
-    static std::shared_ptr<evpp::TCPServer> tsrv;
-    static std::atomic<int> connected_count(0);
-    static std::atomic<int> message_recved_count(0);
-    const static std::string addr = "127.0.0.1:19099";
-    static void OnMessage(const evpp::TCPConnPtr& conn,
-                          evpp::Buffer* msg,
-                          evpp::Timestamp ts) {
-        message_recved_count++;
-    }
+static std::shared_ptr<evpp::TCPServer> tsrv;
+static std::atomic<int> connected_count(0);
+static std::atomic<int> message_recved_count(0);
+const static std::string addr = "127.0.0.1:19099";
+static void OnMessage(const evpp::TCPConnPtr& conn,
+                      evpp::Buffer* msg,
+                      evpp::Timestamp ts) {
+    message_recved_count++;
+}
 
-    void OnClientConnection(const evpp::TCPConnPtr& conn) {
-        if (conn->IsConnected()) {
-            conn->Send("hello");
-            LOG_INFO << "Send a message to server when connected.";
-            connected_count++;
-        } else {
-            LOG_INFO << "Disconnected from " << conn->remote_addr();
-        }
+void OnClientConnection(const evpp::TCPConnPtr& conn) {
+    if (conn->IsConnected()) {
+        conn->Send("hello");
+        LOG_INFO << "Send a message to server when connected.";
+        connected_count++;
+    } else {
+        LOG_INFO << "Disconnected from " << conn->remote_addr();
     }
+}
 
-    evpp::TCPClient* StartTCPClient(evpp::EventLoop* loop) {
-        evpp::TCPClient* client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
-        client->SetConnectionCallback(&OnClientConnection);
-        client->Connect();
-        return client;
-    }
+evpp::TCPClient* StartTCPClient(evpp::EventLoop* loop) {
+    evpp::TCPClient* client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
+    client->SetConnectionCallback(&OnClientConnection);
+    client->Connect();
+    return client;
+}
 
-    void DeleteTCPClient(evpp::TCPClient* client) {
-        delete client;
-    }
+void DeleteTCPClient(evpp::TCPClient* client) {
+    delete client;
+}
 }
 
 
@@ -80,7 +80,7 @@ TEST_UNIT(testTCPClientReconnect) {
     tcp_client_thread.reset();
     tcp_server_thread.reset();
     tsrv.reset();
-    
+
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
