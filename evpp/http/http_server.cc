@@ -88,6 +88,24 @@ bool Server::Init(const std::vector<int>& listen_ports) {
     return rc;
 }
 
+
+bool Server::Init(const std::string& listen_ports/*"80,8080,443"*/) {
+    std::vector<std::string> vec;
+    StringSplit(listen_ports, ",", 0, vec);
+
+    std::vector<int> v;
+    for (auto& s : vec) {
+        int i = std::atoi(s.c_str());
+        if (i <= 0) {
+            LOG_ERROR << "Cannot convert [" << s << "] to a integer. 'listen_ports' format wrong.";
+            return false;
+        }
+        v.push_back(i);
+    }
+
+    return Init(v);
+}
+
 bool Server::AfterFork() {
     for (auto &lt : listen_threads_) {
         lt.thread->event_loop()->AfterFork();
