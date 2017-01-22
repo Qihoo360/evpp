@@ -110,4 +110,9 @@ bool EventLoopThread::IsStopped() const {
     return status_ == kStopped;
 }
 
+
+void EventLoopThread::AfterFork() {
+    event_loop()->AfterFork();
+}
+
 }
