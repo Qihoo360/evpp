@@ -243,6 +243,7 @@ bool Server::IsStopped() const {
 }
 
 void Server::RecvingLoop(RecvThread* thread) {
+    LOG_INFO << "UDPServer is running at 0.0.0.0:" << thread->port();
     thread->SetStatus(kRunning);
     while (true) {
         if (thread->IsPaused()) {
