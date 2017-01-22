@@ -104,7 +104,7 @@
 #endif
 
 #ifdef H_OS_WINDOWS
-#define usleep(us) Sleep((us)/1000);
+#define usleep(us) Sleep((us)/1000)
 #define snprintf  _snprintf
 #define thread_local __declspec( thread )
 #endif
