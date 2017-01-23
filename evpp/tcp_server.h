@@ -18,11 +18,11 @@ public:
               const std::string& name,
               uint32_t thread_num);
     ~TCPServer();
+
+    bool Init();
     bool Start();
     void Stop(); // TODO ADD a parameter : bool wait_until_stopped
 
-    bool Init();
-    bool StartWithPreInited();
 
     // 设置一个TCP连接相关的回调函数，当接收到一个新的连接、或已有连接断开等事件发生时，都会调用该回调
     //  1. 当成功建立连接时，回调中的参数 TCPConn::IsConnected() == true

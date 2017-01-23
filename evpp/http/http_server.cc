@@ -18,52 +18,6 @@ Server::~Server() {
     tpool_.reset();
 }
 
-bool Server::Start(int port) {
-    if (!Init(port)) {
-        return false;
-    }
-    if (listen_threads_.size() >= 2) {
-        LOG_ERROR << "shouldn't be called twice";
-        return false;
-    }
-    if (!StartWithPreInited()) {
-        return false;
-    }
-    return true;
-}
-
-bool Server::Start(const std::vector<int>& listen_ports) {
-    if (listen_threads_.size() != 0) {
-        LOG_ERROR << "shouldn't be called twice";
-        return false;
-    }
-    if (!Init(listen_ports)) {
-        return false;
-    }
-    if (!StartWithPreInited()) {
-        return false;
-    }
-    return true;
-}
-
-
-bool Server::Start(const std::string& listen_ports) {
-    std::vector<std::string> vec;
-    StringSplit(listen_ports, ",", 0, vec);
-
-    std::vector<int> v;
-    for (auto& s : vec) {
-        int i = std::atoi(s.c_str());
-        if (i <= 0) {
-            LOG_ERROR << "Cannot convert [" << s << "] to a integer. 'listen_ports' format wrong.";
-            return false;
-        }
-        v.push_back(i);
-    }
-
-    return Start(v);
-}
-
 bool Server::Init(int listen_port) {
     ListenThread lt;
     lt.thread = std::make_shared<EventLoopThread>();
@@ -113,7 +67,7 @@ bool Server::AfterFork() {
     return true;
 }
 
-bool Server::StartWithPreInited() {
+bool Server::Start() {
     bool rc = tpool_->Start(true);
     for (auto &lt : listen_threads_) {
         auto http_close_fn = std::bind(&Service::Stop, lt.hserver);
