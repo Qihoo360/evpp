@@ -163,7 +163,7 @@ TEST_UNIT(testHTTPServer2) {
         evpp::http::Server ph(i);
         ph.RegisterDefaultHandler(&DefaultRequestHandler);
         ph.RegisterHandler("/push/boot", &RequestHandler);
-        bool r = ph.Start(g_listening_port);
+        bool r = ph.Init(g_listening_port) && ph.Start();
         H_TEST_ASSERT(r);
         TestAll();
         ph.Stop(true);
