@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
     evpp::EventLoop loop;
     evpp::TCPServer server(&loop, addr, "TCPEcho", 0);
     server.SetMessageCallback(&OnMessage);
+    server.Init();
     server.Start();
     loop.Run();
     return 0;
@@ -66,7 +67,8 @@ int main(int argc, char* argv[]) {
     int thread_num = 2;
     evpp::http::Server server(thread_num);
     server.RegisterHandler("/echo", &RequestHandler);
-    server.Start(ports);
+    server.Init(ports);
+    server.Start();
     while (!server.IsStopped()) {
         usleep(1);
     }
@@ -94,7 +96,8 @@ int main(int argc, char* argv[]) {
     std::vector<int> ports = {1053, 5353};
     evpp::udp::Server server;
     server.SetMessageHandler(&DefaultHandler);
-    server.Start(ports);
+    server.Init(ports);
+    server.Start();
 
     while (!server.IsStopped()) {
         usleep(1);
