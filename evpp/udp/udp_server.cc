@@ -105,52 +105,6 @@ Server::Server() : recv_buf_size_(1472) {}
 Server::~Server() {
 }
 
-bool Server::Start(const std::vector<int>& ports) {
-    if (recv_threads_.size() != 0) {
-        LOG_ERROR << "shouldn't be called twice";
-        return false;
-    }
-    if (!Init(ports)) {
-        return false;
-    }
-    if (!StartWithPreInited()) {
-        return false;
-    }
-    return true;
-}
-
-bool Server::Start(int port) {
-    if (!Init(port)) {
-        return false;
-    }
-    if (recv_threads_.size() >= 2) {
-        LOG_ERROR << "shouldn't be called twice";
-        return false;
-    }
-    if (!StartWithPreInited()) {
-        return false;
-    }
-    return true;
-}
-
-
-bool Server::Start(const std::string& listen_ports) {
-    std::vector<std::string> vec;
-    StringSplit(listen_ports, ",", 0, vec);
-
-    std::vector<int> v;
-    for (auto& s : vec) {
-        int i = std::atoi(s.c_str());
-        if (i <= 0) {
-            LOG_ERROR << "Cannot convert [" << s << "] to a integer. 'listen_ports' format wrong.";
-            return false;
-        }
-        v.push_back(i);
-    }
-
-    return Start(v);
-}
-
 bool Server::Init(int port) {
     RecvThreadPtr t(new RecvThread(this));
     bool ret = t->Listen(port);
@@ -186,7 +140,7 @@ bool Server::Init(const std::string& listen_ports/*like "53,5353,1053"*/) {
     return Init(v);
 }
 
-bool Server::StartWithPreInited() {
+bool Server::Start() {
     if (!message_handler_) {
         LOG_ERROR << "MessageHandler DO NOT set!";
         return false;

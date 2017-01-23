@@ -26,16 +26,6 @@ TCPServer::~TCPServer() {
     tpool_.reset();
 }
 
-bool TCPServer::Start() {
-    if (!Init()) {
-        return false;
-    }
-    if (!StartWithPreInited()) {
-        return false;
-    }
-    return true;
-}
-
 bool TCPServer::Init() {
     listener_.reset(new Listener(loop_, listen_addr_));
     listener_->Listen();
@@ -48,7 +38,7 @@ bool TCPServer::Init() {
     return true;
 }
 
-bool TCPServer::StartWithPreInited() {
+bool TCPServer::Start() {
     return tpool_->Start(true);
 }
 
