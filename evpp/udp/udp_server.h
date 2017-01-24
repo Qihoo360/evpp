@@ -30,10 +30,6 @@ public:
     void Pause();
     void Continue();
 
-    //! \brief these functions to support fork for multiprocess program
-    //! \brief call Init->fork process-> call StartWithPreInited
-    bool StartWithPreInited();
-
     bool IsRunning() const;
     bool IsStopped() const;
 
