@@ -60,14 +60,14 @@ public:
     bool running() const {
         return running_;
     }
-    int pending_functor_count() const {
-        return pending_functor_count_.load();
-    }
     bool IsRunning() const {
         return running();
     }
     bool IsStopped() const {
         return !running();
+    }
+    int pending_functor_count() const {
+        return pending_functor_count_.load();
     }
     const std::thread::id& tid() const {
         return tid_;
