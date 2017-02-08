@@ -1,8 +1,8 @@
 evpp
 ---
 
-`evpp` is a modern C++ network library for develop high performance network servers in TCP/UDP/HTTP protocols.
-`evpp` provides a TCP Server to support multi-threaded nonblocking server. And it also provides a HTTP and UDP Server to support http and udp prococol.
+`evpp` is a modern C++ network library for developing high performance network servers in TCP/UDP/HTTP protocols.
+`evpp` provides a TCP Server to support multi-threaded nonblocking server and also a HTTP, UDP Server to support http and udp prococol.
 
 `evpp` provides:
 
@@ -15,9 +15,11 @@ evpp
 1. Thread pool
 1. Timer
 
-# [Quick Start](quick_start.md)
+# Quick Start
 
-# Usage
+Please see [Quick Start](quick_start.md)
+
+# Examples
 
 ## A echo TCP server
 
@@ -86,9 +88,6 @@ int main(int argc, char* argv[]) {
 #include <evpp/udp/udp_message.h>
 
 void DefaultHandler(evpp::EventLoop* loop, evpp::udp::MessagePtr& msg) {
-    std::stringstream oss;
-    oss << "func=" << __FUNCTION__ << " OK"
-        << " body=" << std::string(msg->data(), msg->size()) << "\n";
     evpp::udp::SendMessage(msg);
 }
 
