@@ -82,7 +82,7 @@ private:
     struct event_base* evbase_;
     bool create_evbase_myself_;
     std::thread::id tid_;
-    enum { kContextCount = 64, };
+    enum { kContextCount = 16, };
     Any context_[kContextCount];
     bool running_;
 
