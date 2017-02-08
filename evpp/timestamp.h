@@ -36,9 +36,8 @@ public:
     Duration  operator- (const Timestamp& rhs) const;
 
 private:
-    // ns_ gives the number of nanoseconds elapsed since
-    // January 1, year 1 00:00:00 UTC.
-    // Approximately to year 2260.
+    // ns_ gives the number of nanoseconds elapsed since the Epoch
+    // 1970-01-01 00:00:00 +0000 (UTC).
     int64_t ns_;
 };
 } // namespace evpp
