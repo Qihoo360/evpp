@@ -46,10 +46,18 @@ public:
         return loop_;
     }
     void set_context(const Any& c) {
-        context_ = c;
+        context_[0] = c;
     }
     const Any& context() const {
-        return context_;
+        return context_[0];
+    }
+    void set_context(int index, const Any& c) {
+        assert(index < kContextCount && index >= 0);
+        context_[index] = c;
+    }
+    const Any& context(int index) const {
+        assert(index < kContextCount && index >= 0);
+        return context_[index];
     }
     const std::string& remote_addr() const {
         return remote_addr_;
@@ -116,7 +124,8 @@ private:
     Buffer input_buffer_;
     Buffer output_buffer_;
 
-    Any context_;
+    enum { kContextCount = 16, };
+    Any context_[kContextCount];
     Type type_;
     Status status_;
     size_t high_water_mark_; // Default 128MB
