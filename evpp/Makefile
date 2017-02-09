@@ -17,7 +17,7 @@ RTFLAGS := \
     -Wl,-rpath=.
 
 LDFLAGS= $(RTFLAGS) -lpthread \
-		 -levent -lglog -ljemalloc
+		 -levent -lglog
 
 
 SRCS := $(wildcard *.cc) $(wildcard httpc/*.cc) $(wildcard http/*.cc) $(wildcard udp/*.cc)
