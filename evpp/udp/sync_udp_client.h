@@ -7,10 +7,6 @@ namespace udp {
 namespace sync {
 class EVPP_EXPORT Client {
 public:
-    //! Constructors
-    //! \param sockfd, 
-    //!     If it equals to INVALID_SOCKET, you need to call <code>connect(...)</code> method to connect to UDP server
-    //!     else you can use this instance to receive and send data directly.
     Client();
     ~Client();
 
@@ -19,8 +15,6 @@ public:
     bool Connect(const struct sockaddr& addr);
     bool Connect(const struct sockaddr_in& addr);
 
-    //! Disconnect the pipe from remote side.
-    //! \remark It is usually called by application user when want to disconnect the pipe.
     void Close();
 
     bool Send(const std::string& msg);

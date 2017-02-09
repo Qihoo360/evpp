@@ -30,8 +30,20 @@ public:
     void SetMessageCallback(const MessageCallback& cb) {
         msg_fn_ = cb;
     }
+    bool auto_reconnect() const {
+        return auto_reconnect_;
+    }
     void set_auto_reconnect(bool v) {
         auto_reconnect_.store(v);
+    }
+    Duration reconnect_interval() const {
+        return reconnect_interval_;
+    }
+    void set_reconnect_interval(Duration timeout) {
+        reconnect_interval_ = timeout;
+    }
+    Duration connecting_timeout() const {
+        return connecting_timeout_;
     }
     void set_connecting_timeout(Duration timeout) {
         connecting_timeout_ = timeout;
@@ -62,12 +74,14 @@ private:
     std::string remote_addr_; // host:port
     std::string name_;
     std::atomic<bool> auto_reconnect_; // 是否自动重连的标记，默认为 true
+    Duration reconnect_interval_; // Default : 3 seconds
+
     Any context_;
 
     mutable std::mutex mutex_; // The guard of conn_
     TCPConnPtr conn_;
 
-    std::unique_ptr<Connector> connector_;
+    std::shared_ptr<Connector> connector_;
     Duration connecting_timeout_; // Default : 3 seconds
 
     ConnectionCallback conn_fn_;
