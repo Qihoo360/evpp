@@ -31,11 +31,12 @@ prepare: clean-build clean-rpm
 	ln -s $(ROOT_DIR) $(TEMP_DIR)/apps/$(PROJ)
 	ln -s $(ROOT_DIR)/../../evpp  $(TEMP_DIR)/evpp
 	ln -s $(ROOT_DIR)/../../rpm  $(TEMP_DIR)/rpm
+	ln -s $(ROOT_DIR)/../../build.mk  $(TEMP_DIR)/build.mk
 	ln -s $(HASHKIT_DIR) $(TEMP_DIR)/$(DEPEND_PROJ)/libhashkit
 	ln -s $(MEMCACHE_DIR) $(TEMP_DIR)/$(DEPEND_PROJ)/memcached
 	ln -s $(JSON_DIR) $(TEMP_DIR)/$(DEPEND_PROJ)/rapidjson
 	$(MAKE) clean -C $(ROOT_DIR)
-	tar zchf $(TEMP_DIR)/$(SRC) --exclude "*.tar.gz" --exclude "*.d" --exclude "*.o" --exclude install --exclude bin --exclude "*.so" --exclude "*.a" --exclude "*.rpm" -C $(TEMP_DIR)  evpp apps rapidjson $(DEPEND_PROJ) rpm
+	tar zchf $(TEMP_DIR)/$(SRC) --exclude "*.tar.gz" --exclude "*.d" --exclude "*.o" --exclude install --exclude bin --exclude "*.so" --exclude "*.a" --exclude "*.rpm" -C $(TEMP_DIR)  evpp apps rapidjson $(DEPEND_PROJ) rpm build.mk
 	mkdir -p build/{BUILD,RPMS,SRPMS,SPECS,SOURCES}
 	mv $(TEMP_DIR)/$(SRC) build/SOURCES/
 
