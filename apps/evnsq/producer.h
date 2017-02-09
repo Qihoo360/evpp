@@ -18,35 +18,37 @@ public:
     ~Producer();
 
     // Thread safe
-    void Publish(const std::string& topic, const std::string& msg);
-    void MultiPublish(const std::string& topic, const std::vector<std::string>& messages);
+    bool Publish(const std::string& topic, const std::string& msg);
+    bool MultiPublish(const std::string& topic, const std::vector<std::string>& messages);
+
+    // A PUB/MPUB command which has already serialized.
+    bool PublishBinaryCommand(evpp::Buffer* buf);
 
     void SetReadyCallback(const ReadyCallback& cb) {
         ready_fn_ = cb;
     }
     void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
+    size_t high_water_mark() const {
+        return high_water_mark_;
+    }
 private:
-    void Publish(Command* cmd);
-    void PublishInLoop(Command* cmd);
+    bool Publish(const CommandPtr& cmd);
+    bool PublishInLoop(const CommandPtr& cmd);
+    void OnPublishResponse(Conn* conn, const CommandPtr& cmd, bool successfull);
     void OnReady(Conn* conn);
-    void OnPublishResponse(Conn* conn, const char* d, size_t len);
-    Command* PopWaitACKCommand(Conn* conn);
-    void PushWaitACKCommand(Conn* conn, Command* cmd);
     ConnPtr GetNextConn();
+    void PrintStats();
 private:
-    std::map<std::string/*host:port*/, ConnPtr>::iterator conn_;
-    typedef std::pair<std::list<Command*>, size_t> CommandList;
-
-    std::map<Conn*, CommandList> wait_ack_;
+    size_t current_conn_index_; // current Conn position at Client::conns_
     ReadyCallback ready_fn_;
-    size_t wait_ack_count_;
-    int64_t published_count_;
-    int64_t published_ok_count_;
-    int64_t published_failed_count_;
+    size_t published_count_;
+    size_t published_ok_count_;
+    size_t published_failed_count_;
 
+    enum { kDefaultHighWaterMark = 1024 };
     bool hwm_triggered_; // The flag of high water mark
     HighWaterMarkCallback high_water_mark_fn_;
-    size_t high_water_mark_;
+    size_t high_water_mark_; // The default value is kDefaultHighWaterMark
 };
 
 

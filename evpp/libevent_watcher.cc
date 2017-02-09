@@ -66,7 +66,7 @@ void EventWatcher::FreeEvent() {
             EventDel(event_);
         }
 
-        delete(event_);
+        delete (event_);
         event_ = NULL;
     }
 }
@@ -80,7 +80,7 @@ void EventWatcher::Cancel() {
     }
 }
 
-void EventWatcher::SeCancelCallback(const Handler& cb) {
+void EventWatcher::SetCancelCallback(const Handler& cb) {
     cancel_callback_ = cb;
 }
 

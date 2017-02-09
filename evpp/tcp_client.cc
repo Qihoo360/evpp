@@ -12,6 +12,7 @@ TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& 
     , remote_addr_(raddr)
     , name_(n)
     , auto_reconnect_(true)
+    , reconnect_interval_(3.0)
     , connecting_timeout_(3.0)
     , conn_fn_(&internal::DefaultConnectionCallback)
     , msg_fn_(&internal::DefaultMessageCallback) {
@@ -27,8 +28,8 @@ TCPClient::~TCPClient() {
 
 void TCPClient::Connect() {
     auto f = [this]() {
-        loop_->AssertInLoopThread();
-        connector_.reset(new Connector(loop_, remote_addr_, connecting_timeout_));
+        assert(loop_->IsInLoopThread());
+        connector_.reset(new Connector(loop_, this));
         connector_->SetNewConnectionCallback(std::bind(&TCPClient::OnConnection, this, std::placeholders::_1, std::placeholders::_2));
         connector_->Start();
     };
@@ -40,7 +41,7 @@ void TCPClient::Disconnect() {
 }
 
 void TCPClient::DisconnectInLoop() {
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     auto_reconnect_.store(false);
 
     if (conn_) {
@@ -61,24 +62,21 @@ void TCPClient::DisconnectInLoop() {
 }
 
 void TCPClient::Reconnect() {
-    return Connect();
+    LOG_INFO << "Try to reconnect to " << remote_addr_ << " in " << reconnect_interval_.Seconds() << "s again";
+    Connect();
 }
 
 void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
     if (sockfd < 0) {
         LOG_INFO << "Failed to connect to " << remote_addr_ << ". errno=" << errno << " " << strerror(errno);
         // 在某些场景下，需要将连接失败反馈给上层调用者
+        // 注意：在无法连接到服务器时，由于客户端不断的重试，会导致上层调用者也会不断的收到该回调通知
         conn_fn_(TCPConnPtr(new TCPConn(loop_, "", sockfd, "", "")));
-
-        if (auto_reconnect_.load()) {
-            Reconnect();
-        }
-
         return;
     }
 
     LOG_INFO << "Successfully connected to " << remote_addr_;
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     TCPConnPtr c = TCPConnPtr(new TCPConn(loop_, name_, sockfd, laddr, remote_addr_));
     c->set_type(TCPConn::kOutgoing);
     c->SetMessageCallback(msg_fn_);
@@ -95,7 +93,7 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
 
 void TCPClient::OnRemoveConnection(const TCPConnPtr& c) {
     assert(c.get() == conn_.get());
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
 
     if (auto_reconnect_.load()) {
         Reconnect();

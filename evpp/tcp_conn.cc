@@ -47,7 +47,7 @@ TCPConn::~TCPConn() {
 void TCPConn::Close() {
     auto c = shared_from_this();
     auto f = [c]() {
-        c->loop_->AssertInLoopThread();
+        assert(c->loop_->IsInLoopThread());
         c->HandleClose();
     };
     loop_->RunInLoop(f);
@@ -107,7 +107,7 @@ void TCPConn::SendStringInLoop(const std::string& message) {
 }
 
 void TCPConn::SendInLoop(const void* data, size_t len) {
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
 
     if (status_ == kDisconnected) {
         LOG_WARN << "disconnected, give up writing";
@@ -121,20 +121,16 @@ void TCPConn::SendInLoop(const void* data, size_t len) {
     // if no data in output queue, writing directly
     if (!chan_->IsWritable() && output_buffer_.length() == 0) {
         nwritten = ::send(chan_->fd(), static_cast<const char*>(data), len, MSG_NOSIGNAL);
-
         if (nwritten >= 0) {
             remaining = len - nwritten;
-
             if (remaining == 0 && write_complete_fn_) {
                 loop_->QueueInLoop(std::bind(write_complete_fn_, shared_from_this()));
             }
         } else {
             int serrno = errno;
             nwritten = 0;
-
             if (!EVUTIL_ERR_RW_RETRIABLE(serrno)) {
                 LOG_ERROR << "SendInLoop write failed errno=" << serrno << " " << strerror(serrno);
-
                 if (serrno == EPIPE || serrno == ECONNRESET) {
                     write_error = true;
                 }
@@ -167,10 +163,9 @@ void TCPConn::SendInLoop(const void* data, size_t len) {
 }
 
 void TCPConn::HandleRead(Timestamp recv_time) {
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     int serrno = 0;
     ssize_t n = input_buffer_.ReadFromFD(chan_->fd(), &serrno);
-
     if (n > 0) {
         msg_fn_(shared_from_this(), &input_buffer_, recv_time);
     } else if (n == 0) {
@@ -178,6 +173,8 @@ void TCPConn::HandleRead(Timestamp recv_time) {
             // This is an outgoing connection, we own it and it's done. so close it
             HandleClose();
         } else {
+            // Fix the half-closing problem£ºhttps://github.com/chenshuo/muduo/pull/117
+
             // This is an incoming connection, we need to preserve the connection for a while so that we can reply to it.
             // And we set a timer to close the connection eventually.
             chan_->DisableReadEvent();
@@ -195,7 +192,7 @@ void TCPConn::HandleRead(Timestamp recv_time) {
 }
 
 void TCPConn::HandleWrite() {
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     assert(!chan_->attached() || chan_->IsWritable());
 
     ssize_t n = ::send(fd_, output_buffer_.data(), output_buffer_.length(), MSG_NOSIGNAL);
@@ -228,7 +225,7 @@ void TCPConn::HandleClose() {
 
     assert(status_ == kConnected);
     status_ = kDisconnecting;
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     chan_->DisableAllEvent();
     chan_->Close();
 
@@ -246,7 +243,7 @@ void TCPConn::HandleClose() {
 }
 
 void TCPConn::OnAttachedToLoop() {
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     status_ = kConnected;
     chan_->EnableReadEvent();
 
