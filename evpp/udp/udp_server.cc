@@ -2,6 +2,7 @@
 #include "evpp/libevent_headers.h"
 #include "evpp/event_loop.h"
 #include "evpp/event_loop_thread_pool.h"
+#include "evpp/utility.h"
 
 #include "udp_server.h"
 
@@ -33,13 +34,19 @@ public:
         }
     }
 
-    bool Start(int p) {
+    bool Listen(int p) {
         this->port_ = p;
         this->fd_ = sock::CreateUDPServer(p);
-        this->status_ = kRunning;
-        this->thread_.reset(new std::thread(std::bind(&Server::RecvingLoop, this->server_, this)));
+        if (this->fd_ < 0) {
+            LOG_ERROR << "listen error";
+            return false;
+        }
         sock::SetTimeout(this->fd_, 500);
-        LOG_TRACE << "start udp server at 0.0.0.0:" << port_;
+        return true;
+    }
+
+    bool Run() {
+        this->thread_.reset(new std::thread(std::bind(&Server::RecvingLoop, this->server_, this)));
         return true;
     }
 
@@ -98,26 +105,52 @@ Server::Server() : recv_buf_size_(1472) {}
 Server::~Server() {
 }
 
-bool Server::Start(std::vector<int> ports) {
+bool Server::Init(int port) {
+    RecvThreadPtr t(new RecvThread(this));
+    bool ret = t->Listen(port);
+    assert(ret);
+    recv_threads_.push_back(t);
+    return ret;
+}
+
+bool Server::Init(const std::vector<int>& ports) {
     for (auto it = ports.begin(); it != ports.end(); ++it) {
-        if (!Start(*it)) {
+        if (!Init(*it)) {
             return false;
         }
     }
     return true;
 }
 
-bool Server::Start(int port) {
+
+bool Server::Init(const std::string& listen_ports/*like "53,5353,1053"*/) {
+    std::vector<std::string> vec;
+    StringSplit(listen_ports, ",", 0, vec);
+
+    std::vector<int> v;
+    for (auto& s : vec) {
+        int i = std::atoi(s.c_str());
+        if (i <= 0) {
+            LOG_ERROR << "Cannot convert [" << s << "] to a integer. 'listen_ports' format wrong.";
+            return false;
+        }
+        v.push_back(i);
+    }
+
+    return Init(v);
+}
+
+bool Server::Start() {
     if (!message_handler_) {
         LOG_ERROR << "MessageHandler DO NOT set!";
         return false;
     }
-
-    RecvThreadPtr t(new RecvThread(this));
-    bool ret = t->Start(port);
-    assert(ret);
-    recv_threads_.push_back(t);
-    return ret;
+    for (auto &rt : recv_threads_) {
+        if (!rt->Run()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void Server::Stop(bool wait_thread_exit) {
@@ -164,6 +197,8 @@ bool Server::IsStopped() const {
 }
 
 void Server::RecvingLoop(RecvThread* thread) {
+    LOG_INFO << "UDPServer is running at 0.0.0.0:" << thread->port();
+    thread->SetStatus(kRunning);
     while (true) {
         if (thread->IsPaused()) {
             usleep(1);

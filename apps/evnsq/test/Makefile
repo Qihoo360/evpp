@@ -34,7 +34,7 @@ SRCS := $(wildcard *.cc)
 OBJS := $(patsubst %.cc, %.o, $(SRCS))
 DEPS := $(patsubst %.o, %.d, $(OBJS))
 
-TARGET=evnsqtail
+TARGET=evnsqtest
 
 all : $(TARGET) 
 

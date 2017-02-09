@@ -47,19 +47,33 @@ public:
 	}
     void AssertInLoopThread() const;
     void set_context(const Any& c) {
-        context_ = c;
+        context_[0] = c;
     }
     const Any& context() const {
-        return context_;
+        return context_[0];
+    }
+    void set_context(int index, const Any& c) {
+        assert(index < kContextCount && index >= 0);
+        context_[index] = c;
+    }
+    const Any& context(int index) const {
+        assert(index < kContextCount && index >= 0);
+        return context_[index];
     }
     bool running() const {
         return running_;
     }
-    int pending_functor_count() const {
-        return pending_functor_count_.load();
+    bool IsRunning() const {
+        return running();
     }
     bool IsStopped() const {
         return !running();
+    }
+    int pending_functor_count() const {
+        return pending_functor_count_.load();
+    }
+    const std::thread::id& tid() const {
+        return tid_;
     }
 private:
     void Init();
@@ -71,7 +85,8 @@ private:
     struct event_base* evbase_;
     bool create_evbase_myself_;
     std::thread::id tid_;
-    Any context_;
+    enum { kContextCount = 16, };
+    Any context_[kContextCount];
     bool running_;
 
     std::mutex mutex_;

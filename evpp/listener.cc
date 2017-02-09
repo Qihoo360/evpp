@@ -24,7 +24,6 @@ void Listener::Listen() {
     }
 
     struct sockaddr_in addr = sock::ParseFromIPPort(addr_.data());
-
     int ret = ::bind(fd_, sock::sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
     int serrno = errno;
     if (ret < 0) {
@@ -81,7 +80,7 @@ void Listener::HandleAccept(Timestamp ts) {
 }
 
 void Listener::Stop() {
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     chan_->DisableAllEvent();
     chan_->Close();
     listening_ = false;

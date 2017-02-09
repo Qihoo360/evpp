@@ -26,8 +26,7 @@ TCPServer::~TCPServer() {
     tpool_.reset();
 }
 
-bool TCPServer::Start() {
-    tpool_->Start(true);
+bool TCPServer::Init() {
     listener_.reset(new Listener(loop_, listen_addr_));
     listener_->Listen();
     listener_->SetNewConnectionCallback(
@@ -36,6 +35,37 @@ bool TCPServer::Start() {
                   std::placeholders::_1,
                   std::placeholders::_2,
                   std::placeholders::_3));
+    return true;
+}
+
+bool TCPServer::Start() {
+    return tpool_->Start(true);
+}
+
+
+bool TCPServer::IsRunning() const {
+    if (!loop_->IsRunning()) {
+        return false;
+    }
+
+    if (!tpool_->IsRunning()) {
+        return false;
+    }
+
+    assert(loop_->IsRunning() && tpool_->IsRunning());
+    return true;
+}
+
+bool TCPServer::IsStopped() const {
+    if (!loop_->IsStopped()) {
+        return false;
+    }
+
+    if (!tpool_->IsStopped()) {
+        return false;
+    }
+
+    assert(loop_->IsStopped() && tpool_->IsStopped());
     return true;
 }
 
@@ -48,7 +78,7 @@ void TCPServer::StopInLoop() {
     listener_->Stop();
     listener_.reset();
 
-    for (auto &c : connections_) {
+    for (auto& c : connections_) {
         c.second->Close();
     }
 
@@ -81,7 +111,7 @@ EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
 }
 
 void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
-    auto f = [=]() {
+    auto f = [ = ]() {
         // Remove the connection in the listener EventLoop
         assert(this->loop_->IsInLoopThread());
         this->connections_.erase(conn->name());

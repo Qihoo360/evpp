@@ -15,8 +15,8 @@ namespace evnsq {
 static const std::string kNSQMagic = "  V2";
 static const std::string kOK = "OK";
 
-Client::Client(evpp::EventLoop* loop, Type t, const std::string& topic, const std::string& channel, const Option& ops)
-    : loop_(loop), type_(t), option_(ops), topic_(topic), channel_(channel) {}
+Client::Client(evpp::EventLoop* l, Type t, const Option& ops)
+    : loop_(l), type_(t), option_(ops) {}
 
 Client::~Client() {}
 
@@ -31,18 +31,27 @@ void Client::ConnectToNSQD(const std::string& addr) {
 void Client::ConnectToNSQDs(const std::string& addrs/*host1:port1,host2:port2*/) {
     std::vector<std::string> v;
     evpp::StringSplit(addrs, ",", 0, v);
-    for (auto it = v.begin(); it != v.end(); ++it) {
+    ConnectToNSQDs(v);
+}
+
+void Client::ConnectToNSQDs(const std::vector<std::string>& tcp_addrs/*host:port*/) {
+    for (auto it = tcp_addrs.begin(); it != tcp_addrs.end(); ++it) {
         ConnectToNSQD(*it);
     }
 }
 
 void Client::ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/) {
     auto f = [this, lookupd_url]() {
-        // This object will be deleted in HandleLoopkupdHTTPResponse
-        evpp::httpc::Request* r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
+        LOG_INFO << "query nsqlookupd " << lookupd_url;
+        std::shared_ptr<evpp::httpc::Request> r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
         r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
     };
-    loop_->RunEvery(evpp::Duration(1.0), f);
+
+    // query nsqloopupd immediately right now
+    loop_->RunInLoop(f);
+
+    // query nsqloopupd periodic
+    loop_->RunEvery(option_.query_nsqlookupd_interval, f);
 }
 
 void Client::ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/) {
@@ -55,17 +64,17 @@ void Client::ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0
 
 void Client::HandleLoopkupdHTTPResponse(
     const std::shared_ptr<evpp::httpc::Response>& response,
-    evpp::httpc::Request* request) {
-    std::unique_ptr<evpp::httpc::Request> auto_delete(request);
+    const std::shared_ptr<evpp::httpc::Request>& request) {
 
+    std::string body = response->body().ToString();
     if (response->http_code() != 200) {
         LOG_ERROR << "Request lookupd http://" << request->conn()->host() << ":"
                   << request->conn()->port() << request->uri()
-                  << " failed, http-code=" << response->http_code();
+                  << " failed, http-code=" << response->http_code()
+                  << " [" << body << "]";
         return;
     }
 
-    std::string body = response->body().ToString();
     rapidjson::Document doc;
     doc.Parse(body.c_str());
     int status_code = doc["status_code"].GetInt();
@@ -89,7 +98,7 @@ void Client::HandleLoopkupdHTTPResponse(
         int tcp_port = producer["tcp_port"].GetInt();
         std::string addr = broadcast_address + ":" + std::to_string(tcp_port);
 
-        if (conns_.find(addr) == conns_.end() && connecting_conns_.find(addr) == connecting_conns_.end()) {
+        if (!IsKnownNSQDAddress(addr)) {
             ConnectToNSQD(addr);
         }
     }
@@ -97,7 +106,7 @@ void Client::HandleLoopkupdHTTPResponse(
 
 void Client::OnConnection(const ConnPtr& conn) {
     if (conn->IsConnected() || conn->IsReady()) {
-        conns_[conn->remote_addr()] = conn;
+        conns_.push_back(conn);
         connecting_conns_.erase(conn->remote_addr());
         switch (conn->status()) {
         case Conn::kConnected:
@@ -118,8 +127,39 @@ void Client::OnConnection(const ConnPtr& conn) {
             break;
         }
     } else {
-        connecting_conns_[conn->remote_addr()] = conn;
-        conns_.erase(conn->remote_addr());
+        MoveToConnectingList(conn);
     }
 }
+
+bool Client::IsKnownNSQDAddress(const std::string& addr) const {
+    if (connecting_conns_.find(addr) != connecting_conns_.end()) {
+        return true;
+    }
+
+    for (auto c : conns_) {
+        if (c->remote_addr() == addr) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Client::MoveToConnectingList(const ConnPtr& conn) {
+    ConnPtr& connecting_conn = connecting_conns_[conn->remote_addr()];
+    if (connecting_conn.get()) {
+        // This connection is already in the connecting list
+        // so do not need to remove it from conns_
+        return;
+    }
+
+    for (auto it = conns_.begin(), ite = conns_.end(); it != ite; ++it) {
+        if (*it == conn) {
+            connecting_conn = conn;
+            conns_.erase(it);
+            return;
+        }
+    }
+}
+
 }

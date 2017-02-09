@@ -31,7 +31,7 @@ void FdChannel::Close() {
             EventDel(event_);
         }
 
-        delete(event_);
+        delete (event_);
         event_ = NULL;
     }
 }
@@ -45,6 +45,7 @@ void FdChannel::AttachToLoop() {
         DetachFromLoop();
     }
 
+    assert(!attached_);
     ::event_set(event_, fd_, events_ | EV_PERSIST, &FdChannel::HandleEvent, this);
     ::event_base_set(loop_->event_base(), event_);
 

@@ -15,13 +15,11 @@ public:
     std::string ToJSON() const;
 
 public:
-    bool initialized;
-
     evpp::Duration dial_timeout; // default:"1s"
 
     // Deadlines for network reads and writes
-    evpp::Duration read_timeout; // min:"100ms" max : "5m" default:"60s"
-    evpp::Duration write_timeout; // min:"100ms" max : "5m" default:"1s"
+    evpp::Duration read_timeout; // min:"100ms" max:"5m" default:"60s"
+    evpp::Duration write_timeout; // min:"100ms" max:"5m" default:"1s"
 
     // Identifiers sent to nsqd representing this client
     // UserAgent is in the spirit of HTTP (default: "<client_library_name>/<version>")
@@ -29,7 +27,11 @@ public:
     std::string hostname;
     std::string user_agent;
 
-    // Duration of time between heartbeats. This must be less than ReadTimeout
+    // Duration of time between heartbeats. This must be less than read_timeout
     evpp::Duration heartbeat_interval;// default:"30s"
+
+    // Duration of interval time to query nsqlookupd
+    evpp::Duration query_nsqlookupd_interval; // default:"30s"
+
 };
 }
