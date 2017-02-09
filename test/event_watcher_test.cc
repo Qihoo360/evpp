@@ -55,20 +55,20 @@ TEST_UNIT(testsocketpair) {
 }
 
 namespace evsignal {
-    static evpp::SignalEventWatcher* ev = NULL;
-    static bool g_event_handler_called = false;
-    static void Handle(evpp::EventLoopThread* thread) {
-        LOG_INFO << "SIGINT caught.";
-        g_event_handler_called = true;
-        thread->Stop();
-        delete ev;// 确保初始化和析构过程在同一个线程中
-        ev = NULL;
-    }
+static evpp::SignalEventWatcher* ev = NULL;
+static bool g_event_handler_called = false;
+static void Handle(evpp::EventLoopThread* thread) {
+    LOG_INFO << "SIGINT caught.";
+    g_event_handler_called = true;
+    thread->Stop();
+    delete ev;// 确保初始化和析构过程在同一个线程中
+    ev = NULL;
+}
 
-    static void WatchSignalInt() {
-        ev->Init();
-        ev->AsyncWait();
-    }
+static void WatchSignalInt() {
+    ev->Init();
+    ev->AsyncWait();
+}
 }
 
 TEST_UNIT(testSignalEventWatcher) {

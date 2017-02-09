@@ -6,16 +6,23 @@
 #include "evpp/sockets.h"
 #include "evpp/libevent_headers.h"
 #include "evpp/dns_resolver.h"
+#include "evpp/tcp_client.h"
 
 namespace evpp {
-Connector::Connector(EventLoop* l, const std::string& raddr, Duration timeout)
-    : status_(kDisconnected), loop_(l), remote_addr_(raddr), timeout_(timeout), fd_(-1), own_fd_(false) {
-    LOG_INFO << "Connector::Connector this=" << this << " raddr=" << raddr;
+Connector::Connector(EventLoop* l, TCPClient* client)
+    : status_(kDisconnected)
+    , loop_(l)
+    , owner_tcp_client_(client)
+    , remote_addr_(client->remote_addr())
+    , timeout_(client->connecting_timeout())
+    , fd_(-1)
+    , own_fd_(false) {
+    LOG_INFO << "Connector::Connector this=" << this << " raddr=" << remote_addr_;
     raddr_ = sock::ParseFromIPPort(remote_addr_.data());
 }
 
 Connector::~Connector() {
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
 
     if (!IsConnected()) {
         // A connected tcp-connection's sockfd has been transfered to TCPConn.
@@ -33,18 +40,19 @@ Connector::~Connector() {
 
 void Connector::Start() {
     LOG_INFO << "Try to connect " << remote_addr_ << " status=" << StatusToString();
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
 
-    timer_.reset(new TimerEventWatcher(loop_, std::bind(&Connector::OnConnectTimeout, this), timeout_));
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&Connector::OnConnectTimeout, shared_from_this()), timeout_));
     timer_->Init();
     timer_->AsyncWait();
 
     if (raddr_.sin_addr.s_addr == 0) {
+        LOG_INFO << "The remote address " << remote_addr_ << " is a host, try to resolve its IP address.";
         status_ = kDNSResolving;
         auto index = remote_addr_.rfind(':');
         assert(index != std::string::npos);
         auto host = std::string(remote_addr_.data(), index);
-        dns_resolver_.reset(new DNSResolver(loop_, host, timeout_, std::bind(&Connector::OnDNSResolved, this, std::placeholders::_1)));
+        dns_resolver_.reset(new DNSResolver(loop_, host, timeout_, std::bind(&Connector::OnDNSResolved, shared_from_this(), std::placeholders::_1)));
         dns_resolver_->Start();
         return;
     }
@@ -55,7 +63,7 @@ void Connector::Start() {
 
 void Connector::Cancel() {
     LOG_INFO << "Cancel to connect " << remote_addr_ << " status=" << StatusToString();
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
     if (dns_resolver_) {
         dns_resolver_->Cancel();
     }
@@ -83,13 +91,13 @@ void Connector::Connect() {
 
     chan_.reset(new FdChannel(loop_, fd_, false, true));
     LOG_TRACE << "this=" << this << " new FdChannel p=" << chan_.get() << " fd=" << chan_->fd();
-    chan_->SetWriteCallback(std::bind(&Connector::HandleWrite, this));
+    chan_->SetWriteCallback(std::bind(&Connector::HandleWrite, shared_from_this()));
     chan_->AttachToLoop();
 }
 
 void Connector::HandleWrite() {
     if (status_ == kDisconnected) {
-        // 这里有可能是超时了，但回调时间已经派发到队列中，后面才调用。
+        // 这里有可能是超时了，但回调时间已经派发到队列中，后来才调用。
         LOG_INFO << "fd=" << chan_->fd() << " remote_addr=" << remote_addr_ << " receive write event when socket is closed";
         return;
     }
@@ -121,6 +129,7 @@ void Connector::HandleWrite() {
 }
 
 void Connector::HandleError() {
+    assert(loop_->IsInLoopThread());
     int serrno = errno;
     LOG_ERROR << "status=" << StatusToString() << " errno=" << serrno << " " << strerror(serrno);
     status_ = kDisconnected;
@@ -134,8 +143,11 @@ void Connector::HandleError() {
 
     if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
         conn_fn_(-1, "");
-    } else {
-        loop_->RunAfter(1000, std::bind(&Connector::Start, this));//TODO Add retry times.
+    }
+
+    if (owner_tcp_client_->auto_reconnect()) {
+        LOG_INFO << "loop=" << loop_ << " auto reconnect in " << owner_tcp_client_->reconnect_interval().Seconds() << "s thread=" << std::this_thread::get_id();
+        loop_->RunAfter(owner_tcp_client_->reconnect_interval(), std::bind(&Connector::Start, shared_from_this()));
     }
 }
 
@@ -145,10 +157,9 @@ void Connector::OnConnectTimeout() {
     HandleError();
 }
 
-
 void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
     if (addrs.empty()) {
-        LOG_ERROR << "DNS Resolve failed. host=" << remote_addr_;
+        LOG_ERROR << "DNS Resolve failed. host=" << dns_resolver_->host();
         HandleError();
         return;
     }
@@ -157,7 +168,6 @@ void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
     status_ = kDNSResolved;
     Connect();
 }
-
 
 std::string Connector::StatusToString() const {
     H_CASE_STRING_BIGIN(status_);

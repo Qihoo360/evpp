@@ -129,24 +129,24 @@ TEST_UNIT(testHTTPRequest4) {
 
 
 namespace hc {
-    static int responsed = 0;
-    static int retried = 0;
-    static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& r, evpp::httpc::Request* req, evpp::EventLoopThread* t) {
-        LOG_INFO << "http_code=" << r->http_code() << " [" << r->body().ToString() << "]";
-        responsed++;
-        std::string h = r->FindHeader("Connection");
-        H_TEST_ASSERT(h == "close");
-        if (retried < 3) {
-            retried++;
-            req->Execute(std::bind(&hc::HandleHTTPResponse, std::placeholders::_1, req, t));
-        } else {
-            delete req;
-        }
+static int responsed = 0;
+static int retried = 0;
+static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& r, evpp::httpc::Request* req, evpp::EventLoopThread* t) {
+    LOG_INFO << "http_code=" << r->http_code() << " [" << r->body().ToString() << "]";
+    responsed++;
+    std::string h = r->FindHeader("Connection");
+    H_TEST_ASSERT(h == "close");
+    if (retried < 3) {
+        retried++;
+        req->Execute(std::bind(&hc::HandleHTTPResponse, std::placeholders::_1, req, t));
+    } else {
+        delete req;
     }
+}
 
-    void Init() {
-        responsed = 0;
-    }
+void Init() {
+    responsed = 0;
+}
 }
 
 TEST_UNIT(testHTTPRequest5) {

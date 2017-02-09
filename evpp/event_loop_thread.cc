@@ -101,13 +101,18 @@ std::thread::id EventLoopThread::tid() const {
 
 bool EventLoopThread::IsRunning() const {
     // 使 event_loop_->running() 这种判断方式更准确，而不是 status_==kRunning 。
-    // 这是因为：在极端情况下， status_==kRunning，但 event_loop_::running_ == false， 
+    // 这是因为：在极端情况下， status_==kRunning，但 event_loop_::running_ == false，
     //          这种情况下某些依赖EventLoop运行的代码将发生异常。
     return event_loop_->running();
 }
 
 bool EventLoopThread::IsStopped() const {
     return status_ == kStopped;
+}
+
+
+void EventLoopThread::AfterFork() {
+    event_loop()->AfterFork();
 }
 
 }

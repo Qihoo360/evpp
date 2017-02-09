@@ -5,49 +5,67 @@
 #include "conn.h"
 
 namespace evnsq {
-static const size_t kHighWaterMark = 1024;
 
-Producer::Producer(evpp::EventLoop* loop, const Option& ops)
-    : Client(loop, kProducer, "", "", ops)
-    , wait_ack_count_(0)
+Producer::Producer(evpp::EventLoop* l, const Option& ops)
+    : Client(l, kProducer, ops)
+    , current_conn_index_(0)
     , published_count_(0)
     , published_ok_count_(0)
     , published_failed_count_(0)
     , hwm_triggered_(false)
-    , high_water_mark_(kHighWaterMark) {
-    conn_ = conns_.end();
+    , high_water_mark_(kDefaultHighWaterMark) {
+    // TODO Remember to remove these callbacks from EventLoop when stopping this Producer
     ready_to_publish_fn_ = std::bind(&Producer::OnReady, this, std::placeholders::_1);
+    l->RunEvery(evpp::Duration(1.0), std::bind(&Producer::PrintStats, this));
 }
 
 Producer::~Producer() {}
 
-void Producer::Publish(const std::string& topic, const std::string& msg) {
-    Command* cmd = new Command;
+bool Producer::Publish(const std::string& topic, const std::string& msg) {
+    CommandPtr cmd(new Command);
     cmd->Publish(topic, msg);
-    Publish(cmd);
+    return Publish(cmd);
 }
 
-void Producer::MultiPublish(const std::string& topic, const std::vector<std::string>& messages) {
+bool Producer::MultiPublish(const std::string& topic, const std::vector<std::string>& messages) {
     if (messages.empty()) {
-        return;
+        return true;
     }
 
     if (messages.size() == 1) {
-        Publish(topic, messages[0]);
-        return;
+        return Publish(topic, messages[0]);
     }
 
-    Command* cmd = new Command;
+    CommandPtr cmd(new Command);
     cmd->MultiPublish(topic, messages);
-    Publish(cmd);
+    return Publish(cmd);
 }
 
-void Producer::Publish(Command* cmd) {
-    if (loop_->IsInLoopThread()) {
-        PublishInLoop(cmd);
-    } else {
-        loop_->RunInLoop(std::bind(&Producer::PublishInLoop, this, cmd));
+
+bool Producer::PublishBinaryCommand(evpp::Buffer* buf) {
+    assert(loop_->IsInLoopThread());
+    auto conn = GetNextConn();
+    if (!conn.get()) {
+        LOG_ERROR << "No available NSQD to use.";
+        return false;
     }
+
+    published_count_ += 1;
+    conn->WriteBinaryCommand(buf);
+    return true;
+}
+
+bool Producer::Publish(const CommandPtr& cmd) {
+    if (conns_.empty()) {
+        LOG_ERROR << "No available NSQD to use.";
+        return false;
+    }
+
+    if (loop_->IsInLoopThread()) {
+        return PublishInLoop(cmd);
+    }
+    loop_->RunInLoop(std::bind(&Producer::PublishInLoop, this, cmd));
+    return true;
 }
 
 void Producer::SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark) {
@@ -55,29 +73,22 @@ void Producer::SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t 
     high_water_mark_ = mark;
 }
 
-void Producer::PublishInLoop(Command* c) {
-    if (wait_ack_count_ > kHighWaterMark * conns_.size()) {
-        LOG_WARN << "Too many messages are waiting a response ACK. Please try again later";
-        hwm_triggered_ = true;
-
-        if (high_water_mark_fn_) {
-            high_water_mark_fn_(this, wait_ack_count_);
-        }
-
-        return;
-    }
-
+bool Producer::PublishInLoop(const CommandPtr& cmd) {
     assert(loop_->IsInLoopThread());
     auto conn = GetNextConn();
     if (!conn.get()) {
-        //TODO
         LOG_ERROR << "No available NSQD to use.";
-        return;
+        return false;
     }
-    conn->WriteCommand(c);
-    published_count_++;
-    PushWaitACKCommand(conn.get(), c);
-    LOG_INFO << "Publish a message, command=" << c;
+
+    // PUB will only add 1 to published_count_
+    // MPUB will add size(MPUB) to published_count_
+    published_count_ += cmd->body().size();
+    bool rc = conn->WritePublishCommand(cmd);
+    if (!rc) {
+        published_failed_count_ += cmd->body().size();
+    }
+    return rc;
 }
 
 void Producer::OnReady(Conn* conn) {
@@ -89,64 +100,85 @@ void Producer::OnReady(Conn* conn) {
     }
 }
 
-void Producer::OnPublishResponse(Conn* conn, const char* d, size_t len) {
-    Command* c = PopWaitACKCommand(conn);
-
-    if (len == 2 && d[0] == 'O' && d[1] == 'K') {
-        LOG_INFO << "Get a PublishResponse message OK, command=" << c;
-        published_ok_count_++;
-        delete c;
-
-        if (hwm_triggered_ && wait_ack_count_ < kHighWaterMark * conns_.size() / 2) {
-            LOG_TRACE << "We can publish more data now.";
-            hwm_triggered_ = false;
-
-            if (ready_fn_) {
-                ready_fn_();
-            }
-        }
-
-        return;
+void Producer::OnPublishResponse(Conn* conn, const CommandPtr& cmd, bool successfull) {
+    size_t count = 1;
+    if (cmd.get()) {
+        count = cmd->body().size();
     }
 
-    published_failed_count_++;
-    LOG_ERROR << "Publish command " << c << " failed : [" << std::string(d, len) << "]. Try again.";
-    conn_->second->WriteCommand(c);
-    PushWaitACKCommand(conn_->second.get(), c);
+    if (successfull) {
+        published_ok_count_ += count;
+    } else {
+        published_failed_count_ += count;
+    }
 }
 
-Command* Producer::PopWaitACKCommand(Conn* conn) {
-    CommandList& cl = wait_ack_[conn];
-    assert(!cl.first.empty());
-    Command* c = *cl.first.begin();
-    cl.first.pop_front();
-    cl.second--;
-    wait_ack_count_--;
-    assert(cl.first.size() == cl.second);
-    return c;
-}
+// void Producer::OnPublishResponse(Conn* conn, const char* d, size_t len) {
+//     assert(loop_->IsInLoopThread());
+//     Command* cmd = PopWaitACKCommand(conn);
+//     if (len == 2 && d[0] == 'O' && d[1] == 'K') {
+//         LOG_INFO << "Get a PublishResponse message OK, command=" << cmd;
+//         published_ok_count_++;
+//         delete cmd;
+// 
+//         if (hwm_triggered_ && wait_ack_count_ < kDefaultHighWaterMark * conns_.size() / 2) {
+//             LOG_TRACE << "We can publish more data now.";
+//             hwm_triggered_ = false;
+// 
+//             if (ready_fn_) {
+//                 ready_fn_();
+//             }
+//         }
+// 
+//         return;
+//     }
+// 
+//     published_failed_count_++;
+//     LOG_ERROR << "Publish command " << cmd << " failed. Try again.";
+//     PublishInLoop(cmd);
+// }
 
-void Producer::PushWaitACKCommand(Conn* conn, Command* cmd) {
-    CommandList& cl = wait_ack_[conn];
-    cl.first.push_back(cmd);
-    cl.second++;
-    wait_ack_count_++;
-    assert(cl.first.size() == cl.second);
-}
+// Command* Producer::PopWaitACKCommand(Conn* conn) {
+//     CommandList& cl = wait_ack_[conn];
+//     assert(!cl.first.empty());
+//     Command* c = *cl.first.begin();
+//     cl.first.pop_front();
+//     cl.second--;
+//     wait_ack_count_--;
+//     assert(cl.first.size() == cl.second);
+//     return c;
+// }
+// 
+// void Producer::PushWaitACKCommand(Conn* conn, const CommandPtr& cmd) {
+//     CommandList& cl = wait_ack_[conn];
+//     cl.first.push_back(cmd);
+//     cl.second++;
+//     wait_ack_count_++;
+//     assert(cl.first.size() == cl.second);
+// }
 
 ConnPtr Producer::GetNextConn() {
     if (conns_.empty()) {
         return ConnPtr();
     }
 
-    if (conn_ == conns_.end()) {
-        conn_ = conns_.begin();
+    if (current_conn_index_ >= conns_.size()) {
+        current_conn_index_ = 0;
     }
-    assert(conn_ != conns_.end());
-    assert(conn_->second->IsReady());
-    auto c = conn_->second;
-    ++conn_; // Using next Conn
+    auto c = conns_[current_conn_index_];
+    assert(c->IsReady());
+    ++current_conn_index_; // Using next Conn
     return c;
+}
+
+
+void Producer::PrintStats() {
+    LOG_WARN << "published_count=" << published_count_ 
+        << " published_ok_count=" << published_ok_count_ 
+        << " published_failed_count=" << published_failed_count_;
+    published_count_ = 0;
+    published_ok_count_ = 0;
+    published_failed_count_ = 0;
 }
 
 }
