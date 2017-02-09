@@ -7,10 +7,11 @@
 namespace evnsq {
 
 Option::Option() {
-    initialized = true;
     dial_timeout = evpp::Duration(1.0);
     read_timeout = evpp::Duration(60.0);
     write_timeout = evpp::Duration(1.0);
+    heartbeat_interval = evpp::Duration(30.0);
+    query_nsqlookupd_interval = evpp::Duration(30.0);
 
     client_id = "evnsq";
     hostname = "evnsq.localhost.com";

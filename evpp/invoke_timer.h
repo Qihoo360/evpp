@@ -19,7 +19,7 @@ public:
 private:
     InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic);
     void AsyncWait(Duration timeout);
-    void OnTimeout();
+    void OnTimerTriggered();
     void OnCanceled();
 private:
     EventLoop* loop_;

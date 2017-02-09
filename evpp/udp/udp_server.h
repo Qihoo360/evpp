@@ -21,8 +21,10 @@ public:
     Server();
     ~Server();
 
-    bool Start(int port);
-    bool Start(std::vector<int> ports);
+    bool Init(int port);
+    bool Init(const std::vector<int>& ports);
+    bool Init(const std::string& listen_ports/*like "53,5353,1053"*/);
+    bool Start();
     void Stop(bool wait_thread_exit);
 
     void Pause();
