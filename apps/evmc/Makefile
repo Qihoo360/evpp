@@ -7,9 +7,8 @@ CURRENT_DIR=$(shell pwd)
 PROJECT_ROOT_DIR=$(CURRENT_DIR)/../..
 THIRD_PARTY_DIR=$(PROJECT_ROOT_DIR)/3rdparty
 
-DEBUG_FLAGS=-DNDEBUG -O3
 CPPFLAGS=  -c -fPIC \
-		  $(DEBUG_FLAGS) \
+		  -O3 -fguess-branch-probability -finline-functions \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
 		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 -DGOOGLE_STRIP_LOG=2 \
@@ -26,7 +25,7 @@ LDFLAGS= $(RTFLAGS) \
 		 -L$(PROJECT_ROOT_DIR)/evpp \
 		 -L$(THIRD_PARTY_DIR) \
 		 -lpthread \
-		 -levpp -levent -lglog -lhashkit -ljemalloc 
+		 -levpp -levent -lglog -lhashkit -ljemalloc
 
 DIRNAME=$(shell basename `pwd`)
 
