@@ -5,6 +5,7 @@
 #include "evpp/event_loop.h"
 #include "evpp/event_loop_thread.h"
 #include "evpp/event_loop_thread_pool.h"
+#include "evpp/utility.h"
 
 namespace evpp {
 namespace http {
@@ -17,83 +18,93 @@ Server::~Server() {
     tpool_.reset();
 }
 
-bool Server::Start(int port) {
-    bool rc = tpool_->Start(true);
-    if (!rc) {
-        return rc;
+bool Server::Init(int listen_port) {
+    ListenThread lt;
+    lt.thread = std::make_shared<EventLoopThread>();
+    lt.thread->SetName(std::string("StandaloneHTTPServer-Main-") + std::to_string(listen_port));
+
+    lt.hserver = std::make_shared<Service>(lt.thread->event_loop());
+    if (!lt.hserver->Listen(listen_port)) {
+        int serrno = errno;
+        LOG_ERROR << "http server listen at port " << listen_port << " failed. errno=" << serrno << " " << strerror(serrno);
+        lt.hserver->Stop();
+        return false;
     }
-
-    rc = rc && StartListenThread(port);
-
-    while (!IsRunning()) {
-        usleep(1);
-    }
-
-    return rc;
-}
-
-bool Server::Start(std::vector<int> listen_ports) {
-    bool rc = tpool_->Start(true);
-    if (!rc) {
-        return rc;
-    }
-
-    for (size_t i = 0; i < listen_ports.size(); ++i) {
-        if (!StartListenThread(listen_ports[i])) {
-            return false;
-        }
-    }
-
-    while (!IsRunning()) {
-        usleep(1);
-    }
-
+    listen_threads_.push_back(lt);
     return true;
 }
 
-bool Server::StartListenThread(int port) {
-    ListenThread lt;
-    lt.t = std::make_shared<EventLoopThread>();
-    lt.t->SetName(std::string("StandaloneHTTPServer-Main-") + std::to_string(port));
-
-    lt.h = std::make_shared<Service>(lt.t->event_loop());
-    if (!lt.h->Listen(port)) {
-        int serrno = errno;
-        LOG_ERROR << "http server listen at port " << port << " failed. errno=" << serrno << " " << strerror(serrno);
-        lt.h->Stop();
-        return false;
+bool Server::Init(const std::vector<int>& listen_ports) {
+    bool rc = true;
+    for (auto lp : listen_ports) {
+        rc &= Init(lp);
     }
-
-    // 当 ListenThread 退出时，会调用该函数来停止 Service
-    auto http_close_fn = std::bind(&Service::Stop, lt.h);
-    bool rc = lt.t->Start(true,
-                          EventLoopThread::Functor(),
-                          http_close_fn);
-    assert(lt.t->IsRunning());
-    for (auto &c : callbacks_) {
-        auto cb = std::bind(&Server::Dispatch, this,
-                                           std::placeholders::_1,
-                                           std::placeholders::_2,
-                                           std::placeholders::_3,
-                                           c.second);
-        lt.h->RegisterHandler(c.first, cb);
-    }
-    HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
-                                       std::placeholders::_1,
-                                       std::placeholders::_2,
-                                       std::placeholders::_3,
-                                       default_callback_);
-    lt.h->RegisterDefaultHandler(cb);
-    listen_threads_.push_back(lt);
-    LOG_TRACE << "http server is running at " << port;
     return rc;
+}
+
+
+bool Server::Init(const std::string& listen_ports/*"80,8080,443"*/) {
+    std::vector<std::string> vec;
+    StringSplit(listen_ports, ",", 0, vec);
+
+    std::vector<int> v;
+    for (auto& s : vec) {
+        int i = std::atoi(s.c_str());
+        if (i <= 0) {
+            LOG_ERROR << "Cannot convert [" << s << "] to a integer. 'listen_ports' format wrong.";
+            return false;
+        }
+        v.push_back(i);
+    }
+
+    return Init(v);
+}
+
+bool Server::AfterFork() {
+    for (auto &lt : listen_threads_) {
+        lt.thread->event_loop()->AfterFork();
+    }
+    return true;
+}
+
+bool Server::Start() {
+    bool rc = tpool_->Start(true);
+    for (auto &lt : listen_threads_) {
+        auto http_close_fn = std::bind(&Service::Stop, lt.hserver);
+        rc &= lt.thread->Start(true,
+                EventLoopThread::Functor(),
+                http_close_fn);
+        assert(lt.thread->IsRunning());
+        for (auto &c : callbacks_) {
+            auto cb = std::bind(&Server::Dispatch, this,
+                    std::placeholders::_1,
+                    std::placeholders::_2,
+                    std::placeholders::_3,
+                    c.second);
+            lt.hserver->RegisterHandler(c.first, cb);
+        }
+        HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
+                std::placeholders::_1,
+                std::placeholders::_2,
+                std::placeholders::_3,
+                default_callback_);
+        lt.hserver->RegisterDefaultHandler(cb);
+        if (!rc) {
+            return false;
+        }
+    }
+    while (!IsRunning()) {
+        usleep(1);
+    }
+    LOG_TRACE << "http server is running" ;
+    return true;
 }
 
 void Server::Stop(bool wait_thread_exit /*= false*/) {
     for (auto &lt : listen_threads_) {
         // 1. Service 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
         // 2. EventLoopThread 对象必须调用 Stop 来停止
-        lt.t->Stop();
+        lt.thread->Stop();
     }
     tpool_->Stop();
 
@@ -104,7 +115,7 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
     for (;;) {
         bool stopped = true;
         for (auto &lt : listen_threads_) {
-            if (!lt.t->IsStopped()) {
+            if (!lt.thread->IsStopped()) {
                 stopped = false;
                 break;
             }
@@ -123,22 +134,23 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
 
     assert(tpool_->IsStopped());
     for (auto &lt : listen_threads_) {
-        assert(lt.t->IsStopped());
+        (void)lt; // avoid compile warning
+        assert(lt.thread->IsStopped());
     }
     assert(IsStopped());
 }
 
 void Server::Pause() {
     for (auto &lt : listen_threads_) {
-        EventLoop* loop = lt.t->event_loop();
-        loop->RunInLoop(std::bind(&Service::Pause, lt.h));
+        EventLoop* loop = lt.thread->event_loop();
+        loop->RunInLoop(std::bind(&Service::Pause, lt.hserver));
     }
 }
 
 void Server::Continue() {
     for (auto &lt : listen_threads_) {
-        EventLoop* loop = lt.t->event_loop();
-        loop->RunInLoop(std::bind(&Service::Continue, lt.h));
+        EventLoop* loop = lt.thread->event_loop();
+        loop->RunInLoop(std::bind(&Service::Continue, lt.hserver));
     }
 }
 
@@ -152,7 +164,7 @@ bool Server::IsRunning() const {
     }
 
     for (auto &lt : listen_threads_) {
-        if (!lt.t->IsRunning()) {
+        if (!lt.thread->IsRunning()) {
             return false;
         }
     }
@@ -168,7 +180,7 @@ bool Server::IsStopped() const {
     }
 
     for (auto &lt : listen_threads_) {
-        if (!lt.t->IsStopped()) {
+        if (!lt.thread->IsStopped()) {
             return false;
         }
     }
@@ -238,7 +250,7 @@ EventLoop* Server::GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx) {
 
 Service* Server::service(int index) const {
     if (index < int(listen_threads_.size())) {
-        return listen_threads_[index].h.get();
+        return listen_threads_[index].hserver.get();
     }
 
     return NULL;

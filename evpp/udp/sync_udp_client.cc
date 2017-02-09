@@ -38,7 +38,7 @@ bool Client::Connect(const struct sockaddr& addr) {
 }
 
 bool Client::Connect() {
-    sockfd_ = socket(AF_INET, SOCK_DGRAM, 0);
+    sockfd_ = ::socket(AF_INET, SOCK_DGRAM, 0);
     sock::SetReuseAddr(sockfd_);
 
     socklen_t addrlen = sizeof(remote_addr_);
@@ -96,6 +96,7 @@ std::string Client::DoRequest(const std::string& remote_ip, int port, const std:
 }
 
 bool Client::Send(const char* msg, size_t len) {
+    // TODO use 'send' to improve performance??
     int sentn = ::sendto(sockfd(),
                             msg,
                             len, 0, &remote_addr_, sizeof(remote_addr_));
@@ -114,7 +115,7 @@ bool Client::Send(const std::string& msg, const struct sockaddr_in& addr) {
 bool Client::Send(const char* msg, size_t len, const struct sockaddr_in& addr) {
     Client c;
     if (!c.Connect(addr)) {
-        return "";
+        return false;
     }
 
     return c.Send(msg, len);

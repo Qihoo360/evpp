@@ -5,8 +5,8 @@
 #include "evpp/libevent_headers.h"
 
 namespace evpp {
-DNSResolver::DNSResolver(EventLoop* evloop, const std::string& host, Duration timeout, const Functor& f)
-    : loop_(evloop), dnsbase_(NULL), dns_req_(NULL), host_(host), timeout_(timeout), functor_(f) {}
+DNSResolver::DNSResolver(EventLoop* evloop, const std::string& h, Duration timeout, const Functor& f)
+    : loop_(evloop), dnsbase_(NULL), dns_req_(NULL), host_(h), timeout_(timeout), functor_(f) {}
 
 DNSResolver::~DNSResolver() {
     LOG_INFO << "DNSResolver::~DNSResolver tid=" << std::this_thread::get_id() << " this=" << this;
@@ -24,7 +24,7 @@ void DNSResolver::Start() {
 
 void DNSResolver::StartInLoop() {
     LOG_INFO << "DNSResolver::StartInLoop tid=" << std::this_thread::get_id() << " this=" << this;
-    loop_->AssertInLoopThread();
+    assert(loop_->IsInLoopThread());
 
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     AsyncDNSResolve();
@@ -73,7 +73,7 @@ void DNSResolver::Cancel() {
 void DNSResolver::AsyncWait() {
     LOG_INFO << "DNSResolver::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this;
     timer_.reset(new TimerEventWatcher(loop_, std::bind(&DNSResolver::OnTimeout, this), timeout_));
-    timer_->SeCancelCallback(std::bind(&DNSResolver::OnCanceled, this));
+    timer_->SetCancelCallback(std::bind(&DNSResolver::OnCanceled, this));
     timer_->Init();
     timer_->AsyncWait();
 }
@@ -103,7 +103,7 @@ void DNSResolver::AsyncDNSResolve() {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP; /* We want a TCP socket */
     hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
-    
+
     dnsbase_ = evdns_base_new(loop_->event_base(), 1);
     dns_req_ = evdns_getaddrinfo(dnsbase_
                                  , host_.c_str()
@@ -121,8 +121,8 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         if (errcode != EVUTIL_EAI_CANCEL) {
             timer_->Cancel();
             LOG_ERROR << "dns resolve failed, "
-                << ", error code: " << errcode
-                << ", error msg: " << evutil_gai_strerror(errcode);
+                      << ", error code: " << errcode
+                      << ", error msg: " << evutil_gai_strerror(errcode);
         } else {
             LOG_WARN << "dns resolve cancel, may be timeout";
         }
@@ -169,7 +169,7 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         LOG_TRACE << host_ << " resolved a ip=" << inet_ntoa(a->sin_addr);
     }
     evutil_freeaddrinfo(addr);
-    timer_->SeCancelCallback(TimerEventWatcher::Handler());
+    timer_->SetCancelCallback(TimerEventWatcher::Handler());
     timer_->Cancel();
 
     LOG_INFO << "delete dns ctx";

@@ -20,7 +20,7 @@
 
 namespace evpp {
 
-// Copy from leveldb project 
+// Copy from leveldb project
 // @see https://github.com/google/leveldb/blob/master/include/leveldb/slice.h
 
 class Slice {

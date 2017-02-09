@@ -12,7 +12,7 @@ ConnPool::~ConnPool() {
 }
 
 ConnPtr ConnPool::Get(EventLoop* loop) {
-    loop->AssertInLoopThread();
+    assert(loop->IsInLoopThread());
     auto it = pool_.find(loop);
     if (it == pool_.end()) {
         std::lock_guard<std::mutex> guard(mutex_);
@@ -35,7 +35,7 @@ ConnPtr ConnPool::Get(EventLoop* loop) {
 
 void ConnPool::Put(const ConnPtr& c) {
     EventLoop* loop = c->loop();
-    loop->AssertInLoopThread();
+    assert(loop->IsInLoopThread());
     auto it = pool_.find(loop);
     assert(it != pool_.end());
     if (it->second.size() >= max_pool_size_) {

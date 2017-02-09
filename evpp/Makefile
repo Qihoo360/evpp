@@ -1,4 +1,5 @@
 include ../rpm/build.mk
+include ../build.mk/astyle.mk
 
 CC=gcc
 CXX=g++
@@ -6,6 +7,7 @@ AR=ar
 ARFLAGS=cru
 CURRENT_DIR=$(shell echo `pwd`)
 SOURCE_DIR=$(CURRENT_DIR)
+DEBUG := -D_DEBUG
 CFLAGS=$(TOP_CFLAGS) -c -fPIC \
 	   -O3 -Wall -Wno-unused-parameter -Wno-unused-function -Wunused-variable -Wunused-value \
 	   -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings -Wsign-compare \
@@ -53,15 +55,11 @@ check : $(TARGET_A) $(TARGET_SO)
 
 -include $(DEPS)
 
-t:
-	@echo "LIBNAME:" $(LIBNAME)
-	@echo "SRCS:" $(SRCS)
-	@echo "OBJS:" $(OBJS)
-	@echo "CFLAGS:" $(CFLAGS)
-	@echo "CPPFLAGS:" $(CPPFLAGS)
-
 install: $(TARGET_A) $(TARGET_SO) 
 
 clean:
 	rm -rf $(OBJS) $(DEPS) $(TARGET_SO) $(TARGET_A)
 
+fmt:
+	$(ASTYLE) *.cc *.h
+	rm -rf *.orig

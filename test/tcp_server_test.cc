@@ -38,6 +38,7 @@ void OnClientConnection(const evpp::TCPConnPtr& conn) {
 
 std::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop) {
     std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
+    client->set_reconnect_interval(evpp::Duration(0.01));
     client->SetConnectionCallback(&OnClientConnection);
     client->Connect();
     loop->RunAfter(evpp::Duration(1.0), std::bind(&evpp::TCPClient::Disconnect, client));
@@ -53,7 +54,7 @@ TEST_UNIT(testTCPServer1) {
     std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
     std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), addr, "tcp_server", 2));
     tsrv->SetMessageCallback(&OnMessage);
-    tsrv->Start();
+    tsrv->Init() && tsrv->Start();
     loop->RunAfter(evpp::Duration(1.4), std::bind(&StopTCPServer, tsrv.get()));
     loop->RunAfter(evpp::Duration(1.6), std::bind(&evpp::EventLoop::Stop, loop.get()));
     std::shared_ptr<evpp::TCPClient> client = StartTCPClient(tcp_client_thread->event_loop());
@@ -72,7 +73,7 @@ TEST_UNIT(testTCPServer1) {
 TEST_UNIT(testTCPServerSilenceShutdown) {
     std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
     std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), addr, "tcp_server", 2));
-    tsrv->Start();
+    tsrv->Init() && tsrv->Start();
     loop->RunAfter(evpp::Duration(1.2), std::bind(&StopTCPServer, tsrv.get()));
     loop->RunAfter(evpp::Duration(1.3), std::bind(&evpp::EventLoop::Stop, loop.get()));
     loop->Run();
