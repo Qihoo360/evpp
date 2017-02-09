@@ -21,9 +21,9 @@ void Command::WriteTo(evpp::Buffer* buf) const {
     }
 
     if (body_.size() == 1) {
-        const std::string& body = body_[0];
-        buf->AppendInt32(int32_t(body.size()));
-        buf->Append(body);
+        const std::string& d = body_[0];
+        buf->AppendInt32(int32_t(d.size()));
+        buf->Append(d);
     } else {
         assert(body_.size() > 1);
         assert(name_ == "MPUB");

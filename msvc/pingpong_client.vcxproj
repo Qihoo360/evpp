@@ -89,9 +89,6 @@
   <ItemGroup>
     <ClCompile Include="..\examples\pingpong\client\main.cc" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\examples\echo\winmain-inl.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

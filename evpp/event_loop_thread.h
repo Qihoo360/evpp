@@ -29,6 +29,8 @@ public:
     bool IsRunning() const;
     bool IsStopped() const;
 
+    void AfterFork();
+
 private:
     void Run(const Functor& pre, const Functor& post);
 

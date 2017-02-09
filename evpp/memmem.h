@@ -14,7 +14,7 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, write to the Free
    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  
+   02111-1307 USA.
 */
 #pragma once
 
@@ -32,10 +32,10 @@
 // @see http://sourceware.org/ml/libc-alpha/2007-12/msg00000.html
 
 /* Return the first occurrence of NEEDLE in HAYSTACK. */
-inline void *
-memmem(const void *haystack,
+inline void*
+memmem(const void* haystack,
        size_t haystack_len,
-       const void *needle,
+       const void* needle,
        size_t needle_len) {
     /* not really Rabin-Karp, just using additive hashing */
     char* haystack_ = (char*)haystack;
@@ -45,11 +45,13 @@ memmem(const void *haystack,
     char* last;
     size_t i;
 
-    if (haystack_len < needle_len)
+    if (haystack_len < needle_len) {
         return NULL;
+    }
 
-    if (!needle_len)
+    if (!needle_len) {
         return haystack_;
+    }
 
     /* initialize hashes */
     for (i = needle_len; i; --i) {
@@ -63,9 +65,10 @@ memmem(const void *haystack,
     last = haystack_ + (haystack_len - needle_len + 1);
     for (; haystack_ < last; ++haystack_) {
         if (__builtin_expect(hash == hay_hash, 0) &&
-            *haystack_ == *needle_ &&   /* prevent calling memcmp, was a optimization from existing glibc */
-            !memcmp(haystack_, needle_, needle_len))
+                *haystack_ == *needle_ &&   /* prevent calling memcmp, was a optimization from existing glibc */
+                !memcmp(haystack_, needle_, needle_len)) {
             return haystack_;
+        }
 
         /* roll the hash */
         hay_hash -= *haystack_;

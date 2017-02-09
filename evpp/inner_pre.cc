@@ -2,7 +2,7 @@
 
 #include "evpp/libevent_headers.h"
 
-#ifdef H_WINDOWS_API
+#ifdef H_OS_WINDOWS
 #pragma comment(lib, "event.lib")
 #if EVENT__NUMERIC_VERSION >= 0x02010500
 #pragma comment(lib, "event_core.lib")
@@ -14,21 +14,7 @@
 
 
 #ifndef H_OS_WINDOWS
-
-//TODO ignore SIGPIPE add sig_pipe
 #include <signal.h>
-// set signal handler
-void sig_pipe(int id) {
-    // SIGPIPE
-    //H_LOG_NAME_DEBUG( "", "a pipe arrived.");
-    // do nothing.
-    //printf( "signal pipe:%d", id );
-}
-void sig_child(int) {
-    //H_LOG_NAME_DEBUG( "", "a child thread terminated." );
-    // do nothing.
-}
-
 #endif
 
 
