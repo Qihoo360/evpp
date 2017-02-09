@@ -144,19 +144,19 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{9F4897B8-C18D-3476-8887-A216EE7EFC78}</UniqueIdentifier>
+      <UniqueIdentifier>{1E964559-98F7-4951-873A-99B4C99AE83E}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{62AFF697-1EF2-3A6B-874B-7517C381174C}</UniqueIdentifier>
+      <UniqueIdentifier>{E3F0C2B8-36A4-4A26-941E-AC14EEF20C01}</UniqueIdentifier>
     </Filter>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{199DB3FF-5752-3851-9126-FFEAB2596E2D}</UniqueIdentifier>
+      <UniqueIdentifier>{9B1CFBD9-DD38-4C0E-B4E0-0716F4CA89C7}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Core">
-      <UniqueIdentifier>{3AA2A0AF-A417-32E7-B5E8-888DCD3822FA}</UniqueIdentifier>
+      <UniqueIdentifier>{C45EF24A-E665-40BA-A84C-B75979FEE001}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Extra">
-      <UniqueIdentifier>{1B0351B8-A971-3BFF-BD76-E6FEC49BDE7F}</UniqueIdentifier>
+      <UniqueIdentifier>{3A5CC35D-C662-4B18-8DB6-623E0C2EB7F1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

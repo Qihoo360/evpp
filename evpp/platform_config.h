@@ -101,10 +101,10 @@
 
 #ifndef H_LINK_LIB
 #   define H_LINK_LIB( filename )           H_LINK_FILE_P( filename , H_LINK_OS_FLAG )
-#endif 
+#endif
 
 #ifdef H_OS_WINDOWS
-#define usleep(us) Sleep((us)/1000);
+#define usleep(us) Sleep((us)/1000)
 #define snprintf  _snprintf
 #define thread_local __declspec( thread )
 #endif

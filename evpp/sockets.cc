@@ -71,7 +71,7 @@ int CreateUDPServer(int port) {
     struct sockaddr_in local = ParseFromIPPort(addr.c_str());
     if (::bind(fd, (struct sockaddr*)&local, sizeof(local))) {
         int serrno = errno;
-        LOG_ERROR << "socket bind error " << strerror(serrno);
+        LOG_ERROR << "socket bind error=" << serrno << " " << strerror(serrno);
         return INVALID_SOCKET;
     }
 
@@ -91,13 +91,15 @@ struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
     addr.sin_port = htons(::atoi(&a[index + 1]));
     a[index] = '\0';
 
-    if (::inet_pton(AF_INET, a.data(), &addr.sin_addr) <= 0) {
+    int rc = ::inet_pton(AF_INET, a.data(), &addr.sin_addr);
+    if (rc == 0) {
+        LOG_INFO << "ParseFromIPPort inet_pton(AF_INET '" << a.data() << "', ...) rc=0. " << a.data() << " is not a valid IP address. Maybe it is a hostname.";
+    } else if (rc < 0) {
         int serrno = errno;
-
         if (serrno == 0) {
             LOG_INFO << "[" << a.data() << "] is not a IP address. Maybe it is a hostname.";
         } else {
-            LOG_ERROR << "ParseFromIPPort " << strerror(serrno);
+            LOG_WARN << "ParseFromIPPort inet_pton(AF_INET, '" << a.data() << "', ...) failed : " << strerror(serrno);
         }
     }
 
@@ -166,7 +168,7 @@ std::string ToIPPort(const struct sockaddr_in* ss) {
 }
 
 
-EVPP_EXPORT std::string ToIP(const struct sockaddr* s) {
+std::string ToIP(const struct sockaddr* s) {
     auto ss = sockaddr_storage_cast(s);
     if (ss->ss_family == AF_INET) {
         struct sockaddr_in* addr4 = const_cast<struct sockaddr_in*>(sockaddr_in_cast(ss));
@@ -209,12 +211,14 @@ void SetKeepAlive(int fd) {
     int on = 1;
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
     assert(rc == 0);
+    (void)rc; // avoid compile warning
 }
 
 void SetReuseAddr(int fd) {
     int on = 1;
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
     assert(rc == 0);
+    (void)rc; // avoid compile warning
 }
 
 }

@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGUID>{52A9F22D-79BE-3DC0-B0C1-5859F3D07024}</ProjectGUID>
+    <ProjectGUID>{EDDA3538-864F-48C8-9D90-323E4F92EC67}</ProjectGUID>
     <Keyword>Win32Proj</Keyword>
     <Platform>Win32</Platform>
     <ProjectName>RUN_TESTS</ProjectName>
@@ -44,7 +44,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
       <AdditionalIncludeDirectories>D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\include;D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\compat;D:\360.git\evpp\3rdparty\libevent-2.1.5-beta;D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\.\WIN32-Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
@@ -66,7 +66,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
       <AdditionalIncludeDirectories>D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\include;D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\compat;D:\360.git\evpp\3rdparty\libevent-2.1.5-beta;D:\360.git\evpp\3rdparty\libevent-2.1.5-beta\.\WIN32-Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
       <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
@@ -116,9 +116,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="D:/360.git/evpp/3rdparty/libevent-2.1.5-beta/ZERO_CHECK.vcxproj">
-      <Project>F4DB9EE1-4987-3343-A835-74F2651F2571</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

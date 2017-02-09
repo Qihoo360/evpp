@@ -25,9 +25,10 @@ msvc/*.suo
 msvc/.vs/
 msvc/libevpp.VC.VC.opendb
 msvc/libevpp.VC.db
+msvc/evnsq-test.vcxproj.filters
 
-test/evpp
-examples/echo/simple_echo
+test/evpp-test
+examples/echo/*/simple_echo
 examples/pingpong/client/pingpong_client
 examples/pingpong/server/pingpong_server
 core.*
@@ -36,15 +37,20 @@ core.*
 *.orig
 
 apps/evnsq/evnsqtail/evnsqtail
+apps/evnsq/test/evnsqtest
 
 3rdparty/libevent-2.1.5-beta/.vs/
 3rdparty/libevent-2.1.5-beta/Win32/
 3rdparty/libevent-2.1.5-beta/libevent.VC.db
 3rdparty/libevent-2.1.5-beta/*.dir/
 3rdparty/libevent-2.1.5-beta/build/
+3rdparty/libevent-release-2.1.7-rc/build/
+3rdparty/libevent-release-2.1.7-rc/*.dir/
+3rdparty/wininclude/event2/
 
 evpp/libevpp.so.1
 evpp/libevpp.so.1.0
 rpm/backup-rpms/
 rpm/build/
 rpm/*.rpm
+

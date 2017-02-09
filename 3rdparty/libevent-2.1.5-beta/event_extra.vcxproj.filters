@@ -243,22 +243,22 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{62AFF697-1EF2-3A6B-874B-7517C381174C}</UniqueIdentifier>
+      <UniqueIdentifier>{E3F0C2B8-36A4-4A26-941E-AC14EEF20C01}</UniqueIdentifier>
     </Filter>
     <Filter Include="Headers Private">
-      <UniqueIdentifier>{FE496172-7A6C-3222-971B-B2EC59C2DC82}</UniqueIdentifier>
+      <UniqueIdentifier>{9E6FA303-EADB-4435-B51B-D2626A93CC70}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Compat">
-      <UniqueIdentifier>{79335EEF-55E5-39F0-8AEA-FE0BA62F8AA8}</UniqueIdentifier>
+      <UniqueIdentifier>{505C9996-69ED-4419-B586-7AB419D648FD}</UniqueIdentifier>
     </Filter>
     <Filter Include="Headers Public">
-      <UniqueIdentifier>{B8FB1D72-E100-3D4A-A685-C9DD63BD16CA}</UniqueIdentifier>
+      <UniqueIdentifier>{FB402F24-57D4-4877-994A-059C76D8763C}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Core">
-      <UniqueIdentifier>{3AA2A0AF-A417-32E7-B5E8-888DCD3822FA}</UniqueIdentifier>
+      <UniqueIdentifier>{C45EF24A-E665-40BA-A84C-B75979FEE001}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Extra">
-      <UniqueIdentifier>{1B0351B8-A971-3BFF-BD76-E6FEC49BDE7F}</UniqueIdentifier>
+      <UniqueIdentifier>{3A5CC35D-C662-4B18-8DB6-623E0C2EB7F1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

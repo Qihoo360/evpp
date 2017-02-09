@@ -1,0 +1,9 @@
+﻿  Building Custom Rule D:/360.git/mpic/3rdparty/gflags-2.2.0/CMakeLists.txt
+  CMake does not need to re-run because D:\360.git\mpic\3rdparty\gflags-2.2.0\CMakeFiles\generate.stamp is up-to-date.
+  gflags.cc
+  gflags_reporting.cc
+  gflags_completions.cc
+  windows_port.cc
+  Generating Code...
+     Creating library D:/360.git/mpic/3rdparty/gflags-2.2.0/lib/Release/gflags.lib and object D:/360.git/mpic/3rdparty/gflags-2.2.0/lib/Release/gflags.exp
+  gflags_shared.vcxproj -> D:\360.git\mpic\3rdparty\gflags-2.2.0\bin\Release\gflags.dll
