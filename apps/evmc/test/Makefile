@@ -13,8 +13,8 @@ CURRENT_DIR= $(shell pwd)
 ROOT_DIR=$(shell cd ./../../.. && pwd)
 PREFIX=$(CURRENT_DIR)/../install
 
-CPPFLAGS= -g -c -fPIC \
-		  -D_DEBUG -D_USE_GTEST \
+CPPFLAGS= -c -O3 -fPIC \
+		  -D_EVMC_ -D_USE_GTEST \
 		  -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings \
 		  -Wsign-compare -Winvalid-pch -fms-extensions -Wall \
 		  -MMD -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords -std=c++11 \
