@@ -120,15 +120,15 @@ int main() {
 	   //key.resize(12, 'T');
 	  // mcp.PrefixGet(g_loop, ss.str(), &OnTestPrefixDone);
       //mcp.Get(g_loop, key, &OnTestGetDone);
-	  //mcp.Set(g_loop, key, key, &OnTestSetDone);
-      //mcp.Get(g_loop, key, &OnTestGetDone);
+	  mcp.Set(g_loop, key, key, &OnTestSetDone);
+      mcp.Get(g_loop, key, &OnTestGetDone);
 	  mget_keys.push_back(key);
       //mcp.Get(g_loop, key, &OnTestGetDone);
-	  mcp.Remove(g_loop, key, &OnTestRemoveDone);
+	  //mcp.Remove(g_loop, key, &OnTestRemoveDone);
       //mcp.Get(g_loop, key, &OnTestGetDone);
 	  //mcp.Set(g_loop, key, key, &OnTestSetDone);
    }
-//   mcp.PrefixGet(g_loop, "test", &OnTestPrefixDone);
+   mcp.PrefixGet(g_loop, "test", &OnTestPrefixDone);
    mcp.MultiGet(g_loop, mget_keys, &OnTestMultiGetDone);
    mget_keys.clear();
    std::stringstream ps;
@@ -175,7 +175,7 @@ int main() {
 	while(!g_loop->running()) {
 		usleep(1000);
 	}
-    MemcacheClientSerial mcp("X.X.X.X:20099", 200);
+    MemcacheClientSerial mcp("10.102.16.25:20099", 200);
     assert(mcp.Start(g_loop));
 	usleep(2*1000*1000);
 	std::string key("test");
@@ -200,7 +200,10 @@ int main() {
 	mget_keys.push_back("dog");
 	mget_keys.push_back("cat");
 	mget_keys.push_back("cat1");
-	mcp.MultiGet(mget_keys, &OnTestMultiGetDone);
+	while (1) {
+		mcp.MultiGet(mget_keys, &OnTestMultiGetDone);
+		usleep(100000);
+	}
 
     g_loop->RunAfter(10.0, &StopLoop);
     th.join();
