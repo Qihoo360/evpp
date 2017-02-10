@@ -3,9 +3,8 @@ project(evpp CXX)
 
 set(CXX_FLAGS
     -g
-    -Wall
-    -fPIC
     -O3
+    -fPIC
     -Wall
     -Wno-unused-parameter
     -Wno-unused-function
@@ -24,9 +23,6 @@ set(CXX_FLAGS
     -DGOOGLE_STRIP_LOG=2
 )
 string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
-set(CMAKE_CXX_COMPILER "g++")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -finline-limit=1000 -DNDEBUG")
 
 message(STATUS "This is BINARY dir " ${PROJECT_BINARY_DIR})
 message(STATUS "This is SOURCE dir " ${PROJECT_SOURCE_DIR})
