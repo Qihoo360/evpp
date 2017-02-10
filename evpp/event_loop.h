@@ -12,12 +12,10 @@
 #include "evpp/invoke_timer.h"
 
 
-namespace boost {
-namespace lockfree {
-template<typename T>
-class queue;
-} 
-}
+#ifdef H_HAVE_BOOST
+#include <boost/lockfree/queue.hpp>
+#endif
+
 
 namespace evpp {
 
