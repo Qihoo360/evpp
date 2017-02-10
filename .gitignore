@@ -16,6 +16,8 @@
 # vim swp file
 *.swp
 
+*.VC.VC.opendb
+
 msvc/Debug/
 msvc/Release/
 msvc/bin/
@@ -23,7 +25,6 @@ msvc/*.opensdf
 msvc/*.sdf
 msvc/*.suo
 msvc/.vs/
-msvc/libevpp.VC.VC.opendb
 msvc/libevpp.VC.db
 msvc/evnsq-test.vcxproj.filters
 
