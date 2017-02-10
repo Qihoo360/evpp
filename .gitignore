@@ -32,10 +32,14 @@ test/evpp-test
 examples/echo/*/simple_echo
 examples/pingpong/client/pingpong_client
 examples/pingpong/server/pingpong_server
+
 core.*
+
 *.out
 
 *.orig
+
+build
 
 apps/evnsq/evnsqtail/evnsqtail
 apps/evnsq/test/evnsqtest
