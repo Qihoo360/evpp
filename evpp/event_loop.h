@@ -10,7 +10,12 @@
 #include "evpp/duration.h"
 #include "evpp/any.h"
 #include "evpp/invoke_timer.h"
+
+
+#ifdef H_HAVE_BOOST
 #include <boost/lockfree/queue.hpp>
+#endif
+
 
 namespace evpp {
 
@@ -91,8 +96,11 @@ private:
 
     std::mutex mutex_;
     std::shared_ptr<PipeEventWatcher> watcher_;
-    //std::vector<Functor> pending_functors_; // @Guarded By mutex_
-	boost::lockfree::queue<Functor *> pending_functors_;
+#ifdef H_HAVE_BOOST
+	boost::lockfree::queue<Functor*>* pending_functors_;
+#else
+    std::vector<Functor>* pending_functors_; // @Guarded By mutex_
+#endif
     bool calling_pending_functors_;
 
     std::atomic<int> pending_functor_count_;
