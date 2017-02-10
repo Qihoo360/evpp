@@ -42,6 +42,7 @@ include (CTest)
 
 project(${PACKAGE_NAME} CXX)
 
+if (UNIX) 
 set(CXX_FLAGS
     -g
     -O3
@@ -63,6 +64,8 @@ set(CXX_FLAGS
     -std=c++11
     -DGOOGLE_STRIP_LOG=2
 )
+endif
+
 string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 
 message(STATUS "This is BINARY dir " ${PROJECT_BINARY_DIR})
