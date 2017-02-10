@@ -33,3 +33,4 @@ message(STATUS "This is SOURCE dir " ${PROJECT_SOURCE_DIR})
 message(STATUS "CXX_FLAGS " ${CXX_FLAGS})
 
 add_subdirectory(evpp lib)
+add_subdirectory(test bin)
