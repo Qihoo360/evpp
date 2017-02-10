@@ -9,6 +9,7 @@ CURRENT_DIR=$(shell echo `pwd`)
 SOURCE_DIR=$(CURRENT_DIR)
 DEBUG := -D_DEBUG
 CFLAGS=$(TOP_CFLAGS) -c -fPIC \
+	   -DH_HAVE_BOOST \
 	   -O3 -Wall -Wno-unused-parameter -Wno-unused-function -Wunused-variable -Wunused-value \
 	   -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings -Wsign-compare \
 	   -Winvalid-pch -fms-extensions -Wfloat-equal -Wextra -std=c++11 -DGOOGLE_STRIP_LOG=2 \
