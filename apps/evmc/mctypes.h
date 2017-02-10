@@ -8,25 +8,27 @@
 #include "evpp/tcp_conn.h"
 #include "evpp/tcp_client.h"
 #include "glog/logging.h"
+//#include "objectpool.hpp"
 
 namespace evmc {
 
 // TODO
 // - embedded & standalone
 
-typedef std::shared_ptr<evpp::Buffer> BufferPtr;
 typedef std::shared_ptr<evpp::TimerEventWatcher> TimerEventPtr;
 
 enum {
+	SUC_RET = 0,
+	NOT_FIND_RET = 1,
     ERR_CODE_TIMEOUT = -1,
     ERR_CODE_NETWORK = -2,
     ERR_CODE_DISCONNECT = -3,
-    ERR_CODE_UNDEFINED = -100,
+    ERR_CODE_EMPTYKEY = -4,
 };
 
 
 struct GetResult {
-    GetResult() : code(ERR_CODE_UNDEFINED) {}
+    GetResult() : code(NOT_FIND_RET) {}
     GetResult(const GetResult& result) : code(result.code), value(result.value) {}
     GetResult(GetResult&& result) : code(result.code), value(std::move(result.value)) {}
     GetResult& operator=(GetResult&& result) {
@@ -40,90 +42,46 @@ struct GetResult {
     std::string value;
 };
 
-struct MultiGetResult {
-    MultiGetResult() : code(ERR_CODE_UNDEFINED) {}
-    MultiGetResult(const MultiGetResult& result) : code(result.code), get_result_map_(result.get_result_map_) {}
-    MultiGetResult(MultiGetResult&& result) : code(result.code), get_result_map_(std::move(result.get_result_map_)) {}
-    MultiGetResult& operator=(MultiGetResult&& result) {
-		code = result.code;
-		get_result_map_ = std::move(result.get_result_map_);
-		return *this;
-	}
-    
-    int code; // TODO 使用 enum 变量
-    std::map<std::string, GetResult> get_result_map_;
-};
+typedef std::shared_ptr<GetResult> GetResultPtr;
+typedef std::map<std::string, GetResult>  MultiGetResult;
 
 struct PrefixGetResult {
-    PrefixGetResult() : code(ERR_CODE_UNDEFINED) {
+    PrefixGetResult() : code(NOT_FIND_RET) {
 	}
 	virtual ~PrefixGetResult() {
 	}
     PrefixGetResult(const PrefixGetResult& result) { 
 		code = result.code;
-		get_result_map_ = result.get_result_map_;   
+		result_map_ = result.result_map_;   
 	}
-    PrefixGetResult(PrefixGetResult&& result) : code(result.code), get_result_map_(std::move(result.get_result_map_)) {
+    PrefixGetResult(PrefixGetResult&& result) : code(result.code), result_map_(std::move(result.result_map_)) {
 	}
 	PrefixGetResult& operator=(PrefixGetResult&& result) {
 		code = result.code;
-		get_result_map_  = std::move(result.get_result_map_);
+		result_map_ = std::move(result.result_map_);
 		return *this;
 	}
     int code;
-    std::map<std::string, std::string> get_result_map_;
+    std::map<std::string, std::string> result_map_;
 	void clear() {
-		code = ERR_CODE_UNDEFINED;
-		get_result_map_.clear();
+		code = NOT_FIND_RET;
+		result_map_.clear();
 	}
 };
 
 typedef std::shared_ptr<PrefixGetResult> PrefixGetResultPtr;
 
-struct PrefixMultiGetResult {
-    PrefixMultiGetResult() : code(ERR_CODE_UNDEFINED) {
-	}
-    virtual ~PrefixMultiGetResult() {
-	/*	if (!get_result_map_.empty()) {
-			auto it = get_result_map_.begin();
-			for (; it != get_result_map_.end(); ) {
-				get_result_map_.erase(it++);
-			}
-		}*/
-	}
-    PrefixMultiGetResult(const PrefixMultiGetResult& result) {
-		code = result.code;
-		get_result_map_ = result.get_result_map_;
-	}
+typedef std::map<std::string, PrefixGetResultPtr> PrefixMultiGetResult;
 
-    PrefixMultiGetResult(PrefixMultiGetResult&& result): code(result.code), 
-	get_result_map_(std::move(result.get_result_map_)) {
-	}
-
-   PrefixMultiGetResult& operator=(PrefixMultiGetResult&& result) {
-		code = result.code;
-		get_result_map_ = std::move(result.get_result_map_);
-		return *this;
-	}
-
-    int code;
-    std::map<std::string, PrefixGetResultPtr> get_result_map_;
-	void clear() {
-		code = ERR_CODE_UNDEFINED;
-		get_result_map_.clear();
-	}
-};
-typedef std::shared_ptr<PrefixMultiGetResult> PrefixMultiGetResultPtr;
 
 typedef std::function<void(const std::string& key, const GetResult& result)> GetCallback;
 typedef std::function<void(const std::string& key, int code)> SetCallback;
 typedef std::function<void(const std::string& key, int code)> RemoveCallback;
 typedef std::function<void(const MultiGetResult& result)> MultiGetCallback;
-typedef std::function<void(const std::map<std::string, GetResult>& result, int code)> MultiGetCallback2;
 typedef std::function<void(const std::string& key, const PrefixGetResultPtr result)> PrefixGetCallback;
-typedef std::function<void(const PrefixMultiGetResultPtr result)> PrefixMultiGetCallback;
-
+typedef std::function<void(const PrefixMultiGetResult& result)> PrefixMultiGetCallback;
 class MemcacheClient;
 typedef std::shared_ptr<MemcacheClient> MemcacheClientPtr;
+
 }
 
