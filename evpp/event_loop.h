@@ -10,6 +10,7 @@
 #include "evpp/duration.h"
 #include "evpp/any.h"
 #include "evpp/invoke_timer.h"
+#include <boost/lockfree/queue.hpp>
 
 namespace evpp {
 
@@ -41,7 +42,9 @@ public:
     struct event_base* event_base() {
         return evbase_;
     }
-    bool IsInLoopThread() const;
+	inline bool IsInLoopThread() const {
+		return tid_ == std::this_thread::get_id();
+	}
     void AssertInLoopThread() const;
     void set_context(const Any& c) {
         context_[0] = c;
@@ -88,7 +91,8 @@ private:
 
     std::mutex mutex_;
     std::shared_ptr<PipeEventWatcher> watcher_;
-    std::vector<Functor> pending_functors_; // @Guarded By mutex_
+    //std::vector<Functor> pending_functors_; // @Guarded By mutex_
+	boost::lockfree::queue<Functor *> pending_functors_;
     bool calling_pending_functors_;
 
     std::atomic<int> pending_functor_count_;

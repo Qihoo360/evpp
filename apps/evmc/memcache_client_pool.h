@@ -2,12 +2,13 @@
 
 #include "memcache_client.h"
 #include "vbucket_config.h"
-
+#include "command.h"
+#include "memcache_client_base.h"
 namespace evmc {
 
 typedef std::map<std::string, MemcacheClientPtr> MemcClientMap;
 
-class MemcacheClientPool {
+class MemcacheClientPool : MemcacheClientBase {
 public:
     friend MemcacheClient;
 
@@ -19,41 +20,45 @@ public:
     // @param[in] thread_num - 
     // @param[in] timeout_ms - 
     // @return  - 
-    MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms)
-        : vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
-        , timeout_ms_(timeout_ms) {
+    MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms, const char * key_filter = "+")
+        : MemcacheClientBase(vbucket_conf), vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
+        , timeout_ms_(timeout_ms), key_filter_(key_filter) { 
     }
     virtual ~MemcacheClientPool();
 
     bool Start();
     void Stop(bool wait_thread_exit);
 
-    void Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, SetCallback callback);
     void Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, uint32_t flags,
              uint32_t expire, SetCallback callback);
+	inline void Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, SetCallback callback) {
+		Set(caller_loop, key, value, 0, 0, callback);
+	}
 
     void Remove(evpp::EventLoop* caller_loop, const std::string& key, RemoveCallback callback);
     void Get(evpp::EventLoop* caller_loop, const std::string& key, GetCallback callback);
     void PrefixGet(evpp::EventLoop* caller_loop, const std::string& key, PrefixGetCallback callback);
 
-    void MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback callback);
-    void MultiGet2(evpp::EventLoop* caller_loop, std::map<std::string, GetResult>* kvs, MultiGetCallback2 callback);
+    void MultiGet(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, MultiGetCallback& callback);
+	void RunBackGround(const std::function<void(void)>& fun);
+//	void MultiGetImpl(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, MultiGetCallback callback); 
 
-    void PrefixMultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, PrefixMultiGetCallback callback);
+    void PrefixMultiGet(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, PrefixMultiGetCallback callback);
+    virtual void LaunchCommand(CommandPtr& command);
 private:
     // noncopyable
     MemcacheClientPool(const MemcacheClientPool&);
     const MemcacheClientPool& operator=(const MemcacheClientPool&);
+	static void MainEventThread();
 
 private:
     void OnClientConnection(const evpp::TCPConnPtr& conn, MemcacheClientPtr memc_client);
-    void LaunchCommand(CommandPtr command);
     bool DoReloadConf();
-    MultiModeVbucketConfigPtr vbucket_config();
-
-    MemcClientMap* GetMemcClientMap(int hash);
+	inline MemcClientMap* GetMemcClientMap(evpp::EventLoop * loop) {
+		return evpp::any_cast<MemcClientMap*>(loop->context());
+	}
 private:
-    void DoLaunchCommand(CommandPtr command);
+    void DoLaunchCommand(evpp::EventLoop * loop, CommandPtr command);
 
     std::vector<MemcClientMap> memc_client_map_;
 
@@ -62,45 +67,13 @@ private:
     evpp::EventLoopThreadPool loop_pool_;
     int timeout_ms_;
 
-    // std::atomic<VbucketConfigPtr> vbucket_config_;
     MultiModeVbucketConfigPtr vbucket_config_;
-    std::mutex vbucket_config_mutex_; // TODO : use rw mutex
+    pthread_rwlock_t vbucket_config_mutex_; // TODO : use rw mutex
+	std::string key_filter_;
 
     std::atomic_int next_thread_;
 };
 
-class PrefixMultiGetCollector {
-public:
-    PrefixMultiGetCollector(evpp::EventLoop* caller_loop, int count, const PrefixMultiGetCallback& cb)
-        : caller_loop_(caller_loop), collect_counter_(count)
-		  , collect_result_(new PrefixMultiGetResult()), callback_(cb) {}
-    void Collect(const PrefixMultiGetResultPtr res) {
-		if (res->code == 0) {
-			collect_result_->code = 0; //TODO 0 是什么含义？
-		}
-		auto& collect_result_map = collect_result_->get_result_map_;
-		auto& res_result_map = res->get_result_map_;
-        LOG_DEBUG << "PrefixMultiGetCollector keysize=" << res_result_map.size();
-		for (auto it = res_result_map.begin(); it != res_result_map.end(); ++it) {
-			collect_result_map.insert(std::make_pair(it->first, it->second));
-		}
-        LOG_DEBUG << "PrefixMultiGetCollector count=" << collect_counter_;
-		if (--collect_counter_ <= 0) {
-			if (caller_loop_) {
-				caller_loop_->RunInLoop(std::bind(callback_, collect_result_));
-			} else {
-				callback_(collect_result_);
-			}
-		}
-	}
-private:
-    evpp::EventLoop* caller_loop_;
-    int collect_counter_;
-    PrefixMultiGetResultPtr collect_result_;
-    PrefixMultiGetCallback callback_;
-};
-
-typedef std::shared_ptr<PrefixMultiGetCollector> PrefixMultiGetCollectorPtr;
 }
 
 

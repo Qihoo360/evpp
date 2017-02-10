@@ -78,6 +78,10 @@ void TCPConn::Send(const Slice& message) {
 }
 
 void TCPConn::Send(const void* data, size_t len) {
+	if (loop_->IsInLoopThread()) {
+		SendInLoop(data, len);
+		return;
+	}
     Send(Slice(static_cast<const char*>(data), len));
 }
 

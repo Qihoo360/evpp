@@ -94,7 +94,7 @@ public:
     }
 
     // TODO XXX Little-Endian/Big-Endian problem.
-#define bswap_64(x)                              \
+#define evppbswap_64(x)                              \
     ((((x) & 0xff00000000000000ull) >> 56)       \
      | (((x) & 0x00ff000000000000ull) >> 40)     \
      | (((x) & 0x0000ff0000000000ull) >> 24)     \
@@ -127,7 +127,7 @@ public:
 
     // Append int64_t/int32_t/int16_t with network endian
     void AppendInt64(int64_t x) {
-        int64_t be = bswap_64(x);
+        int64_t be = evppbswap_64(x);
         Write(&be, sizeof be);
     }
 
@@ -147,7 +147,7 @@ public:
 
     // Prepend int64_t/int32_t/int16_t with network endian
     void PrependInt64(int64_t x) {
-        int64_t be = bswap_64(x);
+        int64_t be = evppbswap_64(x);
         Prepend(&be, sizeof be);
     }
 
@@ -287,7 +287,7 @@ public:
         assert(length() >= sizeof(int64_t));
         int64_t be64 = 0;
         ::memcpy(&be64, data(), sizeof be64);
-        return bswap_64(be64);
+        return evppbswap_64(be64);
     }
 
     int32_t PeekInt32() const {
