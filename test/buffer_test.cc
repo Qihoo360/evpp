@@ -51,7 +51,6 @@ TEST_UNIT(testBufferGrow1) {
     buf.Append(string(1000, 'z'));
     H_TEST_EQUAL(buf.length(), 1350);
     H_TEST_EQUAL(buf.PrependableBytes(), Buffer::kCheapPrependSize);
-    H_TEST_ASSERT(buf.WritableBytes() >= 0);
 
     buf.Reset();
     H_TEST_EQUAL(buf.length(), 0);
@@ -75,7 +74,6 @@ TEST_UNIT(testBufferGrow2) {
     buf.Append(string(1000, 'z'));
     H_TEST_EQUAL(buf.length(), 1350);
     H_TEST_EQUAL(buf.PrependableBytes(), prepend_size);
-    H_TEST_ASSERT(buf.WritableBytes() >= 0);
 
     buf.Reset();
     H_TEST_EQUAL(buf.length(), 0);
@@ -105,16 +103,14 @@ TEST_UNIT(testBufferShrink) {
     buf.Append(string(2000, 'y'));
     H_TEST_EQUAL(buf.length(), 2000);
     H_TEST_EQUAL(buf.PrependableBytes(), Buffer::kCheapPrependSize);
-    H_TEST_ASSERT(buf.WritableBytes() >= 0);
 
     buf.Retrieve(1500);
     H_TEST_EQUAL(buf.length(), 500);
     H_TEST_EQUAL(buf.PrependableBytes(), Buffer::kCheapPrependSize + 1500);
-    H_TEST_ASSERT(buf.WritableBytes() >= 0);
 
     buf.Shrink(0);
     H_TEST_EQUAL(buf.length(), 500);
-    H_TEST_EQUAL(buf.WritableBytes(), 0);
+    H_TEST_EQUAL(buf.WritableBytes(), 0UL);
     H_TEST_EQUAL(buf.NextAllString(), string(500, 'y'));
     H_TEST_EQUAL(buf.PrependableBytes(), Buffer::kCheapPrependSize);
 }
