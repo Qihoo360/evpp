@@ -7,7 +7,11 @@
 
 DEFINE_int32(pending_size , 1024 * 50, "event loop pending queue size");
 namespace evpp {
+#ifdef H_HAVE_BOOST
 EventLoop::EventLoop() : create_evbase_myself_(true), pending_functors_(FLAGS_pending_size), pending_functor_count_(0){
+#else
+EventLoop::EventLoop() : create_evbase_myself_(true), pending_functor_count_(0){
+#endif
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
     if (cfg) {
@@ -23,7 +27,11 @@ EventLoop::EventLoop() : create_evbase_myself_(true), pending_functors_(FLAGS_pe
 }
 
 EventLoop::EventLoop(struct event_base* base)
+#ifdef H_HAVE_BOOST
     : evbase_(base), create_evbase_myself_(false), pending_functors_(FLAGS_pending_size) {
+#else
+    : evbase_(base), create_evbase_myself_(false) {
+#endif
 
     Init();
 
@@ -143,11 +151,14 @@ void EventLoop::RunInLoop(const Functor& functor) {
 
 void EventLoop::QueueInLoop(const Functor& cb) {
     {
-        //std::lock_guard<std::mutex> lock(mutex_);
-        //pending_functors_.emplace_back(cb);
+#ifdef H_HAVE_BOOST
 		auto f = new Functor(cb);
 		while(!pending_functors_.push(f)) {
 		}
+#else 
+        std::lock_guard<std::mutex> lock(mutex_);
+        pending_functors_.emplace_back(cb);
+#endif
         ++pending_functor_count_;
     }
 
@@ -157,23 +168,27 @@ void EventLoop::QueueInLoop(const Functor& cb) {
 }
 
 void EventLoop::DoPendingFunctors() {
-    //std::vector<Functor> functors;
     calling_pending_functors_ = true;
 
+#ifdef H_HAVE_BOOST
 	Functor * f = NULL;
 	while (pending_functors_.pop(f)) {
 		(*f)();
 		delete f;
+		--pending_functor_count_;
 	}
-    //{
-    //    std::lock_guard<std::mutex> lock(mutex_);
-    //    functors.swap(pending_functors_);
-    //}
+#else 
+    std::vector<Functor> functors;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        functors.swap(pending_functors_);
+    }
 
-    //for (size_t i = 0; i < functors.size(); ++i) {
-    //    functors[i]();
-    //    --pending_functor_count_;
-    //}
+    for (size_t i = 0; i < functors.size(); ++i) {
+        functors[i]();
+		--pending_functor_count_;
+    }
+#endif
 
     calling_pending_functors_ = false;
 }
