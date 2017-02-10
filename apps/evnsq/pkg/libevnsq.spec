@@ -67,6 +67,7 @@ mkdir -p %{buildroot}/%{libpath}
 pushd %{_builddir}/apps/evnsq
 
 cp libevnsq.a          %{buildroot}/%{libpath}
+cp libevnsq.so          %{buildroot}/%{libpath}
 popd
 
 #devel files
