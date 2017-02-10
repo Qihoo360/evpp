@@ -7,14 +7,11 @@ AR=ar
 ARFLAGS=cru
 CURRENT_DIR=$(shell echo `pwd`)
 SOURCE_DIR=$(CURRENT_DIR)
-
-
 DEBUG := -D_DEBUG
-
-CFLAGS=$(TOP_CFLAGS) -g -c -fPIC $(DEBUG) \
-	   -Wall -Wno-unused-parameter -Wno-unused-function -Wunused-variable -Wunused-value \
+CFLAGS=$(TOP_CFLAGS) -c -fPIC \
+	   -O3 -Wall -Wno-unused-parameter -Wno-unused-function -Wunused-variable -Wunused-value \
 	   -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings -Wsign-compare \
-	   -Winvalid-pch -fms-extensions -Wfloat-equal -Wextra -std=c++11 \
+	   -Winvalid-pch -fms-extensions -Wfloat-equal -Wextra -std=c++11 -DGOOGLE_STRIP_LOG=2 \
 	   -I .. -I ../include -MMD
 CPPFLAGS= $(CFLAGS) -Woverloaded-virtual -Wsign-promo -fno-gnu-keywords
 
