@@ -12,52 +12,47 @@
 #include "evpp/event_loop_thread_pool.h"
 
 #include "command.h"
+#include "memcache_client_base.h"
 
 namespace evmc {
 class BinaryCodec;
-class MemcacheClientPool;
+class MemcacheClientBase;
 
 class MemcacheClient : public std::enable_shared_from_this<MemcacheClient> {
 public:
-    MemcacheClient(evpp::EventLoop* evloop, evpp::TCPClient* tcp_client, MemcacheClientPool* mcpool = NULL, int timeout_ms = 249)
+    MemcacheClient(evpp::EventLoop* evloop, evpp::TCPClient* tcp_client, MemcacheClientBase* mcpool = NULL, const int timeout_ms = 249)
         : id_seq_(0), exec_loop_(evloop), tcp_client_(tcp_client)
-        , mc_pool_(mcpool), timeout_(timeout_ms / 1000.0), codec_(NULL) {
+        , mc_pool_(mcpool), timeout_(timeout_ms / 1000.0), codec_(NULL), timer_canceled_(true) {
     }
     virtual ~MemcacheClient();
 
-    evpp::EventLoop* exec_loop() const {
+    inline evpp::EventLoop* exec_loop() const {
         return exec_loop_;
     }
 
-    void PushRunningCommand(CommandPtr cmd);
+    void PushRunningCommand(CommandPtr& cmd);
 
     CommandPtr PopRunningCommand();
-    CommandPtr peek_running_command() {
-        if (running_command_.empty()) {
+    CommandPtr PeekRunningCommand() {
+        if (UNLIKELY(running_command_.empty())) {
             return CommandPtr();
         }
-
         return CommandPtr(running_command_.front());
     }
 
-    void push_waiting_command(CommandPtr cmd) {
-        if (cmd) {
-            cmd->set_id(next_id());
+    inline void PushWaitingCommand(CommandPtr& cmd) {
+        if (LIKELY(cmd)) {
             waiting_command_.push(cmd);
         }
     }
-    CommandPtr pop_waiting_command();
 
-    evpp::TCPConnPtr conn() const {
+    CommandPtr PopWaitingCommand();
+
+    inline evpp::TCPConnPtr conn() const {
         return tcp_client_->conn();
     }
-    uint32_t next_id() {
+    inline uint32_t next_id() {
         return ++id_seq_;
-    }
-
-    void EmbededGet(const char* key, GetCallback callback) {
-        //CommandPtr command(new GetCommand(evpp::EventLoop*(), key, callback));
-        //command->Launch(this);
     }
 
     void OnResponseData(const evpp::TCPConnPtr& tcp_conn,
@@ -70,18 +65,18 @@ private:
     MemcacheClient(const MemcacheClient&);
     const MemcacheClient& operator=(const MemcacheClient&);
 private:
-    // std::atomic_uint id_seq_;
     uint32_t id_seq_;
 
     evpp::EventLoop* exec_loop_;
     evpp::TCPClient* tcp_client_;
-    MemcacheClientPool* mc_pool_;
+    MemcacheClientBase* mc_pool_;
     evpp::Duration timeout_;
 
-    // TimerEventPtr cmd_timer_;
     evpp::InvokeTimerPtr cmd_timer_;
+    evpp::InvokeTimerPtr cmd_timer_bakup_;
 
     BinaryCodec* codec_;
+	bool  timer_canceled_;
 
     std::queue<CommandPtr> running_command_;
     std::queue<CommandPtr> waiting_command_;
