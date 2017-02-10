@@ -37,7 +37,7 @@ prepare: clean-build clean-rpm
 	ln -s $(MEMCACHE_DIR) $(TEMP_DIR)/$(DEPEND_PROJ)/memcached
 	ln -s $(JSON_DIR) $(TEMP_DIR)/$(DEPEND_PROJ)/rapidjson
 	$(MAKE) clean -C $(ROOT_DIR)
-	tar zchf $(TEMP_DIR)/$(SRC) --exclude "*.tar.gz" --exclude "*.d" --exclude "*.o" --exclude install --exclude bin --exclude "*.so" --exclude "*.a" --exclude "*.rpm" -C $(TEMP_DIR)  evpp apps  $(DEPEND_PROJ) rpm build.mk
+	tar zchf $(TEMP_DIR)/$(SRC) --exclude "*.tar.gz" --exclude "*.d" --exclude "*.o" --exclude install --exclude bin --exclude "*.so" --exclude "*.a" --exclude "*.rpm" -C $(TEMP_DIR)  evpp apps  $(DEPEND_PROJ) rpm build.mk 
 	mkdir -p build/{BUILD,RPMS,SRPMS,SPECS,SOURCES}
 	mv $(TEMP_DIR)/$(SRC) build/SOURCES/
 
