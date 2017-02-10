@@ -5,8 +5,9 @@
 #include "evpp/event_loop.h"
 #include "evpp/invoke_timer.h"
 
+DEFINE_int32(pending_size , 1024 * 50, "event loop pending queue size");
 namespace evpp {
-EventLoop::EventLoop() : create_evbase_myself_(true), pending_functor_count_(0) {
+EventLoop::EventLoop() : create_evbase_myself_(true), pending_functors_(FLAGS_pending_size), pending_functor_count_(0){
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
     if (cfg) {
@@ -22,7 +23,7 @@ EventLoop::EventLoop() : create_evbase_myself_(true), pending_functor_count_(0) 
 }
 
 EventLoop::EventLoop(struct event_base* base)
-    : evbase_(base), create_evbase_myself_(false) {
+    : evbase_(base), create_evbase_myself_(false), pending_functors_(FLAGS_pending_size) {
 
     Init();
 
@@ -82,10 +83,6 @@ void EventLoop::Run() {
     LOG_TRACE << "EventLoop stopped, tid: " << std::this_thread::get_id();
 }
 
-bool EventLoop::IsInLoopThread() const {
-    std::thread::id cur_tid = std::this_thread::get_id();
-    return cur_tid == tid_;
-}
 
 void EventLoop::Stop() {
     assert(running_);
@@ -146,8 +143,11 @@ void EventLoop::RunInLoop(const Functor& functor) {
 
 void EventLoop::QueueInLoop(const Functor& cb) {
     {
-        std::lock_guard<std::mutex> lock(mutex_);
-        pending_functors_.push_back(cb);
+        //std::lock_guard<std::mutex> lock(mutex_);
+        //pending_functors_.emplace_back(cb);
+		auto f = new Functor(cb);
+		while(!pending_functors_.push(f)) {
+		}
         ++pending_functor_count_;
     }
 
@@ -157,18 +157,23 @@ void EventLoop::QueueInLoop(const Functor& cb) {
 }
 
 void EventLoop::DoPendingFunctors() {
-    std::vector<Functor> functors;
+    //std::vector<Functor> functors;
     calling_pending_functors_ = true;
 
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        functors.swap(pending_functors_);
-    }
+	Functor * f = NULL;
+	while (pending_functors_.pop(f)) {
+		(*f)();
+		delete f;
+	}
+    //{
+    //    std::lock_guard<std::mutex> lock(mutex_);
+    //    functors.swap(pending_functors_);
+    //}
 
-    for (size_t i = 0; i < functors.size(); ++i) {
-        functors[i]();
-        --pending_functor_count_;
-    }
+    //for (size_t i = 0; i < functors.size(); ++i) {
+    //    functors[i]();
+    //    --pending_functor_count_;
+    //}
 
     calling_pending_functors_ = false;
 }
