@@ -1,5 +1,46 @@
 cmake_minimum_required(VERSION 2.8)
-project(evpp CXX)
+
+set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include (utils)
+
+# ----------------------------------------------------------------------------
+# package information
+set (PACKAGE_NAME        "evpp")
+set (PACKAGE_VERSION     "1.0.0")
+set (PACKAGE_STRING      "${PACKAGE_NAME} ${PACKAGE_VERSION}")
+set (PACKAGE_TARNAME     "${PACKAGE_NAME}-${PACKAGE_VERSION}")
+set (PACKAGE_BUGREPORT   "https://github.com/Qihoo360/evpp/issues")
+set (PACKAGE_DESCRIPTION "evpp is a modern C++ network library for developing high performance network servers in TCP/UDP/HTTP protocols.")
+set (PACKAGE_URL         "http://github.com/Qihoo360/evpp")
+
+project (${PACKAGE_NAME} CXX)
+if (CMAKE_VERSION VERSION_LESS 100)
+  # C language still needed because the following required CMake modules
+  # (or their dependencies, respectively) are not correctly handling
+  # the case where only CXX is enabled.
+  # - CheckTypeSize.cmake (fixed in CMake 3.1, cf. http://www.cmake.org/Bug/view.php?id=14056)
+  # - FindThreads.cmake (--> CheckIncludeFiles.cmake <--)
+  enable_language (C)
+endif ()
+
+version_numbers (
+  ${PACKAGE_VERSION}
+    PACKAGE_VERSION_MAJOR
+    PACKAGE_VERSION_MINOR
+    PACKAGE_VERSION_PATCH
+)
+set (PACKAGE_SOVERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}")
+
+include (CPack)
+include (CTest)
+
+
+
+
+
+
+
+project(${PACKAGE_NAME} CXX)
 
 set(CXX_FLAGS
     -g
@@ -30,3 +71,16 @@ message(STATUS "CXX_FLAGS " ${CXX_FLAGS})
 
 add_subdirectory(evpp lib)
 add_subdirectory(test bin)
+
+
+
+
+#install (
+#  TARGETS evpp ${PACKAGE_NAME}
+#  #EXPORT ${PACKAGE_NAME} 
+#  #RUNTIME DESTINATION bin
+#  #PUBLIC_HEADER DESTINATION include/glog
+#  LIBRARY DESTINATION lib
+#  ARCHIVE DESTINATION lib)
+
+
