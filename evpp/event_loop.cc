@@ -5,13 +5,13 @@
 #include "evpp/event_loop.h"
 #include "evpp/invoke_timer.h"
 
-DEFINE_int32(pending_size , 1024 * 50, "event loop pending queue size");
-namespace evpp {
 #ifdef H_HAVE_BOOST
-EventLoop::EventLoop() : create_evbase_myself_(true), pending_functors_(FLAGS_pending_size), pending_functor_count_(0){
-#else
-EventLoop::EventLoop() : create_evbase_myself_(true), pending_functor_count_(0){
+#include <boost/lockfree/queue.hpp>
 #endif
+
+namespace evpp {
+EventLoop::EventLoop() 
+    : create_evbase_myself_(true), pending_functor_count_(0){
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
     if (cfg) {
@@ -27,11 +27,7 @@ EventLoop::EventLoop() : create_evbase_myself_(true), pending_functor_count_(0){
 }
 
 EventLoop::EventLoop(struct event_base* base)
-#ifdef H_HAVE_BOOST
-    : evbase_(base), create_evbase_myself_(false), pending_functors_(FLAGS_pending_size) {
-#else
     : evbase_(base), create_evbase_myself_(false) {
-#endif
 
     Init();
 
@@ -61,9 +57,19 @@ EventLoop::~EventLoop() {
         event_base_free(evbase_);
         evbase_ = NULL;
     }
+
+    delete pending_functors_;
+    pending_functors_ = NULL;
 }
 
 void EventLoop::Init() {
+#ifdef H_HAVE_BOOST
+    enum { kPendingFunctorCount = 1024 * 16 }
+    pending_functors_ = new boost::lockfree::queue<Functor*>(kPendingFunctorCount);
+#else
+    pending_functors_ = new std::vector<Functor>();
+#endif
+
     running_ = false;
     tid_ = std::this_thread::get_id(); // The default thread id
     calling_pending_functors_ = false;
@@ -105,7 +111,7 @@ void EventLoop::StopInLoop() {
 
         std::lock_guard<std::mutex> lock(mutex_);
 
-        if (pending_functors_.empty()) {
+        if (pending_functors_->empty()) {
             break;
         }
     }
@@ -153,14 +159,14 @@ void EventLoop::QueueInLoop(const Functor& cb) {
     {
 #ifdef H_HAVE_BOOST
 		auto f = new Functor(cb);
-		while(!pending_functors_.push(f)) {
+		while(!pending_functors_->push(f)) {
 		}
 #else 
         std::lock_guard<std::mutex> lock(mutex_);
-        pending_functors_.emplace_back(cb);
+        pending_functors_->emplace_back(cb);
 #endif
-        ++pending_functor_count_;
     }
+    ++pending_functor_count_;
 
     if (calling_pending_functors_ || !IsInLoopThread()) {
         watcher_->Notify();
@@ -172,7 +178,7 @@ void EventLoop::DoPendingFunctors() {
 
 #ifdef H_HAVE_BOOST
 	Functor * f = NULL;
-	while (pending_functors_.pop(f)) {
+	while (pending_functors_->pop(f)) {
 		(*f)();
 		delete f;
 		--pending_functor_count_;
@@ -181,7 +187,7 @@ void EventLoop::DoPendingFunctors() {
     std::vector<Functor> functors;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        functors.swap(pending_functors_);
+        pending_functors_->swap(functors);
     }
 
     for (size_t i = 0; i < functors.size(); ++i) {
