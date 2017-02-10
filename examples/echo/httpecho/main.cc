@@ -53,7 +53,8 @@ int main(int argc, char* argv[]) {
     server.SetThreadDispatchPolicy(evpp::ThreadDispatchPolicy::kIPAddressHashing);
     server.RegisterDefaultHandler(&DefaultHandler);
     server.RegisterHandler("/echo", &RequestHandler);
-    server.Start(ports);
+    server.Init(ports);
+    server.Start();
     while (!server.IsStopped()) {
         usleep(1);
     }
