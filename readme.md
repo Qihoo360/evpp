@@ -15,7 +15,7 @@ evpp
 1. Thread pool
 1. Timer
 
-# Quick Start
+# Getting Started
 
 Please see [Quick Start](quick_start.md)
 
