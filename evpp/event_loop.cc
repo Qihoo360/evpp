@@ -5,10 +5,6 @@
 #include "evpp/event_loop.h"
 #include "evpp/invoke_timer.h"
 
-#ifdef H_HAVE_BOOST
-#include <boost/lockfree/queue.hpp>
-#endif
-
 namespace evpp {
 EventLoop::EventLoop() 
     : create_evbase_myself_(true), pending_functor_count_(0){
@@ -64,10 +60,10 @@ EventLoop::~EventLoop() {
 
 void EventLoop::Init() {
 #ifdef H_HAVE_BOOST
-    enum { kPendingFunctorCount = 1024 * 16 }
-    pending_functors_ = new boost::lockfree::queue<Functor*>(kPendingFunctorCount);
+    enum { kPendingFunctorCount = 1024 * 16 };
+    this->pending_functors_ = new boost::lockfree::queue<Functor*>(kPendingFunctorCount);
 #else
-    pending_functors_ = new std::vector<Functor>();
+    this->pending_functors_ = new std::vector<Functor>();
 #endif
 
     running_ = false;
