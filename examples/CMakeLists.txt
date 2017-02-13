@@ -8,13 +8,13 @@
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/3rdparty)
 link_directories(${PROJECT_SOURCE_DIR}/3rdparty/libevent-release-2.1.7-rc/build/lib/Debug/
 				 ${PROJECT_SOURCE_DIR}/msvc/bin/Debug/
-				${PROJECT_SOURCE_DIR}/build/lib/Debug/)
-				 
+				 ${PROJECT_SOURCE_DIR}/build/lib/Debug/)
+
 
 if (UNIX)
 set(LIBRARIES evpp event glog pthread)
 else(UNIX)
-set(LIBRARIES evpp_static event glog_static)
+set(LIBRARIES evpp_static event libglog_static)
 endif(UNIX)
 
 add_executable(example_httpecho echo/httpecho/main.cc)
