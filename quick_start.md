@@ -61,6 +61,14 @@ Go to `evpp/3rdparty/libevent-release-2.1.7-rc`
 	$ cp -rf libevent-release-2.1.7-rc/include/event2 wininclude/
 	$ cp -rf libevent-release-2.1.7-rc/build/include/event2/event-config.h wininclude/event2
 
+Go to `evpp/3rdparty/glog-0.3.4`
+	$ cd evpp/3rdparty/glog-0.3.4
+	$ start google-glog.sln
+	... # here you can Visual Studio 2015 to compile the libglog_static project in debug and release mode.
+	$ cd ..
+	$ cp glog-0.3.4/Debug/*.* ../msvc/bin/Debug
+	$ cp glog-0.3.4/Release/*.* ../msvc/bin/Release
+
 Note: We have modified the source code of libevent-release-2.1.7-rc as bellow:
 	libevent-release-2.1.7-rc/CMakeList.txt : Add 'set(EVENT__DISABLE_OPENSSL 1)' to disable OPENSSL support
 	libevent-release-2.1.7-rc/cmake/VersionViaGit.cmake : Comments '#find_package(Git)' and '#include(FindGit)'
