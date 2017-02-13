@@ -3,7 +3,7 @@
 #include "platform_config.h"
 
 #ifdef H_OS_WINDOWS
-H_LINK_LIB("libevpp")
+H_LINK_LIB("evpp")
 H_LINK_LIB("libglog_static")
 H_LINK_LIB("Ws2_32")
 H_LINK_LIB("event")
