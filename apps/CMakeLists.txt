@@ -1,6 +1,6 @@
 
 if (UNIX)
-set(LIBRARIES evpp_static event glog pthread)
+set(LIBRARIES evpp event glog pthread)
 include_directories(${PROJECT_SOURCE_DIR}/apps)
 else(UNIX)
 set(LIBRARIES evpp_static event libglog_static)
@@ -12,7 +12,7 @@ endif(UNIX)
 #----------------------------------------
 # evnsq
 file(GLOB evnsq_SRCS evnsq/*.cc evnsq/*.h)
-message(STATUS "evnsq_SRCS : " ${evnsq_SRCS})
+file(GLOB evnsq_PUBLIC_HEADERS evnsq/*.h)
 
 add_library(evnsq SHARED ${evnsq_SRCS})
 target_link_libraries(evnsq ${LIBRARIES})
@@ -29,8 +29,10 @@ target_link_libraries(evnsq_tail evnsq_static ${LIBRARIES})
 #----------------------------------------
 # evmc
 set(CMAKE_C_FLAGS -std=gnu99)
-file(GLOB evmc_SRCS evmc/*.cc evmc/*.h ${PROJECT_SOURCE_DIR}/3rdparty/libhashkit/*.c)
-message(STATUS "evmc_SRCS : " ${evmc_SRCS})
+file(GLOB evmc_SRCS evmc/*.cc
+                    evmc/*.h
+                    ${PROJECT_SOURCE_DIR}/3rdparty/libhashkit/*.c)
+file(GLOB evmc_PUBLIC_HEADERS evmc/*.h)
 
 add_library(evmc SHARED ${evmc_SRCS})
 target_link_libraries(evmc ${LIBRARIES})
@@ -41,3 +43,14 @@ target_link_libraries(evmc_static ${LIBRARIES})
 add_executable(evmc_test evmc/test/mcpool_test.cc)
 target_link_libraries(evmc_test evmc_static ${LIBRARIES})
 
+
+
+#----------------------------------------
+# install
+install (
+  TARGETS evnsq evnsq_static evmc evmc_static
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+
+install (FILES ${evmc_PUBLIC_HEADERS} DESTINATION "include/evmc")
+install (FILES ${evnsq_PUBLIC_HEADERS} DESTINATION "include/evnsq")
