@@ -44,7 +44,8 @@ int main(int argc, char* argv[]) {
     evpp::udp::Server server;
     server.SetThreadDispatchPolicy(evpp::ThreadDispatchPolicy::kIPAddressHashing);
     server.SetMessageHandler(&DefaultHandler);
-    server.Start(ports);
+    server.Init(ports);
+    server.Start();
 
     evpp::EventLoop base_loop;
     std::shared_ptr<evpp::EventLoopThreadPool> tpool(new evpp::EventLoopThreadPool(&base_loop, thread_num));
