@@ -62,7 +62,8 @@ set(CXX_FLAGS
     -std=c++11
     -DGOOGLE_STRIP_LOG=2
 )
-include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}
+					${PROJECT_SOURCE_DIR}/3rdparty)
 else(UNIX)
 set(CXX_FLAGS -DWIN32 -D_WIN32 -EHsc)
 include_directories(${PROJECT_SOURCE_DIR}
@@ -82,6 +83,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 add_subdirectory(evpp)
+add_subdirectory(apps)
 add_subdirectory(test)
 add_subdirectory(examples)
 
