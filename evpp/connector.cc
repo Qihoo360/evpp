@@ -137,6 +137,7 @@ void Connector::HandleError() {
     if (chan_) {
         chan_->DisableAllEvent();
         chan_->Close();
+		EVUTIL_CLOSESOCKET(chan_->fd());
     }
 
     timer_->Cancel();
