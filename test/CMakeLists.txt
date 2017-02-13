@@ -15,7 +15,7 @@ add_executable(evpp_unittest ${evpp_unittest_SRCS})
 
 if (UNIX)
 target_link_libraries(evpp_unittest evpp event glog pthread)
-else(UNIX)
+else (UNIX)
 target_link_libraries(evpp_unittest evpp_static event libglog_static)
-endif(UNIX)
+endif (UNIX)
 
