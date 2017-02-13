@@ -2,6 +2,7 @@
 #include "vbucket_config.h"
 #include "evpp/event_loop_thread_pool.h"
 #include "likely.h"
+#include <mutex>
 
 namespace evmc {
 
@@ -10,7 +11,6 @@ MemcacheClientBase::~MemcacheClientBase() {
 	delete load_thread_;
 	delete vbconf_1_;
 	delete vbconf_2_;
-	pthread_rwlock_destroy(&vbucket_config_mutex_);
 }
 
 void MemcacheClientBase::Stop() {
@@ -34,9 +34,8 @@ void MemcacheClientBase::DoReloadConf() {
 		bool success = vbconf->Load(vbucket_conf_.c_str());
 
 		if (success) {
-            pthread_rwlock_wrlock(&vbucket_config_mutex_);
+			std::lock_guard<std::mutex> lck(vbucket_config_mutex_);
             vbconf_cur_ = vbconf;
-            pthread_rwlock_unlock(&vbucket_config_mutex_);
 			LOG_DEBUG << "DoReloadConf load ok, file=" << vbucket_conf_;
         } else {
 			LOG_WARN << "DoReloadConf load err, file=" << vbucket_conf_;
@@ -46,9 +45,8 @@ void MemcacheClientBase::DoReloadConf() {
 
 
 MultiModeVbucketConfig*  MemcacheClientBase::vbucket_config() {
-    pthread_rwlock_rdlock(&vbucket_config_mutex_);
+	std::lock_guard<std::mutex> lck(vbucket_config_mutex_);
 	auto ret = vbconf_cur_; 
-    pthread_rwlock_unlock(&vbucket_config_mutex_);
     return ret;
 }
 
@@ -75,7 +73,6 @@ void MemcacheClientBase::BuilderMemClient(evpp::EventLoop * loop, std::string & 
 
 MemcacheClientBase::MemcacheClientBase(const char * vbucket_conf): vbucket_conf_(vbucket_conf), load_loop_(NULL)
 		,load_thread_(NULL), vbconf_cur_(NULL), vbconf_1_(new MultiModeVbucketConfig()), vbconf_2_(new MultiModeVbucketConfig()) {
-			pthread_rwlock_init(&vbucket_config_mutex_, NULL);
 			assert(vbconf_1_);
 			assert(vbconf_2_);
 		}
