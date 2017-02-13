@@ -1,5 +1,8 @@
 
 file(GLOB evpp_SRCS *.cc */*.cc *.h */*.h)
+file(GLOB evpp_PUBLIC_HEADERS *.h)
+file(GLOB evpp_HTTP_PUBLIC_HEADERS http/*.h)
+file(GLOB evpp_UDP_PUBLIC_HEADERS udp/*.h)
 
 message(STATUS "evpp_SRCS : " ${evpp_SRCS})
 
@@ -16,4 +19,17 @@ target_link_libraries(evpp        event libglog_static)
 target_link_libraries(evpp_static event libglog_static)
 endif (UNIX)
 
+
+install (
+  TARGETS evpp evpp_static
+  EXPORT ${PACKAGE_NAME}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+
+#install (FILES listener.h tcp_conn.h DESTINATION "include/evpp")
+
+install (FILES ${evpp_PUBLIC_HEADERS} DESTINATION "include/evpp")
+install (FILES ${evpp_HTTP_PUBLIC_HEADERS} DESTINATION "include/evpp/http")
+install (FILES ${evpp_UDP_PUBLIC_HEADERS} DESTINATION "include/evpp/udp")
 
