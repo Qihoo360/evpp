@@ -1,12 +1,7 @@
 
-set(evpp_DEPENDENT_LIBRARY )
-
 file(GLOB evpp_SRCS *.cc */*.cc *.h */*.h)
 
 message(STATUS "evpp_SRCS : " ${evpp_SRCS})
-
-link_directories(${PROJECT_SOURCE_DIR}/3rdparty/libevent-release-2.1.7-rc/build/lib/Debug/
-				 ${PROJECT_SOURCE_DIR}/build/lib/Debug/)
 
 include_directories(${PROJECT_SOURCE_DIR})
 
