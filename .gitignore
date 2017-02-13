@@ -32,10 +32,14 @@ test/evpp-test
 examples/echo/*/simple_echo
 examples/pingpong/client/pingpong_client
 examples/pingpong/server/pingpong_server
+
 core.*
+
 *.out
 
 *.orig
+
+build
 
 apps/evnsq/evnsqtail/evnsqtail
 apps/evnsq/test/evnsqtest
@@ -48,6 +52,25 @@ apps/evnsq/test/evnsqtest
 3rdparty/libevent-release-2.1.7-rc/build/
 3rdparty/libevent-release-2.1.7-rc/*.dir/
 3rdparty/wininclude/event2/
+3rdparty/glog-0.3.4/Backup/
+3rdparty/glog-0.3.4/Debug/
+3rdparty/glog-0.3.4/Release/
+3rdparty/glog-0.3.4/UpgradeLog.htm
+3rdparty/glog-0.3.4/google-glog.VC.db
+3rdparty/glog-0.3.4/vsprojects/libglog/libglog.vcxproj
+3rdparty/glog-0.3.4/vsprojects/libglog/libglog.vcxproj.filters
+3rdparty/glog-0.3.4/vsprojects/libglog_static/Debug/
+3rdparty/glog-0.3.4/vsprojects/libglog_static/Release/
+3rdparty/glog-0.3.4/vsprojects/libglog_static/libglog_static.vcxproj
+3rdparty/glog-0.3.4/vsprojects/libglog_static/libglog_static.vcxproj.filters
+3rdparty/glog-0.3.4/vsprojects/logging_unittest/logging_unittest.vcxproj
+3rdparty/glog-0.3.4/vsprojects/logging_unittest/logging_unittest.vcxproj.filters
+3rdparty/glog-0.3.4/vsprojects/logging_unittest_static/logging_unittest_static.vcxproj
+3rdparty/glog-0.3.4/vsprojects/logging_unittest_static/logging_unittest_static.vcxproj.filters
+3rdparty/glog-0.3.4/.vs/
+3rdparty/glog-0.3.4/Backup1/
+3rdparty/glog-0.3.4/UpgradeLog2.htm
+
 
 evpp/libevpp.so.1
 evpp/libevpp.so.1.0
