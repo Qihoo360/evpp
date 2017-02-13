@@ -18,7 +18,7 @@ void BinaryCodec::OnCodecMessage(const evpp::TCPConnPtr& conn,
         resp.response.keylen  = ntohs(resp.response.keylen);
 
 
-        if (resp.response.bodylen < 0) {
+        if (resp.response.bodylen < 0) { // TODO FIXME : warning: comparison of unsigned expression < 0 is always false [-Wtype-limits]
             LOG_ERROR << "Invalid length " << resp.response.bodylen;
             conn->Close();
             break;
