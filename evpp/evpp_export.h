@@ -11,18 +11,18 @@
 #endif
 
 //! Module symbol export
-#ifdef H_WINDOWS_API
-#   ifndef  H_STATIC_LIB_EVPP
-#       ifdef  H_EVPP_EXPORTS
-#           define EVPP_EXPORT __declspec(dllexport)
-#       else
-#           define EVPP_EXPORT __declspec(dllimport)
-#       endif
-#   else
-#       define EVPP_EXPORT
-#   endif
-#else
-#   define EVPP_EXPORT
-#endif
+// #ifdef H_WINDOWS_API
+// #   ifndef  H_STATIC_LIB_EVPP
+// #       ifdef  evpp_EXPORTS
+// #           define EVPP_EXPORT __declspec(dllexport)
+// #       else
+// #           define EVPP_EXPORT __declspec(dllimport)
+// #       endif
+// #   else
+// #       define EVPP_EXPORT
+// #   endif
+// #else
+// #   define EVPP_EXPORT
+// #endif
 
-
+#define EVPP_EXPORT
