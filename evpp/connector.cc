@@ -135,6 +135,7 @@ void Connector::HandleError() {
     status_ = kDisconnected;
 
     if (chan_) {
+        assert(fd_ > 0);
         chan_->DisableAllEvent();
         chan_->Close();
 		EVUTIL_CLOSESOCKET(chan_->fd());
@@ -144,6 +145,13 @@ void Connector::HandleError() {
 
     if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
         conn_fn_(-1, "");
+    }
+
+    if (fd_ > 0) {
+        LOG_TRACE << "Connector::HandleError close(" << fd_ << ")";
+        assert(own_fd_);
+        EVUTIL_CLOSESOCKET(fd_);
+        fd_ = INVALID_SOCKET;
     }
 
     if (owner_tcp_client_->auto_reconnect()) {

@@ -17,7 +17,6 @@ void BinaryCodec::OnCodecMessage(const evpp::TCPConnPtr& conn,
         resp.response.status  = ntohs(resp.response.status);
         resp.response.keylen  = ntohs(resp.response.keylen);
 
-
         if (buf->size() >= resp.response.bodylen + kHeaderLen) {
             OnResponsePacket(resp, buf);
         } else {
