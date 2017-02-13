@@ -11,9 +11,9 @@ add_library(evpp_static STATIC ${evpp_SRCS})
 if (UNIX)
 target_link_libraries(evpp        event glog pthread)
 target_link_libraries(evpp_static event glog pthread)
-else(UNIX)
+else (UNIX)
 target_link_libraries(evpp        event libglog_static)
 target_link_libraries(evpp_static event libglog_static)
-endif(UNIX)
+endif (UNIX)
 
 
