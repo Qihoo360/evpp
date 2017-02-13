@@ -4,7 +4,7 @@
 #include "evnsq_export.h"
 #include "consumer.h"
 
-#ifdef H_OS_WINDOWS
-H_LINK_LIB("libevnsq")
-#endif
+// #ifdef H_OS_WINDOWS
+// H_LINK_LIB("libevnsq")
+// #endif
 
