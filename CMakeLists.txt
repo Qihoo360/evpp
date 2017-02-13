@@ -38,8 +38,6 @@ include (CTest)
 
 
 
-
-
 project(${PACKAGE_NAME} CXX)
 
 if (UNIX)
@@ -64,7 +62,6 @@ set(CXX_FLAGS
     -std=c++11
     -DGOOGLE_STRIP_LOG=2
 )
-<<<<<<< HEAD
 include_directories(${PROJECT_SOURCE_DIR})
 else(UNIX)
 set(CXX_FLAGS -DWIN32 -D_WIN32 -EHsc)
@@ -81,8 +78,12 @@ message(STATUS "This is BINARY dir " ${PROJECT_BINARY_DIR})
 message(STATUS "This is SOURCE dir " ${PROJECT_SOURCE_DIR})
 message(STATUS "CXX_FLAGS " ${CXX_FLAGS})
 
-add_subdirectory(evpp lib)
-add_subdirectory(test bin)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+
+add_subdirectory(evpp)
+add_subdirectory(test)
+add_subdirectory(examples)
 
 
 
