@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 project(safe-evpp C CXX)
 
+include_directories(${PROJECT_SOURCE_DIR}
+					${PROJECT_SOURCE_DIR}/3rdparty)
+
 if (UNIX)
 set(CXX_FLAGS
     -g
@@ -24,12 +27,9 @@ set(CXX_FLAGS
     -std=c++11
     -DGOOGLE_STRIP_LOG=2
 )
-include_directories(${PROJECT_SOURCE_DIR}
-					${PROJECT_SOURCE_DIR}/3rdparty)
 else(UNIX)
 set(CXX_FLAGS -DWIN32 -D_WIN32 -EHsc)
-include_directories(${PROJECT_SOURCE_DIR}
-					${PROJECT_SOURCE_DIR}/3rdparty/libevent-release-2.1.7-rc/include
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty/libevent-release-2.1.7-rc/include
 					${PROJECT_SOURCE_DIR}/3rdparty/libevent-release-2.1.7-rc/build/include
                     ${PROJECT_SOURCE_DIR}/3rdparty/glog-0.3.4/src/windows
                     ${PROJECT_SOURCE_DIR}/3rdparty/wininclude)
