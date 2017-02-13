@@ -1,6 +1,4 @@
 
-set(evpp_DEPENDENT_LIBRARY )
-
 file(GLOB evpp_SRCS *.cc */*.cc *.h */*.h)
 
 message(STATUS "evpp_SRCS : " ${evpp_SRCS})
