@@ -17,12 +17,7 @@ void BinaryCodec::OnCodecMessage(const evpp::TCPConnPtr& conn,
         resp.response.status  = ntohs(resp.response.status);
         resp.response.keylen  = ntohs(resp.response.keylen);
 
-
-        if (resp.response.bodylen < 0) { // TODO FIXME : warning: comparison of unsigned expression < 0 is always false [-Wtype-limits]
-            LOG_ERROR << "Invalid length " << resp.response.bodylen;
-            conn->Close();
-            break;
-        } else if (buf->size() >= resp.response.bodylen + kHeaderLen) {
+        if (buf->size() >= resp.response.bodylen + kHeaderLen) {
             OnResponsePacket(resp, buf);
         } else {
             LOG_TRACE << "need recv more data";
