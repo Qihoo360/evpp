@@ -130,7 +130,7 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, std::vector<std:
 			serverid_table[server_id] = vbconf->SelectServerId(vbucket, BAD_SERVER_ID);
 		}
 		server_id = serverid_table[server_id];
-		//server_id = vbconf->SelectServerId(vbucket, BAD_SERVER_ID);
+
 		auto& item = serverid_keys[server_id];
         item.keys.emplace_back(key);
         item.vbuckets.emplace_back(vbucket);
@@ -141,7 +141,6 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, std::vector<std:
 	auto& serverid_keys_d = handler->get_serverid_keys();
     for(auto& it : serverid_keys_d) {
 		server_id = it.first;
-		//LOG_ERROR << server_id << " size:" << it.second.vbuckets.size();
 		CommandPtr command = std::make_shared<MultiGetCommand>(caller_loop, server_id, handler);
 		command->set_server_id(server_id);
 		LaunchCommand(command);
