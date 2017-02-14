@@ -3,6 +3,7 @@
 #include <map>
 #include "evpp/event_loop_thread_pool.h"
 #include "memcache_client.h"
+#include <mutex>
 namespace evmc {
 	class MemcacheClientBase {
 		public:
@@ -24,6 +25,6 @@ namespace evmc {
 			evpp::EventLoop*  load_loop_;
 			std::thread* load_thread_;
 			MultiModeVbucketConfig* vbconf_cur_, *vbconf_1_, *vbconf_2_;
-			pthread_rwlock_t vbucket_config_mutex_;
+			std::mutex vbucket_config_mutex_;
 	};
 }
