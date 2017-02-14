@@ -19,3 +19,4 @@ else (UNIX)
 target_link_libraries(evpp_unittest evpp_static event libglog_static)
 endif (UNIX)
 
+add_test(NAME evpp_unittest COMMAND evpp_unittest)

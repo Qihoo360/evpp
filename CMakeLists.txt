@@ -89,4 +89,4 @@ set (CPACK_GENERATOR "RPM;TGZ")
 set (CPACK_PACKAGING_INSTALL_PREFIX "/home/s/safe")
 
 include (CPack)
-
+include (CTest)
