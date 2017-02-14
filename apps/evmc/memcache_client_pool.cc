@@ -200,18 +200,18 @@ void MemcacheClientPool::LaunchCommand(CommandPtr& command) {
 void MemcacheClientPool::DoLaunchCommand(evpp::EventLoop * loop, CommandPtr command) {
     MultiModeVbucketConfig* vbconf = vbucket_config();
 
+	uint16_t server_id = command->server_id();
 	if (UNLIKELY(!command->ShouldRetry())) { //重试 需要重新算serverid
 		uint16_t vbucket = command->vbucket_id(); 
-		uint16_t server_id = vbconf->SelectServerId(vbucket, command->server_id());
+		server_id = vbconf->SelectServerId(vbucket, command->server_id());
 		if (UNLIKELY(server_id == BAD_SERVER_ID)) {
 			LOG_ERROR << "bad server id";
 			command->OnError(ERR_CODE_DISCONNECT);
 			return;
 		}
-		command->set_server_id(server_id);
+		//command->set_server_id(server_id);
 	}
 
-	const uint16_t server_id = command->server_id();
     std::string server_addr = vbconf->GetServerAddrById(server_id);
     MemcClientMap* client_map = GetMemcClientMap(loop);
 
