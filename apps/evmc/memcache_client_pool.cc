@@ -240,6 +240,7 @@ void MemcacheClientPool::DoLaunchCommand(evpp::EventLoop * loop, CommandPtr comm
     } else {
         if (command->ShouldRetry()) {
             LOG_INFO << "OnClientConnection disconnect retry";
+			command->set_server_id(command->server_id());
             LaunchCommand(command);
         } else {
             command->OnError(ERR_CODE_DISCONNECT);
