@@ -54,6 +54,15 @@ include (utils)
 
 # ----------------------------------------------------------------------------
 # package information
+# TODO add el7.x86_64 
+#execute_process (
+#            COMMAND         uname -
+#            COMMAND         awk -F. '{print $4}'
+#            RESULT_VARIABLE RV
+#            OUTPUT_VARIABLE CENTOS_VERSION
+#            )
+#message(STATUS "xxxxxxxxxxxxx RV=" ${RV}) 
+#message(STATUS "xxxxxxxxxxxxx CENTOS_VERSION=" ${CENTOS_VERSION}) 
 set (PACKAGE_NAME        "${PACKAGE_NAME}")
 set (PACKAGE_VERSION     "1.0.0")
 set (PACKAGE_STRING      "${PACKAGE_NAME} ${PACKAGE_VERSION}")
@@ -69,6 +78,12 @@ version_numbers (
     PACKAGE_VERSION_PATCH
 )
 set (PACKAGE_SOVERSION "${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}")
+
+set (CPACK_PACKAGE_VERSION_MAJOR "${PACKAGE_VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${PACKAGE_VERSION_MINOR}")
+set (CPACK_PACKAGE_VERSION_PATCH "${PACKAGE_VERSION_PATCH}")
+
+message(STATUS "PACKAGE_SOVERSION=" ${PACKAGE_SOVERSION})
 
 set (CPACK_GENERATOR "RPM;TGZ")
 set (CPACK_PACKAGING_INSTALL_PREFIX "/home/s/safe")
