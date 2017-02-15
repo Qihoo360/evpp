@@ -1,12 +1,12 @@
 
-include_directories(${PROJECT_SOURCE_DIR}/apps)
+include_directories(${PROJECT_SOURCE_DIR}/apps ${PROJECT_SOURCE_DIR}/3rdparty)
 
 if (UNIX)
 set(LIBRARIES evpp event glog pthread)
 else(UNIX)
 set(LIBRARIES evpp_static event libglog_static)
 link_directories(${PROJECT_SOURCE_DIR}/3rdparty/libevent-release-2.1.7-rc/build/lib/${CMAKE_BUILD_TYPE}/
-				 ${PROJECT_SOURCE_DIR}/build/lib/${CMAKE_BUILD_TYPE}/
+				 ${LIBRARY_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/
 				 ${PROJECT_SOURCE_DIR}/3rdparty/glog-0.3.4/${CMAKE_BUILD_TYPE})
 endif(UNIX)
 
@@ -21,11 +21,18 @@ target_link_libraries(evnsq ${LIBRARIES})
 add_library(evnsq_static STATIC ${evnsq_SRCS})
 target_link_libraries(evnsq_static ${LIBRARIES})
 
-add_executable(evnsq_test evnsq/test/main.cc)
-target_link_libraries(evnsq_test evnsq_static ${LIBRARIES})
-
 add_executable(evnsq_tail evnsq/evnsqtail/main.cc)
 target_link_libraries(evnsq_tail evnsq_static ${LIBRARIES})
+
+set (evnsq_test_SRCS evnsq/test/main.cc)
+if (WIN32)
+	list (APPEND evnsq_test_SRCS ${PROJECT_SOURCE_DIR}/3rdparty/win32code/getopt/getopt.c)
+    list (APPEND evnsq_test_SRCS ${PROJECT_SOURCE_DIR}/3rdparty/win32code/getopt/getopt_long.c)
+endif (WIN32)
+
+add_executable(evnsq_test ${evnsq_test_SRCS})
+target_link_libraries(evnsq_test evnsq_static ${LIBRARIES})
+
 
 #----------------------------------------
 # evmc
