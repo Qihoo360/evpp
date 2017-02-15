@@ -2,7 +2,7 @@
 # package information
 # TODO add el7.x86_64 
 execute_process (
-            COMMAND         ${PROJECT_SOURCE_DIR}/cmake/rpm_kernel_release.sh
+            COMMAND         ${CMAKE_MODULE_PATH}/rpm_kernel_release.sh
             RESULT_VARIABLE RV
             OUTPUT_VARIABLE CENTOS_VERSION
             )
@@ -13,7 +13,7 @@ set (KERNEL_RELEASE "unknown-arch")
 endif ()
 
 execute_process (
-            COMMAND         ${PROJECT_SOURCE_DIR}/cmake/git_checkin_count.sh
+            COMMAND         ${CMAKE_MODULE_PATH}/git_checkin_count.sh
             RESULT_VARIABLE RV
             OUTPUT_VARIABLE GIT_CHECKIN_COUNT
             )
