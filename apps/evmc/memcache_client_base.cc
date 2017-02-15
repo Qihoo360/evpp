@@ -120,8 +120,8 @@ void MemcacheClientBase::OnClientConnection(const evpp::TCPConnPtr& conn, Memcac
 
         while (command = memc_client->PopRunningCommand()) {
 			if (command->ShouldRetry()) {
-  //              LOG_ERROR << "OnClientConnection " << conn->remote_addr() <<" waiting, so retry";
-                command->caller_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, this, command));
+                command->set_server_id(command->server_id()); 
+                memc_client->exec_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, this, command));
             } else {
                 command->OnError(ERR_CODE_NETWORK);
             }
@@ -129,8 +129,8 @@ void MemcacheClientBase::OnClientConnection(const evpp::TCPConnPtr& conn, Memcac
 
         while (command = memc_client->PopWaitingCommand()) {
             if (command->ShouldRetry()) {
-    //            LOG_ERROR << "OnClientConnection " << conn->remote_addr() <<" waiting, so retry";
-                command->caller_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, this, command));
+                command->set_server_id(command->server_id()); 
+                memc_client->exec_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, this, command));
             } else {
                 command->OnError(ERR_CODE_NETWORK);
             }
