@@ -44,7 +44,14 @@ target_link_libraries(evmc_static ${LIBRARIES})
 add_executable(evmc_test evmc/test/mcpool_test.cc)
 target_link_libraries(evmc_test evmc_static ${LIBRARIES})
 
-
+set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+include (utils)
+include (packages)
+set_target_properties (
+    evmc evnsq PROPERTIES
+    VERSION     "${PACKAGE_VERSION}"
+    SOVERSION   "${PACKAGE_SOVERSION}"
+)
 
 #----------------------------------------
 # install

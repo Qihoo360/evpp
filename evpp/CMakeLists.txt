@@ -12,13 +12,21 @@ add_library(evpp SHARED ${evpp_SRCS})
 add_library(evpp_static STATIC ${evpp_SRCS})
 
 if (UNIX)
-target_link_libraries(evpp        event glog pthread)
-target_link_libraries(evpp_static event glog pthread)
+    target_link_libraries(evpp        event glog pthread)
+    target_link_libraries(evpp_static event glog pthread)
 else (UNIX)
-target_link_libraries(evpp        event libglog_static)
-target_link_libraries(evpp_static event libglog_static)
+    target_link_libraries(evpp        event libglog_static)
+    target_link_libraries(evpp_static event libglog_static)
 endif (UNIX)
 
+set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+include (utils)
+include (packages)
+set_target_properties (
+    evpp PROPERTIES
+    VERSION     "${PACKAGE_VERSION}"
+    SOVERSION   "${PACKAGE_SOVERSION}"
+)
 
 install (
   TARGETS evpp evpp_static
