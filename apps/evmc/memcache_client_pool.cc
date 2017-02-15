@@ -130,7 +130,7 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, std::vector<std:
 			serverid_table[server_id] = vbconf->SelectServerId(vbucket, BAD_SERVER_ID);
 		}
 		server_id = serverid_table[server_id];
-		//server_id = vbconf->SelectServerId(vbucket, BAD_SERVER_ID);
+
 		auto& item = serverid_keys[server_id];
         item.keys.emplace_back(key);
         item.vbuckets.emplace_back(vbucket);
@@ -141,7 +141,6 @@ void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, std::vector<std:
 	auto& serverid_keys_d = handler->get_serverid_keys();
     for(auto& it : serverid_keys_d) {
 		server_id = it.first;
-		//LOG_ERROR << server_id << " size:" << it.second.vbuckets.size();
 		CommandPtr command = std::make_shared<MultiGetCommand>(caller_loop, server_id, handler);
 		command->set_server_id(server_id);
 		LaunchCommand(command);
@@ -200,18 +199,18 @@ void MemcacheClientPool::LaunchCommand(CommandPtr& command) {
 void MemcacheClientPool::DoLaunchCommand(evpp::EventLoop * loop, CommandPtr command) {
     MultiModeVbucketConfig* vbconf = vbucket_config();
 
+	uint16_t server_id = command->server_id();
 	if (UNLIKELY(!command->ShouldRetry())) { //重试 需要重新算serverid
 		uint16_t vbucket = command->vbucket_id(); 
-		uint16_t server_id = vbconf->SelectServerId(vbucket, command->server_id());
+		server_id = vbconf->SelectServerId(vbucket, command->server_id());
 		if (UNLIKELY(server_id == BAD_SERVER_ID)) {
 			LOG_ERROR << "bad server id";
 			command->OnError(ERR_CODE_DISCONNECT);
 			return;
 		}
-		command->set_server_id(server_id);
+		//command->set_server_id(server_id);
 	}
 
-	const uint16_t server_id = command->server_id();
     std::string server_addr = vbconf->GetServerAddrById(server_id);
     MemcClientMap* client_map = GetMemcClientMap(loop);
 
@@ -241,6 +240,7 @@ void MemcacheClientPool::DoLaunchCommand(evpp::EventLoop * loop, CommandPtr comm
     } else {
         if (command->ShouldRetry()) {
             LOG_INFO << "OnClientConnection disconnect retry";
+			command->set_server_id(command->server_id());
             LaunchCommand(command);
         } else {
             command->OnError(ERR_CODE_DISCONNECT);
