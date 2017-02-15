@@ -16,9 +16,9 @@ void MemcacheClient::PushRunningCommand(CommandPtr& cmd) {
         return;
     }
 
-    if (cmd->id() == 0) {
+ //   if (cmd->id() == 0) {
         cmd->set_id(next_id());
-    }
+ //   }
     running_command_.emplace(cmd);
 
     if (UNLIKELY(!timeout_.IsZero() && timer_canceled_)) {
@@ -77,9 +77,8 @@ void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
         running_command_.pop();
 
         if (mc_pool_ && cmd->ShouldRetry()) {
-            cmd->set_id(0);
-			LOG_ERROR << "connection " << conn()->remote_addr() << " not on service, so retry";
-            cmd->caller_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, mc_pool_, cmd));
+			cmd->set_server_id(cmd->server_id());
+            exec_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, mc_pool_, cmd));
         } else {
             cmd->OnError(ERR_CODE_TIMEOUT);
         }
