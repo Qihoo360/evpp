@@ -10,9 +10,9 @@ void DefaultHandler(evpp::EventLoop* loop,
                     const evpp::http::HTTPSendResponseCallback& cb) {
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << " OK"
-        << " ip=" << ctx->remote_ip << "\n"
-        << " uri=" << ctx->uri << "\n"
-        << " body=" << ctx->body.ToString() << "\n";
+        << " ip=" << ctx->remote_ip() << "\n"
+        << " uri=" << ctx->uri() << "\n"
+        << " body=" << ctx->body().ToString() << "\n";
     ctx->AddResponseHeader("Content-Type", "application/octet-stream");
     ctx->AddResponseHeader("Server", "evpp");
     cb(oss.str());
@@ -21,7 +21,7 @@ void DefaultHandler(evpp::EventLoop* loop,
 void RequestHandler(evpp::EventLoop* loop,
                     const evpp::http::ContextPtr& ctx,
                     const evpp::http::HTTPSendResponseCallback& cb) {
-    cb(ctx->body.ToString());
+    cb(ctx->body().ToString());
 }
 
 int main(int argc, char* argv[]) {
