@@ -21,9 +21,9 @@ static bool g_stopping = false;
 static void RequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << " OK"
-        << " ip=" << ctx->remote_ip << "\n"
-        << " uri=" << ctx->uri << "\n"
-        << " body=" << ctx->body.ToString() << "\n";
+        << " ip=" << ctx->remote_ip() << "\n"
+        << " uri=" << ctx->uri() << "\n"
+        << " body=" << ctx->body().ToString() << "\n";
     cb(oss.str());
 }
 
@@ -31,11 +31,11 @@ static void DefaultRequestHandler(evpp::EventLoop* loop, const evpp::http::Conte
     //std::cout << __func__ << " called ...\n";
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << "\n"
-        << " ip=" << ctx->remote_ip << "\n"
-        << " uri=" << ctx->uri << "\n"
-        << " body=" << ctx->body.ToString() << "\n";
+        << " ip=" << ctx->remote_ip() << "\n"
+        << " uri=" << ctx->uri() << "\n"
+        << " body=" << ctx->body().ToString() << "\n";
 
-    if (ctx->uri.find("stop") != std::string::npos) {
+    if (ctx->uri().find("stop") != std::string::npos) {
         g_stopping = true;
     }
 
