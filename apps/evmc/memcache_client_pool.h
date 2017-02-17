@@ -68,7 +68,7 @@ private:
     int timeout_ms_;
 
     MultiModeVbucketConfigPtr vbucket_config_;
-    pthread_rwlock_t vbucket_config_mutex_; // TODO : use rw mutex
+    //pthread_rwlock_t vbucket_config_mutex_; // TODO : use rw mutex
 	std::string key_filter_;
 
     std::atomic_int next_thread_;
