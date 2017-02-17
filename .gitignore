@@ -40,6 +40,8 @@ core.*
 *.orig
 
 build
+build-debug
+build-release
 
 apps/evnsq/evnsqtail/evnsqtail
 apps/evnsq/test/evnsqtest
