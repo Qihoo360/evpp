@@ -18,6 +18,9 @@ namespace evmc {
 	command->set_server_id(server_id); \
 
 MemcacheClientPool::~MemcacheClientPool() {
+	if (loop_pool_.IsRunning()) {
+		Stop(true);
+	}
 }
 
 void MemcacheClientPool::Stop(bool wait_thread_exit) {
@@ -208,6 +211,7 @@ void MemcacheClientPool::DoLaunchCommand(evpp::EventLoop * loop, CommandPtr comm
 			command->OnError(ERR_CODE_DISCONNECT);
 			return;
 		}
+		LOG_ERROR << "old value:" << command->server_id() << " new value:" << server_id;
 		//command->set_server_id(server_id);
 	}
 
