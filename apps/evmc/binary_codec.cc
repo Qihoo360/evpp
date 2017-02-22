@@ -127,19 +127,27 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
         cmd = memc_client_->PopRunningCommand();
 		const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
 		std::string key(pv, resp.response.keylen);
-		auto result_ptr = cmd->GetResultContainerByKey(key);
-		DecodePrefixGetPacket(resp, buf, result_ptr);
-		cmd->OnPrefixGetCommandDone();
-        LOG_DEBUG << "OnResponsePacket PGETK, opaque=" << id;
+		if (!key.empty()) {
+			auto result_ptr = cmd->GetResultContainerByKey(key);
+			DecodePrefixGetPacket(resp, buf, result_ptr);
+			cmd->OnPrefixGetCommandDone();
+			LOG_DEBUG << "OnResponsePacket PGETK, opaque=" << id;
+		} else {
+			cmd->OnError(resp.response.status);
+		}
 	}
 		break;
 
 	case PROTOCOL_BINARY_CMD_PGETKQ: {
 		const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
 		std::string key(pv, resp.response.keylen);
-		auto result_ptr = cmd->GetResultContainerByKey(key);
-		DecodePrefixGetPacket(resp, buf, result_ptr);
-        LOG_DEBUG << "OnResponsePacket PGETKQ" << id;
+		if (!key.empty()) {
+			auto result_ptr = cmd->GetResultContainerByKey(key);
+			DecodePrefixGetPacket(resp, buf, result_ptr);
+			LOG_DEBUG << "OnResponsePacket PGETKQ" << id;
+		} else {
+			cmd->OnError(resp.response.status);
+		}
 	}
 		break;
 

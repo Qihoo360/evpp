@@ -114,12 +114,23 @@ void MultiGetCommand::OnMultiGetCommandDone(int resp_code, std::string& key, std
 }
 
 void MultiGetCommand::OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {
-	auto & result_map = get_handler()->get_result();
-	auto  it = result_map.find(key);
-	assert(it != result_map.end());
-	auto & get_result = it->second;
-	get_result.code = resp_code;
-	get_result.value.swap(value);
+	if (resp_code == PROTOCOL_BINARY_RESPONSE_SUCCESS || resp_code == PROTOCOL_BINARY_RESPONSE_KEY_ENOENT) {
+		auto & result_map = get_handler()->get_result();
+		auto  it = result_map.find(key);
+		assert(it != result_map.end());
+		auto & get_result = it->second;
+		get_result.code = resp_code;
+		get_result.value.swap(value);
+	} else { //返回值不带key,将serverid对应的key都设置为resp_code
+		auto & keys = get_handler()->FindKeysByid(vbucket_id());
+		auto & result_map = get_handler()->get_result();
+		auto k = result_map.begin();
+		for (auto& it : keys) {
+			k = result_map.find(it);
+			assert(k != result_map.end());
+			k->second.code = resp_code;
+		}
+	}
 }
 
 void MultiGetCommand::PacketRequest(const std::vector<std::string>& keys, 
