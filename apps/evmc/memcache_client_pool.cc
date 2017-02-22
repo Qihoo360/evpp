@@ -211,8 +211,6 @@ void MemcacheClientPool::DoLaunchCommand(evpp::EventLoop * loop, CommandPtr comm
 			command->OnError(ERR_CODE_DISCONNECT);
 			return;
 		}
-		LOG_ERROR << "old value:" << command->server_id() << " new value:" << server_id;
-		//command->set_server_id(server_id);
 	}
 
     std::string server_addr = vbconf->GetServerAddrById(server_id);
