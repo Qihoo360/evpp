@@ -1,7 +1,0 @@
-﻿  vlog_is_on.cc
-  utilities.cc
-  raw_logging.cc
-  port.cc
-  logging.cc
-  Generating Code...
-  libglog_static_libevpp.vcxproj -> D:\360.git\evpp\vsprojects\bin/Debug/libglog_static.lib
