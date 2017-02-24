@@ -46,6 +46,8 @@ public:
     Conn(Client* c, const Option& ops);
     ~Conn();
     void Connect(const std::string& nsqd_tcp_addr/*host:port*/);
+    void Close();
+
     void SetMessageCallback(const MessageCallback& cb) {
         msg_fn_ = cb;
     }
@@ -71,6 +73,9 @@ public:
     bool IsConnected() const {
         return status_ == kConnected;
     }
+    bool IsConnecting() const {
+        return status_ == kConnecting;
+    }
     const std::string& remote_addr() const;
 private:
     void WriteCommand(const Command& cmd);
@@ -86,7 +91,7 @@ private:
     void PushWaitACKCommand(const CommandPtr& cmd);
     CommandPtr PopWaitACKCommand();
 private:
-    Client* client_;
+    Client* nsq_client_;
     evpp::EventLoop* loop_;
     Option option_;
     Status status_;
