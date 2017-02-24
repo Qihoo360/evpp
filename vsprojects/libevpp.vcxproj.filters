@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="evloop">
+      <UniqueIdentifier>{6a94d149-6f7b-47af-94e3-19d9eab3d441}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="time">
+      <UniqueIdentifier>{db27fc34-e756-45b7-92eb-38df61f5dae1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="http">
+      <UniqueIdentifier>{b3a2686a-0917-475e-bcda-86bdcd370b6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="http\client">
+      <UniqueIdentifier>{864b010e-26b9-4613-93ed-6283fa419625}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tcp">
+      <UniqueIdentifier>{eee53411-c7a0-4552-85ab-81e36a0b66cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tcp\client">
+      <UniqueIdentifier>{5534b7c8-478e-46f8-8df7-a101078279a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tcp\server">
+      <UniqueIdentifier>{e1127564-5b0a-4df4-855b-c4e6692271b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="http\server">
+      <UniqueIdentifier>{2c7daa43-1fb2-4c03-be31-4566f44e29e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="udp">
+      <UniqueIdentifier>{e7299b14-927d-41ca-acae-4db628107f59}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\evpp\inner_pre.cc">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\libevent_compact.cc">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\pch.cc">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\fd_channel.cc">
+      <Filter>tcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\event_loop.cc">
+      <Filter>evloop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\event_loop_thread.cc">
+      <Filter>evloop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\event_loop_thread_pool.cc">
+      <Filter>evloop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\sockets.cc">
+      <Filter>tcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\duration.cc">
+      <Filter>time</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\invoke_timer.cc">
+      <Filter>evloop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\buffer.cc">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\libevent_watcher.cc">
+      <Filter>evloop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\tcp_conn.cc">
+      <Filter>tcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\httpc\response.cc">
+      <Filter>http\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\httpc\request.cc">
+      <Filter>http\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\httpc\conn.cc">
+      <Filter>http\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\httpc\conn_pool.cc">
+      <Filter>http\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\httpc\url_parser.cc">
+      <Filter>http\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\connector.cc">
+      <Filter>tcp\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\dns_resolver.cc">
+      <Filter>tcp\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\listener.cc">
+      <Filter>tcp\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\tcp_server.cc">
+      <Filter>tcp\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\tcp_client.cc">
+      <Filter>tcp\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\http\service.cc">
+      <Filter>http\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\http\http_server.cc">
+      <Filter>http\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\http\context.cc">
+      <Filter>http\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\udp\udp_server.cc">
+      <Filter>udp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\evpp\udp\sync_udp_client.cc">
+      <Filter>udp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\evpp\exp.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\inner_pre.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\libevent_headers.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\fd_channel.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\event_loop.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\event_loop_thread.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\event_loop_thread_pool.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\sockets.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\evpp_export.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\log_config.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\platform_config.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\duration.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\duration.inl.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\gettimeofday.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\timestamp.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\timestamp.inl.h">
+      <Filter>time</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\sys_sockets.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\sys_addrinfo.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\invoke_timer.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\any.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\buffer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\slice.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\utility.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\libevent_watcher.h">
+      <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\tcp_callbacks.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\tcp_conn.h">
+      <Filter>tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\httpc\response.h">
+      <Filter>http\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\httpc\request.h">
+      <Filter>http\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\httpc\conn.h">
+      <Filter>http\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\httpc\conn_pool.h">
+      <Filter>http\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\httpc\url_parser.h">
+      <Filter>http\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\dns_resolver.h">
+      <Filter>tcp\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\connector.h">
+      <Filter>tcp\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\listener.h">
+      <Filter>tcp\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\tcp_server.h">
+      <Filter>tcp\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\tcp_client.h">
+      <Filter>tcp\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\http\service.h">
+      <Filter>http\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\http\http_server.h">
+      <Filter>http\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\http\context.h">
+      <Filter>http\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\memmem.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\udp\udp_message.h">
+      <Filter>udp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\udp\udp_server.h">
+      <Filter>udp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\udp\sync_udp_client.h">
+      <Filter>udp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\thread_dispatch_policy.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\http\stats.h">
+      <Filter>http\server</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\readme.md">
+      <Filter>common</Filter>
+    </None>
+  </ItemGroup>
+</Project>
