@@ -62,6 +62,20 @@ void Client::ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0
     }
 }
 
+
+void Client::Close() {
+    auto f = [this]() {
+        for (auto it = this->conns_.begin(), ite = this->conns_.end(); it != ite; ++it) {
+            (*it)->Close();
+        }
+
+        for (auto it = this->connecting_conns_.begin(), ite = this->connecting_conns_.end(); it != ite; ++it) {
+            it->second->Close();
+        }
+    };
+    loop_->RunInLoop(f);
+}
+
 void Client::HandleLoopkupdHTTPResponse(
     const std::shared_ptr<evpp::httpc::Response>& response,
     const std::shared_ptr<evpp::httpc::Request>& request) {
@@ -126,8 +140,23 @@ void Client::OnConnection(const ConnPtr& conn) {
         default:
             break;
         }
-    } else {
+    } else if (conn->IsConnecting()){
         MoveToConnectingList(conn);
+    } else {
+        // 应用层主动调用 Close
+        // 删除该 NSQ 连接
+        for (auto it = conns_.begin(), ite = conns_.end(); it != ite; ++it) {
+            if (*it == conn) {
+                conns_.erase(it);
+                return;
+            }
+        }
+
+        connecting_conns_.erase(conn->remote_addr());
+
+        if (connecting_conns_.empty() && conns_.empty()) {
+            close_fn_();
+        }
     }
 }
 

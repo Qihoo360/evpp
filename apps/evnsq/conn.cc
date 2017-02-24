@@ -19,7 +19,7 @@ static const std::string kNSQMagic = "  V2";
 static const std::string kOK = "OK";
 
 Conn::Conn(Client* c, const Option& ops)
-    : client_(c)
+    : nsq_client_(c)
     , loop_(c->loop())
     , option_(ops)
     , status_(kDisconnected)
@@ -28,7 +28,9 @@ Conn::Conn(Client* c, const Option& ops)
     , published_ok_count_(0)
     , published_failed_count_(0) {}
 
-Conn::~Conn() {}
+Conn::~Conn() {
+    assert(!tcp_client_.get());
+}
 
 void Conn::Connect(const std::string& addr) {
     tcp_client_ = evpp::TCPClientPtr(new evpp::TCPClient(loop_, addr, std::string("NSQClient-") + addr));
@@ -36,6 +38,12 @@ void Conn::Connect(const std::string& addr) {
     tcp_client_->SetConnectionCallback(std::bind(&Conn::OnTCPConnectionEvent, this, std::placeholders::_1));
     tcp_client_->SetMessageCallback(std::bind(&Conn::OnRecv, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     tcp_client_->Connect();
+}
+
+
+void Conn::Close() {
+    assert(loop_->IsInLoopThread());
+    tcp_client_->Disconnect();
 }
 
 void Conn::Reconnect() {
@@ -60,19 +68,25 @@ void Conn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
         assert(status_ == kConnecting);
         Identify();
     } else {
-        status_ = kDisconnected;
         if (conn->IsDisconnecting()) {
             LOG_ERROR << "Connection to " << conn->remote_addr() << " was closed by remote server.";
         } else {
             LOG_ERROR << "Connect to " << conn->remote_addr() << " failed.";
         }
 
+        status_ = kDisconnected;
+
+        if (tcp_client_->auto_reconnect()) {
+            // tcp_client_ will reconnect to remote NSQD again automatically
+            status_ = kConnecting;
+        } else {
+            // TODO 应用层主动断开连接
+            tcp_client_.reset();
+        }
+
         if (conn_fn_) {
             conn_fn_(shared_from_this());
         }
-
-        // tcp_client_ will reconnect to remote NSQD again automatically
-        status_ = kConnecting;
     }
 }
 
@@ -151,7 +165,7 @@ void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) 
     switch (frame_type) {
     case kFrameTypeResponse:
         LOG_INFO << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
-        if (client_->IsProducer()) {
+        if (nsq_client_->IsProducer()) {
             OnPublishResponse(buf->data(), message_len);
         }
         buf->Skip(message_len);
@@ -223,8 +237,8 @@ void Conn::UpdateReady(int count) {
 
 bool Conn::WritePublishCommand(const CommandPtr& c) {
     assert(c->IsPublish());
-    assert(client_->IsProducer());
-    if (wait_ack_.size() >= static_cast<Producer*>(client_)->high_water_mark()) {
+    assert(nsq_client_->IsProducer());
+    if (wait_ack_.size() >= static_cast<Producer*>(nsq_client_)->high_water_mark()) {
         LOG_EVERY_N(WARNING, 100000) << "Too many messages are waiting a response ACK. Please try again later.";
         //         hwm_triggered_ = true;
         // 
