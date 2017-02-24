@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="libhashkit">
+      <UniqueIdentifier>{48d99f15-3ad5-419f-b5d8-40527edbbcc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="evmc">
+      <UniqueIdentifier>{de7cd463-3aea-4238-845c-0ad864441b3d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\3rdparty\libhashkit\algorithm.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\behavior.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\crc32.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\digest.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\fnv.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\function.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\hashkit.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\hsieh.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\jenkins.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\ketama.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\md5.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\murmur.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\one_at_a_time.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\libhashkit\strerror.c">
+      <Filter>libhashkit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\apps\evmc\binary_codec.cc">
+      <Filter>evmc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\apps\evmc\command.cc">
+      <Filter>evmc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\apps\evmc\memcache_client.cc">
+      <Filter>evmc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\apps\evmc\memcache_client_pool.cc">
+      <Filter>evmc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\apps\evmc\vbucket_config.cc">
+      <Filter>evmc</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\3rdparty\libhashkit\algorithm.h">
+      <Filter>libhashkit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libhashkit\behavior.h">
+      <Filter>libhashkit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libhashkit\common.h">
+      <Filter>libhashkit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libhashkit\configure.h">
+      <Filter>libhashkit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libhashkit\digest.h">
+      <Filter>libhashkit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libhashkit\function.h">
+      <Filter>libhashkit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libhashkit\hashkit.h">
+      <Filter>libhashkit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libhashkit\strerror.h">
+      <Filter>libhashkit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libhashkit\types.h">
+      <Filter>libhashkit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\libhashkit\visibility.h">
+      <Filter>libhashkit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\binary_codec.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\command.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\mctypes.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\memcache_client.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\memcache_client_pool.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\vbucket_config.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\exp.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\random.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\3rdparty\libhashkit\include.am">
+      <Filter>libhashkit</Filter>
+    </None>
+    <None Include="..\3rdparty\libhashkit\Makefile">
+      <Filter>libhashkit</Filter>
+    </None>
+  </ItemGroup>
+</Project>
