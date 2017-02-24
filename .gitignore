@@ -53,7 +53,6 @@ apps/evnsq/test/evnsqtest
 3rdparty/libevent-2.1.5-beta/build/
 3rdparty/libevent-release-2.1.7-rc/build/
 3rdparty/libevent-release-2.1.7-rc/*.dir/
-3rdparty/wininclude/event2/
 3rdparty/glog-0.3.4/Backup/
 3rdparty/glog-0.3.4/Debug/
 3rdparty/glog-0.3.4/Release/
