@@ -22,7 +22,7 @@ public:
     bool MultiPublish(const std::string& topic, const std::vector<std::string>& messages);
 
     // A PUB/MPUB command which has already serialized.
-    bool PublishBinaryCommand(evpp::Buffer* buf);
+    bool PublishBinaryCommand(evpp::Buffer* command_binary_buf);
 
     void SetReadyCallback(const ReadyCallback& cb) {
         ready_fn_ = cb;
@@ -34,8 +34,8 @@ public:
 private:
     bool Publish(const CommandPtr& cmd);
     bool PublishInLoop(const CommandPtr& cmd);
-    void OnPublishResponse(Conn* conn, const CommandPtr& cmd, bool successfull);
-    void OnReady(Conn* conn);
+    void OnPublishResponse(NSQConn* conn, const CommandPtr& cmd, bool successfull);
+    void OnReady(NSQConn* conn);
     ConnPtr GetNextConn();
     void PrintStats();
 private:

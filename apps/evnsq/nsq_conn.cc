@@ -1,4 +1,4 @@
-#include "conn.h"
+#include "nsq_conn.h"
 
 #include <evpp/event_loop.h>
 #include <evpp/tcp_client.h>
@@ -18,7 +18,7 @@ namespace evnsq {
 static const std::string kNSQMagic = "  V2";
 static const std::string kOK = "OK";
 
-Conn::Conn(Client* c, const Option& ops)
+NSQConn::NSQConn(Client* c, const Option& ops)
     : nsq_client_(c)
     , loop_(c->loop())
     , option_(ops)
@@ -28,25 +28,25 @@ Conn::Conn(Client* c, const Option& ops)
     , published_ok_count_(0)
     , published_failed_count_(0) {}
 
-Conn::~Conn() {
+NSQConn::~NSQConn() {
     assert(!tcp_client_.get());
 }
 
-void Conn::Connect(const std::string& addr) {
+void NSQConn::Connect(const std::string& addr) {
     tcp_client_ = evpp::TCPClientPtr(new evpp::TCPClient(loop_, addr, std::string("NSQClient-") + addr));
     status_ = kConnecting;
-    tcp_client_->SetConnectionCallback(std::bind(&Conn::OnTCPConnectionEvent, this, std::placeholders::_1));
-    tcp_client_->SetMessageCallback(std::bind(&Conn::OnRecv, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    tcp_client_->SetConnectionCallback(std::bind(&NSQConn::OnTCPConnectionEvent, this, std::placeholders::_1));
+    tcp_client_->SetMessageCallback(std::bind(&NSQConn::OnRecv, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     tcp_client_->Connect();
 }
 
 
-void Conn::Close() {
+void NSQConn::Close() {
     assert(loop_->IsInLoopThread());
     tcp_client_->Disconnect();
 }
 
-void Conn::Reconnect() {
+void NSQConn::Reconnect() {
     // Discards all the messages which were cached by the broken tcp connection.
     if (!wait_ack_.empty()) {
         LOG_WARN << "Discards " << wait_ack_.size() << " NSQ messages. nsq_message_missing";
@@ -58,11 +58,11 @@ void Conn::Reconnect() {
     Connect(tcp_client_->remote_addr());
 }
 
-const std::string& Conn::remote_addr() const {
+const std::string& NSQConn::remote_addr() const {
     return tcp_client_->remote_addr();
 }
 
-void Conn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
+void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
     if (conn->IsConnected()) {
         assert(tcp_client_->conn() == conn);
         assert(status_ == kConnecting);
@@ -90,7 +90,7 @@ void Conn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
     }
 }
 
-void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp ts) {
+void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp ts) {
     while (buf->size() > 4) {
         size_t size = buf->PeekInt32();
 
@@ -104,13 +104,13 @@ void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timesta
         int32_t frame_type = buf->ReadInt32();
 
         switch (status_) {
-        case evnsq::Conn::kDisconnected:
+        case evnsq::NSQConn::kDisconnected:
             break;
 
-        case evnsq::Conn::kConnecting:
+        case evnsq::NSQConn::kConnecting:
             break;
 
-        case evnsq::Conn::kIdentifying:
+        case evnsq::NSQConn::kIdentifying:
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 status_ = kConnected;
                 if (conn_fn_) {
@@ -122,11 +122,11 @@ void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timesta
             }
             break;
 
-        case evnsq::Conn::kConnected:
+        case evnsq::NSQConn::kConnected:
             assert(false && "It should never come here.");
             break;
 
-        case evnsq::Conn::kSubscribing:
+        case evnsq::NSQConn::kSubscribing:
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 status_ = kReady;
                 if (conn_fn_) {
@@ -139,7 +139,7 @@ void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timesta
             }
             break;
 
-        case evnsq::Conn::kReady:
+        case evnsq::NSQConn::kReady:
             OnMessage(size - sizeof(frame_type), frame_type, buf);
             break;
 
@@ -149,7 +149,7 @@ void Conn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timesta
     }
 }
 
-void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) {
+void NSQConn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) {
     if (frame_type == kFrameTypeResponse) {
         const size_t kHeartbeatLen = sizeof("_heartbeat_") - 1;
         if (message_len == kHeartbeatLen && strncmp(buf->data(), "_heartbeat_", kHeartbeatLen) == 0) {
@@ -195,21 +195,21 @@ void Conn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf) 
     }
 }
 
-void Conn::WriteCommand(const Command& c) {
+void NSQConn::WriteCommand(const Command& c) {
     // TODO : using a object pool to improve performance
     evpp::Buffer buf;
     c.WriteTo(&buf);
     WriteBinaryCommand(&buf);
 }
 
-void Conn::Subscribe(const std::string& topic, const std::string& channel) {
+void NSQConn::Subscribe(const std::string& topic, const std::string& channel) {
     Command c;
     c.Subscribe(topic, channel);
     WriteCommand(c);
     status_ = kSubscribing;
 }
 
-void Conn::Identify() {
+void NSQConn::Identify() {
     tcp_client_->conn()->Send(kNSQMagic);
     Command c;
     c.Identify(option_.ToJSON());
@@ -217,25 +217,25 @@ void Conn::Identify() {
     status_ = kIdentifying;
 }
 
-void Conn::Finish(const std::string& id) {
+void NSQConn::Finish(const std::string& id) {
     Command c;
     c.Finish(id);
     WriteCommand(c);
 }
 
-void Conn::Requeue(const std::string& id) {
+void NSQConn::Requeue(const std::string& id) {
     Command c;
     c.Requeue(id, evpp::Duration(0));
     WriteCommand(c);
 }
 
-void Conn::UpdateReady(int count) {
+void NSQConn::UpdateReady(int count) {
     Command c;
     c.Ready(count);
     WriteCommand(c);
 }
 
-bool Conn::WritePublishCommand(const CommandPtr& c) {
+bool NSQConn::WritePublishCommand(const CommandPtr& c) {
     assert(c->IsPublish());
     assert(nsq_client_->IsProducer());
     if (wait_ack_.size() >= static_cast<Producer*>(nsq_client_)->high_water_mark()) {
@@ -258,11 +258,11 @@ bool Conn::WritePublishCommand(const CommandPtr& c) {
 }
 
 
-void Conn::WriteBinaryCommand(evpp::Buffer* buf) {
+void NSQConn::WriteBinaryCommand(evpp::Buffer* buf) {
     tcp_client_->conn()->Send(buf);
 }
 
-CommandPtr Conn::PopWaitACKCommand() {
+CommandPtr NSQConn::PopWaitACKCommand() {
     if (wait_ack_.empty()) {
         return CommandPtr();
     }
@@ -271,12 +271,12 @@ CommandPtr Conn::PopWaitACKCommand() {
     return c;
 }
 
-void Conn::PushWaitACKCommand(const CommandPtr& cmd) {
+void NSQConn::PushWaitACKCommand(const CommandPtr& cmd) {
     wait_ack_.push_back(cmd);
     published_count_++;
 }
 
-void Conn::OnPublishResponse(const char* d, size_t len) {
+void NSQConn::OnPublishResponse(const char* d, size_t len) {
     CommandPtr cmd = PopWaitACKCommand();
     if (len == 2 && d[0] == 'O' && d[1] == 'K') {
         LOG_INFO << "Get a PublishResponse message 'OK', command=" << cmd.get();
