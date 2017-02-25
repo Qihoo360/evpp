@@ -11,7 +11,7 @@ enum { kMessageIDLen = 16 };
 enum { kFrameTypeResponse = 0, kFrameTypeError = 1, kFrameTypeMessage = 2, };
 
 struct Message {
-    int64_t timestamp;
+    int64_t timestamp_ns; // nanosecond
     uint16_t attempts;
     std::string id; // with length equal to kMessageIDLen
     evpp::Slice body;
@@ -26,14 +26,18 @@ struct Message {
     //                        (uint16)
     //                         2-byte
     //                        attempts
-    void Decode(size_t message_len, evpp::Buffer* buf) {
+    bool Decode(size_t message_len, evpp::Buffer* buf) {
         assert(buf->size() >= message_len);
-        timestamp = buf->ReadInt64();
+        if (buf->size() < message_len) {
+            return false;
+        }
+        timestamp_ns = buf->ReadInt64();
         attempts = buf->ReadInt16();
         id = buf->NextString(kMessageIDLen);
-        size_t body_len = message_len - sizeof(timestamp) - sizeof(attempts) - kMessageIDLen;
+        size_t body_len = message_len - sizeof(timestamp_ns) - sizeof(attempts) - kMessageIDLen;
         body = evpp::Slice(buf->data(), body_len); // No copy
         buf->Retrieve(body_len);
+        return true;
     }
 };
 

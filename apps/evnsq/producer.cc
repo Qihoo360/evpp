@@ -2,7 +2,7 @@
 
 #include <evpp/event_loop.h>
 #include "command.h"
-#include "conn.h"
+#include "nsq_conn.h"
 
 namespace evnsq {
 
@@ -42,7 +42,7 @@ bool Producer::MultiPublish(const std::string& topic, const std::vector<std::str
 }
 
 
-bool Producer::PublishBinaryCommand(evpp::Buffer* buf) {
+bool Producer::PublishBinaryCommand(evpp::Buffer* command_binary_buf) {
     assert(loop_->IsInLoopThread());
     auto conn = GetNextConn();
     if (!conn.get()) {
@@ -51,7 +51,7 @@ bool Producer::PublishBinaryCommand(evpp::Buffer* buf) {
     }
 
     published_count_ += 1;
-    conn->WriteBinaryCommand(buf);
+    conn->WriteBinaryCommand(command_binary_buf);
     return true;
 }
 
@@ -91,7 +91,7 @@ bool Producer::PublishInLoop(const CommandPtr& cmd) {
     return rc;
 }
 
-void Producer::OnReady(Conn* conn) {
+void Producer::OnReady(NSQConn* conn) {
     conn->SetPublishResponseCallback(std::bind(&Producer::OnPublishResponse, this, conn, std::placeholders::_1, std::placeholders::_2));
 
     // Only the first successful connection to NSQD can trigger this callback.
@@ -100,7 +100,7 @@ void Producer::OnReady(Conn* conn) {
     }
 }
 
-void Producer::OnPublishResponse(Conn* conn, const CommandPtr& cmd, bool successfull) {
+void Producer::OnPublishResponse(NSQConn* conn, const CommandPtr& cmd, bool successfull) {
     size_t count = 1;
     if (cmd.get()) {
         count = cmd->body().size();
