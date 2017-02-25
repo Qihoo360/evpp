@@ -24,5 +24,12 @@ TEST_UNIT(testDuration) {
 }
 
 TEST_UNIT(testTimestamp) {
+    int64_t c_s = time(NULL);
+    int64_t c_us = evpp::utcmicrosecond();
+    int64_t ts_ns = evpp::Timestamp::Now().UnixNano();
+    int64_t c11_us = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    H_TEST_ASSERT(c_us/1000000 == c11_us/1000000);
+    H_TEST_ASSERT(c_s == c11_us/1000000);
+    H_TEST_ASSERT(c_s == ts_ns/evpp::Duration::kSecond);
 }
 
