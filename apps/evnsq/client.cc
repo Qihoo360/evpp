@@ -21,7 +21,7 @@ Client::Client(evpp::EventLoop* l, Type t, const Option& ops)
 Client::~Client() {}
 
 void Client::ConnectToNSQD(const std::string& addr) {
-    auto c = ConnPtr(new Conn(this, option_));
+    auto c = ConnPtr(new NSQConn(this, option_));
     connecting_conns_[addr] = c;
     c->SetMessageCallback(msg_fn_);
     c->SetConnectionCallback(std::bind(&Client::OnConnection, this, std::placeholders::_1));
@@ -123,18 +123,18 @@ void Client::OnConnection(const ConnPtr& conn) {
         conns_.push_back(conn);
         connecting_conns_.erase(conn->remote_addr());
         switch (conn->status()) {
-        case Conn::kConnected:
+        case NSQConn::kConnected:
             if (type_ == kConsumer) {
                 conn->Subscribe(topic_, channel_);
             } else {
                 assert(type_ == kProducer);
-                conn->set_status(Conn::kReady);
+                conn->set_status(NSQConn::kReady);
                 if (ready_to_publish_fn_) {
                     ready_to_publish_fn_(conn.get());
                 }
             }
             break;
-        case Conn::kReady:
+        case NSQConn::kReady:
             assert(type_ == kConsumer);
             break;
         default:
