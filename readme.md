@@ -18,7 +18,7 @@ evpp
 And also provides some libraries base on `evpp`:
 
 1. `evmc` a nonblocking async C++ memcached (cluster) client.
-2. `evnsq` a nonblocking async C++ NSQ client. 
+2. `evnsq` a nonblocking async C++ NSQ client. See [evnsq readme](apps/evnsq/readme.md) for details.
 
 # Getting Started
 
