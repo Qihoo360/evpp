@@ -57,8 +57,8 @@ void ConnPool::Clear() {
     }
 
     // 让Conn在自己所在的线程(EventLoop)中释放
-    for (auto &m : map) {
-        for (auto &c : m.second) {
+    for (auto& m : map) {
+        for (auto& c : m.second) {
             m.first->RunInLoop(std::bind(&Conn::Close, c));
         }
         m.second.clear();
