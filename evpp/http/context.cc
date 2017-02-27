@@ -6,57 +6,57 @@
 namespace evpp {
 namespace http {
 Context::Context(struct evhttp_request* r, EventLoop* l)
-    : req(r) {
+    : req_(r) {
 }
 
 Context::~Context() {
 }
 
 bool Context::Init(Service* hsrv) {
-    if (req->type == EVHTTP_REQ_POST) {
+    if (req_->type == EVHTTP_REQ_POST) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
-        struct evbuffer* evbuf = evhttp_request_get_input_buffer(req);
+        struct evbuffer* evbuf = evhttp_request_get_input_buffer(req_);
         size_t buffer_size = evbuffer_get_length(evbuf);
         if (buffer_size > 0) {
-            this->body = Slice((char*)evbuffer_pullup(evbuf, -1), buffer_size);
+            this->body_ = Slice((char*)evbuffer_pullup(evbuf, -1), buffer_size);
         }
 #else
-        if (req->input_buffer->off > 0) {
-            this->body = Slice((char*)req->input_buffer->buffer, req->input_buffer->off);
+        if (req_->input_buffer->off > 0) {
+            this->body_ = Slice((char*)req_->input_buffer->buffer, req_->input_buffer->off);
         }
 #endif
     }
 
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
-    uri = evhttp_uri_get_path(req->uri_elems);
+    uri_ = evhttp_uri_get_path(req_->uri_elems);
 #else
-    const char* p = strchr(req->uri, '?');
+    const char* p = strchr(req_->uri, '?');
     if (p != NULL) {
-        uri = std::string(req->uri, p - req->uri);
+        uri_ = std::string(req_->uri, p - req_->uri);
     } else {
-        uri = req->uri;
+        uri_ = req_->uri;
     }
 
 #endif
 
-    remote_ip = FindClientIP(original_uri());
-    if (remote_ip.empty()) {
-        remote_ip = req->remote_host;
+    remote_ip_ = FindClientIP(original_uri());
+    if (remote_ip_.empty()) {
+        remote_ip_ = req_->remote_host;
     }
 
     return true;
 }
 
 const char* Context::original_uri() const {
-    return req->uri;
+    return req_->uri;
 }
 
 void Context::AddResponseHeader(const std::string& key, const std::string& value) {
-    evhttp_add_header(req->output_headers, key.data(), value.data());
+    evhttp_add_header(req_->output_headers, key.data(), value.data());
 }
 
 const char* Context::FindRequestHeader(const char* key) {
-    return evhttp_find_header(req->input_headers, key);
+    return evhttp_find_header(req_->input_headers, key);
 }
 
 std::string Context::FindClientIP(const char* uri) {

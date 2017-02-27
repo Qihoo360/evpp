@@ -27,13 +27,13 @@
     <ClInclude Include="..\apps\evnsq\consumer.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\apps\evnsq\conn.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\apps\evnsq\client.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\apps\evnsq\producer.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evnsq\nsq_conn.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -47,13 +47,13 @@
     <ClCompile Include="..\apps\evnsq\consumer.cc">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\apps\evnsq\conn.cc">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\apps\evnsq\client.cc">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\apps\evnsq\producer.cc">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\apps\evnsq\nsq_conn.cc">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
