@@ -55,6 +55,8 @@ public:
         return context_;
     }
     TCPConnPtr conn() const;
+
+    // Return the remote address with the format of 'host:port'
     const std::string& remote_addr() const {
         return remote_addr_;
     }
