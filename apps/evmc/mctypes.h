@@ -18,8 +18,8 @@ namespace evmc {
 typedef std::shared_ptr<evpp::TimerEventWatcher> TimerEventPtr;
 
 enum {
-	SUC_RET = 0,
-	NOT_FIND_RET = 1,
+    SUC_RET = 0,
+    NOT_FIND_RET = 1,
     ERR_CODE_TIMEOUT = -1,
     ERR_CODE_NETWORK = -2,
     ERR_CODE_DISCONNECT = -3,
@@ -32,10 +32,10 @@ struct GetResult {
     GetResult(const GetResult& result) : code(result.code), value(result.value) {}
     GetResult(GetResult&& result) : code(result.code), value(std::move(result.value)) {}
     GetResult& operator=(GetResult&& result) {
-		code = result.code;
-		value = std::move(result.value);
-		return *this;
-	}
+        code = result.code;
+        value = std::move(result.value);
+        return *this;
+    }
 
     GetResult(int c, const std::string& v) : code(c), value(v) {}
     int code;
@@ -47,26 +47,26 @@ typedef std::map<std::string, GetResult>  MultiGetResult;
 
 struct PrefixGetResult {
     PrefixGetResult() : code(NOT_FIND_RET) {
-	}
-	virtual ~PrefixGetResult() {
-	}
-    PrefixGetResult(const PrefixGetResult& result) { 
-		code = result.code;
-		result_map_ = result.result_map_;   
-	}
+    }
+    virtual ~PrefixGetResult() {
+    }
+    PrefixGetResult(const PrefixGetResult& result) {
+        code = result.code;
+        result_map_ = result.result_map_;
+    }
     PrefixGetResult(PrefixGetResult&& result) : code(result.code), result_map_(std::move(result.result_map_)) {
-	}
-	PrefixGetResult& operator=(PrefixGetResult&& result) {
-		code = result.code;
-		result_map_ = std::move(result.result_map_);
-		return *this;
-	}
+    }
+    PrefixGetResult& operator=(PrefixGetResult&& result) {
+        code = result.code;
+        result_map_ = std::move(result.result_map_);
+        return *this;
+    }
     int code;
     std::map<std::string, std::string> result_map_;
-	void clear() {
-		code = NOT_FIND_RET;
-		result_map_.clear();
-	}
+    void clear() {
+        code = NOT_FIND_RET;
+        result_map_.clear();
+    }
 };
 
 typedef std::shared_ptr<PrefixGetResult> PrefixGetResultPtr;

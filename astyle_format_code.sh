@@ -30,6 +30,7 @@ do
             if test -f $file
             then
                ${ASTYLE} $file 
+               rm -f ${file}.orig
             fi
         done
     done
