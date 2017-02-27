@@ -1,5 +1,3 @@
-include ../rpm/build.mk
-include ../build.mk/astyle.mk
 
 CC=gcc
 CXX=g++
@@ -39,11 +37,8 @@ $(TARGET_A) : $(OBJS)
 	ranlib $@			   
 
 $(TARGET_SO) : $(OBJS)
-	$(CXX) $(LDFLAGS) $(OBJS) -shared -o $@.$(FULL)
+	$(CXX) $(LDFLAGS) $(OBJS) -shared -o $@
 	@rm -fr $(@)
-	@rm -fr $(@).$(MAJOR)
-	ln -s $(@).$(FULL) $(@).$(MAJOR)
-	ln -s $(@).$(MAJOR) $(@)
 	
 check : $(TARGET_A) $(TARGET_SO)	
 	$(MAKE) install
