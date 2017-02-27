@@ -47,9 +47,9 @@ public:
     struct event_base* event_base() {
         return evbase_;
     }
-	inline bool IsInLoopThread() const {
-		return tid_ == std::this_thread::get_id();
-	}
+    inline bool IsInLoopThread() const {
+        return tid_ == std::this_thread::get_id();
+    }
     void AssertInLoopThread() const;
     void set_context(const Any& c) {
         context_[0] = c;
@@ -97,7 +97,7 @@ private:
     std::mutex mutex_;
     std::shared_ptr<PipeEventWatcher> watcher_;
 #ifdef H_HAVE_BOOST
-	boost::lockfree::queue<Functor*>* pending_functors_;
+    boost::lockfree::queue<Functor*>* pending_functors_;
 #else
     std::vector<Functor>* pending_functors_; // @Guarded By mutex_
 #endif
