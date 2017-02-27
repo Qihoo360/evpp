@@ -15,6 +15,11 @@ evpp
 1. Thread pool
 1. Timer
 
+And also provides some libraries base on `evpp`:
+
+1. `evmc` a nonblocking async C++ memcached (cluster) client.
+2. `evnsq` a nonblocking async C++ NSQ client. 
+
 # Getting Started
 
 Please see [Quick Start](quick_start.md)

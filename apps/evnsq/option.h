@@ -23,12 +23,12 @@ public:
 
     // Identifiers sent to nsqd representing this client
     // UserAgent is in the spirit of HTTP (default: "<client_library_name>/<version>")
-    std::string client_id;// (defaults: short hostname)
+    std::string client_id; // (defaults: short hostname)
     std::string hostname;
     std::string user_agent;
 
     // Duration of time between heartbeats. This must be less than read_timeout
-    evpp::Duration heartbeat_interval;// default:"30s"
+    evpp::Duration heartbeat_interval; // default:"30s"
 
     // Duration of interval time to query nsqlookupd
     evpp::Duration query_nsqlookupd_interval; // default:"30s"
