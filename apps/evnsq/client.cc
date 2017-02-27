@@ -73,7 +73,10 @@ void Client::Close() {
             it->second->Close();
         }
     };
-    loop_->RunInLoop(f);
+
+    // 如果使用 RunInLoop，有可能会在当前循环中直接执行该函数，这导致会回调到 Client::OnConnection 函数中去释放NSQConn对象，进而破坏当前 f 函数中的两个for循环的迭代器。
+    // 因此要使用 QueueInLoop ，将该函数的执行周期推移到下一次执行循环中
+    loop_->QueueInLoop(f);
 }
 
 void Client::HandleLoopkupdHTTPResponse(
