@@ -13,10 +13,10 @@ public:
     friend MemcacheClient;
 
     // @brief 
-    // @param[in] vbucket_conf - æœ‰ä¸‰ç§æ ¼å¼
-    //      1. memcachedå•å®ä¾‹æ¨¡å¼ï¼Œä¼ å…¥çš„å‚æ•°åº”è¯¥ "host:port" 
-    //      2. memcachedé›†ç¾¤æ¨¡å¼ï¼Œä¼ è¾“çš„å‚æ•°å¯ä»¥æ˜¯vbucket conf url ï¼š "http://host:port/vbucket_conf"
-    //      3. memcachedé›†ç¾¤æ¨¡å¼ï¼Œä¼ è¾“çš„å‚æ•°å¯ä»¥æ˜¯vbucket conf æœ¬åœ°æ–‡ä»¶ï¼š "/the/path/to/vbucket_conf"
+    // @param[in] vbucket_conf - ÓĞÈıÖÖ¸ñÊ½
+    //      1. memcachedµ¥ÊµÀıÄ£Ê½£¬´«ÈëµÄ²ÎÊıÓ¦¸Ã "host:port" 
+    //      2. memcached¼¯ÈºÄ£Ê½£¬´«ÊäµÄ²ÎÊı¿ÉÒÔÊÇvbucket conf url £º "http://host:port/vbucket_conf"
+    //      3. memcached¼¯ÈºÄ£Ê½£¬´«ÊäµÄ²ÎÊı¿ÉÒÔÊÇvbucket conf ±¾µØÎÄ¼ş£º "/the/path/to/vbucket_conf"
     // @param[in] thread_num - 
     // @param[in] timeout_ms - 
     // @return  - 
@@ -68,7 +68,7 @@ private:
     int timeout_ms_;
 
     MultiModeVbucketConfigPtr vbucket_config_;
-    pthread_rwlock_t vbucket_config_mutex_; // TODO : use rw mutex
+    //pthread_rwlock_t vbucket_config_mutex_; // TODO : use rw mutex
 	std::string key_filter_;
 
     std::atomic_int next_thread_;

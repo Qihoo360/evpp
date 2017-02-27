@@ -28,8 +28,8 @@ class Client;
 // http://nsq.io/clients/tcp_protocol_spec.html
 // http://wiki.jikexueyuan.com/project/nsq-guide/tcp_protocol_spec.html
 
-// The class Conn represents a connection with one NSQD server
-class EVNSQ_EXPORT Conn : public std::enable_shared_from_this<Conn> {
+// The class NSQConn represents a connection with one NSQD server
+class EVNSQ_EXPORT NSQConn : public std::enable_shared_from_this<NSQConn> {
 public:
     enum Status {
         kDisconnected = 0,
@@ -40,12 +40,14 @@ public:
         kReady = 5, // Ready to produce messages to NSQD or consume messages from NSQD
     };
 
-    typedef std::function<void(const std::shared_ptr<Conn>& conn)> ConnectionCallback;
+    typedef std::function<void(const std::shared_ptr<NSQConn>& conn)> ConnectionCallback;
     typedef std::function<void(const CommandPtr& cmd, bool successfull)> PublishResponseCallback;
 public:
-    Conn(Client* c, const Option& ops);
-    ~Conn();
+    NSQConn(Client* c, const Option& ops);
+    ~NSQConn();
     void Connect(const std::string& nsqd_tcp_addr/*host:port*/);
+    void Close();
+
     void SetMessageCallback(const MessageCallback& cb) {
         msg_fn_ = cb;
     }
@@ -71,6 +73,9 @@ public:
     bool IsConnected() const {
         return status_ == kConnected;
     }
+    bool IsConnecting() const {
+        return status_ == kConnecting;
+    }
     const std::string& remote_addr() const;
 private:
     void WriteCommand(const Command& cmd);
@@ -86,7 +91,7 @@ private:
     void PushWaitACKCommand(const CommandPtr& cmd);
     CommandPtr PopWaitACKCommand();
 private:
-    Client* client_;
+    Client* nsq_client_;
     evpp::EventLoop* loop_;
     Option option_;
     Status status_;

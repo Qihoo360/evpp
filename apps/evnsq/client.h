@@ -9,7 +9,7 @@
 #include "evnsq_export.h"
 #include "option.h"
 #include "message.h"
-#include "conn.h"
+#include "nsq_conn.h"
 
 namespace evpp {
 namespace httpc {
@@ -19,9 +19,10 @@ class Response;
 }
 
 namespace evnsq {
-class Conn;
-typedef std::shared_ptr<Conn> ConnPtr;
+class NSQConn;
+typedef std::shared_ptr<NSQConn> ConnPtr;
 
+// A Client represents a producer or consumer who holds several NSQConns with a cluster of NSQDs
 class EVNSQ_EXPORT Client {
 public:
     enum Type {
@@ -29,14 +30,20 @@ public:
         kConsumer = 1,
         kProducer = 2,
     };
+    typedef std::function<void()> CloseCallback;
 public:
     void ConnectToNSQD(const std::string& tcp_addr/*host:port*/);
     void ConnectToNSQDs(const std::string& tcp_addrs/*host1:port1,host2:port2*/);
     void ConnectToNSQDs(const std::vector<std::string>& tcp_addrs/*host:port*/);
     void ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/);
     void ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/);
+    void Close();
+
     void SetMessageCallback(const MessageCallback& cb) {
         msg_fn_ = cb;
+    }
+    void SetCloseCallback(const CloseCallback& cb) {
+        close_fn_ = cb;
     }
     bool IsProducer() const {
         return type_ == kProducer;
@@ -44,7 +51,7 @@ public:
     evpp::EventLoop* loop() const {
         return loop_;
     }
-    //TODO How to close the connection
+
 protected:
     Client(evpp::EventLoop* loop, Type t, const Option& ops);
     virtual ~Client();
@@ -66,8 +73,9 @@ protected:
     std::map<std::string/*NSQD address "host:port"*/, ConnPtr> connecting_conns_; // The TCP connections which are connecting to NSQDs
     std::vector<ConnPtr> conns_; // The TCP connections which has established the connection with NSQDs
     MessageCallback msg_fn_;
+    CloseCallback close_fn_;
 
-    typedef std::function<void(Conn*)> ReadyToPublishCallback;
+    typedef std::function<void(NSQConn*)> ReadyToPublishCallback;
     ReadyToPublishCallback ready_to_publish_fn_;
 };
 }
