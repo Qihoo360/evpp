@@ -1,4 +1,3 @@
-include ../build.mk/astyle.mk
 
 CXX := g++
 
