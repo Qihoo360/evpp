@@ -145,7 +145,7 @@ bool Server::Start() {
         LOG_ERROR << "MessageHandler DO NOT set!";
         return false;
     }
-    for (auto &rt : recv_threads_) {
+    for (auto& rt : recv_threads_) {
         if (!rt->Run()) {
             return false;
         }
@@ -214,7 +214,7 @@ void Server::RecvingLoop(RecvThread* thread) {
         int readn = ::recvfrom(thread->fd(), (char*)recv_msg->WriteBegin(), recv_buf_size_, 0, recv_msg->mutable_remote_addr(), &addr_len);
         if (readn >= 0) {
             LOG_TRACE << "fd=" << thread->fd() << " port=" << thread->port()
-                << " recv len=" << readn << " from " << sock::ToIPPort(recv_msg->remote_addr());
+                      << " recv len=" << readn << " from " << sock::ToIPPort(recv_msg->remote_addr());
 
             recv_msg->WriteBytes(readn);
             if (tpool_) {

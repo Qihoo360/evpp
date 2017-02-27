@@ -120,19 +120,19 @@ void Producer::OnPublishResponse(NSQConn* conn, const CommandPtr& cmd, bool succ
 //         LOG_INFO << "Get a PublishResponse message OK, command=" << cmd;
 //         published_ok_count_++;
 //         delete cmd;
-// 
+//
 //         if (hwm_triggered_ && wait_ack_count_ < kDefaultHighWaterMark * conns_.size() / 2) {
 //             LOG_TRACE << "We can publish more data now.";
 //             hwm_triggered_ = false;
-// 
+//
 //             if (ready_fn_) {
 //                 ready_fn_();
 //             }
 //         }
-// 
+//
 //         return;
 //     }
-// 
+//
 //     published_failed_count_++;
 //     LOG_ERROR << "Publish command " << cmd << " failed. Try again.";
 //     PublishInLoop(cmd);
@@ -148,7 +148,7 @@ void Producer::OnPublishResponse(NSQConn* conn, const CommandPtr& cmd, bool succ
 //     assert(cl.first.size() == cl.second);
 //     return c;
 // }
-// 
+//
 // void Producer::PushWaitACKCommand(Conn* conn, const CommandPtr& cmd) {
 //     CommandList& cl = wait_ack_[conn];
 //     cl.first.push_back(cmd);
@@ -173,9 +173,9 @@ ConnPtr Producer::GetNextConn() {
 
 
 void Producer::PrintStats() {
-    LOG_WARN << "published_count=" << published_count_ 
-        << " published_ok_count=" << published_ok_count_ 
-        << " published_failed_count=" << published_failed_count_;
+    LOG_WARN << "published_count=" << published_count_
+             << " published_ok_count=" << published_ok_count_
+             << " published_failed_count=" << published_failed_count_;
     published_count_ = 0;
     published_ok_count_ = 0;
     published_failed_count_ = 0;
