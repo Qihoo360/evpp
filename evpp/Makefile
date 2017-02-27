@@ -1,5 +1,3 @@
-include ../rpm/build.mk
-include ../build.mk/astyle.mk
 
 CC=gcc
 CXX=g++
@@ -10,7 +8,7 @@ SOURCE_DIR=$(CURRENT_DIR)
 DEBUG := -D_DEBUG
 CFLAGS=$(TOP_CFLAGS) -c -fPIC \
 	   -DH_HAVE_BOOST \
-	   -O3 -Wall -Wno-unused-parameter -Wno-unused-function -Wunused-variable -Wunused-value \
+	   -g -Wall -Wno-unused-parameter -Wno-unused-function -Wunused-variable -Wunused-value \
 	   -Wshadow -Wcast-qual -Wcast-align -Wwrite-strings -Wsign-compare \
 	   -Winvalid-pch -fms-extensions -Wfloat-equal -Wextra -std=c++11 -DGOOGLE_STRIP_LOG=2 \
 	   -I .. -I ../include -MMD
@@ -39,11 +37,8 @@ $(TARGET_A) : $(OBJS)
 	ranlib $@			   
 
 $(TARGET_SO) : $(OBJS)
-	$(CXX) $(LDFLAGS) $(OBJS) -shared -o $@.$(FULL)
+	$(CXX) $(LDFLAGS) $(OBJS) -shared -o $@
 	@rm -fr $(@)
-	@rm -fr $(@).$(MAJOR)
-	ln -s $(@).$(FULL) $(@).$(MAJOR)
-	ln -s $(@).$(MAJOR) $(@)
 	
 check : $(TARGET_A) $(TARGET_SO)	
 	$(MAKE) install

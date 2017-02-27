@@ -1,4 +1,3 @@
-include ../../../build.mk/astyle.mk 
 
 PLATFORM := $(shell uname)
 PLATFORM_VERSION := $(shell uname -r| awk -F 'el' '{printf("el%d", substr($$2,1,1))}')
@@ -49,8 +48,4 @@ $(TARGET) : $(OBJS)
 
 clean:
 	rm -rf *.o *.d $(OBJS) $(DEPS) $(TARGET) *.tmp decoded.txt log
-
-fmt:
-	$(ASTYLE) *.cc 
-	rm -rf *.orig
 
