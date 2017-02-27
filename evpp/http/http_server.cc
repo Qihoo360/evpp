@@ -203,7 +203,7 @@ void Server::Dispatch(EventLoop* listening_loop,
                       const HTTPRequestCallback& user_callback) {
     // 当前正在 HTTP 的监听线程中执行
     assert(listening_loop->IsInLoopThread());
-    LOG_TRACE << "dispatch request " << ctx->req << " url=" << ctx->original_uri() << " in main thread";
+    LOG_TRACE << "dispatch request " << ctx->req() << " url=" << ctx->original_uri() << " in main thread";
     EventLoop* loop = NULL;
     loop = GetNextLoop(listening_loop, ctx);
 
@@ -211,7 +211,7 @@ void Server::Dispatch(EventLoop* listening_loop,
     auto f = [](EventLoop* l, const ContextPtr & context,
                 const HTTPSendResponseCallback & response_cb,
                 const HTTPRequestCallback & user_cb) {
-        LOG_TRACE << "process request " << context->req
+        LOG_TRACE << "process request " << context->req()
             << " url=" << context->original_uri() << " in working thread";
 
         // 在工作线程中执行，调用上层应用设置的回调函数来处理该HTTP请求
@@ -233,17 +233,17 @@ EventLoop* Server::GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx) {
     }
 
 #if LIBEVENT_VERSION_NUMBER >= 0x02010500
-    const sockaddr*  sa = evhttp_connection_get_addr(ctx->req->evcon);
+    const sockaddr*  sa = evhttp_connection_get_addr(ctx->req()->evcon);
     if (sa) {
         const sockaddr_in* r = sock::sockaddr_in_cast(sa);
         LOG_INFO << "http remote address " << sock::ToIPPort(r);
         return tpool_->GetNextLoopWithHash(r->sin_addr.s_addr);
     } else {
-        uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
+        uint64_t hash = std::hash<std::string>()(ctx->remote_ip());
         return tpool_->GetNextLoopWithHash(hash);
     }
 #else
-    uint64_t hash = std::hash<std::string>()(ctx->remote_ip);
+    uint64_t hash = std::hash<std::string>()(ctx->remote_ip());
     return tpool_->GetNextLoopWithHash(hash);
 #endif
 }

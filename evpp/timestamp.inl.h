@@ -1,7 +1,5 @@
 #pragma once
 
-#include "gettimeofday.h"
-
 namespace evpp {
 inline Timestamp::Timestamp()
     : ns_(0) {}
@@ -17,7 +15,7 @@ inline Timestamp::Timestamp(const struct timeval& t)
     : ns_(int64_t(t.tv_sec) * Duration::kSecond + t.tv_usec * Duration::kMicrosecond) {}
 
 inline Timestamp Timestamp::Now() {
-    return Timestamp(int64_t(utcmicrosecond() * Duration::kMicrosecond));
+    return Timestamp(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 }
 
 inline void Timestamp::Add(Duration d) {
