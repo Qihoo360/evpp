@@ -33,10 +33,10 @@ public:
     typedef std::function<void()> CloseCallback;
 public:
     void ConnectToNSQD(const std::string& tcp_addr/*host:port*/);
-    void ConnectToNSQDs(const std::string& tcp_addrs/*host1:port1,host2:port2*/);
+    void ConnectToNSQDs(const std::string& tcp_addrs/*host1:port1,host2:port2,host3:port3*/);
     void ConnectToNSQDs(const std::vector<std::string>& tcp_addrs/*host:port*/);
     void ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/);
-    void ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/);
+    void ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test1,http://192.168.0.6:4161/lookup?topic=test2,http://192.168.0.7:4161/nodes*/);
     void Close();
 
     void SetMessageCallback(const MessageCallback& cb) {
