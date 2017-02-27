@@ -60,7 +60,7 @@ TEST_UNIT(testTCPClientReconnect) {
     for (int i = 0; i < test_count; i++) {
         tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), addr, "tcp_server", 1)); //TODO FIXME 修改为0个线程，会出现map/vector iterator崩溃
         tsrv->SetMessageCallback(&OnMessage);
-        tsrv->Init() && tsrv->Start();
+        tsrv->Init()&& tsrv->Start();
         usleep(evpp::Duration(2.0).Microseconds());
         tsrv->Stop();
         usleep(evpp::Duration(2.0).Microseconds());

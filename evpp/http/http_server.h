@@ -60,7 +60,7 @@ private:
         // 每个线程运行一个HTTP Service用来监听HTTP请求
         std::shared_ptr<Service> hserver;
     };
-    
+
     std::vector<ListenThread> listen_threads_;
 
     // 工作线程池，处理请求
