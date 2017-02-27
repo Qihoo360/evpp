@@ -1,4 +1,4 @@
- #pragma once
+#pragma once
 
 #include "evpp/buffer.h"
 #include "evpp/sys_sockets.h"
@@ -15,10 +15,14 @@ public:
 
     void set_remote_addr(const struct sockaddr& raddr);
     const struct sockaddr* remote_addr() const;
-    struct sockaddr* mutable_remote_addr() { return sock::sockaddr_cast(&remote_addr_); }
+    struct sockaddr* mutable_remote_addr() {
+        return sock::sockaddr_cast(&remote_addr_);
+    }
     std::string remote_ip() const;
 
-    int sockfd() const { return sockfd_; }
+    int sockfd() const {
+        return sockfd_;
+    }
 private:
     struct sockaddr_in remote_addr_;
     int sockfd_;
