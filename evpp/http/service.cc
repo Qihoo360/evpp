@@ -100,7 +100,7 @@ void Service::HandleRequest(struct evhttp_request* req) {
         return;
     }
 
-    auto it = callbacks_.find(ctx->uri);
+    auto it = callbacks_.find(ctx->uri());
     if (it != callbacks_.end()) {
         // 此处会调度到 HTTPServer::Dispatch 函数中
         auto f = std::bind(&Service::SendReply, this, req, std::placeholders::_1);
@@ -113,10 +113,10 @@ void Service::HandleRequest(struct evhttp_request* req) {
 
 void Service::DefaultHandleRequest(const ContextPtr& ctx) {
     if (default_callback_) {
-        auto f = std::bind(&Service::SendReply, this, ctx->req, std::placeholders::_1);
+        auto f = std::bind(&Service::SendReply, this, ctx->req(), std::placeholders::_1);
         default_callback_(listen_loop_, ctx, f);
     } else {
-        evhttp_send_reply(ctx->req, HTTP_BADREQUEST, "Bad Request", NULL);
+        evhttp_send_reply(ctx->req(), HTTP_BADREQUEST, "Bad Request", NULL);
     }
 }
 

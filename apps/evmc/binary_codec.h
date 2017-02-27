@@ -30,7 +30,7 @@ private:
     void OnResponsePacket(const protocol_binary_response_header& resp,
                           evpp::Buffer* buf);
 private:
-    // TODO : è‹¥ä½¿ç”¨æ™ºèƒ½æŒ‡é’ˆï¼Œè¦å¤„ç†å¾ªç¯å¼•ç”¨. clientçš„å›è°ƒä¸­å¼•ç”¨äº†codec
+    // TODO : ÈôÊ¹ÓÃÖÇÄÜÖ¸Õë£¬Òª´¦ÀíÑ­»·ÒıÓÃ. clientµÄ»Øµ÷ÖĞÒıÓÃÁËcodec
     MemcacheClient* memc_client_;
 };
 

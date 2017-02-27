@@ -18,15 +18,15 @@
 
 *.VC.VC.opendb
 
-msvc/Debug/
-msvc/Release/
-msvc/bin/
-msvc/*.opensdf
-msvc/*.sdf
-msvc/*.suo
-msvc/.vs/
-msvc/libevpp.VC.db
-msvc/evnsq-test.vcxproj.filters
+vsprojects/Debug/
+vsprojects/Release/
+vsprojects/bin/
+vsprojects/*.opensdf
+vsprojects/*.sdf
+vsprojects/*.suo
+vsprojects/.vs/
+vsprojects/libevpp.VC.db
+vsprojects/evnsq-test.vcxproj.filters
 
 test/evpp-test
 examples/echo/*/simple_echo
@@ -40,6 +40,8 @@ core.*
 *.orig
 
 build
+build-debug
+build-release
 
 apps/evnsq/evnsqtail/evnsqtail
 apps/evnsq/test/evnsqtest
@@ -51,7 +53,6 @@ apps/evnsq/test/evnsqtest
 3rdparty/libevent-2.1.5-beta/build/
 3rdparty/libevent-release-2.1.7-rc/build/
 3rdparty/libevent-release-2.1.7-rc/*.dir/
-3rdparty/wininclude/event2/
 3rdparty/glog-0.3.4/Backup/
 3rdparty/glog-0.3.4/Debug/
 3rdparty/glog-0.3.4/Release/
@@ -70,7 +71,6 @@ apps/evnsq/test/evnsqtest
 3rdparty/glog-0.3.4/.vs/
 3rdparty/glog-0.3.4/Backup1/
 3rdparty/glog-0.3.4/UpgradeLog2.htm
-
 
 evpp/libevpp.so.1
 evpp/libevpp.so.1.0
