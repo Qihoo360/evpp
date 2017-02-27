@@ -21,7 +21,7 @@ Client::Client(evpp::EventLoop* l, Type t, const Option& ops)
 Client::~Client() {}
 
 void Client::ConnectToNSQD(const std::string& addr) {
-    auto c = ConnPtr(new Conn(this, option_));
+    auto c = ConnPtr(new NSQConn(this, option_));
     connecting_conns_[addr] = c;
     c->SetMessageCallback(msg_fn_);
     c->SetConnectionCallback(std::bind(&Client::OnConnection, this, std::placeholders::_1));
@@ -60,6 +60,20 @@ void Client::ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0
     for (auto it = v.begin(); it != v.end(); ++it) {
         ConnectToLoopupd(*it);
     }
+}
+
+
+void Client::Close() {
+    auto f = [this]() {
+        for (auto it = this->conns_.begin(), ite = this->conns_.end(); it != ite; ++it) {
+            (*it)->Close();
+        }
+
+        for (auto it = this->connecting_conns_.begin(), ite = this->connecting_conns_.end(); it != ite; ++it) {
+            it->second->Close();
+        }
+    };
+    loop_->RunInLoop(f);
 }
 
 void Client::HandleLoopkupdHTTPResponse(
@@ -109,25 +123,40 @@ void Client::OnConnection(const ConnPtr& conn) {
         conns_.push_back(conn);
         connecting_conns_.erase(conn->remote_addr());
         switch (conn->status()) {
-        case Conn::kConnected:
+        case NSQConn::kConnected:
             if (type_ == kConsumer) {
                 conn->Subscribe(topic_, channel_);
             } else {
                 assert(type_ == kProducer);
-                conn->set_status(Conn::kReady);
+                conn->set_status(NSQConn::kReady);
                 if (ready_to_publish_fn_) {
                     ready_to_publish_fn_(conn.get());
                 }
             }
             break;
-        case Conn::kReady:
+        case NSQConn::kReady:
             assert(type_ == kConsumer);
             break;
         default:
             break;
         }
-    } else {
+    } else if (conn->IsConnecting()){
         MoveToConnectingList(conn);
+    } else {
+        // 应用层主动调用 Close
+        // 删除该 NSQ 连接
+        for (auto it = conns_.begin(), ite = conns_.end(); it != ite; ++it) {
+            if (*it == conn) {
+                conns_.erase(it);
+                return;
+            }
+        }
+
+        connecting_conns_.erase(conn->remote_addr());
+
+        if (connecting_conns_.empty() && conns_.empty()) {
+            close_fn_();
+        }
     }
 }
 
