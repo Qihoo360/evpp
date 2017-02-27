@@ -46,11 +46,11 @@ bool Client::Connect() {
 
     if (ret != 0) {
         Close();
-        struct sockaddr_in *paddr = (struct sockaddr_in*)&remote_addr_;
+        struct sockaddr_in* paddr = (struct sockaddr_in*)&remote_addr_;
         LOG_ERROR << "Failed to connect to remote IP="
-            << inet_ntoa(paddr->sin_addr)
-            << ", port=" << ntohs(paddr->sin_port)
-            << ", errno=" << errno << " " << strerror(errno);
+                  << inet_ntoa(paddr->sin_addr)
+                  << ", port=" << ntohs(paddr->sin_port)
+                  << ", errno=" << errno << " " << strerror(errno);
         return false;
     }
 
@@ -98,8 +98,8 @@ std::string Client::DoRequest(const std::string& remote_ip, int port, const std:
 bool Client::Send(const char* msg, size_t len) {
     // TODO use 'send' to improve performance??
     int sentn = ::sendto(sockfd(),
-                            msg,
-                            len, 0, &remote_addr_, sizeof(remote_addr_));
+                         msg,
+                         len, 0, &remote_addr_, sizeof(remote_addr_));
     return sentn > 0;
 }
 
