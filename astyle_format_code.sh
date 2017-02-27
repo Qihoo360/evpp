@@ -1,6 +1,6 @@
 
-SUBDIRS="evpp test examples apps 3rdparty"
-
+SUBDIRS="evpp evpp/http evpp/httpc evpp/udp test examples/echo/httpecho examples/echo/udpecho examples/echo/tcpecho examples/pingpong/client examples/pingpong/server apps/evmc/test apps/evmc apps/evnsq apps/evnsq/test "
+FILETYPES="*.cc *.h"
 ASTYLE_BIN="3rdparty/astyle/build/gcc/bin/astyle"
 ASTYLE="${ASTYLE_BIN} -A2 -HtUwpj -M80 -c -s4 --pad-header --align-pointer=type "
 
@@ -22,13 +22,16 @@ fi
 for d in ${SUBDIRS}
 do
     echo "astyle format subdir: $d "
-    for file in $d/*.cc
+    for t in ${FILETYPES}
     do
-        echo ">>>>>>>>>> format file: $file "
-        if test -f $file
-        then
-           ${ASTYLE} $file 
-        fi
+        for file in $d/$t
+        do
+            echo ">>>>>>>>>> format file: $file "
+            if test -f $file
+            then
+               ${ASTYLE} $file 
+            fi
+        done
     done
 done
 
