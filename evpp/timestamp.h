@@ -1,6 +1,8 @@
 #pragma once
 
 #include "duration.h"
+#include <chrono>
+
 
 namespace evpp {
 class Timestamp {

@@ -36,12 +36,12 @@ enum {
 };
 
 void VbucketConfig::OnVbucketResult(uint16_t vbucket, bool success) {
-    // æå¸¦æ›´æ–°å¥åº·å€¼ï¼Œä¸ä¸“é—¨æ›´æ–°. è¿™æ ·è¯¥å‡½æ•°å°±æ˜¯å¤šä½™çš„
+    // ÉÓ´ø¸üĞÂ½¡¿µÖµ£¬²»×¨ÃÅ¸üĞÂ. ÕâÑù¸Ãº¯Êı¾ÍÊÇ¶àÓàµÄ
 
-    // å¥åº·å€¼/æƒé‡æ›´æ–°ç­–ç•¥:
-    // 1. å¥åº·å€¼å¿«é€Ÿ(æŒ‡æ•°)è¡°å‡ï¼Œæ…¢é€Ÿ(çº¿æ€§)æ¢å¤
-    // 2. Nä¸ªreplicaï¼Œç›®å‰æ˜¯é€‰ä¸åŒç«¯å£é‡è¯•ä¸¤æ¬¡. æ˜¯å¦éœ€è¦å…¨éƒ¨é‡è¯•ä¸€éï¼Ÿ
-    // 3. æ›´æ–°å¥åº·å€¼æ—¶ï¼Œå…¼é¡¾çº¿ç¨‹å®‰å…¨å’Œæ€§èƒ½
+    // ½¡¿µÖµ/È¨ÖØ¸üĞÂ²ßÂÔ:
+    // 1. ½¡¿µÖµ¿ìËÙ(Ö¸Êı)Ë¥¼õ£¬ÂıËÙ(ÏßĞÔ)»Ö¸´
+    // 2. N¸öreplica£¬Ä¿Ç°ÊÇÑ¡²»Í¬¶Ë¿ÚÖØÊÔÁ½´Î. ÊÇ·ñĞèÒªÈ«²¿ÖØÊÔÒ»±é£¿
+    // 3. ¸üĞÂ½¡¿µÖµÊ±£¬¼æ¹ËÏß³Ì°²È«ºÍĞÔÄÜ
     return;
 }
 
@@ -58,7 +58,7 @@ uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const
 
     uint16_t server_id = BAD_SERVER_ID;
     {
-        // æŒ‰å¥åº·æƒé‡é€‰å®šserver id
+        // °´½¡¿µÈ¨ÖØÑ¡¶¨server id
         std::map<int64_t, uint16_t> weighted_items;
         int64_t total_weight = 0;
 
@@ -80,7 +80,7 @@ uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const
         }
     }
 
-    // æå¸¦æ›´æ–°å¥åº·å€¼ï¼Œä¸ä¸“é—¨æ›´æ–°
+    // ÉÓ´ø¸üĞÂ½¡¿µÖµ£¬²»×¨ÃÅ¸üĞÂ
     server_health_[server_id] += 1000;
 
     if (server_health_[server_id] > MAX_WEIGHT) {
