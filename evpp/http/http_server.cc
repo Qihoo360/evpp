@@ -61,7 +61,7 @@ bool Server::Init(const std::string& listen_ports/*"80,8080,443"*/) {
 }
 
 bool Server::AfterFork() {
-    for (auto &lt : listen_threads_) {
+    for (auto& lt : listen_threads_) {
         lt.thread->event_loop()->AfterFork();
     }
     return true;
@@ -69,25 +69,25 @@ bool Server::AfterFork() {
 
 bool Server::Start() {
     bool rc = tpool_->Start(true);
-    for (auto &lt : listen_threads_) {
+    for (auto& lt : listen_threads_) {
         auto http_close_fn = std::bind(&Service::Stop, lt.hserver);
         rc &= lt.thread->Start(true,
-                EventLoopThread::Functor(),
-                http_close_fn);
+                               EventLoopThread::Functor(),
+                               http_close_fn);
         assert(lt.thread->IsRunning());
-        for (auto &c : callbacks_) {
+        for (auto& c : callbacks_) {
             auto cb = std::bind(&Server::Dispatch, this,
-                    std::placeholders::_1,
-                    std::placeholders::_2,
-                    std::placeholders::_3,
-                    c.second);
+                                std::placeholders::_1,
+                                std::placeholders::_2,
+                                std::placeholders::_3,
+                                c.second);
             lt.hserver->RegisterHandler(c.first, cb);
         }
         HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
-                std::placeholders::_1,
-                std::placeholders::_2,
-                std::placeholders::_3,
-                default_callback_);
+                                           std::placeholders::_1,
+                                           std::placeholders::_2,
+                                           std::placeholders::_3,
+                                           default_callback_);
         lt.hserver->RegisterDefaultHandler(cb);
         if (!rc) {
             return false;
@@ -101,7 +101,7 @@ bool Server::Start() {
 }
 
 void Server::Stop(bool wait_thread_exit /*= false*/) {
-    for (auto &lt : listen_threads_) {
+    for (auto& lt : listen_threads_) {
         // 1. Service 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
         // 2. EventLoopThread 对象必须调用 Stop 来停止
         lt.thread->Stop();
@@ -114,7 +114,7 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
 
     for (;;) {
         bool stopped = true;
-        for (auto &lt : listen_threads_) {
+        for (auto& lt : listen_threads_) {
             if (!lt.thread->IsStopped()) {
                 stopped = false;
                 break;
@@ -133,7 +133,7 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
     }
 
     assert(tpool_->IsStopped());
-    for (auto &lt : listen_threads_) {
+    for (auto& lt : listen_threads_) {
         (void)lt; // avoid compile warning
         assert(lt.thread->IsStopped());
     }
@@ -141,14 +141,14 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
 }
 
 void Server::Pause() {
-    for (auto &lt : listen_threads_) {
+    for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->event_loop();
         loop->RunInLoop(std::bind(&Service::Pause, lt.hserver));
     }
 }
 
 void Server::Continue() {
-    for (auto &lt : listen_threads_) {
+    for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->event_loop();
         loop->RunInLoop(std::bind(&Service::Continue, lt.hserver));
     }
@@ -163,7 +163,7 @@ bool Server::IsRunning() const {
         return false;
     }
 
-    for (auto &lt : listen_threads_) {
+    for (auto& lt : listen_threads_) {
         if (!lt.thread->IsRunning()) {
             return false;
         }
@@ -179,7 +179,7 @@ bool Server::IsStopped() const {
         return false;
     }
 
-    for (auto &lt : listen_threads_) {
+    for (auto& lt : listen_threads_) {
         if (!lt.thread->IsStopped()) {
             return false;
         }
@@ -208,11 +208,11 @@ void Server::Dispatch(EventLoop* listening_loop,
     loop = GetNextLoop(listening_loop, ctx);
 
     // 将该HTTP请求调度到工作线程处理
-    auto f = [](EventLoop* l, const ContextPtr & context,
+    auto f = [](EventLoop * l, const ContextPtr & context,
                 const HTTPSendResponseCallback & response_cb,
-                const HTTPRequestCallback & user_cb) {
+    const HTTPRequestCallback & user_cb) {
         LOG_TRACE << "process request " << context->req()
-            << " url=" << context->original_uri() << " in working thread";
+                  << " url=" << context->original_uri() << " in working thread";
 
         // 在工作线程中执行，调用上层应用设置的回调函数来处理该HTTP请求
         // 当上层应用处理完后，上层应用必须调用 response_cb 将处理结果反馈回来，也就是会回到 Service::SendReply 函数中。

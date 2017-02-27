@@ -51,7 +51,7 @@ public:
         return ++id_seq_;
     }
 
-	void OnConnectTimeout(uint32_t cmd_id);
+    void OnConnectTimeout(uint32_t cmd_id);
     void OnResponseData(const evpp::TCPConnPtr& tcp_conn,
                         evpp::Buffer* buf,
                         evpp::Timestamp ts);
@@ -74,8 +74,8 @@ private:
     evpp::InvokeTimerPtr cmd_timer_bakup_;
 
     BinaryCodec* codec_;
-	bool  timer_canceled_;
-	bool  con_timer_canceled_;
+    bool  timer_canceled_;
+    bool  con_timer_canceled_;
 
     std::queue<CommandPtr> running_command_;
     std::queue<CommandPtr> waiting_command_;
