@@ -85,7 +85,8 @@ void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
         }
 
         if (conn_fn_) {
-            conn_fn_(shared_from_this());
+            auto self = shared_from_this();
+            conn_fn_(self);
         }
     }
 }
@@ -114,7 +115,8 @@ void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Time
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 status_ = kConnected;
                 if (conn_fn_) {
-                    conn_fn_(shared_from_this());
+                    auto self = shared_from_this();
+                    conn_fn_(self);
                 }
             } else {
                 LOG_ERROR << "Identify ERROR";
@@ -130,7 +132,8 @@ void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Time
             if (buf->NextString(size - sizeof(frame_type)) == kOK) {
                 status_ = kReady;
                 if (conn_fn_) {
-                    conn_fn_(shared_from_this());
+                    auto self = shared_from_this();
+                    conn_fn_(self);
                 }
                 LOG_INFO << "Successfully connected to nsqd " << conn->remote_addr();
                 UpdateReady(100); //TODO RDY count
@@ -240,16 +243,11 @@ bool NSQConn::WritePublishCommand(const CommandPtr& c) {
     assert(nsq_client_->IsProducer());
     if (wait_ack_.size() >= static_cast<Producer*>(nsq_client_)->high_water_mark()) {
         LOG_EVERY_N(WARNING, 100000) << "Too many messages are waiting a response ACK. Please try again later.";
-        //         hwm_triggered_ = true;
-        //
-        //         if (high_water_mark_fn_) {
-        //             high_water_mark_fn_(this, wait_ack_count_);
-        //         }
-
         return false;
     }
 
-    evpp::Buffer buf; // TODO : using a object pool to improve performance
+    // TODO : using a object pool to improve performance
+    evpp::Buffer buf;
     c->WriteTo(&buf);
     WriteBinaryCommand(&buf);
     PushWaitACKCommand(c);
