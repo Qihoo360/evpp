@@ -23,7 +23,7 @@ NSQConn::NSQConn(Client* c, const Option& ops)
     , loop_(c->loop())
     , option_(ops)
     , status_(kDisconnected)
-    //, wait_ack_count_(0)
+      //, wait_ack_count_(0)
     , published_count_(0)
     , published_ok_count_(0)
     , published_failed_count_(0) {}
@@ -241,7 +241,7 @@ bool NSQConn::WritePublishCommand(const CommandPtr& c) {
     if (wait_ack_.size() >= static_cast<Producer*>(nsq_client_)->high_water_mark()) {
         LOG_EVERY_N(WARNING, 100000) << "Too many messages are waiting a response ACK. Please try again later.";
         //         hwm_triggered_ = true;
-        // 
+        //
         //         if (high_water_mark_fn_) {
         //             high_water_mark_fn_(this, wait_ack_count_);
         //         }
