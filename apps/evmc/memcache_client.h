@@ -22,7 +22,7 @@ class MemcacheClient : public std::enable_shared_from_this<MemcacheClient> {
 public:
     MemcacheClient(evpp::EventLoop* evloop, evpp::TCPClient* tcp_client, MemcacheClientBase* mcpool = NULL, const int timeout_ms = 249)
         : id_seq_(0), exec_loop_(evloop), tcp_client_(tcp_client)
-        , mc_pool_(mcpool), timeout_(timeout_ms / 1000.0), codec_(NULL), timer_canceled_(true) {
+        , mc_pool_(mcpool), timeout_(timeout_ms * 1000 * 1000), codec_(NULL), timer_canceled_(true), con_timer_canceled_(true) {
     }
     virtual ~MemcacheClient();
 
@@ -40,11 +40,7 @@ public:
         return CommandPtr(running_command_.front());
     }
 
-    inline void PushWaitingCommand(CommandPtr& cmd) {
-        if (LIKELY(cmd)) {
-            waiting_command_.push(cmd);
-        }
-    }
+    void PushWaitingCommand(CommandPtr& cmd);
 
     CommandPtr PopWaitingCommand();
 
@@ -55,6 +51,7 @@ public:
         return ++id_seq_;
     }
 
+    void OnConnectTimeout(uint32_t cmd_id);
     void OnResponseData(const evpp::TCPConnPtr& tcp_conn,
                         evpp::Buffer* buf,
                         evpp::Timestamp ts);
@@ -73,10 +70,12 @@ private:
     evpp::Duration timeout_;
 
     evpp::InvokeTimerPtr cmd_timer_;
+    evpp::InvokeTimerPtr con_cmd_timer_;
     evpp::InvokeTimerPtr cmd_timer_bakup_;
 
     BinaryCodec* codec_;
-	bool  timer_canceled_;
+    bool  timer_canceled_;
+    bool  con_timer_canceled_;
 
     std::queue<CommandPtr> running_command_;
     std::queue<CommandPtr> waiting_command_;

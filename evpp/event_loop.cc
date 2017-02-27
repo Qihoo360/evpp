@@ -6,8 +6,8 @@
 #include "evpp/invoke_timer.h"
 
 namespace evpp {
-EventLoop::EventLoop() 
-    : create_evbase_myself_(true), pending_functor_count_(0){
+EventLoop::EventLoop()
+    : create_evbase_myself_(true), pending_functor_count_(0) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
     if (cfg) {
@@ -154,10 +154,10 @@ void EventLoop::RunInLoop(const Functor& functor) {
 void EventLoop::QueueInLoop(const Functor& cb) {
     {
 #ifdef H_HAVE_BOOST
-		auto f = new Functor(cb);
-		while(!pending_functors_->push(f)) {
-		}
-#else 
+        auto f = new Functor(cb);
+        while (!pending_functors_->push(f)) {
+        }
+#else
         std::lock_guard<std::mutex> lock(mutex_);
         pending_functors_->emplace_back(cb);
 #endif
@@ -173,13 +173,13 @@ void EventLoop::DoPendingFunctors() {
     calling_pending_functors_ = true;
 
 #ifdef H_HAVE_BOOST
-	Functor * f = NULL;
-	while (pending_functors_->pop(f)) {
-		(*f)();
-		delete f;
-		--pending_functor_count_;
-	}
-#else 
+    Functor* f = NULL;
+    while (pending_functors_->pop(f)) {
+        (*f)();
+        delete f;
+        --pending_functor_count_;
+    }
+#else
     std::vector<Functor> functors;
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -188,7 +188,7 @@ void EventLoop::DoPendingFunctors() {
 
     for (size_t i = 0; i < functors.size(); ++i) {
         functors[i]();
-		--pending_functor_count_;
+        --pending_functor_count_;
     }
 #endif
 
