@@ -40,7 +40,7 @@ void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
 int main(int argc, char* argv[]) {
     google::InitGoogleLogging(argv[0]);
 
-    FLAGS_stderrthreshold=0;
+    FLAGS_stderrthreshold = 0;
 
     int opt = 0;
     //int digit_optind = 0;
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
         client.ConnectToNSQDs(nsqd_tcp_addr);
     }
 
-    auto f = [](evpp::EventLoop* l, evnsq::Producer* c) {
+    auto f = [](evpp::EventLoop * l, evnsq::Producer * c) {
         std::this_thread::sleep_for(std::chrono::seconds(2));
         for (;;) {
             if (l->pending_functor_count() > 10000) {

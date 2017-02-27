@@ -140,7 +140,7 @@ void Client::OnConnection(const ConnPtr& conn) {
         default:
             break;
         }
-    } else if (conn->IsConnecting()){
+    } else if (conn->IsConnecting()) {
         MoveToConnectingList(conn);
     } else {
         // 应用层主动调用 Close
