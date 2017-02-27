@@ -4,6 +4,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+
 namespace evnsq {
 
 Option::Option() {
