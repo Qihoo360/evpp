@@ -50,7 +50,7 @@ void TCPConn::Close() {
         assert(c->loop_->IsInLoopThread());
         c->HandleClose();
     };
-    loop_->RunInLoop(f);
+    loop_->QueueInLoop(f);
 }
 
 void TCPConn::Send(const std::string& d) {
