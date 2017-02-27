@@ -77,9 +77,9 @@ typedef std::shared_ptr<Context> ContextPtr;
 typedef std::function<void(const std::string& response_data)> HTTPSendResponseCallback;
 
 typedef std::function <
-    void(EventLoop* loop,
-         const ContextPtr& ctx,
-         const HTTPSendResponseCallback& respcb) > HTTPRequestCallback;
+void(EventLoop* loop,
+     const ContextPtr& ctx,
+     const HTTPSendResponseCallback& respcb) > HTTPRequestCallback;
 
 typedef std::map<std::string/*The uri*/, HTTPRequestCallback> HTTPRequestCallbackMap;
 }

@@ -31,8 +31,8 @@ enum {
     INIT_WEIGHT = 1000,
     MAX_WEIGHT = 1000000,
     MIN_WEIGHT = 100,
-	CLUSTER_MODE = 1,
-	STAND_ALONE_MODE = 2,
+    CLUSTER_MODE = 1,
+    STAND_ALONE_MODE = 2,
 };
 
 void VbucketConfig::OnVbucketResult(uint16_t vbucket, bool success) {
@@ -48,7 +48,7 @@ void VbucketConfig::OnVbucketResult(uint16_t vbucket, bool success) {
 uint16_t VbucketConfig::SelectServerFirstId(uint16_t vbucket) const {
     uint16_t vb = vbucket % vbucket_map_.size();
     const std::vector<int>& server_ids = vbucket_map_[vb];
-	return server_ids[0];
+    return server_ids[0];
 }
 
 uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const {
@@ -143,77 +143,76 @@ bool VbucketConfig::Load(const char* json_info) {
 }
 
 bool MultiModeVbucketConfig::IsStandAlone(const char* serv) {
-	bool has_semicolon = false;
-	int i = 0;
-	char c = *(serv + i);
-	while (c != '\0') {
-		if (c == ':') {
-			has_semicolon = true; 
-		}
-		if (c == '/') {
-			break;
-		}
-		++i;
-		c = *(serv + i);
-	}
-	if (c == '\0' && has_semicolon) {
-		return true;
-	}
-	return false;
+    bool has_semicolon = false;
+    int i = 0;
+    char c = *(serv + i);
+    while (c != '\0') {
+        if (c == ':') {
+            has_semicolon = true;
+        }
+        if (c == '/') {
+            break;
+        }
+        ++i;
+        c = *(serv + i);
+    }
+    if (c == '\0' && has_semicolon) {
+        return true;
+    }
+    return false;
 }
 
 bool MultiModeVbucketConfig::Load(const char* json_file) {
     if (IsStandAlone(json_file)) {
-		mode_ = STAND_ALONE_MODE;
-		single_server_.emplace_back(json_file);
-		return true;
-	}
-	else { 
-		mode_ = CLUSTER_MODE;
-		std::string context;
-		int ret = GetVbucketConf::GetVbucketConfContext(json_file, context);
-		if (ret == 0) {
-			return VbucketConfig::Load(context.c_str());
-		}
-		return false;
-	}
+        mode_ = STAND_ALONE_MODE;
+        single_server_.emplace_back(json_file);
+        return true;
+    } else {
+        mode_ = CLUSTER_MODE;
+        std::string context;
+        int ret = GetVbucketConf::GetVbucketConfContext(json_file, context);
+        if (ret == 0) {
+            return VbucketConfig::Load(context.c_str());
+        }
+        return false;
+    }
 }
 
 
 uint16_t MultiModeVbucketConfig::GetVbucketByKey(const char* key, size_t nkey) const {
-	if (mode_ != STAND_ALONE_MODE) {
-		return VbucketConfig::GetVbucketByKey(key, nkey);
-	}
-	return 0;
+    if (mode_ != STAND_ALONE_MODE) {
+        return VbucketConfig::GetVbucketByKey(key, nkey);
+    }
+    return 0;
 }
 
 uint16_t MultiModeVbucketConfig::SelectServerFirstId(uint16_t vbucket) const {
-	if (mode_ != STAND_ALONE_MODE) {
-		return VbucketConfig::SelectServerFirstId(vbucket);
-	}
-	return 0;
+    if (mode_ != STAND_ALONE_MODE) {
+        return VbucketConfig::SelectServerFirstId(vbucket);
+    }
+    return 0;
 }
 
 uint16_t MultiModeVbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const {
-	if (mode_ != STAND_ALONE_MODE) {
-		return VbucketConfig::SelectServerId(vbucket, last_id);
-	}
-		return 0;
+    if (mode_ != STAND_ALONE_MODE) {
+        return VbucketConfig::SelectServerId(vbucket, last_id);
+    }
+    return 0;
 }
 
 const std::string& MultiModeVbucketConfig::GetServerAddrById(uint16_t server_id) const {
-	if(mode_ != STAND_ALONE_MODE) {
-		return VbucketConfig::GetServerAddrById(server_id);
-	}
-	assert(single_server_.size() == 1);
-	return single_server_[0];
+    if (mode_ != STAND_ALONE_MODE) {
+        return VbucketConfig::GetServerAddrById(server_id);
+    }
+    assert(single_server_.size() == 1);
+    return single_server_[0];
 }
 
 const std::vector<std::string>& MultiModeVbucketConfig::server_list() const {
-	if (mode_ != STAND_ALONE_MODE) {
-		return VbucketConfig::server_list();
-	}
-	return single_server_;
+    if (mode_ != STAND_ALONE_MODE) {
+        return VbucketConfig::server_list();
+    }
+    return single_server_;
 }
 
 }

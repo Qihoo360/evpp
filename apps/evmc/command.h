@@ -26,7 +26,7 @@ public:
         return vbucket_id_;
     }
 
-     uint16_t server_id()  const; 
+    uint16_t server_id()  const;
     inline void set_server_id(uint16_t sid) {
         server_id_history_.emplace_back(sid);
     }
@@ -46,7 +46,9 @@ public:
     virtual void OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {}
     virtual void OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {}
     virtual void OnPrefixGetCommandDone() {}
-	virtual PrefixGetResultPtr& GetResultContainerByKey(const std::string& key) { return *((PrefixGetResultPtr *)0); }
+    virtual PrefixGetResultPtr& GetResultContainerByKey(const std::string& key) {
+        return *((PrefixGetResultPtr*)0);
+    }
 
 private:
     virtual void RequestBuffer(std::string& str) = 0;
@@ -69,16 +71,16 @@ public:
 
     virtual void OnError(int err_code) {
         LOG_INFO << "SetCommand OnError id=" << id();
-		auto loop = caller_loop(); 
+        auto loop = caller_loop();
         if (loop && !loop->IsInLoopThread()) {
             loop->RunInLoop(std::bind(set_callback_,
-                                               std::move(key_), err_code));
+                                      std::move(key_), err_code));
         } else {
             set_callback_(key_, err_code);
         }
     }
     virtual void OnSetCommandDone(int resp_code) {
-		auto loop = caller_loop(); 
+        auto loop = caller_loop();
         if (loop && !loop->IsInLoopThread()) {
             loop->RunInLoop(std::bind(set_callback_, std::move(key_), resp_code));
         } else {
@@ -106,7 +108,7 @@ public:
 
     virtual void OnError(int err_code) {
         LOG(WARNING) << "GetCommand OnError id=" << id();
-		auto loop = caller_loop(); 
+        auto loop = caller_loop();
         if (loop && !loop->IsInLoopThread()) {
             caller_loop()->RunInLoop(std::bind(get_callback_, std::move(key_),
                                                std::move(GetResult(err_code, std::string()))));
@@ -115,7 +117,7 @@ public:
         }
     }
     virtual void OnGetCommandDone(int resp_code, const std::string& value) {
-		auto loop = caller_loop(); 
+        auto loop = caller_loop();
         if (loop && !loop->IsInLoopThread()) {
             caller_loop()->RunInLoop(std::bind(get_callback_, std::move(key_),
                                                std::move(GetResult(resp_code, value))));
@@ -140,7 +142,7 @@ public:
     virtual void OnError(int err_code) {
         LOG(WARNING) << "PrefixGetCommand OnError id=" << id();
         mget_result_->code = err_code;
-		auto loop = caller_loop(); 
+        auto loop = caller_loop();
         if (loop && !loop->IsInLoopThread()) {
             loop->RunInLoop(std::bind(mget_callback_, std::move(key_), std::move(mget_result_)));
         } else {
@@ -148,7 +150,9 @@ public:
         }
     }
     virtual void OnPrefixGetCommandDone();
-	virtual PrefixGetResultPtr& GetResultContainerByKey(const std::string& key) {return mget_result_;};
+    virtual PrefixGetResultPtr& GetResultContainerByKey(const std::string& key) {
+        return mget_result_;
+    };
 private:
     std::string key_;
     PrefixGetCallback mget_callback_;
@@ -158,115 +162,115 @@ private:
     virtual void RequestBuffer(std::string& str);
 };
 
-struct IdInfo{
-	std::vector<std::string> keys;
-	std::vector<uint16_t> vbuckets;
+struct IdInfo {
+    std::vector<std::string> keys;
+    std::vector<uint16_t> vbuckets;
 };
 
 template<class Result, class Callback>
 class MultiKeyHandler {
-	public:
-		MultiKeyHandler(const Callback& callback, uint32_t finished_nums = 0) 
-			:finished_serverid_nums_(finished_nums), serverid_size_(0),
-			mget_callback_(callback) {
-			}
+public:
+    MultiKeyHandler(const Callback& callback, uint32_t finished_nums = 0)
+        : finished_serverid_nums_(finished_nums), serverid_size_(0),
+          mget_callback_(callback) {
+    }
 
-		inline void set_serverid_keys(std::map<uint16_t, IdInfo>& serverid_keys) {
-			serverid_keys_.swap(serverid_keys);
-			serverid_size_ = serverid_keys_.size();
-		}
+    inline void set_serverid_keys(std::map<uint16_t, IdInfo>& serverid_keys) {
+        serverid_keys_.swap(serverid_keys);
+        serverid_size_ = serverid_keys_.size();
+    }
 
-		inline uint32_t finished_serverid_nums() {
-			return finished_serverid_nums_;
-		}
+    inline uint32_t finished_serverid_nums() {
+        return finished_serverid_nums_;
+    }
 
-		inline uint32_t  FinishedOne()  {
-			return finished_serverid_nums_++;
-		}
+    inline uint32_t  FinishedOne()  {
+        return finished_serverid_nums_++;
+    }
 
-		inline  std::size_t serverid_size() const {
-			return serverid_size_;
-		}
+    inline  std::size_t serverid_size() const {
+        return serverid_size_;
+    }
 
-		IdInfo& FindInfoByid(const int16_t id) {
-			auto it = serverid_keys_.find(id);
-			assert(it != serverid_keys_.end());
-			return it->second;
-		}
+    IdInfo& FindInfoByid(const int16_t id) {
+        auto it = serverid_keys_.find(id);
+        assert(it != serverid_keys_.end());
+        return it->second;
+    }
 
-		std::vector<std::string>& FindKeysByid(const int16_t id) {
-			auto it = serverid_keys_.find(id);
-			assert(it != serverid_keys_.end());
-			return it->second.keys;
-		}
+    std::vector<std::string>& FindKeysByid(const int16_t id) {
+        auto it = serverid_keys_.find(id);
+        assert(it != serverid_keys_.end());
+        return it->second.keys;
+    }
 
-		inline Callback& get_callback() {
-			return mget_callback_;
-		}
+    inline Callback& get_callback() {
+        return mget_callback_;
+    }
 
-		inline Result& get_result() {
-			return mget_result_;
-		}
+    inline Result& get_result() {
+        return mget_result_;
+    }
 
-		inline std::map<uint16_t, IdInfo>& get_serverid_keys() {
-			return serverid_keys_; 
-		}
+    inline std::map<uint16_t, IdInfo>& get_serverid_keys() {
+        return serverid_keys_;
+    }
 
-	private:
-		std::map<uint16_t, IdInfo> serverid_keys_;
-		uint32_t thread_ticket_;
-		std::atomic_uint finished_serverid_nums_;
-		std::size_t serverid_size_;
-		Callback mget_callback_;
-		Result mget_result_;
+private:
+    std::map<uint16_t, IdInfo> serverid_keys_;
+    uint32_t thread_ticket_;
+    std::atomic_uint finished_serverid_nums_;
+    std::size_t serverid_size_;
+    Callback mget_callback_;
+    Result mget_result_;
 };
 
 template<class Result, class Callback>
 class MultiKeyMode {
-	private:
-		typedef std::shared_ptr<MultiKeyHandler<Result, Callback>> MultiKeyHandlerPtr;
-	public:
-		MultiKeyMode(const MultiKeyHandlerPtr& handler)
-			:multikey_handler_(handler), retry_stage_(false) {
-		}
-		inline MultiKeyHandlerPtr& get_handler() {
-			return multikey_handler_;
-		}
-		inline void do_retry() {
-			retry_stage_ = true;
-		}
-		inline bool is_retry_state() {
-			return retry_stage_;
-		}
-	private:
-		MultiKeyHandlerPtr multikey_handler_;
-		bool retry_stage_;
+private:
+    typedef std::shared_ptr<MultiKeyHandler<Result, Callback>> MultiKeyHandlerPtr;
+public:
+    MultiKeyMode(const MultiKeyHandlerPtr& handler)
+        : multikey_handler_(handler), retry_stage_(false) {
+    }
+    inline MultiKeyHandlerPtr& get_handler() {
+        return multikey_handler_;
+    }
+    inline void do_retry() {
+        retry_stage_ = true;
+    }
+    inline bool is_retry_state() {
+        return retry_stage_;
+    }
+private:
+    MultiKeyHandlerPtr multikey_handler_;
+    bool retry_stage_;
 };
 
 typedef std::shared_ptr<MultiKeyHandler<MultiGetResult, MultiGetCallback>> MultiKeyGetHandlerPtr;
 
 class MultiGetCommand  : public Command, public MultiKeyMode<MultiGetResult, MultiGetCallback> {
 public:
-    MultiGetCommand(evpp::EventLoop* evloop, const uint16_t vbucket, const MultiKeyGetHandlerPtr & handler)
-        :Command(evloop, vbucket), MultiKeyMode(handler) {
+    MultiGetCommand(evpp::EventLoop* evloop, const uint16_t vbucket, const MultiKeyGetHandlerPtr& handler)
+        : Command(evloop, vbucket), MultiKeyMode(handler) {
     }
 
     virtual void OnError(int err_code) {
-		LOG(WARNING) << "MultiGetCommand OnError id=" << id();
-		auto & keys = get_handler()->FindKeysByid(vbucket_id());
-		auto & result_map = get_handler()->get_result();
-		auto k = result_map.begin();
-		for (auto& it : keys) {
-			k = result_map.find(it);
-			assert(k != result_map.end());
-			k->second.code = err_code;
-		}
-		const uint32_t finish = get_handler()->FinishedOne();
-		if ((finish + 1) >= get_handler()->serverid_size()) {
-			caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), std::move(get_handler()->get_result())));
-		}
-	}
-	static void PacketRequest(const std::vector<std::string>& keys,const std::vector<uint16_t>& vbuckets, const uint32_t id, std::string &  buf);
+        LOG(WARNING) << "MultiGetCommand OnError id=" << id();
+        auto& keys = get_handler()->FindKeysByid(vbucket_id());
+        auto& result_map = get_handler()->get_result();
+        auto k = result_map.begin();
+        for (auto& it : keys) {
+            k = result_map.find(it);
+            assert(k != result_map.end());
+            k->second.code = err_code;
+        }
+        const uint32_t finish = get_handler()->FinishedOne();
+        if ((finish + 1) >= get_handler()->serverid_size()) {
+            caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), std::move(get_handler()->get_result())));
+        }
+    }
+    static void PacketRequest(const std::vector<std::string>& keys, const std::vector<uint16_t>& vbuckets, const uint32_t id, std::string&   buf);
     virtual void OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value);
     virtual void OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value);
 private:
@@ -275,27 +279,27 @@ private:
 
 class SerialMultiGetCommand  : public Command {
 public:
-    SerialMultiGetCommand(evpp::EventLoop * loop, MultiGetCallback callback)
-        :Command(loop, 0), callback_(callback) {
+    SerialMultiGetCommand(evpp::EventLoop* loop, MultiGetCallback callback)
+        : Command(loop, 0), callback_(callback) {
     }
 
     virtual void OnError(int err_code) {
-		LOG(WARNING) << "MultiGetCommand OnError id =" << id();
-		callback_(multiget_result_);
-	}
+        LOG(WARNING) << "MultiGetCommand OnError id =" << id();
+        callback_(multiget_result_);
+    }
     virtual void OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value);
     virtual void OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value);
-	virtual void Launch(MemcacheClientPtr memc_client);
-	inline void  PacketRequests(const std::vector<std::string>& keys) {
-		std::vector<uint16_t> vec(keys.size(), 0);
-		MultiGetCommand::PacketRequest(keys, vec, id(), buf_);
-	}
+    virtual void Launch(MemcacheClientPtr memc_client);
+    inline void  PacketRequests(const std::vector<std::string>& keys) {
+        std::vector<uint16_t> vec(keys.size(), 0);
+        MultiGetCommand::PacketRequest(keys, vec, id(), buf_);
+    }
 private:
     virtual void RequestBuffer(std::string& buf) {}
 private:
-	std::string buf_;
-	MultiGetResult multiget_result_;
-	MultiGetCallback callback_;
+    std::string buf_;
+    MultiGetResult multiget_result_;
+    MultiGetCallback callback_;
 };
 
 typedef std::shared_ptr<MultiKeyHandler<PrefixMultiGetResult, PrefixMultiGetCallback>> PrefixMultiKeyGetHandlerPtr;
@@ -308,22 +312,22 @@ public:
 
     virtual void OnError(int err_code) {
         LOG(WARNING) << "prefixMultiGetCommand OnError id=" << id();
-		auto & keys = get_handler()->FindKeysByid(vbucket_id());
-		auto & result_map = get_handler()->get_result();
-		auto k = result_map.begin();
-		for (auto& it : keys) {
-			k = result_map.find(it);
-			assert(k != result_map.end());
-			k->second->code = err_code;
-		}
-		const uint32_t finish = get_handler()->FinishedOne();
-		if ((finish + 1) >= get_handler()->serverid_size()) {
-			caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), get_handler()->get_result()));
-		}
+        auto& keys = get_handler()->FindKeysByid(vbucket_id());
+        auto& result_map = get_handler()->get_result();
+        auto k = result_map.begin();
+        for (auto& it : keys) {
+            k = result_map.find(it);
+            assert(k != result_map.end());
+            k->second->code = err_code;
+        }
+        const uint32_t finish = get_handler()->FinishedOne();
+        if ((finish + 1) >= get_handler()->serverid_size()) {
+            caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), get_handler()->get_result()));
+        }
     }
-	static void PacketRequest(const std::vector<std::string>& keys, const std::vector<uint16_t>& vbuckets, const uint32_t id, std::string&  buf);
-	virtual PrefixGetResultPtr& GetResultContainerByKey(const std::string& key);
-	virtual void OnPrefixGetCommandDone();
+    static void PacketRequest(const std::vector<std::string>& keys, const std::vector<uint16_t>& vbuckets, const uint32_t id, std::string&  buf);
+    virtual PrefixGetResultPtr& GetResultContainerByKey(const std::string& key);
+    virtual void OnPrefixGetCommandDone();
 private:
     virtual void RequestBuffer(std::string& buf);
 };
@@ -336,7 +340,7 @@ public:
     virtual void OnError(int err_code) {
         LOG(WARNING) << "RemoveCommand OnError id=" << id();
 
-		auto loop = caller_loop(); 
+        auto loop = caller_loop();
         if (loop && !loop->IsInLoopThread()) {
             loop->RunInLoop(std::bind(remove_callback_, std::move(key_), err_code));
         } else {
@@ -344,7 +348,7 @@ public:
         }
     }
     virtual void OnRemoveCommandDone(int resp_code) {
-		auto loop = caller_loop(); 
+        auto loop = caller_loop();
         if (loop && !loop->IsInLoopThread()) {
             loop->RunInLoop(std::bind(remove_callback_, std::move(key_), resp_code));
         } else {
