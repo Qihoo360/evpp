@@ -29,7 +29,6 @@ NSQConn::NSQConn(Client* c, const Option& ops)
     , published_failed_count_(0) {}
 
 NSQConn::~NSQConn() {
-    assert(!tcp_client_.get());
 }
 
 void NSQConn::Connect(const std::string& addr) {
@@ -79,9 +78,6 @@ void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
         if (tcp_client_->auto_reconnect()) {
             // tcp_client_ will reconnect to remote NSQD again automatically
             status_ = kConnecting;
-        } else {
-            // TODO 应用层主动断开连接
-            tcp_client_.reset();
         }
 
         if (conn_fn_) {
