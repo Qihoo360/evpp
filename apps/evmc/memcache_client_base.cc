@@ -120,6 +120,7 @@ void MemcacheClientBase::OnClientConnection(const evpp::TCPConnPtr& conn, Memcac
 
         while (command = memc_client->PopRunningCommand()) {
             if (command->ShouldRetry()) {
+				command->set_id(0);
                 command->set_server_id(command->server_id());
                 memc_client->exec_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, this, command));
             } else {
@@ -129,6 +130,7 @@ void MemcacheClientBase::OnClientConnection(const evpp::TCPConnPtr& conn, Memcac
 
         while (command = memc_client->PopWaitingCommand()) {
             if (command->ShouldRetry()) {
+				command->set_id(0);
                 command->set_server_id(command->server_id());
                 memc_client->exec_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, this, command));
             } else {
