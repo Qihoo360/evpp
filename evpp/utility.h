@@ -13,6 +13,11 @@ inline void StringSplit(
     const DelimType& delims,
     unsigned int maxSplits,
     StringVector& ret) {
+
+    if (str.empty()) {
+        return;
+    }
+
     unsigned int numSplits = 0;
 
     // Use STL methods
