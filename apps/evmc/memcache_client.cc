@@ -16,7 +16,9 @@ void MemcacheClient::PushRunningCommand(CommandPtr& cmd) {
         return;
     }
 
-    cmd->set_id(next_id());
+	if (cmd->id() == 0) {
+		cmd->set_id(next_id());
+	}
     running_command_.emplace(cmd);
 
     if (UNLIKELY(!timeout_.IsZero() && timer_canceled_)) {
@@ -87,6 +89,7 @@ void MemcacheClient::OnConnectTimeout(uint32_t cmd_id) {
         waiting_command_.pop();
 
         if (mc_pool_ && cmd->ShouldRetry()) {
+			cmd->set_id(0);
             cmd->set_server_id(cmd->server_id());
             exec_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, mc_pool_, cmd));
         } else {
@@ -116,6 +119,7 @@ void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
         running_command_.pop();
 
         if (mc_pool_ && cmd->ShouldRetry()) {
+			cmd->set_id(0);
             cmd->set_server_id(cmd->server_id());
             exec_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, mc_pool_, cmd));
         } else {
