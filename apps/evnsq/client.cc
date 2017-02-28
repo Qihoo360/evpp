@@ -147,19 +147,31 @@ void Client::OnConnection(const ConnPtr& conn) {
         MoveToConnectingList(conn);
     } else {
         // 应用层主动调用 Close
+
         // 删除该 NSQ 连接
         for (auto it = conns_.begin(), ite = conns_.end(); it != ite; ++it) {
             if (*it == conn) {
                 conns_.erase(it);
-                return;
+                break;
             }
         }
 
         connecting_conns_.erase(conn->remote_addr());
 
         if (connecting_conns_.empty() && conns_.empty()) {
-            close_fn_();
+            if (close_fn_) {
+                close_fn_();
+            }
         }
+
+        // 等待NSQConn的状态都顺序转换完成后，在EventLoop下一轮执行循环中执行释放动作
+        auto f = [this, conn]() {
+            assert(conn->IsDisconnected());
+            if (!conn->IsDisconnected()) {
+                LOG_ERROR << "NSQConn status is not kDisconnected : " << conn->status();
+            }
+        };
+        loop_->QueueInLoop(f);
     }
 }
 
