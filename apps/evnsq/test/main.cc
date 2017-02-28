@@ -109,6 +109,7 @@ int main(int argc, char* argv[]) {
     std::thread publish_thread(std::bind(f, &loop, &client));
     loop.RunAfter(evpp::Duration(10.0), std::bind(&Close, &client));
     loop.Run();
+    publish_thread.join();
     return 0;
 }
 
