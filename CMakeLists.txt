@@ -32,8 +32,6 @@ if (UNIX)
 else (UNIX)
 set (CXX_FLAGS -DWIN32 -D_WIN32 -EHsc)
     include_directories(${PROJECT_SOURCE_DIR}
-                        ${PROJECT_SOURCE_DIR}/3rdparty/libevent-release-2.1.7-rc/include
-                        ${PROJECT_SOURCE_DIR}/3rdparty/libevent-release-2.1.7-rc/build/include
                         ${PROJECT_SOURCE_DIR}/3rdparty/glog-0.3.4/src/windows
                         ${PROJECT_SOURCE_DIR}/3rdparty/wininclude)
 endif (UNIX)
