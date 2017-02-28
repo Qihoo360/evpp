@@ -24,10 +24,10 @@ Quick Start
 ### Compile and run unit tests.
 	
 	$ cd evpp
-	$ make
-	$ cd test
-	$ make
-	$ ./evpp-test
+	$ mkdir -p build && cd build
+	$ cmake ..
+	$ make -j
+	$ make test
 	
 ### Other
 
