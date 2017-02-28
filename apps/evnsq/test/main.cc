@@ -88,6 +88,7 @@ int main(int argc, char* argv[]) {
     if (!lookupd_http_url.empty()) {
         client.ConnectToLoopupds(lookupd_http_url);
     } else {
+        assert(nsqd_tcp_addr.size() > 0);
         client.ConnectToNSQDs(nsqd_tcp_addr);
     }
 
