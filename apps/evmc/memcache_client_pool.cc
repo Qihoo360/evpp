@@ -242,6 +242,7 @@ namespace evmc {
         } else {
             if (command->ShouldRetry()) {
                 LOG_INFO << "OnClientConnection disconnect retry";
+				command->set_id(0);
                 command->set_server_id(command->server_id());
                 LaunchCommand(command);
             } else {
