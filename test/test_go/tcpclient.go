@@ -208,7 +208,7 @@ func main() {
 
 	var size = flag.Int("size", 16*1024, "send buf size")
 
-	var addr = flag.String("addr", "10.16.28.13:9099", "<IP:Port>")
+	var addr = flag.String("addr", "127.0.0.1:9099", "<IP:Port>")
 	flag.Parse()
 	evpp.N = *N
 	evpp.ShortConnectionWorkerNum = *shortConn

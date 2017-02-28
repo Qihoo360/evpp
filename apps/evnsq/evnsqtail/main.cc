@@ -12,10 +12,8 @@ int main(int argc, char* argv[]) {
     std::string nsqd_tcp_addr;
     std::string lookupd_http_url;
     nsqd_tcp_addr = "127.0.0.1:4150";
-    //nsqd_tcp_addr = "10.16.28.17:4150";
     //nsqd_tcp_addr = "weizili-L1:4150";
     //lookupd_http_url = "http://127.0.0.1:4161/lookup?topic=test";
-    lookupd_http_url = "http://10.16.28.17:4161/lookup?topic=test";
 
     if (argc == 2) {
         if (strncmp(argv[1], "http", 4) == 0) {
