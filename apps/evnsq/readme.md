@@ -153,5 +153,5 @@ int main(int argc, char* argv[]) {
 
 - [evpp](https://github.com/nsqio/nsq)
 - [rapidjson](https://github.com/nsqio/nsq)
-- [libevent](https://github.com/nmathewson/Libevent)
+- [libevent](https://github.com/libevent/libevent)
 - [glog](https://github.com/google/glog)

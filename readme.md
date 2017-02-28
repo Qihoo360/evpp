@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 
 Thanks for the support of [Qihoo360](http://www.360.cn "http://www.360.cn").
 
-Thanks for `libevent`, `glog`, `gtest` projects. There are great open source projects.
+Thanks for [libevent](https://github.com/libevent/libevent), [glog](https://github.com/google/glog), [gtest](https://github.com/google/googletest) projects. There are great open source projects.
 
 `evpp` is highly inspired by [muduo](https://github.com/chenshuo/muduo "https://github.com/chenshuo/muduo"). Thanks for the great work of [Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
 
