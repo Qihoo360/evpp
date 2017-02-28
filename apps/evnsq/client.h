@@ -5,6 +5,7 @@
 #include <memory>
 #include <atomic>
 #include <map>
+#include <set>
 
 #include "evnsq_export.h"
 #include "option.h"
