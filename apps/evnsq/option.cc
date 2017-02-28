@@ -15,7 +15,7 @@ Option::Option() {
     query_nsqlookupd_interval = evpp::Duration(30.0);
 
     client_id = "evnsq";
-    hostname = "evnsq.localhost.com";
+    hostname = "evnsq.localhost.com"; // TODO get hostname
     user_agent = "evnsq/1.0";
 }
 
