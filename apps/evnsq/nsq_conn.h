@@ -76,6 +76,9 @@ public:
     bool IsConnecting() const {
         return status_ == kConnecting;
     }
+    bool IsDisconnected() const {
+        return status_ == kDisconnected;
+    }
     const std::string& remote_addr() const;
 private:
     void WriteCommand(const Command& cmd);
