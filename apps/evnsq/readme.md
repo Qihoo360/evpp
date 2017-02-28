@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     std::string nsqd_tcp_addr;
     std::string lookupd_http_url;
     nsqd_tcp_addr = "127.0.0.1:4150";
-    lookupd_http_url = "http://10.16.28.17:4161/lookup?topic=test";
+    lookupd_http_url = "http://127.0.0.1:4161/lookup?topic=test";
 
     if (argc == 2) {
         if (strncmp(argv[1], "http", 4) == 0) {
@@ -103,8 +103,8 @@ int main(int argc, char* argv[]) {
     std::string nsqd_tcp_addr;
     std::string lookupd_http_url;
 
-    nsqd_tcp_addr = "10.16.28.17:4150";
-    lookupd_http_url = "http://10.16.28.17:14561/nodes";
+    nsqd_tcp_addr = "127.0.0.1:4150";
+    lookupd_http_url = "http://127.0.0.1:14561/nodes";
 
     while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1) {
         switch (opt) {
