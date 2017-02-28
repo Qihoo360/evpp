@@ -13,7 +13,7 @@ int OnMessage(const evnsq::Message* msg) {
     return 0;
 }
 
-void Publish(evnsq::Producer* producer) {
+bool Publish(evnsq::Producer* producer) {
     static const std::string topic1 = "test1";
     static const std::string topic2 = "test2";
     static int i = 0;
@@ -21,21 +21,26 @@ void Publish(evnsq::Producer* producer) {
     ss << "a NSQ message, index=" << i++ << " ";
     std::string msg = ss.str();
     msg.append(1000, 'x');
-    producer->Publish(topic1, msg);
+    if (!producer->Publish(topic1, msg)) {
+        return false;
+    }
     //LOG_INFO << "Publish : [" << msg << "]";
     std::vector<std::string> messages;
     messages.push_back(msg);
     messages.push_back(msg);
-    producer->MultiPublish(topic2, messages);
+    return producer->MultiPublish(topic2, messages);
 }
 
 void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
-//    loop->RunEvery(evpp::Duration(0.001), std::bind(&Publish, p));
-//     for (int i = 0; i < 20; i++) {
-//         Publish(p);
-//     }
+    loop->RunEvery(evpp::Duration(0.001), std::bind(&Publish, p));
+    for (int i = 0; i < 20; i++) {
+        Publish(p);
+    }
 }
 
+void Close(evnsq::Producer* p) {
+    p->Close();
+}
 
 int main(int argc, char* argv[]) {
     google::InitGoogleLogging(argv[0]);
@@ -91,14 +96,18 @@ int main(int argc, char* argv[]) {
     auto f = [](evpp::EventLoop * l, evnsq::Producer * c) {
         std::this_thread::sleep_for(std::chrono::seconds(2));
         for (;;) {
-            if (l->pending_functor_count() > 10000) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            if (l->pending_functor_count() > 1000) {
+                std::this_thread::sleep_for(std::chrono::seconds(2));
             } else {
-                Publish(c);
+                if (!Publish(c)) {
+                    l->Stop();
+                    break;
+                }
             }
         }
     };
     std::thread publish_thread(std::bind(f, &loop, &client));
+    loop.RunAfter(evpp::Duration(10.0), std::bind(&Close, &client));
     loop.Run();
     return 0;
 }
