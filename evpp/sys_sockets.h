@@ -83,7 +83,7 @@ typedef int ssize_t;
 
 #endif // endof H_OS_WINDOWS
 
-#if (defined(H_OS_WINDOWS) || defined(H_OS_APPLE))
+#if (defined(H_OS_WINDOWS) || defined(H_OS_MACOSX))
 
 #ifndef HAVE_MSG_NOSIGNAL
 #ifndef MSG_NOSIGNAL

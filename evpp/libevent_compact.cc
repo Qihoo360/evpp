@@ -30,7 +30,7 @@ struct evhttp_connection* evhttp_connection_base_new(struct event_base* base, st
 
 #endif
 
-#ifdef H_OS_APPLE
-void avoid_apple_ranlib_complain() {
+#ifdef H_OS_MACOSX
+void avoid_macosx_ranlib_complain() {
 }
 #endif
