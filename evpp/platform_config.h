@@ -10,6 +10,10 @@
 #   endif
 #endif
 
+#if defined(__APPLE__)
+#define H_OS_APPLE
+#endif
+
 #ifdef _DEBUG
 #ifndef H_DEBUG_MODE
 #define H_DEBUG_MODE
