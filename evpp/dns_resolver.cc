@@ -49,7 +49,7 @@ void DNSResolver::SyncDNSResolve() {
         LOG_ERROR << "getaddrinfo failed. err=" << err << " " << gai_strerror(err);
     } else {
         for (struct addrinfo* rp = answer; rp != NULL; rp = rp->ai_next) {
-            struct sockaddr_in* a = (struct sockaddr_in*)(rp->ai_addr);
+            struct sockaddr_in* a = reinterpret_cast<struct sockaddr_in*>(rp->ai_addr);
 
             if (a->sin_addr.s_addr == 0) {
                 continue;
@@ -159,7 +159,7 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
     }
 
     for (struct addrinfo* rp = addr; rp != NULL; rp = rp->ai_next) {
-        struct sockaddr_in* a = (struct sockaddr_in*)(rp->ai_addr);
+        struct sockaddr_in* a = reinterpret_cast<struct sockaddr_in*>(rp->ai_addr);
 
         if (a->sin_addr.s_addr == 0) {
             continue;
