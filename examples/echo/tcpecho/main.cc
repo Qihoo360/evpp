@@ -39,6 +39,7 @@ int main(int argc, char* argv[]) {
     evpp::TCPServer server(&loop, addr, "TCPEcho", 0);
     server.SetMessageCallback(&OnMessage);
     server.SetConnectionCallback(&OnConnection);
+    server.Init();
     server.Start();
     loop.Run();
     return 0;
