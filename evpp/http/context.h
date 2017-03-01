@@ -19,10 +19,10 @@ class Service;
 
 struct EVPP_EXPORT Context {
 public:
-    Context(struct evhttp_request* r, EventLoop* l);
+    Context(struct evhttp_request* r);
     ~Context();
 
-    bool Init(Service* hsrv);
+    bool Init();
 
     void AddResponseHeader(const std::string& key, const std::string& value);
 

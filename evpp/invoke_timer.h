@@ -18,7 +18,7 @@ public:
     void Cancel();
 private:
     InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic);
-    void AsyncWait(Duration timeout);
+    void AsyncWait();
     void OnTimerTriggered();
     void OnCanceled();
 private:

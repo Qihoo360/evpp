@@ -5,14 +5,14 @@
 
 namespace evpp {
 namespace http {
-Context::Context(struct evhttp_request* r, EventLoop* l)
+Context::Context(struct evhttp_request* r)
     : req_(r) {
 }
 
 Context::~Context() {
 }
 
-bool Context::Init(Service* hsrv) {
+bool Context::Init() {
     if (req_->type == EVHTTP_REQ_POST) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
         struct evbuffer* evbuf = evhttp_request_get_input_buffer(req_);
