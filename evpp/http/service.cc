@@ -92,8 +92,8 @@ void Service::HandleRequest(struct evhttp_request* req) {
     assert(listen_loop_->IsInLoopThread());
     LOG_TRACE << "handle request " << req << " url=" << req->uri;
 
-    ContextPtr ctx(new Context(req, listen_loop_));
-    ctx->Init(this);
+    ContextPtr ctx(new Context(req));
+    ctx->Init();
 
     if (callbacks_.empty()) {
         DefaultHandleRequest(ctx);
