@@ -23,3 +23,8 @@ target_link_libraries(example_pingpong_client ${LIBRARIES})
 
 add_executable(example_pingpong_server pingpong/server/main.cc)
 target_link_libraries(example_pingpong_server ${LIBRARIES})
+
+add_executable(example_multi_accept multi_accept/main.cc)
+target_link_libraries(example_multi_accept ${LIBRARIES})
+
+
