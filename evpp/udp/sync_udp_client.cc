@@ -65,7 +65,8 @@ void Client::Close() {
 
 std::string Client::DoRequest(const std::string& data, uint32_t timeout_ms) {
     if (!Send(data)) {
-        LOG_ERROR << "sent failed, errno=" << errno << " , dlen=" << data.size();
+        int eno = errno;
+        LOG_ERROR << "sent failed, errno=" << eno << " " << strerror(eno) << " , dlen=" << data.size();
         return "";
     }
 
