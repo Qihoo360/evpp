@@ -21,7 +21,8 @@ std::string strerror(int e) {
     return std::string();
 #else
     char buf[1024] = {};
-    return std::string(strerror_r(e, buf, sizeof buf));
+    strerror_r(e, buf, sizeof buf);
+    return std::string(buf);
 #endif
 }
 
