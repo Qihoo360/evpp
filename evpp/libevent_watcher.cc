@@ -131,7 +131,7 @@ void PipeEventWatcher::DoClose() {
     }
 }
 
-void PipeEventWatcher::HandlerFn(int fd, short which, void* v) {
+void PipeEventWatcher::HandlerFn(int /*fd*/, short /*which*/, void* v) {
     //LOG_INFO << "PipeEventWatcher::HandlerFn() ";
     PipeEventWatcher* e = (PipeEventWatcher*)v;
     char buf[128];
@@ -178,7 +178,7 @@ bool TimerEventWatcher::DoInit() {
     return true;
 }
 
-void TimerEventWatcher::HandlerFn(int fd, short which, void* v) {
+void TimerEventWatcher::HandlerFn(int /*fd*/, short /*which*/, void* v) {
     TimerEventWatcher* h = (TimerEventWatcher*)v;
     h->handler_();
 }
@@ -212,7 +212,7 @@ bool SignalEventWatcher::DoInit() {
     return true;
 }
 
-void SignalEventWatcher::HandlerFn(int sn, short which, void* v) {
+void SignalEventWatcher::HandlerFn(int /*sn*/, short /*which*/, void* v) {
     SignalEventWatcher* h = (SignalEventWatcher*)v;
     h->handler_();
 }

@@ -6,6 +6,8 @@ file(GLOB evpp_UDP_PUBLIC_HEADERS udp/*.h)
 
 message(STATUS "evpp_SRCS : " ${evpp_SRCS})
 
+set (MACOSX_RPATH ${LIBRARY_OUTPUT_PATH})
+
 include_directories(${PROJECT_SOURCE_DIR})
 
 add_library(evpp SHARED ${evpp_SRCS})
