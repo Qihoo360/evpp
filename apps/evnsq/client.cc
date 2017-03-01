@@ -168,7 +168,7 @@ void Client::OnConnection(const ConnPtr& conn) {
         auto f = [this, conn]() {
             assert(conn->IsDisconnected());
             if (!conn->IsDisconnected()) {
-                LOG_ERROR << "NSQConn status is not kDisconnected : " << conn->status();
+                LOG_ERROR << "NSQConn status is not kDisconnected : " << int(conn->status());
             }
         };
         loop_->QueueInLoop(f);
