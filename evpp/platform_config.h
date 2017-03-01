@@ -11,7 +11,7 @@
 #endif
 
 #if defined(__APPLE__)
-#define H_OS_APPLE
+#define H_OS_MACOSX
 #endif
 
 #ifdef _DEBUG

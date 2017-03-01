@@ -32,7 +32,6 @@
     <ClCompile Include="..\evpp\libevent_compact.cc" />
     <ClCompile Include="..\evpp\libevent_watcher.cc" />
     <ClCompile Include="..\evpp\listener.cc" />
-    <ClCompile Include="..\evpp\pch.cc" />
     <ClCompile Include="..\evpp\sockets.cc" />
     <ClCompile Include="..\evpp\tcp_client.cc" />
     <ClCompile Include="..\evpp\tcp_conn.cc" />
