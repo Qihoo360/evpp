@@ -8,13 +8,17 @@ void OnMessage(const evpp::TCPConnPtr& conn,
                evpp::Buffer* msg,
                evpp::Timestamp ts) {
     LOG_INFO << "tid=" << std::this_thread::get_id() << " Received a message len=" << msg->size();
+    if (msg->ToString() == "quit") {
+        conn->Close();
+        return;
+    }
     conn->Send(msg->data(), msg->size());
     msg->Reset();
 }
 
 int main(int argc, char* argv[]) {
     std::string addr = "0.0.0.0:9099";
-    uint32_t thread_num = 1;
+    uint32_t thread_num = 2;
 
     if (argc != 1 && argc != 3) {
         printf("Usage: %s <port> <thread-num>\n", argv[0]);
@@ -36,6 +40,7 @@ int main(int argc, char* argv[]) {
         evpp::EventLoop* next = tpool.GetNextLoop();
         std::shared_ptr<evpp::TCPServer> s(new evpp::TCPServer(next, addr, std::to_string(i) + "#server", 0));
         s->SetMessageCallback(&OnMessage);
+        s->Init();
         s->Start();
         tcp_servers.push_back(s);
     }
