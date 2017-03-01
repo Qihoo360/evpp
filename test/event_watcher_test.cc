@@ -80,7 +80,7 @@ TEST_UNIT(testSignalEventWatcher) {
     loop->RunInLoop(&WatchSignalInt);
     auto f = []() {
         LOG_INFO << "Send SIGINT ...";
-        raise(SIGINT);
+        kill(getpid(), SIGINT);
     };
     loop->RunAfter(evpp::Duration(0.1), f);
     while (!thread->IsStopped()) {
