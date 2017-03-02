@@ -4,21 +4,23 @@ evpp
 `evpp` is a modern C++ network library for developing high performance network servers in TCP/UDP/HTTP protocols.
 `evpp` provides a TCP Server to support multi-threaded nonblocking server and also a HTTP, UDP Server to support http and udp prococol.
 
-`evpp` provides:
+# Features
 
-1. A nonblocking TCP server
+1. Modern C++11 interface
+1. Modern functional/bind format callback instead of C-style function pointer.
+1. A nonblocking multi-threaded TCP server
 1. A nonblocking TCP client
-1. A nonblocking HTTP server
+1. A nonblocking multi-threaded HTTP server based on the buildin http server of libevent
 1. A nonblocking HTTP client
-1. A nonblocking UDP server
-1. EventLoop
-1. Thread pool
-1. Timer
+1. A nonblocking multi-threaded UDP server
+1. EventLoop/Thread Pool/Timer
 
 And also provides some libraries base on `evpp`:
 
-1. `evmc` a nonblocking async C++ memcached (cluster) client library.
+1. `evmc` a nonblocking async C++ memcached (or membase cluster) client library.
 2. `evnsq` a nonblocking async C++ NSQ client library. See [evnsq readme](apps/evnsq/readme.md) for details.
+
+TODO: A async redis client
 
 # Getting Started
 
@@ -110,12 +112,15 @@ int main(int argc, char* argv[]) {
 }
 ```
 
+### More examples
+
+Please see the source code []()
 
 # Thanks
 
 Thanks for the support of [Qihoo360](http://www.360.cn "http://www.360.cn").
 
-Thanks for [libevent](https://github.com/libevent/libevent), [glog](https://github.com/google/glog), [gtest](https://github.com/google/googletest) projects. There are great open source projects.
+Thanks for [libevent](https://github.com/libevent/libevent), [glog](https://github.com/google/glog), [gtest](https://github.com/google/googletest) projects.
 
 `evpp` is highly inspired by [muduo](https://github.com/chenshuo/muduo "https://github.com/chenshuo/muduo"). Thanks for the great work of [Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
 
