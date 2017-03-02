@@ -31,10 +31,12 @@ Go to `evpp/3rdparty/libevent-release-2.1.8-stable`
 	$ cp -rf ../include/event2 ../../wininclude/
 	$ cp -rf ../build/include/event2/event-config.h ../../wininclude/event2
 
-Note: We have modified the source code of libevent-release-2.1.8-stable as bellow:
+Note 1: We have modified the source code of libevent-release-2.1.8-stable as bellow:
 
 1. libevent-release-2.1.8-stable/CMakeList.txt : Add 'set(EVENT__DISABLE_OPENSSL ON)' to disable OPENSSL support
 2. libevent-release-2.1.8-stable/cmake/VersionViaGit.cmake : Delete or comment the tow lines: 'find_package(Git)' and 'include(FindGit)'
+
+Note 2: The precompied windows static library have been uploaded to the proper dir : `vsprojects/bin/Debug` . So you can skip this step. 
 
 ### Compile evpp
 
