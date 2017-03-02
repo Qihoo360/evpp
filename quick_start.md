@@ -4,7 +4,8 @@ Quick Start
 # Dependent open source code
 
 1. libevent
-2. glog 
+2. glog
+3. gtest
 
 # How to compile it
 
