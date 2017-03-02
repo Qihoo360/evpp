@@ -212,15 +212,19 @@ void SetTimeout(int fd, uint32_t timeout_ms) {
 void SetKeepAlive(int fd) {
     int on = 1;
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
-    assert(rc == 0);
-    (void)rc; // avoid compile warning
+    if (rc != 0) {
+        int serrno = errno;
+        LOG_ERROR << "setsockopt(SO_KEEPALIVE) failed, errno=" << serrno << " " << strerror(serrno);
+    }
 }
 
 void SetReuseAddr(int fd) {
     int on = 1;
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
-    assert(rc == 0);
-    (void)rc; // avoid compile warning
+    if (rc != 0) {
+        int serrno = errno;
+        LOG_ERROR << "setsockopt(SO_REUSEADDR) failed, errno=" << serrno << " " << strerror(serrno);
+    }
 }
 
 
@@ -228,8 +232,10 @@ void SetReusePort(int fd) {
 #ifdef SO_REUSEPORT
     int on = 1;
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (const char*)&on, sizeof(on));
-    assert(rc == 0);
-    (void)rc; // avoid compile warning
+    if (rc != 0) {
+        int serrno = errno;
+        LOG_ERROR << "setsockopt(SO_REUSEPORT) failed, errno=" << serrno << " " << strerror(serrno);
+    }
 #endif
 }
 
