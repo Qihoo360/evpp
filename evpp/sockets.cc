@@ -53,6 +53,7 @@ int CreateNonblockingSocket() {
 
     SetKeepAlive(fd);
     SetReuseAddr(fd);
+    SetReusePort(fd);
     return fd;
 out:
     EVUTIL_CLOSESOCKET(fd);
@@ -220,6 +221,16 @@ void SetReuseAddr(int fd) {
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
     assert(rc == 0);
     (void)rc; // avoid compile warning
+}
+
+
+void SetReusePort(int fd) {
+#ifdef SO_REUSEPORT
+    int on = 1;
+    int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (const char*)&on, sizeof(on));
+    assert(rc == 0);
+    (void)rc; // avoid compile warning
+#endif
 }
 
 }
