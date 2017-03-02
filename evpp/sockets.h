@@ -12,6 +12,7 @@ EVPP_EXPORT int CreateNonblockingSocket();
 EVPP_EXPORT int CreateUDPServer(int port);
 EVPP_EXPORT void SetKeepAlive(int fd);
 EVPP_EXPORT void SetReuseAddr(int fd);
+EVPP_EXPORT void SetReusePort(int fd);
 EVPP_EXPORT void SetTimeout(int fd, uint32_t timeout_ms);
 EVPP_EXPORT struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/);
 EVPP_EXPORT struct sockaddr_in GetLocalAddr(int sockfd);
