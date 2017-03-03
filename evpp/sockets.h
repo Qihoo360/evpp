@@ -34,6 +34,10 @@ inline struct sockaddr* sockaddr_cast(struct sockaddr_in* addr) {
     return static_cast<struct sockaddr*>(evpp::sock::implicit_cast<void*>(addr));
 }
 
+inline struct sockaddr* sockaddr_cast(struct sockaddr_storage* addr) {
+    return static_cast<struct sockaddr*>(evpp::sock::implicit_cast<void*>(addr));
+}
+
 inline const struct sockaddr_in* sockaddr_in_cast(const struct sockaddr* addr) {
     return static_cast<const struct sockaddr_in*>(evpp::sock::implicit_cast<const void*>(addr));
 }

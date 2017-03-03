@@ -43,8 +43,8 @@ private:
     void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/, const struct sockaddr_in* raddr);
     EventLoop* GetNextLoop(const struct sockaddr_in* raddr);
 private:
-    EventLoop* loop_;  // the listener loop
-    const std::string listen_addr_;
+    EventLoop* loop_;  // the listening loop
+    const std::string listen_addr_; // ip:port
     const std::string name_;
     std::unique_ptr<Listener> listener_;
     std::shared_ptr<EventLoopThreadPool> tpool_;
@@ -53,7 +53,7 @@ private:
 
     // always in loop thread
     uint64_t next_conn_id_;
-    typedef std::map<std::string, TCPConnPtr> ConnectionMap;
+    typedef std::map<std::string/*the name of the connection*/, TCPConnPtr> ConnectionMap;
     ConnectionMap connections_;
 };
 }
