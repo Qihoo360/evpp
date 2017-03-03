@@ -12,9 +12,9 @@ public:
     typedef std::function <
     void(int sockfd,
          const std::string& /*remote address with format "ip:port"*/,
-         const struct sockaddr_in* /*remote addr*/) >
+         const struct sockaddr_in* /*remote address*/) >
     NewConnectionCallback;
-    Listener(EventLoop* loop, const std::string& addr/*local listening ip:port*/);
+    Listener(EventLoop* loop, const std::string& addr/*local listening address : ip:port*/);
     ~Listener();
 
     void Listen();
@@ -31,7 +31,7 @@ private:
     void HandleAccept(Timestamp ts);
 
 private:
-    int fd_;// The listener socket fd
+    int fd_;// The listening socket fd
     EventLoop* loop_;
     bool listening_;
     std::string addr_;
