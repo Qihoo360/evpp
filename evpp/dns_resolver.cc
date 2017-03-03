@@ -159,7 +159,7 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
     }
 
     for (struct addrinfo* rp = addr; rp != NULL; rp = rp->ai_next) {
-        struct sockaddr_in* a = reinterpret_cast<struct sockaddr_in*>(rp->ai_addr);
+        struct sockaddr_in* a = sock::sockaddr_in_cast(rp->ai_addr);
 
         if (a->sin_addr.s_addr == 0) {
             continue;
