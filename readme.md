@@ -1,7 +1,7 @@
 evpp
 ---
 
-`evpp` is a modern C++ network library for developing high performance network servers in TCP/UDP/HTTP protocols.
+`evpp` is a modern C++ network library for developing high performance network services in TCP/UDP/HTTP protocols.
 `evpp` provides a TCP Server to support multi-threaded nonblocking server and also a HTTP, UDP Server to support http and udp prococol.
 
 # Features
@@ -20,7 +20,10 @@ And also provides some libraries base on `evpp`:
 1. `evmc` a nonblocking async C++ memcached (or membase cluster) client library.
 2. `evnsq` a nonblocking async C++ NSQ client library. See [evnsq readme](apps/evnsq/readme.md) for details.
 
-TODO: A async redis client
+TODO:
+
+1. A async redis client
+2. Add `zipkin` tracing support
 
 # Getting Started
 
@@ -114,7 +117,7 @@ int main(int argc, char* argv[]) {
 
 ### More examples
 
-Please see the source code []()
+Please see the source code in [`examples`](https://github.com/Qihoo360/evpp/tree/master/examples).
 
 # Thanks
 
