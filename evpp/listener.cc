@@ -48,7 +48,7 @@ void Listener::HandleAccept(Timestamp /*ts*/) {
     struct sockaddr_storage ss;
     socklen_t addrlen = sizeof(ss);
     int nfd = -1;
-    if ((nfd = ::accept(fd_, (struct sockaddr*)&ss, &addrlen)) == -1) {
+    if ((nfd = ::accept(fd_, sock::sockaddr_cast(&ss), &addrlen)) == -1) {
         int serrno = errno;
         if (serrno != EAGAIN && serrno != EINTR) {
             LOG_WARN << __FUNCTION__ << " bad accept " << strerror(serrno);
@@ -70,12 +70,12 @@ void Listener::HandleAccept(Timestamp /*ts*/) {
         return;
     }
 
-    LOG_INFO << "accepted one connection from " << raddr
+    LOG_INFO << "accepted a connection from " << raddr
              << ", listen fd=" << fd_
              << ", client fd=" << nfd;
 
     if (new_conn_fn_) {
-        new_conn_fn_(nfd, raddr, (const struct sockaddr_in*)(&ss));
+        new_conn_fn_(nfd, raddr, sock::sockaddr_in_cast(&ss));
     }
 }
 
