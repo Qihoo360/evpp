@@ -23,16 +23,15 @@ void http_request_done(struct evhttp_request* req, void* arg) {
 
 TEST_UNIT(evhttpClientSample) {
     struct event_base* base = event_base_new();
-    struct evhttp_connection* conn = evhttp_connection_base_new(base, NULL, "qup.f.360.cn", 80);
+    struct evhttp_connection* conn = evhttp_connection_base_new(base, NULL, "www.360.cn", 80);
     struct evhttp_request* req = evhttp_request_new(http_request_done, base); // will be free by evhttp_connection
-    evhttp_add_header(req->output_headers, "Host", "qup.f.360.cn");
-    evhttp_make_request(conn, req, EVHTTP_REQ_GET, "/status.html");
+    evhttp_add_header(req->output_headers, "Host", "www.360.cn");
+    evhttp_make_request(conn, req, EVHTTP_REQ_GET, "/robots.txt");
     evhttp_connection_set_timeout(req->evcon, 600);
     event_base_dispatch(base);
     evhttp_connection_free(conn);
     event_base_free(base);
 }
-
 
 namespace httpc {
 static bool responsed = false;
@@ -55,8 +54,8 @@ TEST_UNIT(testHTTPRequest1) {
     Init();
     evpp::EventLoopThread t;
     t.Start(true);
-    std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("qup.f.360.cn", 80, evpp::Duration(2.0)));
-    evpp::httpc::Request* r = new evpp::httpc::Request(pool.get(), t.event_loop(), "/status.html", "");
+    std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("www.360.cn", 80, evpp::Duration(2.0)));
+    evpp::httpc::Request* r = new evpp::httpc::Request(pool.get(), t.event_loop(), "/robots.txt", "");
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
 
@@ -76,7 +75,7 @@ TEST_UNIT(testHTTPRequest2) {
     Init();
     evpp::EventLoopThread t;
     t.Start(true);
-    evpp::httpc::Request* r = new evpp::httpc::Request(t.event_loop(), "http://qup.f.360.cn/status.html?a=1", "", evpp::Duration(2.0));
+    evpp::httpc::Request* r = new evpp::httpc::Request(t.event_loop(), "http://www.360.cn/robots.txt?a=1", "", evpp::Duration(2.0));
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
 
@@ -94,8 +93,8 @@ TEST_UNIT(testHTTPRequest3) {
     Init();
     evpp::EventLoopThread t;
     t.Start(true);
-    std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("qup.f.360.cn", 80, evpp::Duration(2.0)));
-    evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(pool.get(), t.event_loop(), "/status.html");
+    std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("www.360.cn", 80, evpp::Duration(2.0)));
+    evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(pool.get(), t.event_loop(), "/robots.txt");
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
 
@@ -115,7 +114,7 @@ TEST_UNIT(testHTTPRequest4) {
     Init();
     evpp::EventLoopThread t;
     t.Start(true);
-    evpp::httpc::PostRequest* r = new evpp::httpc::PostRequest(t.event_loop(), "http://qup.f.360.cn/status.html?a=1", "", evpp::Duration(2.0));
+    evpp::httpc::PostRequest* r = new evpp::httpc::PostRequest(t.event_loop(), "http://www.360.cn/robots.txt?a=1", "", evpp::Duration(2.0));
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
 
@@ -153,7 +152,7 @@ TEST_UNIT(testHTTPRequest5) {
     hc::Init();
     evpp::EventLoopThread t;
     t.Start(true);
-    evpp::httpc::PostRequest* r = new evpp::httpc::PostRequest(t.event_loop(), "http://qup.f.360.cn/status.html?a=1", "", evpp::Duration(2.0));
+    evpp::httpc::PostRequest* r = new evpp::httpc::PostRequest(t.event_loop(), "http://www.360.cn/robots.txt?a=1", "", evpp::Duration(2.0));
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&hc::HandleHTTPResponse, std::placeholders::_1, r, &t));
 
