@@ -113,50 +113,6 @@ void Producer::OnPublishResponse(NSQConn* conn, const CommandPtr& cmd, bool succ
     }
 }
 
-// void Producer::OnPublishResponse(Conn* conn, const char* d, size_t len) {
-//     assert(loop_->IsInLoopThread());
-//     Command* cmd = PopWaitACKCommand(conn);
-//     if (len == 2 && d[0] == 'O' && d[1] == 'K') {
-//         LOG_INFO << "Get a PublishResponse message OK, command=" << cmd;
-//         published_ok_count_++;
-//         delete cmd;
-//
-//         if (hwm_triggered_ && wait_ack_count_ < kDefaultHighWaterMark * conns_.size() / 2) {
-//             LOG_TRACE << "We can publish more data now.";
-//             hwm_triggered_ = false;
-//
-//             if (ready_fn_) {
-//                 ready_fn_();
-//             }
-//         }
-//
-//         return;
-//     }
-//
-//     published_failed_count_++;
-//     LOG_ERROR << "Publish command " << cmd << " failed. Try again.";
-//     PublishInLoop(cmd);
-// }
-
-// Command* Producer::PopWaitACKCommand(Conn* conn) {
-//     CommandList& cl = wait_ack_[conn];
-//     assert(!cl.first.empty());
-//     Command* c = *cl.first.begin();
-//     cl.first.pop_front();
-//     cl.second--;
-//     wait_ack_count_--;
-//     assert(cl.first.size() == cl.second);
-//     return c;
-// }
-//
-// void Producer::PushWaitACKCommand(Conn* conn, const CommandPtr& cmd) {
-//     CommandList& cl = wait_ack_[conn];
-//     cl.first.push_back(cmd);
-//     cl.second++;
-//     wait_ack_count_++;
-//     assert(cl.first.size() == cl.second);
-// }
-
 ConnPtr Producer::GetNextConn() {
     if (conns_.empty()) {
         return ConnPtr();
