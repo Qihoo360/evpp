@@ -1,9 +1,7 @@
 #include <evpp/exp.h>
 #include <evpp/http/http_server.h>
 
-#ifdef _WIN32
 #include "../tcpecho/winmain-inl.h"
-#endif
 
 void DefaultHandler(evpp::EventLoop* loop,
                     const evpp::http::ContextPtr& ctx,
@@ -42,13 +40,13 @@ int main(int argc, char* argv[]) {
 
     if (argc == 2) {
         port = atoi(argv[1]);
-    }
-    ports.push_back(port);
-
-    if (argc == 3) {
+    } else if (argc == 3) {
         port = atoi(argv[1]);
         thread_num = atoi(argv[2]);
     }
+
+    ports.push_back(port);
+
     evpp::http::Server server(thread_num);
     server.SetThreadDispatchPolicy(evpp::ThreadDispatchPolicy::kIPAddressHashing);
     server.RegisterDefaultHandler(&DefaultHandler);
