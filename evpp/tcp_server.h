@@ -36,7 +36,9 @@ public:
 
     bool IsRunning() const;
     bool IsStopped() const;
-
+    const std::string& listen_addr() const {
+        return listen_addr_;
+    }
 private:
     void StopInLoop();
     void RemoveConnection(const TCPConnPtr& conn);
