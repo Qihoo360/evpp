@@ -30,3 +30,6 @@ target_link_libraries(example_multi_accept ${LIBRARIES})
 add_executable(example_twisted_pubsubserver twisted/pubsubserver/main.cc)
 target_link_libraries(example_twisted_pubsubserver ${LIBRARIES})
 
+add_executable(example_twisted_webserver twisted/webserver/main.cc)
+target_link_libraries(example_twisted_webserver ${LIBRARIES})
+
