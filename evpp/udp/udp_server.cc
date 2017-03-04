@@ -165,7 +165,6 @@ void Server::Stop(bool wait_thread_exit) {
     }
 }
 
-
 void Server::Pause() {
     for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
         (*it)->Pause();
@@ -252,11 +251,13 @@ void Server::RecvingLoop(RecvThread* thread) {
 性能测试数据：Intel(R) Xeon(R) CPU E5-2630 0 @ 2.30GHz 24核
 
 性能瓶颈卡在recvfrom接收线程上，其他23个工作线程毫无压力！
+如果需要进一步优化，可以考虑下面两个方法：
+1. 使用 Linux kernel 3.9+ 以上的 SO_REUSEPORT 特性
+2. 使用 RAW SOCKET
 
 udp message不同长度下的QPS：
-0.1k 9w
-1k   8w
-
+0.1k    9w+
+1k      9w+
 
 17:20:19       idgm/s    odgm/s  noport/s idgmerr/s
 17:20:20     95572.00  95571.00      0.00      0.00
