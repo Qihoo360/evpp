@@ -26,7 +26,7 @@ TODO:
 2. Add `zipkin` tracing support
 3. Add examples : timer
 4. Add examples : asio chat room
-5. Add examples : http://twistedmatrix.com/trac/#webserver http://twistedmatrix.com/trac/#pubsubserver
+
 
 # Getting Started
 
