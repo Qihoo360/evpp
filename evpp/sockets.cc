@@ -2,8 +2,11 @@
 
 #include "evpp/libevent_headers.h"
 #include "evpp/sockets.h"
+#include "evpp/duration.h"
 
 namespace evpp {
+
+static const std::string empty_string;
 
 std::string strerror(int e) {
 #ifdef H_OS_WINDOWS
@@ -18,10 +21,10 @@ std::string strerror(int e) {
         return s;
     }
 
-    return std::string();
+    return empty_string;
 #else
-    char buf[1024] = {};
-    strerror_r(e, buf, sizeof buf);
+    char buf[2048] = {};
+    strerror_r(e, buf, sizeof(buf) - 1);
     return std::string(buf);
 #endif
 }
@@ -29,7 +32,6 @@ std::string strerror(int e) {
 namespace sock {
 int CreateNonblockingSocket() {
     int serrno = 0;
-    //int on = 1;
 
     /* Create listen socket */
     int fd = ::socket(AF_INET, SOCK_STREAM, 0);
@@ -149,7 +151,7 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
         port = ntohs(addr6->sin6_port);
     } else {
         LOG_ERROR << "unknown socket family connected";
-        return std::string();
+        return empty_string;
     }
 
     if (!saddr.empty()) {
@@ -159,16 +161,13 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
     return saddr;
 }
 
-
 std::string ToIPPort(const struct sockaddr* ss) {
     return ToIPPort(sockaddr_storage_cast(ss));
 }
 
-
 std::string ToIPPort(const struct sockaddr_in* ss) {
     return ToIPPort(sockaddr_storage_cast(ss));
 }
-
 
 std::string ToIP(const struct sockaddr* s) {
     auto ss = sockaddr_storage_cast(s);
@@ -190,7 +189,7 @@ std::string ToIP(const struct sockaddr* s) {
         LOG_ERROR << "unknown socket family connected";
     }
 
-    return std::string();
+    return empty_string;
 }
 
 void SetTimeout(int fd, uint32_t timeout_ms) {
@@ -207,6 +206,10 @@ void SetTimeout(int fd, uint32_t timeout_ms) {
         int err = errno;
         LOG_ERROR << "setsockopt SO_RCVTIMEO ERROR " << err << strerror(err);
     }
+}
+
+void SetTimeout(int fd, const Duration& timeout) {
+    SetTimeout(fd, (uint32_t)(timeout.Milliseconds()));
 }
 
 void SetKeepAlive(int fd) {
@@ -226,7 +229,6 @@ void SetReuseAddr(int fd) {
         LOG_ERROR << "setsockopt(SO_REUSEADDR) failed, errno=" << serrno << " " << strerror(serrno);
     }
 }
-
 
 void SetReusePort(int fd) {
 #ifdef SO_REUSEPORT

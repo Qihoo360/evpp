@@ -1,4 +1,4 @@
-libevnsq
+evnsq
 ---
 
 `evnsq` is a nonblocking async C++ client library for [NSQ](https://github.com/nsqio/nsq). It is based on [evpp](https://github.com/Qihoo360/evpp) which is a modern C++ network library.
