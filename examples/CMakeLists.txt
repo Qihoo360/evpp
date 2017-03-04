@@ -27,4 +27,6 @@ target_link_libraries(example_pingpong_server ${LIBRARIES})
 add_executable(example_multi_accept multi_accept/main.cc)
 target_link_libraries(example_multi_accept ${LIBRARIES})
 
+add_executable(example_twisted_pubsubserver twisted/pubsubserver/main.cc)
+target_link_libraries(example_twisted_pubsubserver ${LIBRARIES})
 
