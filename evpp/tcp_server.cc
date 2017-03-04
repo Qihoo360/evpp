@@ -6,11 +6,11 @@
 
 namespace evpp {
 TCPServer::TCPServer(EventLoop* loop,
-                     const std::string& listen_addr,
+                     const std::string& laddr,
                      const std::string& name,
                      uint32_t thread_num)
     : loop_(loop)
-    , listen_addr_(listen_addr)
+    , listen_addr_(laddr)
     , name_(name)
     , conn_fn_(&internal::DefaultConnectionCallback)
     , msg_fn_(&internal::DefaultMessageCallback)
