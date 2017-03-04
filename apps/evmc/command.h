@@ -6,7 +6,7 @@
 
 namespace evmc {
 
-class Command  : public std::enable_shared_from_this<Command> {
+class Command : public std::enable_shared_from_this<Command> {
 public:
     Command(evpp::EventLoop* evloop, uint16_t vbucket)
         : caller_loop_(evloop), id_(0)
@@ -15,23 +15,23 @@ public:
 
     virtual ~Command() {}
 
-    inline uint32_t id() const {
+    uint32_t id() const {
         return id_;
     }
-    inline void set_id(uint32_t v) {
+    void set_id(uint32_t v) {
         id_ = v;
     }
 
-    inline uint16_t vbucket_id() const {
+    uint16_t vbucket_id() const {
         return vbucket_id_;
     }
 
     uint16_t server_id()  const;
-    inline void set_server_id(uint16_t sid) {
+    void set_server_id(uint16_t sid) {
         server_id_history_.emplace_back(sid);
     }
 
-    inline evpp::EventLoop* caller_loop() const {
+    evpp::EventLoop* caller_loop() const {
         return caller_loop_;
     }
 
@@ -53,14 +53,14 @@ public:
 private:
     virtual void RequestBuffer(std::string& str) = 0;
     evpp::EventLoop* caller_loop_;
-    uint32_t id_;               // 并非全局id，只是各个memc_client内部的序号; mget的多个命令公用一个id
+    uint32_t id_; // 并非全局id，只是各个memc_client内部的序号; mget的多个命令共用一个id
     uint16_t vbucket_id_;
-    std::vector<uint16_t> server_id_history_;        // 执行时从多个备选server中所选定的server
+    std::vector<uint16_t> server_id_history_; // 执行时从多个备选server中所选定的server
 };
 
 typedef std::shared_ptr<Command> CommandPtr;
 
-class SetCommand  : public Command {
+class SetCommand : public Command {
 public:
     SetCommand(evpp::EventLoop* evloop, uint16_t vbucket, const std::string& key, const std::string& value,
                uint32_t flags, uint32_t expire, SetCallback callback)
@@ -133,7 +133,7 @@ private:
     virtual void RequestBuffer(std::string& str);
 };
 
-class PrefixGetCommand  : public Command {
+class PrefixGetCommand : public Command {
 public:
     PrefixGetCommand(evpp::EventLoop* evloop, uint16_t vbucket, const std::string& key, PrefixGetCallback callback)
         : Command(evloop, vbucket), key_(key), mget_callback_(callback), mget_result_(std::make_shared<PrefixGetResult>()) {
