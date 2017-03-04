@@ -1,8 +1,17 @@
-Here's a simple publish/subscribe server, where clients see all messages posted by other clients.
+Here is a C++ TCP server which implements the example of [twisted](http://twistedmatrix.com/trac/#pubsubserver)
+
+It is a simple publish/subscribe server, where clients see all messages posted by other clients.
 
 You can test this out by opening two terminals and doing `telnet localhost 1025` in each, then typing things.
 
 ```C++
+#include <set>
+
+#include <evpp/exp.h>
+#include <evpp/tcp_server.h>
+#include <evpp/buffer.h>
+#include <evpp/tcp_conn.h>
+
 class Server {
 public:
     Server(int port) {
