@@ -79,7 +79,6 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
     case PROTOCOL_BINARY_CMD_SET:
         cmd = memc_client_->PopRunningCommand();
         cmd->OnSetCommandDone(resp.response.status);
-
         LOG_DEBUG << "OnResponsePacket SET, opaque=" << id;
         break;
 
@@ -152,10 +151,9 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
     break;
 
     case PROTOCOL_BINARY_CMD_NOOP:
-
-    ////LOG_DEBUG << "GETQ, NOOP opaque=" << id;
-    //memc_client_->onMultiGetCommandDone(id, resp.response.status);
-    //break;
+        LOG_DEBUG << "GETQ, NOOP opaque=" << id;
+        //memc_client_->onMultiGetCommandDone(id, resp.response.status);
+        break;
     default:
         break;
     }
