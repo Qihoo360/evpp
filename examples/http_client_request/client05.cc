@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <evpp/libevent_headers.h>
 #include <evpp/event_loop_thread.h>
 
 #include <evpp/httpc/request.h>
