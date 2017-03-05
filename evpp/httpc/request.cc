@@ -10,7 +10,7 @@ namespace httpc {
 const std::string Request::empty_ = "";
 
 Request::Request(ConnPool* pool, EventLoop* loop, const std::string& http_uri, const std::string& body)
-    : pool_(pool), loop_(loop), uri_(http_uri), body_(body) {
+    : pool_(pool), loop_(loop), host_(pool->host()), uri_(http_uri), body_(body) {
 }
 
 Request::Request(EventLoop* loop, const std::string& http_url, const std::string& body, Duration timeout)
@@ -25,12 +25,14 @@ Request::Request(EventLoop* loop, const std::string& http_url, const std::string
         uri_ += query;
     }
 
+    host_ = evhttp_uri_get_host(evuri);
+
     int port = evhttp_uri_get_port(evuri);
     if (port < 0) {
         port = 80;
     }
 
-    conn_.reset(new Conn(loop, evhttp_uri_get_host(evuri), port, timeout));
+    conn_.reset(new Conn(loop, host_ , port, timeout));
     evhttp_uri_free(evuri);
 #else
     URLParser p(http_url);
@@ -40,6 +42,7 @@ Request::Request(EventLoop* loop, const std::string& http_url, const std::string
     } else {
         uri_ = p.path + "?" + p.query;
     }
+    host_ = p.host;
 #endif
 }
 
