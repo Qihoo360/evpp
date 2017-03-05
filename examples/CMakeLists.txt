@@ -60,5 +60,5 @@ target_link_libraries(example_http_client_request03 ${LIBRARIES})
 add_executable(example_http_client_request04 http_client_request/client04.cc)
 target_link_libraries(example_http_client_request04 ${LIBRARIES})
 
-#add_executable(example_http_client_request05 http_client_request/client05.cc)
-#target_link_libraries(example_http_client_request05 ${LIBRARIES})
+add_executable(example_http_client_request05 http_client_request/client05.cc)
+target_link_libraries(example_http_client_request05 ${LIBRARIES})
