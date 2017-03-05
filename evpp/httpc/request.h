@@ -46,6 +46,9 @@ public:
     const std::string& uri() const {
         return uri_;
     }
+    const std::string& host() const {
+        return host_;
+    }
 private:
     static void HandleResponse(struct evhttp_request* r, void* v);
     void ExecuteInLoop(const Handler& h);
@@ -54,6 +57,7 @@ protected:
 private:
     ConnPool* pool_;
     EventLoop* loop_;
+    std::string host_;
     std::string uri_; // The URI of the HTTP request with parameters
     std::string body_;
     std::shared_ptr<Conn> conn_;
