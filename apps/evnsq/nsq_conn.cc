@@ -43,6 +43,7 @@ void NSQConn::Connect(const std::string& addr) {
 void NSQConn::Close() {
     assert(loop_->IsInLoopThread());
     tcp_client_->Disconnect();
+    status_ = kDisconnecting;
 }
 
 void NSQConn::Reconnect() {
@@ -73,12 +74,14 @@ void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
             LOG_ERROR << "Connect to " << conn->remote_addr() << " failed.";
         }
 
-        status_ = kDisconnected;
-
         if (tcp_client_->auto_reconnect()) {
             // tcp_client_ will reconnect to remote NSQD again automatically
             status_ = kConnecting;
+        } else {
+            assert(status_ == kDisconnecting);
         }
+
+        status_ = kDisconnected;
 
         if (conn_fn_) {
             auto self = shared_from_this();
@@ -186,7 +189,9 @@ void NSQConn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* bu
 
     case kFrameTypeError:
         LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
-        Reconnect(); // TODO do we right?
+        if (status_ != kDisconnecting) {
+            Reconnect();
+        }
         break;
 
     default:
