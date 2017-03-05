@@ -47,3 +47,18 @@ target_link_libraries(example_timer04 ${LIBRARIES})
 
 add_executable(example_timer05 timer/timer05.cc)
 target_link_libraries(example_timer05 ${LIBRARIES})
+
+add_executable(example_http_client_request01 http_client_request/client01.cc)
+target_link_libraries(example_http_client_request01 ${LIBRARIES})
+
+add_executable(example_http_client_request02 http_client_request/client02.cc)
+target_link_libraries(example_http_client_request02 ${LIBRARIES})
+
+add_executable(example_http_client_request03 http_client_request/client03.cc)
+target_link_libraries(example_http_client_request03 ${LIBRARIES})
+
+add_executable(example_http_client_request04 http_client_request/client04.cc)
+target_link_libraries(example_http_client_request04 ${LIBRARIES})
+
+#add_executable(example_http_client_request05 http_client_request/client05.cc)
+#target_link_libraries(example_http_client_request05 ${LIBRARIES})
