@@ -25,7 +25,6 @@ if (UNIX)
          -Wfloat-equal
          -Wextra
          -std=c++11
-         -DGOOGLE_STRIP_LOG=2
     )
     include_directories (${PROJECT_SOURCE_DIR}
                          ${PROJECT_SOURCE_DIR}/3rdparty)
@@ -39,8 +38,8 @@ endif (UNIX)
 string (REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 
 if (UNIX)
-    SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -D_DEBUG")
-    SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+    SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb -D_DEBUG -DGOOGLE_STRIP_LOG=0")
+    SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -DGOOGLE_STRIP_LOG=2")
 endif (UNIX)
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
