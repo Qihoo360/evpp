@@ -24,8 +24,7 @@ TODO:
 
 1. A async redis client
 2. Add `zipkin` tracing support
-3. Add examples : timer
-4. Add examples : asio chat room
+3. Add examples : asio chat room
 
 
 # Getting Started
