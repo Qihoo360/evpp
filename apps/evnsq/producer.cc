@@ -43,6 +43,10 @@ bool Producer::MultiPublish(const std::string& topic, const std::vector<std::str
 
 
 bool Producer::PublishBinaryCommand(evpp::Buffer* command_binary_buf) {
+    if (closing()) {
+        return false;
+    }
+
     assert(loop_->IsInLoopThread());
     auto conn = GetNextConn();
     if (!conn.get()) {
@@ -56,6 +60,10 @@ bool Producer::PublishBinaryCommand(evpp::Buffer* command_binary_buf) {
 }
 
 bool Producer::Publish(const CommandPtr& cmd) {
+    if (closing()) {
+        return false;
+    }
+
     if (conns_.empty()) {
         LOG_ERROR << "No available NSQD to use.";
         return false;
@@ -126,7 +134,6 @@ ConnPtr Producer::GetNextConn() {
     ++current_conn_index_; // Using next Conn
     return c;
 }
-
 
 void Producer::PrintStats() {
     LOG_WARN << "published_count=" << published_count_

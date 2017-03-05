@@ -16,7 +16,7 @@ static const std::string kNSQMagic = "  V2";
 static const std::string kOK = "OK";
 
 Client::Client(evpp::EventLoop* l, Type t, const Option& ops)
-    : loop_(l), type_(t), option_(ops) {}
+    : loop_(l), type_(t), option_(ops), closing_(false) {}
 
 Client::~Client() {}
 
@@ -40,30 +40,32 @@ void Client::ConnectToNSQDs(const std::vector<std::string>& tcp_addrs/*host:port
     }
 }
 
-void Client::ConnectToLoopupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/) {
+void Client::ConnectToLookupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/) {
     auto f = [this, lookupd_url]() {
         LOG_INFO << "query nsqlookupd " << lookupd_url;
         std::shared_ptr<evpp::httpc::Request> r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
         r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
     };
 
-    // query nsqloopupd immediately right now
+    // query nsqlookupd immediately right now
     loop_->RunInLoop(f);
 
-    // query nsqloopupd periodic
-    loop_->RunEvery(option_.query_nsqlookupd_interval, f);
+    // query nsqlookupd periodic
+    auto timer = loop_->RunEvery(option_.query_nsqlookupd_interval, f);
+    lookupd_timers_.push_back(timer);
 }
 
-void Client::ConnectToLoopupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/) {
+void Client::ConnectToLookupds(const std::string& lookupd_urls/*http://192.168.0.5:4161/lookup?topic=test,http://192.168.0.6:4161/lookup?topic=test*/) {
     std::vector<std::string> v;
     evpp::StringSplit(lookupd_urls, ",", 0, v);
     for (auto it = v.begin(); it != v.end(); ++it) {
-        ConnectToLoopupd(*it);
+        ConnectToLookupd(*it);
     }
 }
 
-
 void Client::Close() {
+    closing_ = true;
+
     auto f = [this]() {
         for (auto it = this->conns_.begin(), ite = this->conns_.end(); it != ite; ++it) {
             (*it)->Close();
@@ -72,9 +74,16 @@ void Client::Close() {
         for (auto it = this->connecting_conns_.begin(), ite = this->connecting_conns_.end(); it != ite; ++it) {
             it->second->Close();
         }
+
+        for (auto &timer : lookupd_timers_) {
+            timer->Cancel();
+        }
+        lookupd_timers_.clear();
     };
 
-    // 如果使用 RunInLoop，有可能会在当前循环中直接执行该函数，这导致会回调到 Client::OnConnection 函数中去释放NSQConn对象，进而破坏当前 f 函数中的两个for循环的迭代器。
+    // 如果使用 RunInLoop，有可能会在当前循环中直接执行该函数，
+    // 这导致会回调到 Client::OnConnection 函数中去释放NSQConn对象，
+    // 进而破坏当前 f 函数中的两个for循环的迭代器。
     // 因此要使用 QueueInLoop ，将该函数的执行周期推移到下一次执行循环中
     loop_->QueueInLoop(f);
 }
@@ -146,16 +155,15 @@ void Client::OnConnection(const ConnPtr& conn) {
     } else if (conn->IsConnecting()) {
         MoveToConnectingList(conn);
     } else {
-        // 应用层主动调用 Close
+        // The application layer calls Close()
 
-        // 删除该 NSQ 连接
+        // Delete this NSQConn
         for (auto it = conns_.begin(), ite = conns_.end(); it != ite; ++it) {
             if (*it == conn) {
                 conns_.erase(it);
                 break;
             }
         }
-
         connecting_conns_.erase(conn->remote_addr());
 
         if (connecting_conns_.empty() && conns_.empty()) {
