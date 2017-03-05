@@ -31,7 +31,11 @@ Response::~Response() {
 }
 
 const char* Response::FindHeader(const char* key) {
-    return evhttp_find_header(this->evreq_->input_headers, key);
+    if (http_code_ > 0) {
+        assert(this->evreq_);
+        return evhttp_find_header(this->evreq_->input_headers, key);
+    }
+    return NULL;
 }
 
 }
