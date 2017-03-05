@@ -2,12 +2,12 @@ evpp
 ---
 
 `evpp` is a modern C++ network library for developing high performance network services in TCP/UDP/HTTP protocols.
-`evpp` provides a TCP Server to support multi-threaded nonblocking server and also a HTTP, UDP Server to support http and udp prococol.
+`evpp` provides a TCP Server to support multi-threaded nonblocking event-drive server and also a HTTP, UDP Server to support http and udp prococol.
 
 # Features
 
 1. Modern C++11 interface
-1. Modern functional/bind format callback instead of C-style function pointer.
+1. Modern functional/bind style callback instead of C-style function pointer.
 1. A nonblocking multi-threaded TCP server
 1. A nonblocking TCP client
 1. A nonblocking multi-threaded HTTP server based on the buildin http server of libevent
