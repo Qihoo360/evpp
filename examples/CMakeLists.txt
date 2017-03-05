@@ -33,3 +33,17 @@ target_link_libraries(example_twisted_pubsubserver ${LIBRARIES})
 add_executable(example_twisted_webserver twisted/webserver/main.cc)
 target_link_libraries(example_twisted_webserver ${LIBRARIES})
 
+add_executable(example_timer01 timer/timer01.cc)
+target_link_libraries(example_timer01 ${LIBRARIES})
+
+add_executable(example_timer02 timer/timer02.cc)
+target_link_libraries(example_timer02 ${LIBRARIES})
+
+add_executable(example_timer03 timer/timer03.cc)
+target_link_libraries(example_timer03 ${LIBRARIES})
+
+add_executable(example_timer04 timer/timer04.cc)
+target_link_libraries(example_timer04 ${LIBRARIES})
+
+add_executable(example_timer05 timer/timer05.cc)
+target_link_libraries(example_timer05 ${LIBRARIES})
