@@ -37,7 +37,7 @@ void InvokeTimer::Cancel() {
 }
 
 void InvokeTimer::AsyncWait() {
-    LOG_INFO << "InvokeTimer::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count();
+    //LOG_INFO << "InvokeTimer::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count();
     timer_ = new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, this), timeout_);
     timer_->SetCancelCallback(std::bind(&InvokeTimer::OnCanceled, this));
     timer_->Init();
@@ -45,7 +45,7 @@ void InvokeTimer::AsyncWait() {
 }
 
 void InvokeTimer::OnTimerTriggered() {
-    LOG_INFO << "InvokeTimer::OnTimerTriggered tid=" << std::this_thread::get_id() << " this=" << this;
+    //LOG_INFO << "InvokeTimer::OnTimerTriggered tid=" << std::this_thread::get_id() << " this=" << this;
     functor_();
 
     if (periodic_) {
@@ -56,7 +56,7 @@ void InvokeTimer::OnTimerTriggered() {
 }
 
 void InvokeTimer::OnCanceled() {
-    LOG_INFO << "InvokeTimer::OnCanceled tid=" << std::this_thread::get_id() << " this=" << this;
+    //LOG_INFO << "InvokeTimer::OnCanceled tid=" << std::this_thread::get_id() << " this=" << this;
     self_.reset();
 }
 }
