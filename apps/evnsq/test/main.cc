@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     std::string nsqd_tcp_addr;
     std::string lookupd_http_url;
 
-    //nsqd_tcp_addr = "127.0.0.1:4150";
+    nsqd_tcp_addr = "127.0.0.1:4150";
     //nsqd_tcp_addr = "weizili-L1:4150";
     //lookupd_http_url = "http://127.0.0.1:4161/lookup?topic=test";
 
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
     client.SetReadyCallback(std::bind(&OnReady, &loop, &client));
 
     if (!lookupd_http_url.empty()) {
-        client.ConnectToLoopupds(lookupd_http_url);
+        client.ConnectToLookupds(lookupd_http_url);
     } else {
         assert(nsqd_tcp_addr.size() > 0);
         client.ConnectToNSQDs(nsqd_tcp_addr);
