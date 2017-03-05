@@ -19,7 +19,11 @@ static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& res
     delete request; // The request MUST BE deleted in EventLoop thread.
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    google::InitGoogleLogging(argv[0]);
+    FLAGS_stderrthreshold = 0;
+    FLAGS_minloglevel=0;
+
     evpp::EventLoopThread t;
     t.Start(true);
     evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(t.event_loop(), "http://www.360.cn/robots.txt", evpp::Duration(2.0));
