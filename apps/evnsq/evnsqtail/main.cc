@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     client.SetMessageCallback(&OnMessage);
 
     if (!lookupd_http_url.empty()) {
-        client.ConnectToLoopupds(lookupd_http_url);
+        client.ConnectToLookupds(lookupd_http_url);
     } else {
         client.ConnectToNSQDs(nsqd_tcp_addr);
     }

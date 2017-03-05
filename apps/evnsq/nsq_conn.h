@@ -38,6 +38,7 @@ public:
         kConnected = 3, // Successfully connected to NSQD
         kSubscribing = 4,
         kReady = 5, // Ready to produce messages to NSQD or consume messages from NSQD
+        kDisconnecting = 6,
     };
 
     typedef std::function<void(const std::shared_ptr<NSQConn>& conn)> ConnectionCallback;
