@@ -16,11 +16,14 @@ In our business system, we need to build a TCP long-connection Gateway and other
 
 As described above, there are not many ones to choose from. So we develop one ourself. The design of the interface is highly inspired by [muduo](https://github.com/chenshuo/muduo "https://github.com/chenshuo/muduo") and [Golang](https://golang.org). Let's take some examples to exaplain this: 
 
-1. `Duration` 锛?This is a time inteval class, with a time unit. It is referenced to the implementation of `Duration` of the `Golang` project. We have seen some many cases that the time interval without a unit. For example, what does `timeout` mean?  Seconds, milliseconds or microseconds? We need to read the document carefully, even more, we need to read the implementation codes. Our `Duration` class has self-explations with the time unit.
-2. `Buffer` 锛?This is a memory buffer class. It uses the two projects' advantages of `muduo` and `Golang`.
+1. `Duration` : This is a time inteval class, with a time unit. It is referenced to the implementation of `Duration` of the `Golang` project. We have seen some many cases that the time interval without a unit. For example, what does `timeout` mean?  Seconds, milliseconds or microseconds? We need to read the document carefully, even more, we need to read the implementation codes. Our `Duration` class has self-explations with the time unit.
+2. `Buffer` : This is a memory buffer class. It uses the two projects' advantages of `muduo` and `Golang`.
 3. `http::Server` : This is a HTTP server class with a working threads pool. It is thread-safe to dispatch tasks
 4. We simply use a string with the format of `"ip:port"` to represent a network address. This is referenced to the design of `Golang`.
 5. `httpc::ConnPool` : This is HTTP client connection pool with highly performance. In the future we can add more features to this class : load balance and failover.
+
+In addition, in the implematations we pay seriously attations to thread-safe problems. An event-related resource must be initialized and released in its own `EventLoop` thread, so that we can minimize the possibility of thread-safe error. In order to achieve this goal we reimplemented `event_add` and` event_del` and other functions. Each call to `event_add`, we stored the resource into thread local storage, and in the call `event_del`, we checked it whether it is stored in the thread local storage. And then we checked all the threads local storages to see whether there are resources not destructively released when the process was exiting. The detail codes are here [https://github.com/Qihoo360/evpp /blob/master/evpp/inner_pre.cc#L46~L87](https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87). We are so harshly pursuit the thread safety to make a program can quietly exit or reload, because we have a deep understanding of the "developing a system to run forever and developing a system to quietly exit after running a period of time are totally two diffent things".
+
 
 # Features
 
