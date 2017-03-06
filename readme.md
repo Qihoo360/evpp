@@ -8,16 +8,16 @@ evpp
 
 # Origin
 
-In our business system, we need to build a TCP long-connection Gateway and other TCP services. When we do a survey of the open sources, we cannot find any appropriate network library for our demand. According to our own business character, an ideal C++ network library must have the features below: 
+In our business system, we need to build a TCP long-connection Gateway and other TCP services. When we do a survey of the open sources, we cannot find any appropriate network library for our demands. According to our own business characteristic, an ideal C++ network library must have the features below: 
 
-1. A simple enough interface, C++ interface is the best
-2. Support multi-threading and multi-processes
-3. Based on `libevent` is the best. Because of the historical burden, we have some old system is built on `libevent`. If the ideal library is based on `libevent`, we can embedded it with the old system codes, otherwhise we need to modify the old system codes or make it more complicated.
+1. A simple enough C++ interface
+2. Support multi-threads and multi-processes
+3. Based on `libevent` is the best. Because of the historical burden, we have some old systems which are built on `libevent`. If the ideal library is based on `libevent`, we can embedded it with the old system codes, otherwhise we need to modify the old system codes or make it more complicated.
 
-As described above, there are not many to choose from. So we develop one ourself. The design of the interface is highly inspired by [muduo](https://github.com/chenshuo/muduo "https://github.com/chenshuo/muduo") and [Golang](https://golang.org). Let's take some examples to exaplain this: 
+As described above, there are not many ones to choose from. So we develop one ourself. The design of the interface is highly inspired by [muduo](https://github.com/chenshuo/muduo "https://github.com/chenshuo/muduo") and [Golang](https://golang.org). Let's take some examples to exaplain this: 
 
-1. `Duration` ： This is a time inteval class, with a time unit. It is referenced to the implementation of `Duration` of the `Golang` project. We have seen some many cases that the time interval without a unit. For example, `timeout` , what is it for?  Seconds, milliseconds or microseconds? We need to read the document carefully, even more, we need to read the implementation codes. Our `Duration` have self-explations with the time unit.
-2. `Buffer` ： This is a memory buffer class. It is use the two projects' advantages of `muduo` and `Golang`
+1. `Duration` 锛?This is a time inteval class, with a time unit. It is referenced to the implementation of `Duration` of the `Golang` project. We have seen some many cases that the time interval without a unit. For example, what does `timeout` mean?  Seconds, milliseconds or microseconds? We need to read the document carefully, even more, we need to read the implementation codes. Our `Duration` class has self-explations with the time unit.
+2. `Buffer` 锛?This is a memory buffer class. It uses the two projects' advantages of `muduo` and `Golang`.
 3. `http::Server` : This is a HTTP server class with a working threads pool. It is thread-safe to dispatch tasks
 4. We simply use a string with the format of `"ip:port"` to represent a network address. This is referenced to the design of `Golang`.
 5. `httpc::ConnPool` : This is HTTP client connection pool with highly performance. In the future we can add more features to this class : load balance and failover.
@@ -143,7 +143,7 @@ Please see the source code in [`examples`](https://github.com/Qihoo360/evpp/tree
 
 Thanks for the support of [Qihoo360](http://www.360.cn "http://www.360.cn").
 
-Thanks for [libevent](https://github.com/libevent/libevent), [glog](https://github.com/google/glog), [gtest](https://github.com/google/googletest) projects.
+Thanks for [libevent](https://github.com/libevent/libevent), [glog](https://github.com/google/glog), [gtest](https://github.com/google/googletest), [Golang](https://golang.org) projects.
 
 `evpp` is highly inspired by [muduo](https://github.com/chenshuo/muduo "https://github.com/chenshuo/muduo"). Thanks for the great work of [Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
 
