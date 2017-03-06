@@ -75,7 +75,7 @@ void Client::Close() {
             it->second->Close();
         }
 
-        for (auto &timer : lookupd_timers_) {
+        for (auto& timer : lookupd_timers_) {
             timer->Cancel();
         }
         lookupd_timers_.clear();
