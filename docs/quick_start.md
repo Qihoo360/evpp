@@ -16,6 +16,7 @@ Quick Start
 ### Install dependent open source code
 
 1. Install glog
+2. Install gtest
 2. Install libevent 2.x
 
 ### Download the source code of evpp
