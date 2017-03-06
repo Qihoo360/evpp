@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 
     evpp::EventLoopThread t;
     t.Start(true);
-    evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(t.event_loop(), "http://www.360.cn/robots.txt", evpp::Duration(2.0));
+    evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(t.event_loop(), "http://www.so.com/status.html", evpp::Duration(2.0));
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, r));
 

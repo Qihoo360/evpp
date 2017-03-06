@@ -29,7 +29,21 @@ Quick Start
 	$ cmake ..
 	$ make -j
 	$ make test
+
+### Run the examples
+
+	$ cd evpp/build/bin
+	$ ./example_http_client_request01
+	WARNING: Logging before InitGoogleLogging() is written to STDERR
+	I0306 11:45:09.464159 13230 inner_pre.cc:37] ignore SIGPIPE
+	I0306 11:45:09.464896 13230 client01.cc:30] Do http request
+	I0306 11:45:09.493073 13231 client01.cc:14] http_code=200 [ok
+	]
+	I0306 11:45:09.493124 13231 client01.cc:16] HTTP HEADER Connection=close
+	I0306 11:45:09.493242 13231 event_loop.cc:103] EventLoop is stopping now, tid=140722561709824
+	I0306 11:45:09.993921 13231 event_loop.cc:93] EventLoop stopped, tid: 140722561709824
+	I0306 11:45:09.994107 13230 client01.cc:38] EventLoopThread stopped. 
 	
 ### Other
 
-If you want to compile evpp on Windows using Microsoft Visual Studio 2015, please see [docs/quick_start_win32_vs2015.md](docs/quick_start_win32_vs2015.md)
+If you want to compile evpp on Windows using Microsoft Visual Studio 2015, please see [quick_start_win32_vs2015.md](quick_start_win32_vs2015.md)
