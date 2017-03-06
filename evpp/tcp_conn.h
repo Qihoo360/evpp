@@ -59,6 +59,7 @@ public:
         assert(index < kContextCount && index >= 0);
         return context_[index];
     }
+    // Return the remote peer's address with form "ip:port"
     const std::string& remote_addr() const {
         return remote_addr_;
     }
@@ -85,7 +86,7 @@ public:
     }
     void SetCloseDelayTime(Duration d) {
         assert(type_ == kIncoming);
-        close_delay_ = d;    // 设置延时关闭时间，仅对 kIncoming 类型的TCPConn生效。
+        close_delay_ = d;  // 设置延时关闭时间，仅对 kIncoming 类型的TCPConn生效。
     }
 protected:
     // 这部分函数只能被 TCPClient 或者 TCPServer 调用，
@@ -118,8 +119,8 @@ private:
     EventLoop* loop_;
     int fd_;
     std::string name_;
-    std::string local_addr_; // the local address of ip:port
-    std::string remote_addr_; // the remote address of ip:port
+    std::string local_addr_; // the local address with form : "ip:port"
+    std::string remote_addr_; // the remote address with form : "ip:port"
     std::unique_ptr<FdChannel> chan_;
     Buffer input_buffer_;
     Buffer output_buffer_;
