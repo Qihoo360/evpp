@@ -32,7 +32,7 @@ Request::Request(EventLoop* loop, const std::string& http_url, const std::string
         port = 80;
     }
 
-    conn_.reset(new Conn(loop, host_ , port, timeout));
+    conn_.reset(new Conn(loop, host_, port, timeout));
     evhttp_uri_free(evuri);
 #else
     URLParser p(http_url);
