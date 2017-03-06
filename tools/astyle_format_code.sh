@@ -1,3 +1,8 @@
+#!/bin/bash
+
+# Run this script at the directory which holds it.
+
+cd ../
 
 SUBDIRS="evpp evpp/http evpp/httpc evpp/udp test examples/echo/httpecho examples/echo/udpecho examples/echo/tcpecho examples/pingpong/client examples/pingpong/server apps/evmc/test apps/evmc apps/evnsq apps/evnsq/test "
 FILETYPES="*.cc *.h"
