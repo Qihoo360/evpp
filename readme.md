@@ -3,8 +3,8 @@ evpp
 
 # Introduction  [中文](docs/readme_cn.md)
 
-`evpp` is a modern C++ network library for developing high performance network services in TCP/UDP/HTTP protocols.
-`evpp` provides a TCP Server to support multi-threaded nonblocking event-drive server and also a HTTP, UDP Server to support http and udp prococol.
+[evpp] is a modern C++ network library for developing high performance network services in TCP/UDP/HTTP protocols.
+[evpp] provides a TCP Server to support multi-threaded nonblocking event-drive server and also a HTTP, UDP Server to support http and udp prococol.
 
 # Origin
 
@@ -12,9 +12,9 @@ In our business system, we need to build a TCP long-connection Gateway and other
 
 1. A simple enough C++ interface
 2. Support multi-threads and multi-processes
-3. Based on `libevent` is the best. Because of the historical burden, we have some old systems which are built on `libevent`. If the ideal library is based on `libevent`, we can embedded it with the old system codes, otherwhise we need to modify the old system codes or make it more complicated.
+3. Based on[libevent] is the best. Because of the historical burden, we have some old systems which are built on [libevent]. If the ideal library is based on [libevent], we can embedded it with the old system codes, otherwhise we need to modify the old system codes or make it more complicated.
 
-As described above, there are not many ones to choose from. So we develop one ourself. The design of the interface is highly inspired by [muduo](https://github.com/chenshuo/muduo "https://github.com/chenshuo/muduo") and [Golang](https://golang.org). Let's take some examples to exaplain this: 
+As described above, there are not many ones to choose from. So we develop one ourself. The design of the interface is highly inspired by [muduo] and [Golang]. Let's take some examples to exaplain this: 
 
 1. `Duration` : This is a time inteval class, with a time unit. It is referenced to the implementation of `Duration` of the `Golang` project. We have seen some many cases that the time interval without a unit. For example, what does `timeout` mean?  Seconds, milliseconds or microseconds? We need to read the document carefully, even more, we need to read the implementation codes. Our `Duration` class has self-explations with the time unit.
 2. `Buffer` : This is a memory buffer class. It uses the two projects' advantages of `muduo` and `Golang`.
@@ -148,5 +148,12 @@ Thanks for the support of [Qihoo360](http://www.360.cn "http://www.360.cn").
 
 Thanks for [libevent](https://github.com/libevent/libevent), [glog](https://github.com/google/glog), [gtest](https://github.com/google/googletest), [Golang](https://golang.org) projects.
 
-`evpp` is highly inspired by [muduo](https://github.com/chenshuo/muduo "https://github.com/chenshuo/muduo"). Thanks for the great work of [Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
+`evpp` is highly inspired by [muduo]. Thanks for the great work of [Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
 
+
+
+
+[evpp]:https://github.com/Qihoo360/evpp
+[Golang]:https://golang.org
+[muduo]:https://github.com/chenshuo/muduo
+[libevent]:https://github.com/libevent/libevent
