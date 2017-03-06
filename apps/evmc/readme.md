@@ -1,7 +1,7 @@
 evmc
 ---
 
-`evmc` is a nonblocking async C++ client library for memcached. It is based on [evpp](https://github.com/Qihoo360/evpp) which is a modern C++ network library.
+`evmc` is a nonblocking async C++ client library for memcached and membase. It is based on [evpp](https://github.com/Qihoo360/evpp) which is a modern C++ network library.
 
 ### Status
 
