@@ -132,6 +132,6 @@ int main(int argc, char* argv[]) {
 # Thanks
 
 1. 感谢[奇虎360公司](http://www.360.cn "http://www.360.cn")对该项目的支持
-1. 感谢项目 [libevent](https://github.com/libevent/libevent), [glog](https://github.com/google/glog), [gtest](https://github.com/google/googletest) 等项目
-1. `evpp`的参考了[muduo](https://github.com/chenshuo/muduo "https://github.com/chenshuo/muduo")项目的实现和设计，非常感谢[Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
+1. 感谢[libevent](https://github.com/libevent/libevent), [glog](https://github.com/google/glog), [gtest](https://github.com/google/googletest)等项目
+1. `evpp`深度参考了[muduo](https://github.com/chenshuo/muduo "https://github.com/chenshuo/muduo")项目的实现和设计，非常感谢[Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
 
