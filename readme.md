@@ -22,6 +22,8 @@ And also provides some libraries base on `evpp`:
 1. `evmc` a nonblocking async C++ memcached (or membase cluster) client library. See [evmc readme](/apps/evmc/readme.md) for more details.
 2. `evnsq` a nonblocking async C++ NSQ client library. See [evnsq readme](apps/evnsq/readme.md) for more details.
 
+NOTE: master is our development branch and may not be stable at all times.
+
 # Origin
 
 In our business system, we need to build a TCP long-connection Gateway and other TCP services. When we do a survey of the open sources, we cannot find any appropriate network library for our demands. According to our own business characteristic, an ideal C++ network library must have the features below: 
@@ -30,7 +32,7 @@ In our business system, we need to build a TCP long-connection Gateway and other
 2. Support multi-threads and multi-processes
 3. Based on [libevent] is the best. Because of the historical burden, we have some old systems which are built on [libevent]. If the ideal library is based on [libevent], we can embedded it with the old system codes, otherwhise we need to modify the old system codes or make it more complicated.
 
-As described above, there are not many ones to choose from. So we develop one ourself. The design of the interface is highly inspired by [muduo] and [Golang]. Let's take some examples to exaplain this: 
+As described above, there are not many options to choose from. So we developed one ourself. The design of the interface is highly inspired by [muduo] and [Golang]. Let's take some examples to exaplain this: 
 
 1. `Duration` : This is a time inteval class, with a time unit. It is referenced to the implementation of `Duration` of the [Golang] project. We have seen some many cases that the time interval without a unit. For example, what does `timeout` mean?  Seconds, milliseconds or microseconds? We need to read the document carefully, even more, we need to read the implementation codes. Our `Duration` class has self-explations with the time unit.
 2. `Buffer` : This is a memory buffer class. It uses the two projects' advantages of [muduo] and [Golang].
@@ -140,12 +142,14 @@ Please see the source code in [`examples`](https://github.com/Qihoo360/evpp/tree
 1. An async redis client
 2. Add `zipkin` tracing support
 3. Add examples : asio chat room
+4. Fix the comments written in mandarin problem
+5. Add benchmark against with boost.asio, Beast, ... 
 
 # In Production
 
 <img src="http://i.imgur.com/dcHpCm4.png" height = "100" width = "120" alt="Qihoo">
 
-> 欢迎申请加入该名单 ;-)
+> Welcome to join this list :-)
 
 
 # Thanks
