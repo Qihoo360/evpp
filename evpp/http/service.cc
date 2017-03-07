@@ -88,7 +88,8 @@ void Service::GenericCallback(struct evhttp_request* req, void* arg) {
 }
 
 void Service::HandleRequest(struct evhttp_request* req) {
-    // HTTP 请求的处理总入口，在监听主线程中执行
+    // In the main HTTP listening thread,
+    // this is the main entrance of the HTTP request processing.
     assert(listen_loop_->IsInLoopThread());
     LOG_TRACE << "handle request " << req << " url=" << req->uri;
 
@@ -102,7 +103,7 @@ void Service::HandleRequest(struct evhttp_request* req) {
 
     auto it = callbacks_.find(ctx->uri());
     if (it != callbacks_.end()) {
-        // 此处会调度到 HTTPServer::Dispatch 函数中
+        // This will forward to HTTPServer::Dispatch method to process this request.
         auto f = std::bind(&Service::SendReply, this, req, std::placeholders::_1);
         it->second(listen_loop_, ctx, f);
         return;
@@ -143,14 +144,14 @@ struct Response {
 };
 
 void Service::SendReply(struct evhttp_request* req, const std::string& response_data) {
-    // 在工作线程中执行
+    // In the worker thread
     LOG_TRACE << "send reply in working thread";
 
-    // 在工作线程中准备好响应报文
+    // Build the response package in the worker thread
     std::shared_ptr<Response> response(new Response(req, response_data));
 
     auto f = [this, response]() {
-        // 在监听主线程中执行
+        // In the main HTTP listening thread
         assert(listen_loop_->IsInLoopThread());
         LOG_TRACE << "send http reply";
 
@@ -162,7 +163,7 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
         evhttp_send_reply(response->req, HTTP_OK, "OK", response->buffer);
     };
 
-    // 将HTTP响应包的发送权交还给监听主线程
+    // Forward this response sending task to HTTP listening thread
     listen_loop_->RunInLoop(f);
 }
 }

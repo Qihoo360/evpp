@@ -27,7 +27,9 @@ EventLoop::EventLoop(struct event_base* base)
 
     Init();
 
-    // 当从一个已有的 event_base 创建EventLoop对象时，就不会调用 EventLoop::Run 方法，所以需要在这里调用 watcher_ 的初始化工作。
+    // When we build an EventLoop object from an existing event_base object
+    // we won't call EventLoop::Run method.
+    // So we need to do the initialization work of watcher_ here.
     InitEventWatcher();
 }
 
@@ -74,10 +76,10 @@ void EventLoop::Init() {
 void EventLoop::Run() {
     tid_ = std::this_thread::get_id(); // The actual thread id
 
-    // 在当前的EventLoop线程中初始化
+    // Initialize it in the EventLoop thread
     InitEventWatcher();
 
-    // 所有的事情都准备好之后，才置标记为true
+    // After everything have initialized, mark this running_ flag to true
     running_ = true;
 
     int rc = event_base_dispatch(evbase_);
@@ -88,7 +90,8 @@ void EventLoop::Run() {
         LOG_ERROR << "event_base_dispatch error " << serrno << " " << strerror(serrno);
     }
 
-    watcher_.reset(); // 确保在同一个线程构造、初始化和析构
+    // Make sure watcher_ does construct,initialize and destruct in the same thread.
+    watcher_.reset();
     running_ = false;
     LOG_TRACE << "EventLoop stopped, tid: " << std::this_thread::get_id();
 }
@@ -112,7 +115,7 @@ void EventLoop::StopInLoop() {
         }
     }
 
-    timeval tv = Duration(0.5).TimeVal(); // 0.5 second
+    timeval tv = Duration(0.5).TimeVal(); // Trick : delay 0.5 second
     event_base_loopexit(evbase_, &tv);
     running_ = false;
 }

@@ -50,7 +50,7 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
     if (post) {
         post();
     }
-    event_loop_.reset(); // 就在当前线程中释放所有资源
+    event_loop_.reset(); // Make sure construct, initialize and destruct in the same thread
     status_ = kStopped;
 }
 
@@ -100,9 +100,12 @@ std::thread::id EventLoopThread::tid() const {
 }
 
 bool EventLoopThread::IsRunning() const {
-    // 使 event_loop_->running() 这种判断方式更准确，而不是 status_==kRunning 。
-    // 这是因为：在极端情况下， status_==kRunning，但 event_loop_::running_ == false，
-    //          这种情况下某些依赖EventLoop运行的代码将发生异常。
+    // Using event_loop_->running() is more exact to query where thread is running or not, 
+    // instead of status_ == kRunning
+    // 
+    // Because in some particular circumstances, 
+    // when status_==kRunning and event_loop_::running_ == false,
+    // the application will broke down
     return event_loop_->running();
 }
 

@@ -30,7 +30,7 @@ In our business system, we need to build a TCP long-connection Gateway and other
 
 1. A simple enough C++ interface
 2. Support multi-threads and multi-processes
-3. Based on [libevent] is the best. Because of the historical burden, we have some old systems which are built on [libevent]. If the ideal library is based on [libevent], we can embedded it with the old system codes, otherwhise we need to modify the old system codes or make it more complicated.
+3. Based on [libevent] is preferable for our projects. Given your older applications were based on [libevent], it was preferable to have your new framework also be based on it, so as to reduce the overall time/effort/cost to completion. Actually, we do have some older applications which were based on [libevent].
 
 As described above, there are not many options to choose from. So we developed one ourself. The design of the interface is highly inspired by [muduo] and [Golang]. Let's take some examples to exaplain this: 
 
@@ -156,14 +156,16 @@ Please see the source code in [`examples`](https://github.com/Qihoo360/evpp/tree
 
 Thanks for the support of [Qihoo360](http://www.360.cn "http://www.360.cn").
 
-Thanks for [libevent], [glog](https://github.com/google/glog), [gtest](https://github.com/google/googletest), [Golang] projects.
+Thanks for [libevent], [glog], [gtest], [Golang], [LevelDB], [rapidjson] projects.
 
 [evpp] is highly inspired by [muduo]. Thanks for the great work of [Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
 
 
-
-
+[gtest]:https://github.com/google/googletest
+[glog]:https://github.com/google/glog
 [evpp]:https://github.com/Qihoo360/evpp
 [Golang]:https://golang.org
 [muduo]:https://github.com/chenshuo/muduo
 [libevent]:https://github.com/libevent/libevent
+[LevelDB]:https://github.com/google/leveldb
+[rapidjson]:https://github.com/miloyip/
