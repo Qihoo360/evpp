@@ -9,6 +9,10 @@ This is currently used in production which sends more than 100 billion requests 
 
 ### Features
 
+1. Support single `memcached` instance
+2. Support a cluster of `memcached` which are configurated by vbucket, like `membase` or `couchbase`
+3. Support failover and load balance
+
 ### Dependencies
 
 - libhashkit
