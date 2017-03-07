@@ -133,6 +133,12 @@ int main(int argc, char* argv[]) {
 }
 ```
 
+# 用户列表
+
+<img src="http://i.imgur.com/dcHpCm4.png" height = "100" width = "120" alt="Qihoo">
+
+> 欢迎申请加入该名单 ;-)
+
 # Thanks
 
 1. 感谢[奇虎360公司](http://www.360.cn "http://www.360.cn")对该项目的支持
