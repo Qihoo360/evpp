@@ -81,10 +81,10 @@ void Client::Close() {
         lookupd_timers_.clear();
     };
 
-    // 如果使用 RunInLoop，有可能会在当前循环中直接执行该函数，
-    // 这导致会回调到 Client::OnConnection 函数中去释放NSQConn对象，
-    // 进而破坏当前 f 函数中的两个for循环的迭代器。
-    // 因此要使用 QueueInLoop ，将该函数的执行周期推移到下一次执行循环中
+    // If we use loop_->RunInLoop(f), this may execute f in current loop 
+    // and then it will callback Client::OnConnection to release NSQConn object.
+    // That will make the iterators in function f broken down.
+    // So we use loop_->QueueInLoop(f) to delay the execution time of f to next loop.
     loop_->QueueInLoop(f);
 }
 
@@ -172,7 +172,7 @@ void Client::OnConnection(const ConnPtr& conn) {
             }
         }
 
-        // 等待NSQConn的状态都顺序转换完成后，在EventLoop下一轮执行循环中执行释放动作
+        // Waiting for the status of NSQConn to be stable, and then execute the function f in next loop
         auto f = [this, conn]() {
             assert(conn->IsDisconnected());
             if (!conn->IsDisconnected()) {
