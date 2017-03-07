@@ -253,9 +253,4 @@
       <Filter>http\server</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\readme.md">
-      <Filter>common</Filter>
-    </None>
-  </ItemGroup>
 </Project>

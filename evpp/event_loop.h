@@ -25,9 +25,9 @@ public:
 public:
     EventLoop();
 
-    // 从一个已有的event_base对象创建EventLoop，
-    // 这样就可以将evpp::EventLoop方便的嵌入到别的基于libevent的已有框架中。
-    // 需要仔细处理 event_base_、watcher_等对象的释放问题
+    // Build a EventLoop object using an existing event_base object,
+    // so we can embed EventLoop object into the old applications based on libevent
+    // NOTE: Be careful to deal with the releasing work of event_base_ and watcher_ objects.
     explicit EventLoop(struct event_base* base);
     ~EventLoop();
 
