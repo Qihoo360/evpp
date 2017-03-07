@@ -94,7 +94,7 @@ void TCPConn::Send(Buffer* buf) {
         SendInLoop(buf->data(), buf->length());
         buf->Reset();
     } else {
-        loop_->RunInLoop(std::bind(&TCPConn::SendStringInLoop, this, buf->NextAllString()));
+        loop_->RunInLoop(std::bind(&TCPConn::SendStringInLoop, shared_from_this(), buf->NextAllString()));
     }
 }
 
