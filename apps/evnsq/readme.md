@@ -7,6 +7,15 @@ evnsq
 
 This is currently used in production which processes more than 20 billion messages every day.
 
+
+### Features
+
+1. Support single `NSQD` instance
+2. Support a cluster of `NSQDs`
+3. Support `nsqlookupd`
+4. Support tow modes : producer and consumer
+5. Support failover and load balance
+
 ### A consumer : tailer
 
 ```C++
