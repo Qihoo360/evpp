@@ -5,6 +5,25 @@ evpp
 
 [evpp]是一个基于[libevent]开发的现代化C++11高性能网络服务器，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务器和客户端库。
 
+
+# 特性
+
+1. 现代版的C++11接口
+1. 非阻塞异步接口都是C++11的functional/bind形式的回调仿函数（不是[libevent]中的C风格的函数指针）
+1. 非阻塞纯异步多线程TCP服务器/客户端
+1. 非阻塞纯异步多线程HTTP服务器/客户端
+1. 非阻塞纯异步多线程UDP服务器
+1. 支持多进程模式
+1. 优秀的跨平台特性和高性能（继承自[libevent]的优点）
+
+除此之外，基于该库之上，还提供两个附带的应用层协议库：
+
+1. `evmc` ：一个纯异步非阻塞式的`memcached`的C++客户端库，支持`membase`集群模式。详情请见：[evmc readme](/apps/evmc/readme.md)
+2. `evnsq` ： 一个纯异步非阻塞式的`NSQ`的C++客户端库，支持消费者、生产者、服务发现等特性。详情请见：[evnsq readme](/apps/evnsq/readme.md)
+
+将来还会推出`redis`的客户端库。
+
+
 # 项目由来
 
 我们开发小组负责的业务需要用到TCP协议来建设长连接网关服务和一些其他的一些基于TCP的短连接服务，在调研开源项目的过程中，没有发现一个合适的库来满足我们要求。结合我们自身的业务情况，理想中的C++网络库应具备一下几个特性：
@@ -24,30 +43,13 @@ evpp
 另外，我们实现过程中极其重视线程安全问题，一个事件相关的资源必须在其所属的`EventLoop`中初始化和析构释放，这样我们能最大限度的减少出错的可能。为了达到这个目标我们重载`event_add`和`event_del`等函数，每一次调用`event_add`，就在对应的线程私有数据中记录该对象，在调用`event_del`时，检查之前该线程私有数据中是否拥有该对象，然后在整个程序退出前，再完整的检查所有线程的私有数据，看看是否仍然有对象没有析构释放，详细代码实现可以参考 [https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87](https://github.com/Qihoo360/evpp/blob/master/evpp/inner_pre.cc#L46~L87)。我们如此苛刻的追求线程安全，只是为了让一个程序能安静的平稳的退出或Reload，因为我们深刻的理解“编写永远运行的系统，和编写运行一段时间后平静关闭的系统是两码事”，后者要困难的多。
 
 
-# 特性
-
-1. 现代版的C++11接口
-1. 非阻塞异步接口都是C++11的functional/bind形式的回调仿函数（不是[libevent]中的C风格的函数指针）
-1. 非阻塞纯异步多线程TCP服务器/客户端
-1. 非阻塞纯异步多线程HTTP服务器/客户端
-1. 非阻塞纯异步多线程UDP服务器
-1. 支持多进程模式
-1. 优秀的跨平台特性和高性能（继承自[libevent]的优点）
-
-除此之外，基于该库之上，还提供两个附带的应用层协议库：
-
-1. `evmc` ：一个纯异步非阻塞式的`memcached`的C++客户端库，支持`membase`集群模式。详情请见：[evmc readme](/apps/evmc/readme.md)
-2. `evnsq` ： 一个纯异步非阻塞式的`NSQ`的C++客户端库，支持消费者、生产者、服务发现等特性。详情请见：[evnsq readme](/apps/evnsq/readme.md)
-
-将来还会推出`redis`的客户端库。
-
 # 快速开始
 
 请见 [Quick Start](quick_start.md)
 
 # Examples
 
-## A echo TCP server
+## An echo TCP server
 
 ```cpp
 #include <evpp/exp.h>
@@ -78,7 +80,7 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-### A echo HTTP server
+### An echo HTTP server
 
 ```cpp
 #include <evpp/exp.h>
@@ -106,7 +108,7 @@ int main(int argc, char* argv[]) {
 ```
 
 
-### A echo UDP server
+### An echo UDP server
 
 ```cpp
 #include <evpp/exp.h>
