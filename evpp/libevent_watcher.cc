@@ -46,7 +46,8 @@ bool EventWatcher::Watch(Duration timeout) {
     }
 
     if (attached_) {
-        // 在周期性的InvokerTimer中，EventWatcher::Watch 会被调用多次，这样就可以避免 event_add 被调用多次。
+        // When InvokerTimer::periodic_ == true, EventWatcher::Watch will be called many times
+        // so we need to remove it from event_base before we add it into event_base
         EventDel(event_);
         attached_ = false;
     }

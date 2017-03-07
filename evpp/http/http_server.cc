@@ -102,8 +102,8 @@ bool Server::Start() {
 
 void Server::Stop(bool wait_thread_exit /*= false*/) {
     for (auto& lt : listen_threads_) {
-        // 1. Service 对象的Stop会在 listen_thread_ 退出时自动执行 Service::Stop
-        // 2. EventLoopThread 对象必须调用 Stop 来停止
+        // 1. Service::Stop will be called automatically when listen_thread_ is existing
+        // 2. EventLoopThread::Stop will be called to terminate the thread
         lt.thread->Stop();
     }
     tpool_->Stop();
@@ -201,21 +201,26 @@ void Server::Dispatch(EventLoop* listening_loop,
                       const ContextPtr& ctx,
                       const HTTPSendResponseCallback& response_callback,
                       const HTTPRequestCallback& user_callback) {
-    // 当前正在 HTTP 的监听线程中执行
+    // Make sure it is running in the HTTP listening thread
     assert(listening_loop->IsInLoopThread());
     LOG_TRACE << "dispatch request " << ctx->req() << " url=" << ctx->original_uri() << " in main thread";
     EventLoop* loop = NULL;
     loop = GetNextLoop(listening_loop, ctx);
 
-    // 将该HTTP请求调度到工作线程处理
+    // Forward this HTTP request to a worker thread to process
     auto f = [](EventLoop * l, const ContextPtr & context,
                 const HTTPSendResponseCallback & response_cb,
     const HTTPRequestCallback & user_cb) {
         LOG_TRACE << "process request " << context->req()
                   << " url=" << context->original_uri() << " in working thread";
 
-        // 在工作线程中执行，调用上层应用设置的回调函数来处理该HTTP请求
-        // 当上层应用处理完后，上层应用必须调用 response_cb 将处理结果反馈回来，也就是会回到 Service::SendReply 函数中。
+        // This is in the worker thread.
+        // Invoke user layer handler to process this HTTP process.
+        // After the user layer finished processing, 
+        // the user layer has responsibility to invoke response_cb
+        // to send the result back to framework,
+        // that actually comes back to Service::SendReply method.
+        assert(l->IsInLoopThread());
         user_cb(l, context, response_cb);
     };
 

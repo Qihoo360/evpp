@@ -86,9 +86,6 @@
     <ClInclude Include="..\evpp\udp\udp_server.h" />
     <ClInclude Include="..\evpp\utility.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\readme.md" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
