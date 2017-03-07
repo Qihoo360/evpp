@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 }
 ```
 
-### A echo HTTP server
+### An echo HTTP server
 
 ```cpp
 #include <evpp/exp.h>
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
 ```
 
 
-### A echo UDP server
+### An echo UDP server
 
 ```cpp
 #include <evpp/exp.h>
