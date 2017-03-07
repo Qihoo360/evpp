@@ -26,10 +26,14 @@ public:
 
     void AddResponseHeader(const std::string& key, const std::string& value);
 
-    // 获取原始URI，有可能带有参数, 例如: /status.html?code=utf8
+    // The original URI, with original parameters, e.g. : /status.html?code=utf8
     const char* original_uri() const;
 
-    // 在HTTP请求的HEADER中查找某个key的值。如果没有找到返回一个空指针。
+    // Finds the value belonging to a header.
+    // 
+    // @param key the name of the header to find
+    // @returns a pointer to the value for the header or NULL if the header
+    // could not be found.
     const char* FindRequestHeader(const char* key);
 
     const  std::string& uri() const {
@@ -52,22 +56,17 @@ public:
     static std::string FindClientIP(const char* uri);
 
 private:
-    // 不带参数的URI, 例如: /status.html
+    // The URI without any parameters : e.g. /status.html
     std::string uri_;
 
-    // 远程客户端IP。如果该HTTP请求是由NGINX转发而来，我们会优先使用URL中的‘clientip’参数.
-    // @see NGINX反向代理参考配置: proxy_pass http://127.0.0.1:8080/get/?clientip=$remote_addr;
+    // The remote client ip.
+    // If the HTTP request is forworded by Nginx, 
+    // we will prefer to use the value of 'clientip' parameter in URL
+    // @see The reverse proxy Nginx configuration : proxy_pass http://127.0.0.1:8080/get/?clientip=$remote_addr;
     std::string remote_ip_;
 
-    // HTTP请求的Body数据
+    // The HTTP request body data
     Slice body_;
-
-    // The request received timestamp
-    //Timestamp recved_time_;
-    //Timestamp dispached_time_;
-    //Timestamp process_begin_time_;
-    //Timestamp process_end_time_;
-    //Timestamp send_response_time_;
 
     struct evhttp_request* req_;
 };
