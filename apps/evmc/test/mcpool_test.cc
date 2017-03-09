@@ -3,6 +3,8 @@
 #include <evmc/memcache_client_pool.h>
 #include <evmc/vbucket_config.h>
 
+#include <evpp/gettimeofday.h>
+
 #include <thread>
 
 namespace {

@@ -29,8 +29,6 @@
 #ifdef __cplusplus
 
 
-#include "gettimeofday.h"
-
 #include <memory>
 #include <functional>
 

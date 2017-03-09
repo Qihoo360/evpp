@@ -248,14 +248,15 @@ void Server::RecvingLoop(RecvThread* thread) {
 
 
 /*
-性能测试数据：Intel(R) Xeon(R) CPU E5-2630 0 @ 2.30GHz 24核
+Benchmark data：Intel(R) Xeon(R) CPU E5-2630 0 @ 2.30GHz 24核
 
-性能瓶颈卡在recvfrom接收线程上，其他23个工作线程毫无压力！
-如果需要进一步优化，可以考虑下面两个方法：
-1. 使用 Linux kernel 3.9+ 以上的 SO_REUSEPORT 特性
-2. 使用 RAW SOCKET
+The recvfrom thread is the bottleneck, other 23 working threads' load is very very low.
 
-udp message不同长度下的QPS：
+If we need to improve the performance, there two ways to achieve it:
+1. Using Linux kernel 3.9+ SO_REUSEPORT
+2. Using RAW SOCKET
+
+udp message length QPS：
 0.1k    9w+
 1k      9w+
 
