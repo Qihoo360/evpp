@@ -58,6 +58,7 @@ add_subdirectory (evpp)
 add_subdirectory (apps)
 add_subdirectory (test)
 add_subdirectory (examples)
+add_subdirectory (benchmark)
 
 set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include (utils)

@@ -86,25 +86,34 @@ public:
     }
     void SetCloseDelayTime(Duration d) {
         assert(type_ == kIncoming);
-        close_delay_ = d;  // 设置延时关闭时间，仅对 kIncoming 类型的TCPConn生效。
+        // This option is only available for the connection type kIncoming
+        // Set the delay time to close the socket
+        close_delay_ = d;
     }
+    void SetTcpNoDelay(bool on);
 protected:
-    // 这部分函数只能被 TCPClient 或者 TCPServer 调用，
-    // 我们不希望上层应用来调用这些函数
+    // These methods are visible only for TCPClient and TCPServer. 
+    // We don't want the user layer to access these methods.
     friend class TCPClient;
     friend class TCPServer;
+
+
     void set_type(Type t) {
         type_ = t;
     }
+
     void SetMessageCallback(MessageCallback cb) {
-        msg_fn_ = cb;    // 会回调到上层应用
+        msg_fn_ = cb; // This will be called to the user layer
     }
+
     void SetConnectionCallback(ConnectionCallback cb) {
-        conn_fn_ = cb;    // 会回调到上层应用
+        conn_fn_ = cb; // This will be called to the user layer
     }
-    void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark); // 会回调到上层应用
+
+    void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark); // This will be called to the user layer
+
     void SetCloseCallback(CloseCallback cb) {
-        close_fn_ = cb;    // 会回调到 TCPClient 或 TCPServer
+        close_fn_ = cb; // This will be called to TCPClient or TCPServer
     }
     void OnAttachedToLoop();
 private:
