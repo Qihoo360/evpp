@@ -96,6 +96,6 @@ private:
     int fd_;
 };
 
-} // namespace
+}
 
 
