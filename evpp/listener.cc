@@ -62,7 +62,7 @@ void Listener::HandleAccept(Timestamp /*ts*/) {
         return;
     }
 
-    sock::SetKeepAlive(nfd);
+    sock::SetKeepAlive(nfd, true);
 
     std::string raddr = sock::ToIPPort(&ss);
     if (raddr.empty()) {
