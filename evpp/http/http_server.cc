@@ -216,7 +216,7 @@ void Server::Dispatch(EventLoop* listening_loop,
 
         // This is in the worker thread.
         // Invoke user layer handler to process this HTTP process.
-        // After the user layer finished processing, 
+        // After the user layer finished processing,
         // the user layer has responsibility to invoke response_cb
         // to send the result back to framework,
         // that actually comes back to Service::SendReply method.
