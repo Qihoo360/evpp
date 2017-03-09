@@ -23,6 +23,7 @@
 #else
 #include <netdb.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h> // for TCP_NODELAY
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #endif
