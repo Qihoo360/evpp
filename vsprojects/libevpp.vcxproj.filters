@@ -156,9 +156,6 @@
     <ClInclude Include="..\evpp\duration.inl.h">
       <Filter>time</Filter>
     </ClInclude>
-    <ClInclude Include="..\evpp\gettimeofday.h">
-      <Filter>time</Filter>
-    </ClInclude>
     <ClInclude Include="..\evpp\timestamp.h">
       <Filter>time</Filter>
     </ClInclude>

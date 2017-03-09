@@ -41,7 +41,8 @@ void FdChannel::AttachToLoop() {
     assert(loop_->IsInLoopThread());
 
     if (attached_) {
-        // FdChannel::Update 可能会被多次调用，这样处理可以避免 event_add 被多次调用
+        // FdChannel::Update may be called many times
+        // So doing this can avoid event_add will be called more than once.
         DetachFromLoop();
     }
 
