@@ -30,7 +30,7 @@ public:
     const char* original_uri() const;
 
     // Finds the value belonging to a header.
-    // 
+    //
     // @param key the name of the header to find
     // @returns a pointer to the value for the header or NULL if the header
     // could not be found.
@@ -60,7 +60,7 @@ private:
     std::string uri_;
 
     // The remote client ip.
-    // If the HTTP request is forworded by Nginx, 
+    // If the HTTP request is forworded by Nginx,
     // we will prefer to use the value of 'clientip' parameter in URL
     // @see The reverse proxy Nginx configuration : proxy_pass http://127.0.0.1:8080/get/?clientip=$remote_addr;
     std::string remote_ip_;
