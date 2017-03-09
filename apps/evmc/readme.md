@@ -5,7 +5,7 @@ evmc
 
 ### Status
 
-This is currently used in production which sends more than 100 billion requests every day.
+This library is currently used in production which sends more than 100 billion requests every day.
 
 ### Features
 

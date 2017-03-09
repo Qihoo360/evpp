@@ -11,7 +11,7 @@ class TCPConn;
 typedef std::shared_ptr<TCPConn> TCPConnPtr;
 typedef std::function<void()> TimerCallback;
 
-// 连接成功、连接断开、连接失败等事件，都会调用该回调
+// When a connection established, broken down, connecting failed, this callback will be called.
 typedef std::function<void(const TCPConnPtr&)> ConnectionCallback;
 
 

@@ -52,7 +52,6 @@
     <ClInclude Include="..\evpp\evpp_export.h" />
     <ClInclude Include="..\evpp\exp.h" />
     <ClInclude Include="..\evpp\fd_channel.h" />
-    <ClInclude Include="..\evpp\gettimeofday.h" />
     <ClInclude Include="..\evpp\httpc\conn.h" />
     <ClInclude Include="..\evpp\httpc\request.h" />
     <ClInclude Include="..\evpp\httpc\response.h" />
