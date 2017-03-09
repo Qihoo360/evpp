@@ -5,6 +5,7 @@
 #include "evpp/tcp_conn.h"
 #include "evpp/fd_channel.h"
 #include "evpp/event_loop.h"
+#include "evpp/sockets.h"
 
 namespace evpp {
 TCPConn::TCPConn(EventLoop* l,
@@ -218,7 +219,7 @@ void TCPConn::HandleWrite() {
 }
 
 void TCPConn::HandleClose() {
-    // 防止多次触发
+    // Avoid multi calling
     if (status_ == kDisconnected) {
         return;
     }
@@ -232,8 +233,9 @@ void TCPConn::HandleClose() {
     TCPConnPtr conn(shared_from_this());
 
     if (conn_fn_) {
-        // 应该在 kDisconnecting 状态下调用该回调。
-        // 例如 TCPClient 在断开连接时，应用层可以自己决定是否需要重新自动重连。
+        // This callback must be invoked at status kDisconnecting
+        // e.g. when the TCPClient disconnects with remote server,
+        // the user layer can decide whether to do the reconnection.
         assert(status_ == kDisconnecting);
         conn_fn_(conn);
     }
@@ -255,6 +257,10 @@ void TCPConn::OnAttachedToLoop() {
 void TCPConn::SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark) {
     high_water_mark_fn_ = cb;
     high_water_mark_ = mark;
+}
+
+void TCPConn::SetTcpNoDelay(bool on) {
+    sock::SetTcpNoDelay(fd_, on);
 }
 
 std::string TCPConn::StatusToString() const {
