@@ -53,7 +53,7 @@ int CreateNonblockingSocket() {
     }
 #endif
 
-    SetKeepAlive(fd);
+    SetKeepAlive(fd, true);
     SetReuseAddr(fd);
     SetReusePort(fd);
     return fd;
@@ -212,9 +212,10 @@ void SetTimeout(int fd, const Duration& timeout) {
     SetTimeout(fd, (uint32_t)(timeout.Milliseconds()));
 }
 
-void SetKeepAlive(int fd) {
-    int on = 1;
-    int rc = ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (const char*)&on, sizeof(on));
+void SetKeepAlive(int fd, bool on) {
+    int optval = on ? 1 : 0;
+    int rc = ::setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE,
+                          reinterpret_cast<const char*>(&optval), static_cast<socklen_t>(sizeof optval));
     if (rc != 0) {
         int serrno = errno;
         LOG_ERROR << "setsockopt(SO_KEEPALIVE) failed, errno=" << serrno << " " << strerror(serrno);
@@ -222,8 +223,9 @@ void SetKeepAlive(int fd) {
 }
 
 void SetReuseAddr(int fd) {
-    int on = 1;
-    int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on));
+    int optval = 1;
+    int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
+                          reinterpret_cast<const char*>(&optval), static_cast<socklen_t>(sizeof optval));
     if (rc != 0) {
         int serrno = errno;
         LOG_ERROR << "setsockopt(SO_REUSEADDR) failed, errno=" << serrno << " " << strerror(serrno);
@@ -232,13 +234,25 @@ void SetReuseAddr(int fd) {
 
 void SetReusePort(int fd) {
 #ifdef SO_REUSEPORT
-    int on = 1;
-    int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (const char*)&on, sizeof(on));
+    int optval = 1;
+    int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEPORT,
+                          reinterpret_cast<const char*>(&optval), static_cast<socklen_t>(sizeof optval));
     if (rc != 0) {
         int serrno = errno;
         LOG_ERROR << "setsockopt(SO_REUSEPORT) failed, errno=" << serrno << " " << strerror(serrno);
     }
 #endif
+}
+
+
+void SetTcpNoDelay(int fd, bool on) {
+    int optval = on ? 1 : 0;
+    int rc = ::setsockopt(fd, IPPROTO_TCP, TCP_NODELAY,
+                          reinterpret_cast<const char*>(&optval), static_cast<socklen_t>(sizeof optval));
+    if (rc != 0) {
+        int serrno = errno;
+        LOG_ERROR << "setsockopt(TCP_NODELAY) failed, errno=" << serrno << " " << strerror(serrno);
+    }
 }
 
 }
