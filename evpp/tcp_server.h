@@ -23,9 +23,11 @@ public:
     bool Start();
     void Stop(); // TODO ADD a parameter : bool wait_until_stopped
 
-    // 设置一个TCP连接相关的回调函数，当接收到一个新的连接、或已有连接断开等事件发生时，都会调用该回调
-    //  1. 当成功建立连接时，回调中的参数 TCPConn::IsConnected() == true
-    //  2. 当连接断开时，回调中的参数 TCPConn::IsDisconnecting() == true
+    // Set a connection event relative callback when the TCPServer
+    // receives a new connection or an exist connection breaks down.
+    // When these two events happened, the value of the parameter in the callback is:
+    //      1. Received a new connection : TCPConn::IsConnected() == true
+    //      2. An exist connection broken down : TCPConn::IsDisconnecting() == true
     void SetConnectionCallback(const ConnectionCallback& cb) {
         conn_fn_ = cb;
     }

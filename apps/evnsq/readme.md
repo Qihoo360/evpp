@@ -5,7 +5,7 @@ evnsq
 
 ### Status
 
-This is currently used in production which processes more than 20 billion messages every day.
+This library is currently used in production which processes more than 20 billion messages every day.
 
 
 ### Features

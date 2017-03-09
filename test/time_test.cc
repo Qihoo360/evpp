@@ -3,6 +3,7 @@
 #include "./test_common.h"
 #include "evpp/duration.h"
 #include "evpp/timestamp.h"
+#include "evpp/gettimeofday.h"
 
 TEST_UNIT(testDuration) {
     evpp::Duration d0(0);
