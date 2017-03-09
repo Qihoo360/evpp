@@ -3,12 +3,16 @@
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>
 
+void OnConnection(const evpp::TCPConnPtr& conn) {
+    if (conn->IsConnected()) {
+        conn->SetTcpNoDelay(true);
+    }
+}
+
 void OnMessage(const evpp::TCPConnPtr& conn,
                evpp::Buffer* msg,
                evpp::Timestamp ts) {
-    //LOG_INFO << "Received a message len=" << msg->size();
-    conn->Send(msg->data(), msg->size());
-    msg->Reset();
+    conn->Send(msg);
 }
 
 int main(int argc, char* argv[]) {
