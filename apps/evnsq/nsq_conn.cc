@@ -78,10 +78,10 @@ void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
             // tcp_client_ will reconnect to remote NSQD again automatically
             status_ = kConnecting;
         } else {
+            // the user layer close the connection
             assert(status_ == kDisconnecting);
+            status_ = kDisconnected;
         }
-
-        status_ = kDisconnected;
 
         if (conn_fn_) {
             auto self = shared_from_this();
