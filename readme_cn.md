@@ -1,7 +1,7 @@
 evpp
 ---
 
-# 简介
+# 简介 [English](readme.md)
 
 [evpp]是一个基于[libevent]开发的现代化C++11高性能网络服务器，自带TCP/UDP/HTTP等协议的异步非阻塞式的服务器和客户端库。
 
@@ -46,6 +46,35 @@ evpp
 # 快速开始
 
 请见 [Quick Start](quick_start.md)
+
+
+# Benchmark
+
+### 吞吐量测试
+
+本文用 ping pong 测试来对比[evpp]与[libevent]、*`boost.asio`* 等网络的吞吐量，测试结果表明[evpp]吞吐量平均比 *`boost.asio`*  高 *40%* 左右，比[libevent]高17%z左右。
+
+[evpp]本身是基于[libevent]实现的，不过[evpp]只是用了[libevent]的事件循环，并没有用[libevent]的`evbuffer`，而是自己参考[muduo]和[Golang]实现了自己的网络IO读写类[Buffer](https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h)。
+
+性能测试代码在这里：[https://github.com/Qihoo360/evpp/tree/master/benchmark/tcp](https://github.com/Qihoo360/evpp/tree/master/benchmark/tcp).
+
+##### 测试对象
+
+1. [evpp-0.2.0](https://github.com/Qihoo360/evpp/archive/0.2.0.tar.gz) based on libevent-2.0.21
+2. boost.asio-1.53
+3. libevent-2.0.21
+
+##### 系统环境
+
+- 操作系统：Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64
+- 硬件CPU：Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz
+
+![](docs/benchmark/throughput-1thread-1024bytes.png)
+![](docs/benchmark/throughput-1thread-2048bytes.png)
+![](docs/benchmark/throughput-1thread-4096bytes.png)
+![](docs/benchmark/throughput-1thread-8192bytes.png)
+
+
 
 # Examples
 
