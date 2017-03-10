@@ -91,6 +91,7 @@ public:
         close_delay_ = d;
     }
     void SetTcpNoDelay(bool on);
+    // TODO void SetLinger();
 protected:
     // These methods are visible only for TCPClient and TCPServer. 
     // We don't want the user layer to access these methods.
@@ -132,7 +133,7 @@ private:
     std::string remote_addr_; // the remote address with form : "ip:port"
     std::unique_ptr<FdChannel> chan_;
     Buffer input_buffer_;
-    Buffer output_buffer_;
+    Buffer output_buffer_; // TODO use a list<Slice>
 
     enum { kContextCount = 16, };
     Any context_[kContextCount];
