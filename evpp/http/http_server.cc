@@ -11,7 +11,7 @@ namespace evpp {
 namespace http {
 
 Server::Server(uint32_t thread_num) {
-    tpool_.reset(new EventLoopThreadPool(NULL, thread_num));
+    tpool_.reset(new EventLoopThreadPool(nullptr, thread_num));
 }
 
 Server::~Server() {
@@ -210,7 +210,7 @@ void Server::Dispatch(EventLoop* listening_loop,
     // Make sure it is running in the HTTP listening thread
     assert(listening_loop->IsInLoopThread());
     LOG_TRACE << "dispatch request " << ctx->req() << " url=" << ctx->original_uri() << " in main thread";
-    EventLoop* loop = NULL;
+    EventLoop* loop = nullptr;
     loop = GetNextLoop(listening_loop, ctx);
 
     // Forward this HTTP request to a worker thread to process
@@ -262,7 +262,7 @@ Service* Server::service(int index) const {
         return listen_threads_[index].hserver.get();
     }
 
-    return NULL;
+    return nullptr;
 }
 }
 }

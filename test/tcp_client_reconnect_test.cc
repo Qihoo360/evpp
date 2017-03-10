@@ -70,7 +70,7 @@ TEST_UNIT(testTCPClientReconnect) {
     tcp_client_thread->event_loop()->RunInLoop(std::bind(&evpp::TCPClient::Disconnect, client));
     tcp_client_thread->event_loop()->RunAfter(evpp::Duration(1.0), std::bind(&DeleteTCPClient, client));
     usleep(evpp::Duration(2.0).Microseconds());
-    client = NULL;
+    client = nullptr;
     tcp_client_thread->Stop(true);
     tcp_server_thread->Stop(true);
     H_TEST_ASSERT(tcp_client_thread->IsStopped());

@@ -10,15 +10,15 @@ Conn::Conn(ConnPool* p, EventLoop* l)
     , host_(p->host())
     , port_(p->port())
     , timeout_(p->timeout())
-    , evhttp_conn_(NULL) {
+    , evhttp_conn_(nullptr) {
 }
 
 Conn::Conn(EventLoop* l, const std::string& h, int p, Duration t)
-    : loop_(l), pool_(NULL)
+    : loop_(l), pool_(nullptr)
     , host_(h)
     , port_(p)
     , timeout_(t)
-    , evhttp_conn_(NULL) {
+    , evhttp_conn_(nullptr) {
 }
 
 Conn::~Conn() {
@@ -30,7 +30,7 @@ bool Conn::Init() {
         return true;
     }
 
-    evhttp_conn_ = evhttp_connection_base_new(loop_->event_base(), NULL, host_.c_str(), port_);
+    evhttp_conn_ = evhttp_connection_base_new(loop_->event_base(), nullptr, host_.c_str(), port_);
     if (!evhttp_conn_) {
         LOG_ERROR << "evhttp_connection_new failed.";
         return false;
@@ -56,7 +56,7 @@ void Conn::Close() {
     if (evhttp_conn_) {
         assert(loop_->IsInLoopThread());
         evhttp_connection_free(evhttp_conn_);
-        evhttp_conn_ = NULL;
+        evhttp_conn_ = nullptr;
     }
 }
 } // httpc

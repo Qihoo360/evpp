@@ -7,7 +7,7 @@ namespace evpp {
 // Variant type that can hold Any other type
 class Any {
 public:
-    Any() : content_(NULL) {}
+    Any() : content_(nullptr) {}
     ~Any() {
         delete content_;
     }
@@ -17,7 +17,7 @@ public:
         : content_(new Holder<ValueType>(value)) {}
 
     Any(const Any& other)
-        : content_(other.content_ ? other.content_->clone() : NULL) {}
+        : content_(other.content_ ? other.content_->clone() : nullptr) {}
 
 public:
     Any& swap(Any& rhs) {
@@ -90,7 +90,7 @@ ValueType* any_cast(Any* any) {
         return &(static_cast<Any::Holder<ValueType>*>(any->content_)->held_);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 template<typename ValueType>

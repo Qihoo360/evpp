@@ -14,7 +14,7 @@ Request::Request(ConnPool* pool, EventLoop* loop, const std::string& http_uri, c
 }
 
 Request::Request(EventLoop* loop, const std::string& http_url, const std::string& body, Duration timeout)
-    : pool_(NULL), loop_(loop), body_(body) {
+    : pool_(nullptr), loop_(loop), body_(body) {
     //TODO performance compare
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct evhttp_uri* evuri = evhttp_uri_parse(http_url.c_str());
@@ -64,10 +64,10 @@ void Request::ExecuteInLoop(const Handler& h) {
     evhttp_cmd_type req_type = EVHTTP_REQ_GET;
 
     std::string errmsg;
-    struct evhttp_request* req = NULL;
+    struct evhttp_request* req = nullptr;
 
     if (conn_) {
-        assert(pool_ == NULL);
+        assert(pool_ == nullptr);
         if (!conn_->Init()) {
             errmsg = "conn init fail";
             goto failed;

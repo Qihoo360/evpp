@@ -22,7 +22,7 @@
 #define LOG_WARN  std::cout << __FILE__ << ":" << __LINE__
 #define LOG_ERROR std::cout << __FILE__ << ":" << __LINE__
 #define LOG_FATAL std::cout << __FILE__ << ":" << __LINE__
-#define CHECK_NOTNULL(val) LOG_ERROR << "'" #val "' Must be non NULL";
+#define CHECK_NOTnullptr(val) LOG_ERROR << "'" #val "' Must be non nullptr";
 #endif
 #endif // end of define __cplusplus
 
