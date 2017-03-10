@@ -18,8 +18,8 @@ evpp
 
 除此之外，基于该库之上，还提供两个附带的应用层协议库：
 
-1. `evmc` ：一个纯异步非阻塞式的`memcached`的C++客户端库，支持`membase`集群模式。详情请见：[evmc readme](/apps/evmc/readme.md)
-2. `evnsq` ： 一个纯异步非阻塞式的`NSQ`的C++客户端库，支持消费者、生产者、服务发现等特性。详情请见：[evnsq readme](/apps/evnsq/readme.md)
+1. `evmc` ：一个纯异步非阻塞式的`memcached`的C++客户端库，支持`membase`集群模式。该库已经用于生产环境，每天发起1000+亿条memcache查询请求。详情请见：[evmc readme](/apps/evmc/readme.md)
+2. `evnsq` ： 一个纯异步非阻塞式的`NSQ`的C++客户端库，支持消费者、生产者、服务发现等特性。该库已经用于生产环境，每天生产200+亿条日志消息。详情请见：[evnsq readme](/apps/evnsq/readme.md)
 
 将来还会推出`redis`的客户端库。
 
