@@ -79,4 +79,10 @@ evpp/libevpp.so.1.0
 
 benchmark/tcp/asio/client
 benchmark/tcp/asio/server
+benchmark/tcp/evpp/example_pingpong_client
+benchmark/tcp/evpp/example_pingpong_server
+benchmark/tcp/asio/benchmark_tcp_asio_client
+benchmark/tcp/asio/benchmark_tcp_asio_server
+benchmark/tcp/libevent/benchmark_tcp_libevent_client
+benchmark/tcp/libevent/benchmark_tcp_libevent_server
 tools/a.sh
