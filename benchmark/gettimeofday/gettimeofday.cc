@@ -39,12 +39,20 @@ void Benchmark(BenchmarkFunctor f, const std::string& name) {
     f(loop);
     auto end = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
     auto cost = double(end - start) / 1000000.0;
-    std::cout << "name=" << name << " loop=" << loop << " cost=" << cost << "s QPS=" << loop/cost;
+    std::cout << name << " loop=" << loop << " cost=" << cost << "s op=" << double(end - start) * 1000.0 / loop << "ns/op QPS=" << (loop/cost)/1024.0 << "k\n";
 }
 
+
+/*
+Linux 3.10.0-327.28.3.el7.x86_64 test result:
+         gettimeofday_benchmark loop=10000000 cost=0.32446s op= 32.463ns/op QPS=30097.8k
+         system_clock_benchmark loop=10000000 cost=1.22903s op=122.903ns/op QPS=7945.8k
+high_resolution_clock_benchmark loop=10000000 cost=1.25619s op=125.619ns/op QPS=7774k
+*/
+
 int main() {
-    Benchmark(&gettimeofday_benchmark, "gettimeofday_benchmark");
-    Benchmark(&system_clock_benchmark, "system_clock_benchmark");
+    Benchmark(&gettimeofday_benchmark,          "         gettimeofday_benchmark");
+    Benchmark(&system_clock_benchmark,          "         system_clock_benchmark");
     Benchmark(&high_resolution_clock_benchmark, "high_resolution_clock_benchmark");
     return 0;
 }
