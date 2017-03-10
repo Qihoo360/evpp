@@ -24,7 +24,7 @@ Response::Response(Request* r, struct evhttp_request* evreq)
 
 
 Response::Response(Request* r)
-    : request_(r), evreq_(NULL), http_code_(0) {
+    : request_(r), evreq_(nullptr), http_code_(0) {
 }
 
 Response::~Response() {
@@ -35,7 +35,7 @@ const char* Response::FindHeader(const char* key) {
         assert(this->evreq_);
         return evhttp_find_header(this->evreq_->input_headers, key);
     }
-    return NULL;
+    return nullptr;
 }
 
 }

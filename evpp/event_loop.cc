@@ -51,13 +51,13 @@ EventLoop::~EventLoop() {
     }
     assert(!watcher_.get());
 
-    if (evbase_ != NULL && create_evbase_myself_) {
+    if (evbase_ != nullptr && create_evbase_myself_) {
         event_base_free(evbase_);
-        evbase_ = NULL;
+        evbase_ = nullptr;
     }
 
     delete pending_functors_;
-    pending_functors_ = NULL;
+    pending_functors_ = nullptr;
 }
 
 void EventLoop::Init() {
@@ -176,7 +176,7 @@ void EventLoop::DoPendingFunctors() {
     calling_pending_functors_ = true;
 
 #ifdef H_HAVE_BOOST
-    Functor* f = NULL;
+    Functor* f = nullptr;
     while (pending_functors_->pop(f)) {
         (*f)();
         delete f;

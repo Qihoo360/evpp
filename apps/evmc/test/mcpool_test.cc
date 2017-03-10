@@ -41,7 +41,7 @@ static void OnTestMultiGetDone(const MultiGetResult& res) {
 }
 
 static void OnTestPrefixMultiGetDone(const PrefixMultiGetResult& res) {
-    gettimeofday(&g_tv_end, NULL);
+    gettimeofday(&g_tv_end, nullptr);
     LOG_INFO << "cost:" << (g_tv_end.tv_sec - g_tv_begin.tv_sec) * 1e6 + (g_tv_end.tv_usec - g_tv_end.tv_usec);
     LOG_INFO << ">>>>>>>>>>>>> OnTestPrefixMultiGetDone";
     auto it = res.begin();
@@ -152,7 +152,7 @@ int main() {
         }
         count++;
         //mcp.MultiGet(g_loop, mget_keys, &OnTestMultiGetDone);
-        gettimeofday(&g_tv_begin, NULL);
+        gettimeofday(&g_tv_begin, nullptr);
         //mcp.PrefixMultiGet(g_loop, mget_keys, &OnTestPrefixMultiGetDone);
     }
     LOG_INFO << "count value:" << count;

@@ -31,7 +31,7 @@ bool Context::Init() {
     uri_ = evhttp_uri_get_path(req_->uri_elems);
 #else
     const char* p = strchr(req_->uri, '?');
-    if (p != NULL) {
+    if (p != nullptr) {
         uri_ = std::string(req_->uri, p - req_->uri);
     } else {
         uri_ = req_->uri;
@@ -60,7 +60,7 @@ const char* Context::FindRequestHeader(const char* key) {
 }
 
 std::string Context::FindClientIP(const char* uri) {
-    static const std::string __s_null = "";
+    static const std::string __s_nullptr = "";
     static const std::string __s_clientip = "clientip=";
     const char* found = static_cast<const char*>(memmem(uri, strlen(uri), __s_clientip.data(), __s_clientip.size()));
     if (found) {
@@ -73,7 +73,7 @@ std::string Context::FindClientIP(const char* uri) {
         }
     }
 
-    return __s_null;
+    return __s_nullptr;
 }
 }
 }

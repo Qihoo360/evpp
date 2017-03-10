@@ -11,7 +11,7 @@ static_assert(FdChannel::kReadable == EV_READ, "");
 static_assert(FdChannel::kWritable == EV_WRITE, "");
 
 FdChannel::FdChannel(EventLoop* l, int f, bool r, bool w)
-    : loop_(l), attached_(false), event_(NULL), fd_(f) {
+    : loop_(l), attached_(false), event_(nullptr), fd_(f) {
     assert(fd_ > 0);
     events_ = (r ? kReadable : 0) | (w ? kWritable : 0);
     event_ = new event;
@@ -20,7 +20,7 @@ FdChannel::FdChannel(EventLoop* l, int f, bool r, bool w)
 
 FdChannel::~FdChannel() {
     LOG_INFO << "FdChannel::~FdChannel() this=" << this << " fd=" << fd_;
-    assert(event_ == NULL);
+    assert(event_ == nullptr);
 }
 
 void FdChannel::Close() {
@@ -32,7 +32,7 @@ void FdChannel::Close() {
         }
 
         delete (event_);
-        event_ = NULL;
+        event_ = nullptr;
     }
 }
 
@@ -50,7 +50,7 @@ void FdChannel::AttachToLoop() {
     ::event_set(event_, fd_, events_ | EV_PERSIST, &FdChannel::HandleEvent, this);
     ::event_base_set(loop_->event_base(), event_);
 
-    if (EventAdd(event_, NULL) == 0) {
+    if (EventAdd(event_, nullptr) == 0) {
         LOG_TRACE << "this=" << this << " fd=" << fd_ << " watching event " << EventsToString();
         attached_ = true;
     } else {
