@@ -100,10 +100,10 @@ std::thread::id EventLoopThread::tid() const {
 }
 
 bool EventLoopThread::IsRunning() const {
-    // Using event_loop_->running() is more exact to query where thread is running or not, 
+    // Using event_loop_->running() is more exact to query where thread is running or not,
     // instead of status_ == kRunning
-    // 
-    // Because in some particular circumstances, 
+    //
+    // Because in some particular circumstances,
     // when status_==kRunning and event_loop_::running_ == false,
     // the application will broke down
     return event_loop_->running();
