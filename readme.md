@@ -47,6 +47,27 @@ In addition, in the implematations we pay seriously attations to thread-safe pro
 
 Please see [Quick Start](docs/quick_start.md)
 
+# Benchmark
+
+### Throughput
+
+##### Test objects:
+
+1. [evpp-0.2.0](https://github.com/Qihoo360/evpp/archive/0.2.0.tar.gz) based on libevent-2.0.21
+2. boost.asio-1.53
+3. libevent-2.0.21
+
+##### Environment
+
+- Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64
+- Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz
+
+![](docs/benchmark/throughput-1thread-1024bytes.png)
+![](docs/benchmark/throughput-1thread-2048bytes.png)
+![](docs/benchmark/throughput-1thread-4096bytes.png)
+![](docs/benchmark/throughput-1thread-8192bytes.png)
+
+
 # Examples
 
 ## An echo TCP server
