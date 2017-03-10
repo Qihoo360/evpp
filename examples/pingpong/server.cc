@@ -40,5 +40,5 @@ int main(int argc, char* argv[]) {
 }
 
 #ifdef WIN32
-#include "../../echo/tcpecho/winmain-inl.h"
+#include "../echo/tcpecho/winmain-inl.h"
 #endif
