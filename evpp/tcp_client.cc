@@ -70,7 +70,7 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
     if (sockfd < 0) {
         LOG_INFO << "Failed to connect to " << remote_addr_ << ". errno=" << errno << " " << strerror(errno);
         // We need to notify this failure event to the user layer
-        // Note: When we could not connect to a server, 
+        // Note: When we could not connect to a server,
         //       the user layer will receive this notification constantly
         //       because the connector_ will retry to do reconnection all the time.
         conn_fn_(TCPConnPtr(new TCPConn(loop_, "", sockfd, "", "")));
