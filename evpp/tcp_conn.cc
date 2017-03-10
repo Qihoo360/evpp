@@ -180,7 +180,7 @@ void TCPConn::HandleRead(Timestamp recv_time) {
             // And we set a timer to close the connection eventually.
             chan_->DisableReadEvent();
             LOG_DEBUG << "channel (fd=" << chan_->fd() << ") DisableReadEvent";
-            loop_->RunAfter(close_delay_, std::bind(&TCPConn::HandleClose, shared_from_this()));
+            loop_->RunAfter(close_delay_, std::bind(&TCPConn::HandleClose, shared_from_this())); // TODO leave it to user layer close.
         }
     } else {
         if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
