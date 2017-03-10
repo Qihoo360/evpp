@@ -28,7 +28,7 @@ public:
 
     ~Buffer() {
         delete[] buffer_;
-        buffer_ = NULL;
+        buffer_ = nullptr;
         capacity_ = 0;
     }
 
@@ -359,14 +359,14 @@ public:
 public:
     const char* FindCRLF() const {
         const char* crlf = std::search(data(), WriteBegin(), kCRLF, kCRLF + 2);
-        return crlf == WriteBegin() ? NULL : crlf;
+        return crlf == WriteBegin() ? nullptr : crlf;
     }
 
     const char* FindCRLF(const char* start) const {
         assert(data() <= start);
         assert(start <= WriteBegin());
         const char* crlf = std::search(start, WriteBegin(), kCRLF, kCRLF + 2);
-        return crlf == WriteBegin() ? NULL : crlf;
+        return crlf == WriteBegin() ? nullptr : crlf;
     }
 
     const char* FindEOL() const {

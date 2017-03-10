@@ -46,7 +46,7 @@ memmem(const void* haystack,
     size_t i;
 
     if (haystack_len < needle_len) {
-        return NULL;
+        return nullptr;
     }
 
     if (!needle_len) {
@@ -75,7 +75,7 @@ memmem(const void* haystack,
         hay_hash += *(haystack_ + needle_len);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 #endif

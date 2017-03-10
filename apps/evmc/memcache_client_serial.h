@@ -9,7 +9,7 @@ namespace evmc {
 class MemcacheClientSerial : public MemcacheClientBase {
 public:
     MemcacheClientSerial(const char* vbucket_conf, int timeout_ms)
-        : MemcacheClientBase(vbucket_conf), server_(vbucket_conf), timeout_ms_(timeout_ms), loop_(NULL), memclient_(MemcacheClientPtr()), id_seq_(0) {
+        : MemcacheClientBase(vbucket_conf), server_(vbucket_conf), timeout_ms_(timeout_ms), loop_(nullptr), memclient_(MemcacheClientPtr()), id_seq_(0) {
     }
 
     virtual ~MemcacheClientSerial();
