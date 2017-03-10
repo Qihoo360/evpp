@@ -143,14 +143,20 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
 void Server::Pause() {
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->event_loop();
-        loop->RunInLoop(std::bind(&Service::Pause, lt.hserver));
+        auto f = [&lt]() {
+            lt.hserver->Pause();
+        };
+        loop->RunInLoop(f);
     }
 }
 
 void Server::Continue() {
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->event_loop();
-        loop->RunInLoop(std::bind(&Service::Continue, lt.hserver));
+        auto f = [&lt]() {
+            lt.hserver->Continue();
+        };
+        loop->RunInLoop(f);
     }
 }
 
@@ -208,11 +214,9 @@ void Server::Dispatch(EventLoop* listening_loop,
     loop = GetNextLoop(listening_loop, ctx);
 
     // Forward this HTTP request to a worker thread to process
-    auto f = [](EventLoop * l, const ContextPtr & context,
-                const HTTPSendResponseCallback & response_cb,
-    const HTTPRequestCallback & user_cb) {
-        LOG_TRACE << "process request " << context->req()
-                  << " url=" << context->original_uri() << " in working thread";
+    auto f = [loop, ctx, response_callback, user_callback]() {
+        LOG_TRACE << "process request " << ctx->req()
+                  << " url=" << ctx->original_uri() << " in working thread";
 
         // This is in the worker thread.
         // Invoke user layer handler to process this HTTP process.
@@ -220,11 +224,11 @@ void Server::Dispatch(EventLoop* listening_loop,
         // the user layer has responsibility to invoke response_cb
         // to send the result back to framework,
         // that actually comes back to Service::SendReply method.
-        assert(l->IsInLoopThread());
-        user_cb(l, context, response_cb);
+        assert(loop->IsInLoopThread());
+        user_callback(loop, ctx, response_callback);
     };
 
-    loop->RunInLoop(std::bind(f, loop, ctx, response_callback, user_callback));
+    loop->RunInLoop(f);
 }
 
 
