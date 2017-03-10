@@ -44,7 +44,7 @@ void MemcacheClientSerial::MultiGet(const std::vector<std::string>& keys, MultiG
 
 bool MemcacheClientSerial::Start(evpp::EventLoop* loop) {
     if (!loop) {
-        LOG_ERROR << "start with null event loop";
+        LOG_ERROR << "start with nullptr event loop";
         return false;
     }
     MemcacheClientBase::Start(false);

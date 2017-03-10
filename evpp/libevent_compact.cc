@@ -7,8 +7,8 @@ struct event* event_new(struct event_base* base, int fd, short events,
     struct event* ev;
     ev = (struct event*)malloc(sizeof(struct event));
 
-    if (ev == NULL) {
-        return NULL;
+    if (ev == nullptr) {
+        return nullptr;
     }
 
     ::event_set(ev, fd, events, cb, arg);

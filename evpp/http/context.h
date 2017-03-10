@@ -32,7 +32,7 @@ public:
     // Finds the value belonging to a header.
     //
     // @param key the name of the header to find
-    // @returns a pointer to the value for the header or NULL if the header
+    // @returns a pointer to the value for the header or nullptr if the header
     // could not be found.
     const char* FindRequestHeader(const char* key);
 

@@ -158,7 +158,7 @@ TEST_UNIT(testBufferReadInt) {
 TEST_UNIT(testBufferFindEOL) {
     Buffer buf;
     buf.Append(string(100000, 'x'));
-    const char* null = NULL;
+    const char* null = nullptr;
     H_TEST_EQUAL(buf.FindEOL(), null);
     H_TEST_EQUAL(buf.FindEOL(buf.data() + 90000), null);
 }

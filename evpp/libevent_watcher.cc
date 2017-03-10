@@ -39,7 +39,7 @@ void EventWatcher::Close() {
 
 bool EventWatcher::Watch(Duration timeout) {
     struct timeval tv;
-    struct timeval* timeoutval = NULL;
+    struct timeval* timeoutval = nullptr;
     if (timeout.Nanoseconds() > 0) {
         timeout.To(&tv);
         timeoutval = &tv;
@@ -68,7 +68,7 @@ void EventWatcher::FreeEvent() {
         }
 
         delete (event_);
-        event_ = NULL;
+        event_ = nullptr;
     }
 }
 

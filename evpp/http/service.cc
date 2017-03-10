@@ -7,7 +7,7 @@
 namespace evpp {
 namespace http {
 Service::Service(EventLoop* l)
-    : evhttp_(NULL), evhttp_bound_socket_(NULL), listen_loop_(l) {
+    : evhttp_(nullptr), evhttp_bound_socket_(nullptr), listen_loop_(l) {
     evhttp_ = evhttp_new(listen_loop_->event_base());
     if (!evhttp_) {
         return;
@@ -43,10 +43,10 @@ void Service::Stop() {
 
     if (evhttp_) {
         evhttp_free(evhttp_);
-        evhttp_ = NULL;
+        evhttp_ = nullptr;
     }
 
-    listen_loop_ = NULL;
+    listen_loop_ = nullptr;
     callbacks_.clear();
     default_callback_ = HTTPRequestCallback();
 }
@@ -117,13 +117,13 @@ void Service::DefaultHandleRequest(const ContextPtr& ctx) {
         auto f = std::bind(&Service::SendReply, this, ctx->req(), std::placeholders::_1);
         default_callback_(listen_loop_, ctx, f);
     } else {
-        evhttp_send_reply(ctx->req(), HTTP_BADREQUEST, "Bad Request", NULL);
+        evhttp_send_reply(ctx->req(), HTTP_BADREQUEST, "Bad Request", nullptr);
     }
 }
 
 struct Response {
     Response(struct evhttp_request* r, const std::string& m)
-        : req(r), buffer(NULL) {
+        : req(r), buffer(nullptr) {
         if (m.size() > 0) {
             buffer = evbuffer_new();
             evbuffer_add(buffer, m.c_str(), m.size());
@@ -133,7 +133,7 @@ struct Response {
     ~Response() {
         if (buffer) {
             evbuffer_free(buffer);
-            buffer = NULL;
+            buffer = nullptr;
         }
 
         LOG_TRACE << "free request " << req->uri;
@@ -156,7 +156,7 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
         LOG_TRACE << "send http reply";
 
         if (!response->buffer) {
-            evhttp_send_reply(response->req, HTTP_NOTFOUND, "Not Found", NULL);
+            evhttp_send_reply(response->req, HTTP_NOTFOUND, "Not Found", nullptr);
             return;
         }
 

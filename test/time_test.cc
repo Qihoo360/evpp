@@ -25,7 +25,7 @@ TEST_UNIT(testDuration) {
 }
 
 TEST_UNIT(testTimestamp) {
-    int64_t c_s = time(NULL);
+    int64_t c_s = time(nullptr);
     int64_t c_us = evpp::utcmicrosecond();
     int64_t ts_ns = evpp::Timestamp::Now().UnixNano();
     int64_t c11_us = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
