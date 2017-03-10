@@ -93,7 +93,7 @@ public:
     void SetTcpNoDelay(bool on);
     // TODO void SetLinger();
 protected:
-    // These methods are visible only for TCPClient and TCPServer. 
+    // These methods are visible only for TCPClient and TCPServer.
     // We don't want the user layer to access these methods.
     friend class TCPClient;
     friend class TCPServer;
