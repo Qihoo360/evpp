@@ -81,7 +81,7 @@ void Client::Close() {
         lookupd_timers_.clear();
     };
 
-    // If we use loop_->RunInLoop(f), this may execute f in current loop 
+    // If we use loop_->RunInLoop(f), this may execute f in current loop
     // and then it will callback Client::OnConnection to release NSQConn object.
     // That will make the iterators in function f broken down.
     // So we use loop_->QueueInLoop(f) to delay the execution time of f to next loop.
