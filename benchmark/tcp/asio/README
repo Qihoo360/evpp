@@ -1,0 +1,14 @@
+
+The following files are retrieved from http://asio.cvs.sourceforge.net/viewvc/asio/asio/src/tests/performance/
+
+    client.cpp
+    server.cpp
+    handler_allocator.hpp
+
+The author of them is Christopher M. Kohlhoff (chris at kohlhoff dot com).
+
+
+The rest of other files in this directory are retrieved from https://github.com/chenshuo/recipes/tree/master/pingpong/asio
+The author of them is Chen Shuo (chenshuo at chenshuox dot com).
+    
+
