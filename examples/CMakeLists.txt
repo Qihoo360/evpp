@@ -2,7 +2,7 @@ include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/3rdparty)
 
 
 if (UNIX)
-set(LIBRARIES evpp event glog pthread)
+set(LIBRARIES evpp_static event glog pthread)
 else(UNIX)
 set(LIBRARIES evpp_static event libglog_static)
 link_directories(${PROJECT_SOURCE_DIR}/vsprojects/bin/${CMAKE_BUILD_TYPE}/
