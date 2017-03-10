@@ -55,9 +55,11 @@ void Benchmark(BenchmarkFunctor f, const std::string& name) {
 
 /*
 Linux 3.10.0-327.28.3.el7.x86_64 test result:
-         gettimeofday_benchmark loop=10000000 cost=0.32446s op= 32.463ns/op QPS=30097.8k
-         system_clock_benchmark loop=10000000 cost=1.22903s op=122.903ns/op QPS=7945.8k
-high_resolution_clock_benchmark loop=10000000 cost=1.25619s op=125.619ns/op QPS=7774k
+
+         gettimeofday_benchmark loop=10000000 cost=0.3642s op=36.4274ns/op QPS=26808.5k
+         system_clock_benchmark loop=10000000 cost=1.2324s op=123.249ns/op QPS=7923.51k
+         steady_clock_benchmark loop=10000000 cost=1.2244s op=122.441ns/op QPS=7975.82k
+high_resolution_clock_benchmark loop=10000000 cost=1.2508s op=125.082ns/op QPS=7807.36k
 */
 
 int main() {
