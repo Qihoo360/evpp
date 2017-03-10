@@ -92,20 +92,24 @@ int main(int argc, char* argv[]) {
         client.ConnectToNSQDs(nsqd_tcp_addr);
     }
 
-    auto f = [](evpp::EventLoop * l, evnsq::Producer * c) {
+    auto f = [&loop, &client]() {
         std::this_thread::sleep_for(std::chrono::seconds(2));
         for (;;) {
-            if (l->pending_functor_count() > 1000) {
+            if (loop.pending_functor_count() > 1000) {
                 std::this_thread::sleep_for(std::chrono::seconds(2));
             } else {
-                if (!Publish(c)) {
-                    l->Stop();
+                if (!Publish(&client)) {
+                    client.Close();
+                    auto quit = [&loop]() {
+                        loop.Stop();
+                    };
+                    loop.RunAfter(evpp::Duration(2.0), quit);
                     break;
                 }
             }
         }
     };
-    std::thread publish_thread(std::bind(f, &loop, &client));
+    std::thread publish_thread(f);
     loop.RunAfter(evpp::Duration(10.0), std::bind(&Close, &client));
     loop.Run();
     publish_thread.join();
