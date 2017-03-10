@@ -216,7 +216,7 @@ namespace evmc {
         std::string server_addr = vbconf->GetServerAddrById(server_id);
         MemcClientMap* client_map = GetMemcClientMap(loop);
 
-        if (UNLIKELY(client_map == NULL)) {
+        if (UNLIKELY(client_map == nullptr)) {
             command->OnError(ERR_CODE_DISCONNECT);
             LOG_INFO << "DoLaunchCommand thread pool empty";
             return;

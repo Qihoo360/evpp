@@ -20,7 +20,7 @@ namespace evmc {
 
 const uint16_t BAD_SERVER_ID = 65535;
 
-VbucketConfig::VbucketConfig() : rand_(new Random(time(NULL))) {
+VbucketConfig::VbucketConfig() : rand_(new Random(time(nullptr))) {
 }
 
 VbucketConfig::~VbucketConfig() {

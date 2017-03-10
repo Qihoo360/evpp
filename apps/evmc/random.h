@@ -74,7 +74,7 @@ public:
     static std::string Rand(size_t len = 128) {
         std::string s;
         s.resize(len);
-        static Random r(time(NULL));
+        static Random r(time(nullptr));
         const char* end = &s[0] + s.size();
         for (char* p = &s[0]; p < end; ++p) {
             *p = r.Next() % 255;

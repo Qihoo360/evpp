@@ -10,10 +10,10 @@ static const std::string empty_string;
 
 std::string strerror(int e) {
 #ifdef H_OS_WINDOWS
-    LPVOID buf = NULL;
+    LPVOID buf = nullptr;
     ::FormatMessageA(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buf, 0, NULL);
+        nullptr, e, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buf, 0, nullptr);
 
     if (buf) {
         std::string s = (char*)buf;
@@ -263,7 +263,7 @@ int readv(int sockfd, struct iovec* iov, int iovcnt) {
     DWORD readn = 0;
     DWORD flags = 0;
 
-    if (::WSARecv(sockfd, iov, iovcnt, &readn, &flags, NULL, NULL) == 0) {
+    if (::WSARecv(sockfd, iov, iovcnt, &readn, &flags, nullptr, nullptr) == 0) {
         return readn;
     }
 
