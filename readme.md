@@ -51,6 +51,12 @@ Please see [Quick Start](docs/quick_start.md)
 
 ### Throughput
 
+The throughput benchmark of [evpp] is <font color=red>*40%*</font> higher than *`boost.asio`* and <font color=red>*17%*</font> higher than [libevent].
+The reason of [evpp] has a better throughput benchmark than [libevent] is that [evpp] implement its own IO buffer instead of [libevent]'s evbuffer. 
+
+The benchmark code is here [https://github.com/Qihoo360/evpp/tree/master/benchmark/tcp](https://github.com/Qihoo360/evpp/tree/master/benchmark/tcp).
+
+
 ##### Test objects:
 
 1. [evpp-0.2.0](https://github.com/Qihoo360/evpp/archive/0.2.0.tar.gz) based on libevent-2.0.21
