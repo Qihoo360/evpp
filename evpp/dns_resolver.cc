@@ -6,15 +6,15 @@
 
 namespace evpp {
 DNSResolver::DNSResolver(EventLoop* evloop, const std::string& h, Duration timeout, const Functor& f)
-    : loop_(evloop), dnsbase_(NULL), dns_req_(NULL), host_(h), timeout_(timeout), functor_(f) {}
+    : loop_(evloop), dnsbase_(nullptr), dns_req_(nullptr), host_(h), timeout_(timeout), functor_(f) {}
 
 DNSResolver::~DNSResolver() {
     LOG_INFO << "DNSResolver::~DNSResolver tid=" << std::this_thread::get_id() << " this=" << this;
 
-    assert(dnsbase_ == NULL);
+    assert(dnsbase_ == nullptr);
 
     if (dns_req_) {
-        dns_req_ = NULL;
+        dns_req_ = nullptr;
     }
 }
 
@@ -43,12 +43,12 @@ void DNSResolver::SyncDNSResolve() {
     hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
 
     /* Look up the hostname. */
-    struct addrinfo* answer = NULL;
-    int err = getaddrinfo(host_.c_str(), NULL, &hints, &answer);
+    struct addrinfo* answer = nullptr;
+    int err = getaddrinfo(host_.c_str(), nullptr, &hints, &answer);
     if (err != 0) {
         LOG_ERROR << "getaddrinfo failed. err=" << err << " " << gai_strerror(err);
     } else {
-        for (struct addrinfo* rp = answer; rp != NULL; rp = rp->ai_next) {
+        for (struct addrinfo* rp = answer; rp != nullptr; rp = rp->ai_next) {
             struct sockaddr_in* a = reinterpret_cast<struct sockaddr_in*>(rp->ai_addr);
 
             if (a->sin_addr.s_addr == 0) {
@@ -107,7 +107,7 @@ void DNSResolver::AsyncDNSResolve() {
     dnsbase_ = evdns_base_new(loop_->event_base(), 1);
     dns_req_ = evdns_getaddrinfo(dnsbase_
                                  , host_.c_str()
-                                 , NULL /* no service name given */
+                                 , nullptr /* no service name given */
                                  , &hints
                                  , &DNSResolver::OnResolved
                                  , this);
@@ -129,7 +129,7 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
 
         LOG_INFO << "delete dns ctx";
         evdns_base_free(dnsbase_, 0);
-        dnsbase_ = NULL;
+        dnsbase_ = nullptr;
 
         //No route to host
         //errno = EHOSTUNREACH;
@@ -139,12 +139,12 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
     }
 
 
-    if (addr == NULL) {
-        LOG_ERROR << "dns resolve error, addr can not be null";
+    if (addr == nullptr) {
+        LOG_ERROR << "dns resolve error, addr can not be nullptr";
 
         LOG_INFO << "delete dns ctx";
         evdns_base_free(dnsbase_, 0);
-        dnsbase_ = NULL;
+        dnsbase_ = nullptr;
 
         //No route to host
         //errno = EHOSTUNREACH;
@@ -158,7 +158,7 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         LOG_INFO << "resolve canon namne: " << addr->ai_canonname;
     }
 
-    for (struct addrinfo* rp = addr; rp != NULL; rp = rp->ai_next) {
+    for (struct addrinfo* rp = addr; rp != nullptr; rp = rp->ai_next) {
         struct sockaddr_in* a = sock::sockaddr_in_cast(rp->ai_addr);
 
         if (a->sin_addr.s_addr == 0) {
@@ -174,7 +174,7 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
 
     LOG_INFO << "delete dns ctx";
     evdns_base_free(dnsbase_, 0);
-    dnsbase_ = NULL;
+    dnsbase_ = nullptr;
     functor_(this->addrs_);
 }
 

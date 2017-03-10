@@ -6,7 +6,7 @@
 namespace evpp {
 
 InvokeTimer::InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic)
-    : loop_(evloop), timeout_(timeout), functor_(f), timer_(NULL), periodic_(periodic) {
+    : loop_(evloop), timeout_(timeout), functor_(f), timer_(nullptr), periodic_(periodic) {
     LOG_INFO << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this;
 }
 
@@ -21,7 +21,7 @@ InvokeTimer::~InvokeTimer() {
 
     if (timer_) {
         delete timer_;
-        timer_ = NULL;
+        timer_ = nullptr;
     }
 }
 

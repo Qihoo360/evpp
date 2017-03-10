@@ -217,7 +217,7 @@ void Server::RecvingLoop(RecvThread* thread) {
 
             recv_msg->WriteBytes(readn);
             if (tpool_) {
-                EventLoop* loop = NULL;
+                EventLoop* loop = nullptr;
                 if (IsRoundRobin()) {
                     loop = tpool_->GetNextLoop();
                 } else {
@@ -225,7 +225,7 @@ void Server::RecvingLoop(RecvThread* thread) {
                 }
                 loop->RunInLoop(std::bind(this->message_handler_, loop, recv_msg));
             } else {
-                this->message_handler_(NULL, recv_msg);
+                this->message_handler_(nullptr, recv_msg);
             }
         } else {
             int eno = errno;
