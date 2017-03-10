@@ -19,10 +19,12 @@ public:
     void Connect();
     void Disconnect();
 public:
-    // 设置一个连接相关的回调函数，当成功建立连接、或连接断开、或建立连接失败等事件发生时，都会调用该回调
-    //  当成功建立连接时，回调中的参数 TCPConn::IsConnected() == true
-    //  当连接断开时，回调中的参数 TCPConn::IsDisconnecting() == true
-    //  当建立连接失败时，回调中的参数 TCPConn::IsDisconnected() == true 并且 TCPConn::fd() == -1
+    // Set a connection event relative callback when the TCPClient
+    // establishes a connection or an exist connection breaks down or failed to establish a connection.
+    // When these three events happened, the value of the parameter in the callback is:
+    //      1. Successfully establish a connection : TCPConn::IsConnected() == true
+    //      2. An exist connection broken down : TCPConn::IsDisconnecting() == true
+    //      3. Failed to establish a connection : TCPConn::IsDisconnected() == true and TCPConn::fd() == -1
     void SetConnectionCallback(const ConnectionCallback& cb) {
         conn_fn_ = cb;
     }
@@ -75,7 +77,7 @@ private:
     EventLoop* loop_;
     std::string remote_addr_; // host:port
     std::string name_;
-    std::atomic<bool> auto_reconnect_; // 是否自动重连的标记，默认为 true
+    std::atomic<bool> auto_reconnect_; // The flag whether it reconnects automatically, Default : true
     Duration reconnect_interval_; // Default : 3 seconds
 
     Any context_;
