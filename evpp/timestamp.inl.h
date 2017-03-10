@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gettimeofday.h"
+
 namespace evpp {
 inline Timestamp::Timestamp()
     : ns_(0) {}
@@ -15,7 +17,13 @@ inline Timestamp::Timestamp(const struct timeval& t)
     : ns_(int64_t(t.tv_sec) * Duration::kSecond + t.tv_usec * Duration::kMicrosecond) {}
 
 inline Timestamp Timestamp::Now() {
+    // gettimeofday have a higher performance than std::chrono::system_clock or std::chrono::high_resolution_clock
+    // Detail benchmark can see benchmark/gettimeofday/gettimeofday.cc
+#if 1
+    return Timestamp(int64_t(utcmicrosecond() * Duration::kMicrosecond));
+#else
     return Timestamp(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+#endif
 }
 
 inline void Timestamp::Add(Duration d) {
