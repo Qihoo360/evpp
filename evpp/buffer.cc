@@ -1,3 +1,14 @@
+// Copyright 2010, Shuo Chen.  All rights reserved.
+// http://code.google.com/p/muduo/
+//
+// Use of this source code is governed by a BSD-style license
+// that can be found in the License file.
+//
+// Author: Shuo Chen (chenshuo at chenshuo dot com)
+//
+
+// Modified : zieckey (zieckey at gmail dot com)
+
 #include "evpp/inner_pre.h"
 #include "evpp/buffer.h"
 #include "evpp/sockets.h"
@@ -18,7 +29,7 @@ ssize_t Buffer::ReadFromFD(int fd, int* savedErrno) {
     vec[1].iov_base = extrabuf;
     vec[1].iov_len = sizeof extrabuf;
     // when there is enough space in this buffer, don't read into extrabuf.
-    // when extrabuf is used, we read 128k-1 bytes at most.
+    // when extrabuf is used, we read 64k bytes at most.
     const int iovcnt = (writable < sizeof extrabuf) ? 2 : 1;
     const ssize_t n = ::readv(fd, vec, iovcnt);
 
