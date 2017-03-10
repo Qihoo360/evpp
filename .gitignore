@@ -76,7 +76,7 @@ apps/evnsq/test/evnsqtest
 
 evpp/libevpp.so.1
 evpp/libevpp.so.1.0
-rpm/backup-rpms/
-rpm/build/
-rpm/*.rpm
 
+benchmark/tcp/asio/client
+benchmark/tcp/asio/server
+tools/a.sh
