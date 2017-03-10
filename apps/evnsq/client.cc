@@ -156,6 +156,7 @@ void Client::OnConnection(const ConnPtr& conn) {
         MoveToConnectingList(conn);
     } else {
         // The application layer calls Close()
+        assert(conn->IsDisconnected());
 
         // Delete this NSQConn
         for (auto it = conns_.begin(), ite = conns_.end(); it != ite; ++it) {
