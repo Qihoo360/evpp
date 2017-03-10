@@ -98,7 +98,7 @@ void TCPServer::HandleNewConn(int sockfd,
     conn->SetMessageCallback(msg_fn_);
     conn->SetConnectionCallback(conn_fn_);
     conn->SetCloseCallback(std::bind(&TCPServer::RemoveConnection, this, std::placeholders::_1));
-    io_loop->RunInLoop(std::bind(&TCPConn::OnAttachedToLoop, conn.get()));
+    io_loop->RunInLoop(std::bind(&TCPConn::OnAttachedToLoop, conn));
     connections_[n] = conn;
 }
 
