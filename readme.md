@@ -35,7 +35,7 @@ In our business system, we need to build a TCP long-connection Gateway and other
 As described above, there are not many options to choose from. So we developed one ourself. The design of the interface is highly inspired by [muduo] and [Golang]. Let's take some examples to exaplain this: 
 
 1. `Duration` : This is a time inteval class, with a time unit. It is referenced to the implementation of `Duration` of the [Golang] project. We have seen some many cases that the time interval without a unit. For example, what does `timeout` mean?  Seconds, milliseconds or microseconds? We need to read the document carefully, even more, we need to read the implementation codes. Our `Duration` class has self-explations with the time unit. Additionally `std::chrono::duration` in the STL of C++11 has the similar implementations, but it is a little bit complicated.
-2. `Buffer` : This is a memory buffer class. It uses the two projects' advantages of [muduo] and [Golang].
+2. `Buffer` : This is a memory buffer class. It uses the advantages of the two projects [muduo] and [Golang].
 3. `http::Server` : This is a HTTP server class with a working threads pool. It is thread-safe to dispatch tasks
 4. We simply use a string with the format of `"ip:port"` to represent a network address. This is referenced to the design of [Golang].
 5. `httpc::ConnPool` : This is HTTP client connection pool with highly performance. In the future we can add more features to this class : load balance and failover.
