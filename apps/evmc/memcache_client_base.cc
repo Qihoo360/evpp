@@ -23,7 +23,7 @@ void MemcacheClientBase::Stop() {
 }
 
 void MemcacheClientBase::DoReloadConf() {
-    MultiModeVbucketConfig* vbconf = NULL;
+    MultiModeVbucketConfig* vbconf = nullptr;
     if (vbconf_cur_ == vbconf_1_) {
         vbconf = vbconf_2_;
         vbconf_2_->clear();
@@ -71,8 +71,8 @@ void MemcacheClientBase::BuilderMemClient(evpp::EventLoop* loop, std::string& se
 }
 
 
-MemcacheClientBase::MemcacheClientBase(const char* vbucket_conf): vbucket_conf_(vbucket_conf), load_loop_(NULL)
-    , load_thread_(NULL), vbconf_cur_(NULL), vbconf_1_(new MultiModeVbucketConfig()), vbconf_2_(new MultiModeVbucketConfig()) {
+MemcacheClientBase::MemcacheClientBase(const char* vbucket_conf): vbucket_conf_(vbucket_conf), load_loop_(nullptr)
+    , load_thread_(nullptr), vbconf_cur_(nullptr), vbconf_1_(new MultiModeVbucketConfig()), vbconf_2_(new MultiModeVbucketConfig()) {
     assert(vbconf_1_);
     assert(vbconf_2_);
 }

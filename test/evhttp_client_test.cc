@@ -23,7 +23,7 @@ void http_request_done(struct evhttp_request* req, void* arg) {
 
 TEST_UNIT(evhttpClientSample) {
     struct event_base* base = event_base_new();
-    struct evhttp_connection* conn = evhttp_connection_base_new(base, NULL, "www.360.cn", 80);
+    struct evhttp_connection* conn = evhttp_connection_base_new(base, nullptr, "www.360.cn", 80);
     struct evhttp_request* req = evhttp_request_new(http_request_done, base); // will be free by evhttp_connection
     evhttp_add_header(req->output_headers, "Host", "www.360.cn");
     evhttp_make_request(conn, req, EVHTTP_REQ_GET, "/robots.txt");
