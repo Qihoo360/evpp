@@ -1,6 +1,7 @@
 #pragma once
 
 #include <time.h>
+#include <stdint.h>
 
 #ifdef WIN32
 #define _WINSOCKAPI_
