@@ -33,6 +33,7 @@ int main(int argc, char* argv[]) {
     evpp::EventLoop loop;
     evpp::TCPServer server(&loop, addr, "TCPPingPongServer", thread_num);
     server.SetMessageCallback(&OnMessage);
+    server.SetConnectionCallback(&OnConnection);
     server.Init();
     server.Start();
     loop.Run();
