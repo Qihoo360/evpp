@@ -60,7 +60,6 @@
     <ClInclude Include="..\evpp\http\service.h" />
     <ClInclude Include="..\evpp\http\context.h" />
     <ClInclude Include="..\evpp\http\http_server.h" />
-    <ClInclude Include="..\evpp\http\stats.h" />
     <ClInclude Include="..\evpp\inner_pre.h" />
     <ClInclude Include="..\evpp\invoke_timer.h" />
     <ClInclude Include="..\evpp\libevent_headers.h" />
