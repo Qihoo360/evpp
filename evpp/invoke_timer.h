@@ -25,7 +25,7 @@ private:
     EventLoop* loop_;
     Duration timeout_;
     Functor functor_;
-    TimerEventWatcher* timer_;
+    std::shared_ptr<TimerEventWatcher> timer_;
     bool periodic_;
     std::shared_ptr<InvokeTimer> self_; // Hold myself
 };
