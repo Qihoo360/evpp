@@ -1,0 +1,35 @@
+# The chart type , option : spline/line/bar/column/area
+# ab -n 100000 -c 10 -p p512.txt -T 'application/x-www-form-urlencoded' http://192.168.9.11:8090/ind
+# 
+# evpp-c10 means : -c 10
+# evpp-c200 means : -c 200
+#
+ChartType = spline
+Title = HTTP Benchmark
+SubTitle = 1 thread, X Axis is HTTP POST body size
+ValueSuffix = RPS
+
+# The x Axis numbers. The count this numbers MUST be the same with the data series
+XAxisNumbers = 256, 512, 1024, 2048, 4096, 8192, 16384
+
+# The y Axis text
+YAxisText = Throughput (MB/s)
+
+# The data and the name of the lines
+Data|evpp-c10       = 20582.50, 12247.34, 9497.24,  8210.35,  7412.83,  6527.39 , 3833.34
+Data|libevent2-c10  = 24315.23, 12778.26, 9663.16,  8279.23,  7497.96,  6603.04 , 3878.79
+Data|evpp-c30       = 23627.81, 22009.32, 20991.19, 19364.69, 17213.57, 12875.47, 6154.03
+Data|libevent2-c30  = 29540.74, 25627.96, 23465.41, 21067.35, 17938.28, 12959.81, 6138.21
+Data|evpp-c60       = 22026.59, 24322.47, 24360.99, 22401.75, 19575.65, 13594.12, 6274.34
+Data|libevent2-c60  = 29450.57, 29897.29, 29957.36, 27710.56, 22704.28, 13595.23, 6313.06
+Data|evpp-c200      = 24155.57, 24866.20, 24906.66, 24122.82, 21387.39, 13590.52, 6192.47
+Data|libevent2-c200 = 31121.08, 31775.74, 28849.42, 29696.28, 23162.78, 13593.35, 6127.82
+Data|evpp-c500      = 24660.50, 25006.49, 24769.67, 23529.31, 20162.66, 13589.22, 6046.76
+Data|libevent2-c500 = 29637.48, 31679.87, 33434.38, 27219.36, 22703.77, 13588.89, 5871.36
+
+# evpp-0.2.2
+# libevent 2.0.21
+#
+# Conclusion :
+# 	1. When post body size is less than 4906, libevent2 have a 10~20% higher RPS than evpp
+#   2. When post body size is larger than 8092, evpp and libevent2 have almost the same performance.
