@@ -246,8 +246,5 @@
     <ClInclude Include="..\evpp\thread_dispatch_policy.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\evpp\http\stats.h">
-      <Filter>http\server</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
