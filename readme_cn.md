@@ -56,7 +56,7 @@ evpp
 
 [evpp]本身是基于[libevent]实现的，不过[evpp]只是用了[libevent]的事件循环，并没有用[libevent]的`evbuffer`，而是自己参考[muduo]和[Golang]实现了自己的网络IO读写类[Buffer](https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h)。
 
-性能测试代码在这里：[https://github.com/Qihoo360/evpp/tree/master/benchmark/tcp](https://github.com/Qihoo360/evpp/tree/master/benchmark/tcp).
+性能测试代码在这里：[https://github.com/Qihoo360/evpp/tree/master/benchmark/](https://github.com/Qihoo360/evpp/tree/master/benchmark/).
 
 ##### 测试对象
 
