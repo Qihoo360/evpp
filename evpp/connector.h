@@ -53,7 +53,10 @@ private:
     Duration timeout_;
 
     int fd_;
-    bool own_fd_; // 是否拥有这fd。如果拥有，则有自己关闭这个fd
+
+    // A flag indicate whether the Connector owns this fd.
+    // If the Connector owns this fd, the Connector has responsibility to close this fd.
+    bool own_fd_;
 
     std::unique_ptr<FdChannel> chan_;
     std::unique_ptr<TimerEventWatcher> timer_;
