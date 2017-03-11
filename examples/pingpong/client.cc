@@ -152,7 +152,7 @@ private:
 
 void Session::OnConnection(const evpp::TCPConnPtr& conn) {
     if (conn->IsConnected()) {
-        conn->SetTcpNoDelay(true);
+        conn->SetTCPNoDelay(true);
         conn->Send(owner_->message());
         owner_->OnConnect();
     } else {
