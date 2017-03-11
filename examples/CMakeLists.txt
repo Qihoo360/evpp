@@ -24,6 +24,12 @@ target_link_libraries(example_pingpong_client ${LIBRARIES})
 add_executable(example_pingpong_server pingpong/server.cc)
 target_link_libraries(example_pingpong_server ${LIBRARIES})
 
+add_executable(example_tcp_client tcp/tcp_client.cc)
+target_link_libraries(example_tcp_client ${LIBRARIES})
+
+add_executable(example_tcp_server tcp/tcp_server.cc)
+target_link_libraries(example_tcp_server ${LIBRARIES})
+
 add_executable(example_multi_accept multi_accept/main.cc)
 target_link_libraries(example_multi_accept ${LIBRARIES})
 
