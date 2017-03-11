@@ -142,14 +142,12 @@ int main(int argc, char* argv[]) {
 #include <evpp/udp/udp_server.h>
 #include <evpp/udp/udp_message.h>
 
-void DefaultHandler(evpp::EventLoop* loop, evpp::udp::MessagePtr& msg) {
-    evpp::udp::SendMessage(msg);
-}
-
 int main(int argc, char* argv[]) {
-    std::vector<int> ports = {1053, 5353};
+    std::vector<int> ports = { 1053, 5353 };
     evpp::udp::Server server;
-    server.SetMessageHandler(&DefaultHandler);
+    server.SetMessageHandler([](evpp::EventLoop* loop, evpp::udp::MessagePtr& msg) {
+        evpp::udp::SendMessage(msg);
+    });
     server.Init(ports);
     server.Start();
 

@@ -81,27 +81,27 @@ evpp
 ## An echo TCP server
 
 ```cpp
-#include <evpp/exp.h>
 #include <evpp/tcp_server.h>
-#include <evpp/tcp_conn.h>
 #include <evpp/buffer.h>
-
-void OnMessage(const evpp::TCPConnPtr& conn,
-               evpp::Buffer* msg,
-               evpp::Timestamp ts) {
-    std::string s = msg->NextAllString();
-    LOG_INFO << "Received a message [" << s << "]";
-    conn->Send(s);
-    if (s == "quit" || s == "exit") {
-        conn->Close();
-    }
-}
+#include <evpp/tcp_conn.h>
 
 int main(int argc, char* argv[]) {
-    std::string addr = std::string("0.0.0.0:9999");
+    std::string addr = "0.0.0.0:9099";
+    int thread_num = 4;
     evpp::EventLoop loop;
-    evpp::TCPServer server(&loop, addr, "TCPEcho", 0);
-    server.SetMessageCallback(&OnMessage);
+    evpp::TCPServer server(&loop, addr, "TCPEchoServer", thread_num);
+    server.SetMessageCallback([](const evpp::TCPConnPtr& conn,
+                                 evpp::Buffer* msg,
+                                 evpp::Timestamp ts) {
+        conn->Send(msg);
+    });
+    server.SetConnectionCallback([](const evpp::TCPConnPtr& conn) {
+        if (conn->IsConnected()) {
+            LOG_INFO << "A new connection from " << conn->remote_addr();
+        } else {
+            LOG_INFO << "Lost the connection from " << conn->remote_addr();
+        }
+    });
     server.Init();
     server.Start();
     loop.Run();
@@ -115,17 +115,16 @@ int main(int argc, char* argv[]) {
 #include <evpp/exp.h>
 #include <evpp/http/http_server.h>
 
-void RequestHandler(evpp::EventLoop* loop,
-                    const evpp::http::ContextPtr& ctx,
-                    const evpp::http::HTTPSendResponseCallback& cb) {
-    cb(ctx->body.ToString());
-}
-
 int main(int argc, char* argv[]) {
-    std::vector<int> ports = {9009, 23456, 23457};
+    std::vector<int> ports = { 9009, 23456, 23457 };
     int thread_num = 2;
     evpp::http::Server server(thread_num);
-    server.RegisterHandler("/echo", &RequestHandler);
+    server.RegisterHandler("/echo",
+                           [](evpp::EventLoop* loop,
+                              const evpp::http::ContextPtr& ctx,
+                              const evpp::http::HTTPSendResponseCallback& cb) {
+        cb(ctx->body().ToString()); }
+    );
     server.Init(ports);
     server.Start();
     while (!server.IsStopped()) {
@@ -144,14 +143,12 @@ int main(int argc, char* argv[]) {
 #include <evpp/udp/udp_server.h>
 #include <evpp/udp/udp_message.h>
 
-void DefaultHandler(evpp::EventLoop* loop, evpp::udp::MessagePtr& msg) {
-    evpp::udp::SendMessage(msg);
-}
-
 int main(int argc, char* argv[]) {
-    std::vector<int> ports = {1053, 5353};
+    std::vector<int> ports = { 1053, 5353 };
     evpp::udp::Server server;
-    server.SetMessageHandler(&DefaultHandler);
+    server.SetMessageHandler([](evpp::EventLoop* loop, evpp::udp::MessagePtr& msg) {
+        evpp::udp::SendMessage(msg);
+    });
     server.Init(ports);
     server.Start();
 
