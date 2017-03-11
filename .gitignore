@@ -77,12 +77,12 @@ apps/evnsq/test/evnsqtest
 evpp/libevpp.so.1
 evpp/libevpp.so.1.0
 
-benchmark/tcp/asio/client
-benchmark/tcp/asio/server
-benchmark/tcp/evpp/example_pingpong_client
-benchmark/tcp/evpp/example_pingpong_server
-benchmark/tcp/asio/benchmark_tcp_asio_client
-benchmark/tcp/asio/benchmark_tcp_asio_server
-benchmark/tcp/libevent/benchmark_tcp_libevent_client
-benchmark/tcp/libevent/benchmark_tcp_libevent_server
+benchmark/throughput/asio/client
+benchmark/throughput/asio/server
+benchmark/throughput/evpp/example_pingpong_client
+benchmark/throughput/evpp/example_pingpong_server
+benchmark/throughput/asio/benchmark_tcp_asio_client
+benchmark/throughput/asio/benchmark_tcp_asio_server
+benchmark/throughput/libevent/benchmark_tcp_libevent_client
+benchmark/throughput/libevent/benchmark_tcp_libevent_server
 tools/a.sh
