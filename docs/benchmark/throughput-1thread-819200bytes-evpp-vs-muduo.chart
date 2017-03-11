@@ -1,7 +1,7 @@
 # The chart type , option : spline/line/bar/column/area
 ChartType = spline
 Title = Throughput 
-SubTitle = 1 thread, 100 seconds, message size 4096 bytes, X Axis is the connection count
+SubTitle = 1 thread, 100 seconds, message size 819200 bytes, X Axis is the connection count
 ValueSuffix = MB/s
 
 # The x Axis numbers. The count this numbers MUST be the same with the data series
@@ -11,9 +11,13 @@ XAxisNumbers = 1, 10, 100, 1000, 10000
 YAxisText = Throughput (MB/s)
 
 # The data and the name of the lines
-Data|evpp      = 176.687, 511.97 , 527.447, 382.304, 293.661
-Data|asio      = 149.091, 374.831, 371.053, 324.166, 270.279 
-Data|libevent2 = 164.296, 437.895, 448.102, 299.499, 213.457
+Data|evpp      = 2093.8 ,  1809.37,  1173.57,  1129.34,  868.025
+Data|muduo     = 2014.180, 1678.273, 1012.248, 1046.997, 913.837
+
+
+
+
+
 
 
  
