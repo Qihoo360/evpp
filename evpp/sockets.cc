@@ -245,7 +245,7 @@ void SetReusePort(int fd) {
 }
 
 
-void SetTcpNoDelay(int fd, bool on) {
+void SetTCPNoDelay(int fd, bool on) {
     int optval = on ? 1 : 0;
     int rc = ::setsockopt(fd, IPPROTO_TCP, TCP_NODELAY,
                           reinterpret_cast<const char*>(&optval), static_cast<socklen_t>(sizeof optval));
