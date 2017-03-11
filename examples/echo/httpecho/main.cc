@@ -16,12 +16,6 @@ void DefaultHandler(evpp::EventLoop* loop,
     cb(oss.str());
 }
 
-void RequestHandler(evpp::EventLoop* loop,
-                    const evpp::http::ContextPtr& ctx,
-                    const evpp::http::HTTPSendResponseCallback& cb) {
-    cb(ctx->body().ToString());
-}
-
 int main(int argc, char* argv[]) {
     std::vector<int> ports = {9009, 23456, 23457};
     int port = 29099;
@@ -50,7 +44,12 @@ int main(int argc, char* argv[]) {
     evpp::http::Server server(thread_num);
     server.SetThreadDispatchPolicy(evpp::ThreadDispatchPolicy::kIPAddressHashing);
     server.RegisterDefaultHandler(&DefaultHandler);
-    server.RegisterHandler("/echo", &RequestHandler);
+    server.RegisterHandler("/echo",
+                           [](evpp::EventLoop* loop,
+                              const evpp::http::ContextPtr& ctx,
+                              const evpp::http::HTTPSendResponseCallback& cb) {
+        cb(ctx->body().ToString()); }
+    );
     server.Init(ports);
     server.Start();
     while (!server.IsStopped()) {
