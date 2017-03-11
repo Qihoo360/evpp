@@ -6,7 +6,7 @@
 namespace evpp {
 
 InvokeTimer::InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic)
-    : loop_(evloop), timeout_(timeout), functor_(f), timer_(nullptr), periodic_(periodic) {
+    : loop_(evloop), timeout_(timeout), functor_(f), periodic_(periodic) {
     LOG_INFO << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this;
 }
 
@@ -18,11 +18,6 @@ std::shared_ptr<InvokeTimer> InvokeTimer::Create(EventLoop* evloop, Duration tim
 
 InvokeTimer::~InvokeTimer() {
     LOG_INFO << "InvokeTimer::~InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this;
-
-    if (timer_) {
-        delete timer_;
-        timer_ = nullptr;
-    }
 }
 
 void InvokeTimer::Start() {
@@ -38,7 +33,7 @@ void InvokeTimer::Cancel() {
 
 void InvokeTimer::AsyncWait() {
     //LOG_INFO << "InvokeTimer::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count();
-    timer_ = new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, this), timeout_);
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, this), timeout_));
     timer_->SetCancelCallback(std::bind(&InvokeTimer::OnCanceled, this));
     timer_->Init();
     timer_->AsyncWait();
