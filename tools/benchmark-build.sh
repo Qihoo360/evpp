@@ -12,7 +12,7 @@ mkdir -p $BUILD_DIR \
   && cd $BUILD_DIR \
   && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE $SOURCE_DIR \
   && make -j4\
-  && cp -rf $BUILD_DIR/bin/example_pingpong* ../benchmark/tcp/evpp \
-  && cp -rf $BUILD_DIR/bin/benchmark_tcp_asio_* ../benchmark/tcp/asio \
-  && cp -rf $BUILD_DIR/bin/benchmark_tcp_libevent_* ../benchmark/tcp/libevent \
+  && cp -rf $BUILD_DIR/bin/example_pingpong* ../benchmark/throughput/evpp \
+  && cp -rf $BUILD_DIR/bin/benchmark_tcp_asio_* ../benchmark/throughput/asio \
+  && cp -rf $BUILD_DIR/bin/benchmark_tcp_libevent_* ../benchmark/throughput/libevent \
 

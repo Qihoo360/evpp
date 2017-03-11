@@ -1,2 +1,2 @@
-add_subdirectory(tcp)
+add_subdirectory(throughput)
 add_subdirectory(gettimeofday)
