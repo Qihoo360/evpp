@@ -8,23 +8,16 @@
 #include "../tcpecho/winmain-inl.h"
 #endif
 
-void DefaultHandler(evpp::EventLoop* loop, evpp::udp::MessagePtr& msg) {
-    std::stringstream oss;
-    oss << "func=" << __FUNCTION__ << " OK"
-        << " body=" << std::string(msg->data(), msg->size()) << "\n";
-    evpp::udp::SendMessage(msg);
-}
-
 int main(int argc, char* argv[]) {
-    std::vector<int> ports = {1053, 5353};
+    std::vector<int> ports = { 1053, 5353 };
     int port = 29099;
     int thread_num = 2;
 
     if (argc > 1) {
         if (std::string("-h") == argv[1] ||
-                std::string("--h") == argv[1] ||
-                std::string("-help") == argv[1] ||
-                std::string("--help") == argv[1]) {
+            std::string("--h") == argv[1] ||
+            std::string("-help") == argv[1] ||
+            std::string("--help") == argv[1]) {
             std::cout << "usage : " << argv[0] << " <listen_port> <thread_num>\n";
             std::cout << " e.g. : " << argv[0] << " 8080 24\n";
             return 0;
@@ -43,7 +36,12 @@ int main(int argc, char* argv[]) {
 
     evpp::udp::Server server;
     server.SetThreadDispatchPolicy(evpp::ThreadDispatchPolicy::kIPAddressHashing);
-    server.SetMessageHandler(&DefaultHandler);
+    server.SetMessageHandler([](evpp::EventLoop* loop, evpp::udp::MessagePtr& msg) {
+        std::stringstream oss;
+        oss << "func=" << __FUNCTION__ << " OK"
+            << " body=" << std::string(msg->data(), msg->size()) << "\n";
+        evpp::udp::SendMessage(msg);
+    });
     server.Init(ports);
     server.Start();
 
