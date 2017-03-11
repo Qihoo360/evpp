@@ -5,7 +5,7 @@
 
 void OnConnection(const evpp::TCPConnPtr& conn) {
     if (conn->IsConnected()) {
-        conn->SetTcpNoDelay(true);
+        conn->SetTCPNoDelay(true);
     }
 }
 

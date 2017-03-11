@@ -259,8 +259,8 @@ void TCPConn::SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t m
     high_water_mark_ = mark;
 }
 
-void TCPConn::SetTcpNoDelay(bool on) {
-    sock::SetTcpNoDelay(fd_, on);
+void TCPConn::SetTCPNoDelay(bool on) {
+    sock::SetTCPNoDelay(fd_, on);
 }
 
 std::string TCPConn::StatusToString() const {

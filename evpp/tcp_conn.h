@@ -90,7 +90,7 @@ public:
         // Set the delay time to close the socket
         close_delay_ = d;
     }
-    void SetTcpNoDelay(bool on);
+    void SetTCPNoDelay(bool on);
     // TODO void SetLinger();
 protected:
     // These methods are visible only for TCPClient and TCPServer.
