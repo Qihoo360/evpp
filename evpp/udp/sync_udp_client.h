@@ -5,6 +5,9 @@
 namespace evpp {
 namespace udp {
 namespace sync {
+
+// It is not asynchronous, please do not use it production.
+// The only purpose it exists is for purpose of testing UDP Server.
 class EVPP_EXPORT Client {
 public:
     Client();

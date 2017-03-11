@@ -12,9 +12,14 @@ class EventLoopThread;
 namespace http {
 class Service;
 
-// 这是一个可以独立运行的 HTTP Server
-// 它会启动一个独立的线程用于端口监听、接收HTTP请求、分发HTTP请求、最后发送HTTP响应。
-// 如果 thread_num 不为 0，它还会启动一个线程池，用于处理HTTP请求
+// This is a standalone running HTTP server. It will start a new thread
+// for every listening port and we give this thread a name 'listening main thread'.
+//
+// The listening main thread has responsibility to listen a TCP port,
+// receive HTTP request, dispatch the request and send the HTTP response.
+//
+// if the thread_num is not 0, it will also start new worker thread pool
+// to help process HTTP request.
 class EVPP_EXPORT Server : public ThreadDispatchPolicy {
 public:
     Server(uint32_t thread_num = 0);
@@ -32,7 +37,8 @@ public:
 
     Service* service(int index = 0) const;
 public:
-    // uri 不能带有参数
+    // @Note The URI must not hold any parameters
+    // @uri The URI of the request
     void RegisterHandler(const std::string& uri,
                          HTTPRequestCallback callback);
 
@@ -54,16 +60,16 @@ private:
 
 private:
     struct ListenThread {
-        // 监听主线程，监听HTTP请求，接收HTTP请求数据和发送HTTP响应，将请求分发到工作线程
+        // The listening main thread
         std::shared_ptr<EventLoopThread> thread;
 
-        // 每个线程运行一个HTTP Service用来监听HTTP请求
+        // Every listening main thread runs a HTTP Service to listen, receive, dispatch, send response the HTTP request.
         std::shared_ptr<Service> hserver;
     };
 
     std::vector<ListenThread> listen_threads_;
 
-    // 工作线程池，处理请求
+    // The worker thread pool used to process HTTP request
     std::shared_ptr<EventLoopThreadPool> tpool_;
 
     HTTPRequestCallbackMap callbacks_;
