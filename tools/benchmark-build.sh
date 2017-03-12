@@ -15,4 +15,5 @@ mkdir -p $BUILD_DIR \
   && cp -rf $BUILD_DIR/bin/example_pingpong* ../benchmark/throughput/evpp \
   && cp -rf $BUILD_DIR/bin/benchmark_tcp_asio_* ../benchmark/throughput/asio \
   && cp -rf $BUILD_DIR/bin/benchmark_tcp_libevent_* ../benchmark/throughput/libevent \
+  && cp -rf $BUILD_DIR/bin/benchmark_ioevent_* ../benchmark/ioevent/libevent \
 

@@ -57,9 +57,7 @@
 #endif
 #include <errno.h>
 
-#ifdef _WIN32
 #include <getopt.h>
-#endif
 
 #include <event.h>
 #include <evutil.h>
