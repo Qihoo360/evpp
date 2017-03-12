@@ -1,0 +1,3 @@
+
+add_executable(libevent_ioevent_bench libevent_ioevent_bench.c)
+target_link_libraries(libevent_ioevent_bench event)
