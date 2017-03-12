@@ -118,9 +118,8 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i < numPipes; ++i) {
         FdChannel* channel = new FdChannel(&loop, g_pipes[i * 2], true, false);
-        channel->AttachToLoop();
         channel->SetReadCallback(std::bind(readCallback, std::placeholders::_1, channel->fd(), i));
-        channel->EnableReadEvent();
+        channel->AttachToLoop();
         g_channels.push_back(channel);
     }
 
