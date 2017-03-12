@@ -97,12 +97,12 @@ int main(int argc, char* argv[]) {
     }
 
 #ifndef _WIN32
-    struct rlimit rl;
-    rl.rlim_cur = rl.rlim_max = numPipes * 2 + 50;
-    if (::setrlimit(RLIMIT_NOFILE, &rl) == -1) {
-        perror("setrlimit");
-        //return 1;  // comment out this line if under valgrind
-    }
+    //struct rlimit rl;
+    //rl.rlim_cur = rl.rlim_max = numPipes * 2 + 50;
+    //if (::setrlimit(RLIMIT_NOFILE, &rl) == -1) {
+    //    perror("setrlimit");
+    //    //return 1;  // comment out this line if under valgrind
+    //}
 #endif
 
     g_pipes.resize(2 * numPipes);
@@ -122,13 +122,23 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i < numPipes; ++i) {
         FdChannel* channel = new FdChannel(&loop, g_pipes[i * 2], true, false);
+        channel->AttachToLoop();
         g_channels.push_back(channel);
     }
 
+    std::vector<std::pair<int, int>> costs;
     for (int i = 0; i < 25; ++i) {
         std::pair<int, int> t = runOnce();
         printf("%8d %8d\n", t.first, t.second);
+        costs.push_back(t);
     }
+
+    int sum1 = 0, sum2 = 0;
+    for (auto t : costs) {
+        sum1 += t.first;
+        sum2 += t.second;
+    }
+    printf("%s Average : %8d %8d\n", argv[0], sum1 / int(costs.size()), sum2 / int(costs.size()));
 
     for (auto it = g_channels.begin();
          it != g_channels.end(); ++it) {
