@@ -24,8 +24,11 @@ std::string strerror(int e) {
     return empty_string;
 #else
     char buf[2048] = {};
-    strerror_r(e, buf, sizeof(buf) - 1);
-    return std::string(buf);
+    const char* s = strerror_r(e, buf, sizeof(buf) - 1);
+    if (s) {
+        return std::string(s);
+    }
+    return std::string();
 #endif
 }
 
