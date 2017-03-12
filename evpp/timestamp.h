@@ -25,6 +25,11 @@ public:
     // in nanoseconds cannot be represented by an int64.
     int64_t UnixNano() const;
 
+    // UnixNano returns t as a Unix time, the number of microseconds elapsed
+    // since January 1, 1970 UTC. The result is undefined if the Unix time
+    // in microseconds cannot be represented by an int64.
+    int64_t UnixMicro() const;
+
     void Add(Duration d);
 
     bool IsEpoch() const;
