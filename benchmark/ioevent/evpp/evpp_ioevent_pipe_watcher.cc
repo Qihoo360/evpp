@@ -36,6 +36,7 @@ void ReadCallback(int idx) {
         if (widx >= numPipes) {
             widx -= numPipes;
         }
+        g_pipes[idx]->AsyncWait();
         g_pipes[widx]->Notify();
         g_writes--;
         g_fired++;
@@ -89,7 +90,7 @@ int main(int argc, char* argv[]) {
 
 #ifndef _WIN32
     struct rlimit rl;
-    rl.rlim_cur = rl.rlim_max = numPipes * 2 + 50;
+    rl.rlim_cur = rl.rlim_max = numPipes * 2 + 5000;
     if (::setrlimit(RLIMIT_NOFILE, &rl) == -1) {
         perror("setrlimit");
         //return 1;  // comment out this line if under valgrind
@@ -119,7 +120,7 @@ int main(int argc, char* argv[]) {
         sum1 += t.first;
         sum2 += t.second;
     }
-    printf("Average : %8d %8d\n", sum1 / costs.size(), sum2 / costs.size());
+    printf("%s Average : %8d %8d\n", argv[0], sum1 / int(costs.size()), sum2 / int(costs.size()));
 
     for (auto pipe : g_pipes) {
         pipe->Cancel();
