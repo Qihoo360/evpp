@@ -65,9 +65,6 @@ void ReadCallbackOfPipeEventWatcher(int idx) {
 
 std::pair<int, int> FdChannelRunOnce() {
     Timestamp beforeInit(Timestamp::Now());
-    for (int i = 0; i < numPipes; ++i) {
-        FdChannel* channel = g_channels[i];
-    }
 
     int space = numPipes / numActive;
     space *= 2;
@@ -88,7 +85,7 @@ std::pair<int, int> FdChannelRunOnce() {
     return std::make_pair(iterTime, loopTime);
 }
 
-std::pair<int, int> PipeEventWatcherFunOnce() {
+std::pair<int, int> PipeEventWatcherRunOnce() {
     Timestamp beforeInit(Timestamp::Now());
     for (int i = 0; i < numActive; ++i) {
         g_pipe_event_watchers[i]->Notify();
@@ -107,9 +104,9 @@ std::pair<int, int> PipeEventWatcherFunOnce() {
 }
 
 int main(int argc, char* argv[]) {
-    numPipes = 100;
-    numActive = 1;
-    numWrites = 100;
+    numPipes = 1000;
+    numActive = 10;
+    numWrites = 1000;
 
     g_pipes.resize(2 * numPipes);
     for (int i = 0; i < numPipes; ++i) {
@@ -129,7 +126,7 @@ int main(int argc, char* argv[]) {
         FdChannel* channel = new FdChannel(&loop, g_pipes[i * 2], true, false);
         g_channels.push_back(channel);
         channel->SetReadCallback(std::bind(ReadCallbackOfFdChannel, std::placeholders::_1, channel->fd(), i));
-        channel->EnableReadEvent();
+        channel->AttachToLoop();
 
         auto f = std::bind(&ReadCallbackOfPipeEventWatcher, i);
         std::shared_ptr<PipeEventWatcher> w(new PipeEventWatcher(g_loop, f));
@@ -142,10 +139,10 @@ int main(int argc, char* argv[]) {
     std::vector<std::pair<int, int>> pipe_event_watcher_cost;
     for (int i = 0; i < 25; ++i) {
         std::pair<int, int> t = FdChannelRunOnce();
-        printf("FdChannelRunOnce %8d %8d\n", t.first, t.second);
+        printf("       FdChannelRunOnce %8d %8d\n", t.first, t.second);
         fd_channel_cost.push_back(t);
-        t = PipeEventWatcherFunOnce();
-        printf("PipeEventWatcherFunOnce %8d %8d\n", t.first, t.second);
+        t = PipeEventWatcherRunOnce();
+        printf("PipeEventWatcherRunOnce %8d %8d\n", t.first, t.second);
         pipe_event_watcher_cost.push_back(t);
     }
 
@@ -154,14 +151,14 @@ int main(int argc, char* argv[]) {
         sum1 += t.first;
         sum2 += t.second;
     }
-    printf("%s FdChannelRunOnce Average : %8d %8d\n", argv[0], sum1 / int(fd_channel_cost.size()), sum2 / int(fd_channel_cost.size()));
+    printf("%s        FdChannelRunOnce Average : %8d %8d\n", argv[0], sum1 / int(fd_channel_cost.size()), sum2 / int(fd_channel_cost.size()));
 
     sum1 = 0, sum2 = 0;
     for (auto t : pipe_event_watcher_cost) {
         sum1 += t.first;
         sum2 += t.second;
     }
-    printf("%s PipeEventWatcherFunOnce Average : %8d %8d\n", argv[0], sum1 / int(pipe_event_watcher_cost.size()), sum2 / int(pipe_event_watcher_cost.size()));
+    printf("%s PipeEventWatcherRunOnce Average : %8d %8d\n", argv[0], sum1 / int(pipe_event_watcher_cost.size()), sum2 / int(pipe_event_watcher_cost.size()));
 
     for (auto it = g_channels.begin();
          it != g_channels.end(); ++it) {
@@ -173,3 +170,8 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
+
+/*
+   ./build-release/bin/benchmark_fd_channel_vs_pipe_event_watcher        FdChannelRunOnce Average :     1920     1912
+   ./build-release/bin/benchmark_fd_channel_vs_pipe_event_watcher PipeEventWatcherRunOnce Average :     1138     1130
+ */
