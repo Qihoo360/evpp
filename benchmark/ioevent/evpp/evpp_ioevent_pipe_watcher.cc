@@ -36,7 +36,6 @@ void ReadCallback(int idx) {
         if (widx >= numPipes) {
             widx -= numPipes;
         }
-        g_pipes[idx]->AsyncWait();
         g_pipes[widx]->Notify();
         g_writes--;
         g_fired++;
@@ -89,12 +88,12 @@ int main(int argc, char* argv[]) {
     }
 
 #ifndef _WIN32
-    struct rlimit rl;
-    rl.rlim_cur = rl.rlim_max = numPipes * 2 + 5000;
-    if (::setrlimit(RLIMIT_NOFILE, &rl) == -1) {
-        perror("setrlimit");
-        //return 1;  // comment out this line if under valgrind
-    }
+    //struct rlimit rl;
+    //rl.rlim_cur = rl.rlim_max = numPipes * 2 + 5000;
+    //if (::setrlimit(RLIMIT_NOFILE, &rl) == -1) {
+    //    perror("setrlimit");
+    //    //return 1;  // comment out this line if under valgrind
+    //}
 #endif
 
     EventLoop loop;
