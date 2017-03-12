@@ -28,17 +28,18 @@ EventLoop* g_loop;
 std::vector<FdChannel*> g_channels;
 
 int g_reads, g_writes, g_fired;
+int g_total_reads = 0;
 
 void readCallback(Timestamp, int fd, int idx) {
-    char ch;
-
+    g_total_reads++;
+    char ch = 0;
     g_reads += static_cast<int>(::recv(fd, &ch, sizeof(ch), 0));
     if (g_writes > 0) {
         int widx = idx + 1;
         if (widx >= numPipes) {
             widx -= numPipes;
         }
-        ::send(g_pipes[2 * widx + 1], "m", 1, 0);
+        ::send(g_pipes[2 * widx + 1], &ch, 1, 0);
         g_writes--;
         g_fired++;
     }
@@ -49,16 +50,11 @@ void readCallback(Timestamp, int fd, int idx) {
 
 std::pair<int, int> runOnce() {
     Timestamp beforeInit(Timestamp::Now());
-    for (int i = 0; i < numPipes; ++i) {
-        FdChannel* channel = g_channels[i];
-        channel->SetReadCallback(std::bind(readCallback, std::placeholders::_1, channel->fd(), i));
-        channel->EnableReadEvent();
-    }
-
     int space = numPipes / numActive;
     space *= 2;
+    char ch = 'm';
     for (int i = 0; i < numActive; ++i) {
-        ::send(g_pipes[i * space + 1], "m", 1, 0);
+        ::send(g_pipes[i * space + 1], &ch, 1, 0);
     }
 
     g_fired = numActive;
@@ -123,13 +119,15 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < numPipes; ++i) {
         FdChannel* channel = new FdChannel(&loop, g_pipes[i * 2], true, false);
         channel->AttachToLoop();
+        channel->SetReadCallback(std::bind(readCallback, std::placeholders::_1, channel->fd(), i));
+        channel->EnableReadEvent();
         g_channels.push_back(channel);
     }
 
     std::vector<std::pair<int, int>> costs;
     for (int i = 0; i < 25; ++i) {
         std::pair<int, int> t = runOnce();
-        printf("%8d %8d\n", t.first, t.second);
+        printf("%8d %8d g_reads=%d g_fired=%d g_total_reads=%d\n", t.first, t.second, g_reads, g_fired, g_total_reads);
         costs.push_back(t);
     }
 
