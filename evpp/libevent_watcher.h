@@ -40,8 +40,6 @@ protected:
     virtual void DoClose() {}
 
 protected:
-    static void HandleEvent(int, short, void*);
-
     struct event* event_;
     struct event_base* evbase_;
     bool attached_;
