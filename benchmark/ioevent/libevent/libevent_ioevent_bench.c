@@ -193,13 +193,16 @@ main(int argc, char **argv)
 		}
 	}
 
+    long sum = 0;
 	for (i = 0; i < 25; i++) {
 		tv = run_once();
 		if (tv == NULL)
 			exit(1);
 		fprintf(stdout, "%ld\n",
 			tv->tv_sec * 1000000L + tv->tv_usec);
+        sum += tv->tv_sec * 1000000L + tv->tv_usec;
 	}
+    fprintf(stdout, "%s Average : %ld\n", argv[0], sum/25);
 
 	exit(0);
 }
