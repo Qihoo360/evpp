@@ -73,6 +73,7 @@ The benchmark code is here [https://github.com/Qihoo360/evpp/tree/master/benchma
 ![](docs/benchmark/throughput-1thread-2048bytes.png)
 ![](docs/benchmark/throughput-1thread-4096bytes.png)
 ![](docs/benchmark/throughput-1thread-8192bytes.png)
+![](docs/benchmark/throughput-multi-thread-4096bytes-evpp-vs-asio.png)
 
 
 # Examples
