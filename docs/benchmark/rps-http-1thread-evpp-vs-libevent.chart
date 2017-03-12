@@ -6,8 +6,10 @@
 #
 ChartType = spline
 Title = HTTP Benchmark
-SubTitle = 1 thread, X Axis is HTTP POST body size
+SubTitle = 1 thread, X Axis is HTTP POST body size. c10 means 10 sessions, c30 means 30 sessions.
 ValueSuffix = RPS
+
+Height = 800
 
 # The x Axis numbers. The count this numbers MUST be the same with the data series
 XAxisNumbers = 256, 512, 1024, 2048, 4096, 8192, 16384
