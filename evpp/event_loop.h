@@ -47,7 +47,7 @@ public:
     struct event_base* event_base() {
         return evbase_;
     }
-    inline bool IsInLoopThread() const {
+    bool IsInLoopThread() const {
         return tid_ == std::this_thread::get_id();
     }
     void AssertInLoopThread() const;
