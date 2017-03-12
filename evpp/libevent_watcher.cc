@@ -121,7 +121,7 @@ bool PipeEventWatcher::DoInit() {
     }
 
     ::event_set(event_, pipe_[1], EV_READ | EV_PERSIST,
-                PipeEventWatcher::HandlerFn, this);
+                &PipeEventWatcher::HandlerFn, this);
     return true;
 failed:
     Close();
@@ -137,11 +137,12 @@ void PipeEventWatcher::DoClose() {
 }
 
 void PipeEventWatcher::HandlerFn(int /*fd*/, short /*which*/, void* v) {
-    //LOG_INFO << "PipeEventWatcher::HandlerFn() ";
     PipeEventWatcher* e = (PipeEventWatcher*)v;
 #ifdef H_BENCHMARK_TESTING
     // Every time we only read 1 byte for testing the IO event performance.
-    // We use it in the benchmark test program : benchmark/ioevent/evpp/
+    // We use it in the benchmark test program 
+    //  1. evpp/benchmark/ioevent/evpp/
+    //  1. evpp/benchmark/ioevent/fd_channel_vs_pipe_event_watcher/
     char buf[1];
 #else
     char buf[128];
@@ -158,7 +159,6 @@ bool PipeEventWatcher::AsyncWait() {
 }
 
 void PipeEventWatcher::Notify() {
-    //LOG_INFO << "PipeEventWatcher::Notify() ";
     char buf[1] = {};
 
     if (::send(pipe_[0], buf, sizeof(buf), 0) < 0) {
