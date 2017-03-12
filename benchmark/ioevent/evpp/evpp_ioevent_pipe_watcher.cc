@@ -82,6 +82,7 @@ int main(int argc, char* argv[]) {
             break;
         default:
             fprintf(stderr, "Illegal argument \"%c\"\n", c);
+            fprintf(stderr, "Usage : %s -n <pipes-number> -a <active-pipes-number> -w <write-num>\n", argv[0]);
             return 1;
         }
     }
@@ -106,10 +107,19 @@ int main(int argc, char* argv[]) {
         g_pipes.push_back(w);
     }
 
+    std::vector<std::pair<int, int>> costs;
     for (int i = 0; i < 25; ++i) {
         std::pair<int, int> t = runOnce();
         printf("%8d %8d\n", t.first, t.second);
+        costs.push_back(t);
     }
+
+    int sum1 = 0, sum2 = 0;
+    for (auto t : costs) {
+        sum1 += t.first;
+        sum2 += t.second;
+    }
+    printf("Average : %8d %8d\n", sum1 / costs.size(), sum2 / costs.size());
 
     for (auto pipe : g_pipes) {
         pipe->Cancel();
