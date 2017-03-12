@@ -139,7 +139,13 @@ void PipeEventWatcher::DoClose() {
 void PipeEventWatcher::HandlerFn(int /*fd*/, short /*which*/, void* v) {
     //LOG_INFO << "PipeEventWatcher::HandlerFn() ";
     PipeEventWatcher* e = (PipeEventWatcher*)v;
+#ifdef H_BENCHMARK_TESTING
+    // Every time we only read 1 byte for testing the IO event performance.
+    // We use it in the benchmark test program : benchmark/ioevent/evpp/
+    char buf[1];
+#else
     char buf[128];
+#endif
     int n = 0;
 
     if ((n = ::recv(e->pipe_[1], buf, sizeof(buf), 0)) > 0) {
