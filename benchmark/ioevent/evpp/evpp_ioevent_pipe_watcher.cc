@@ -28,8 +28,10 @@ EventLoop* g_loop;
 std::vector<PipeEventWatcherPtr> g_pipes;
 
 int g_reads, g_writes, g_fired;
+int g_total_reads = 0;
 
 void ReadCallback(int idx) {
+    g_total_reads++;
     g_reads++;
     if (g_writes > 0) {
         int widx = idx + 1;
@@ -110,7 +112,7 @@ int main(int argc, char* argv[]) {
     std::vector<std::pair<int, int>> costs;
     for (int i = 0; i < 25; ++i) {
         std::pair<int, int> t = runOnce();
-        printf("%8d %8d\n", t.first, t.second);
+        printf("%8d %8d g_reads=%d g_fired=%d g_total_reads=%d\n", t.first, t.second, g_reads, g_fired, g_total_reads);
         costs.push_back(t);
     }
 
