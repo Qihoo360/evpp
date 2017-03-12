@@ -52,7 +52,7 @@ evpp
 
 ### 吞吐量测试
 
-本文用 ping pong 测试来对比[evpp]与[libevent]、*`boost.asio`* 等网络的吞吐量，测试结果表明[evpp]吞吐量平均比 *`boost.asio`*  高 *40%* 左右，比[libevent]高17%z左右。
+本文用 ping pong 测试来对比[evpp]与[libevent]、*`boost.asio`* 等网络的吞吐量，测试结果表明[evpp]吞吐量平均比 *`boost.asio`*  高 *40%* 左右，比[libevent]高17%左右。
 
 [evpp]本身是基于[libevent]实现的，不过[evpp]只是用了[libevent]的事件循环，并没有用[libevent]的`evbuffer`，而是自己参考[muduo]和[Golang]实现了自己的网络IO读写类[Buffer](https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h)。
 
