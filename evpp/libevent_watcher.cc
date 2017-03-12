@@ -48,7 +48,10 @@ bool EventWatcher::Watch(Duration timeout) {
     if (attached_) {
         // When InvokerTimer::periodic_ == true, EventWatcher::Watch will be called many times
         // so we need to remove it from event_base before we add it into event_base
-        EventDel(event_);
+        if (EventDel(event_) != 0) {
+            LOG_ERROR << "event_del failed. fd=" << this->event_->ev_fd << " event_=" << event_;
+            // TODO how to deal with it when failed?
+        }
         attached_ = false;
     }
 
