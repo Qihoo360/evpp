@@ -85,4 +85,10 @@ benchmark/throughput/asio/benchmark_tcp_asio_client
 benchmark/throughput/asio/benchmark_tcp_asio_server
 benchmark/throughput/libevent/benchmark_tcp_libevent_client
 benchmark/throughput/libevent/benchmark_tcp_libevent_server
+benchmark/ioevent/libevent/benchmark_ioevent_evpp
+benchmark/ioevent/libevent/benchmark_ioevent_evpp_pipe_watcher
+benchmark/ioevent/libevent/benchmark_ioevent_libevent
+benchmark/ioevent/libevent/dat.t0
+benchmark/ioevent/libevent/pingpong_bench
+benchmark/ioevent/libevent/runbench.tmp
 tools/a.sh
