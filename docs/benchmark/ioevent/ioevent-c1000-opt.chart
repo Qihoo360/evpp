@@ -1,0 +1,27 @@
+
+ChartType = spline
+Title = IO Event Benchmark
+SubTitle = 1 thread, 1000 pipes, optimized, X Axis is the test number.
+ValueSuffix = us
+
+Height = 400
+
+# The x Axis numbers. The count this numbers MUST be the same with the data series
+XAxisNumbers = 1,2,3,4,5,6,7,8,9,10
+
+# The y Axis text
+YAxisText = time in microsecons (lower is better)
+
+# The data and the name of the lines
+Data|muduo-opt-1000=1079,1043,1104,1095,1066,1055,1050,1110,1091,1073,
+Data|evpp_channel-opt-1000=1124,1122,1177,1175,1141,1170,1173,1138,1158,1195,
+Data|evpp_pipe-opt-1000=1151,1202,1248,1203,1164,1214,1171,1175,1225,1176,
+Data|libevent-opt-1000=1097,1184,1110,1147,1118,1144,1101,1118,1223,1178,
+
+
+# evpp-0.2.2
+# libevent 2.0.21
+# muduo v1.0.9
+# 
+# Conclusion :
+# 	1. 
