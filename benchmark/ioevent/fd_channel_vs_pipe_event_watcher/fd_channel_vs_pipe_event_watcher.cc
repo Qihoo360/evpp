@@ -66,10 +66,10 @@ void ReadCallbackOfPipeEventWatcher(int idx) {
 std::pair<int, int> FdChannelRunOnce() {
     Timestamp beforeInit(Timestamp::Now());
 
-    int space = numPipes / numActive;
-    space *= 2;
+    //int space = numPipes / numActive;
+    //space *= 2;
     for (int i = 0; i < numActive; ++i) {
-        ::send(g_pipes[i * space + 1], "m", 1, 0);
+        ::send(g_pipes[i * 2 + 1], "m", 1, 0);
     }
 
     g_fired = numActive;
@@ -88,7 +88,8 @@ std::pair<int, int> FdChannelRunOnce() {
 std::pair<int, int> PipeEventWatcherRunOnce() {
     Timestamp beforeInit(Timestamp::Now());
     for (int i = 0; i < numActive; ++i) {
-        g_pipe_event_watchers[i]->Notify();
+        int fd = g_pipe_event_watchers[i]->wfd();
+        ::send(fd, "m", 1, 0);
     }
 
     g_fired = numActive;
