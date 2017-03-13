@@ -12,16 +12,32 @@ XAxisNumbers = 500, 1000, 10000, 30000
 # The y Axis text
 YAxisText = time in microsecons (lower is better)
 
-# The data and the name of the lines
+# Every data is the average of 10 times of running
 Data|muduo-opt        = 553, 1076,10420,31770
 Data|evpp_channel-opt = 606, 1157,11111,33075
 Data|evpp_pipe-opt    = 618, 1192,11542,34467
 Data|libevent-opt     = 589, 1142,11029,33359
 
+
+
+
 # evpp-0.2.2
 # libevent 2.0.21
 # muduo v1.0.9
-# 
+#
+# evpp Changed:
+#           void FdChannel::HandleEvent(int sockfd, short which) {
+#          -    assert(sockfd == fd_);
+#          -    LOG_TRACE << "HandleEvent fd=" << sockfd << " " << EventsToString();
+#          -
+#               if ((which & kReadable) && read_fn_) {
+#          -        read_fn_(Timestamp::Now());
+#          +        read_fn_(Timestamp());
+#
+# If we use `read_fn_(Timestamp::Now())` instead of `read_fn_(Timestamp())`,
+# that will affect `evpp_channel`'s **2~6%** performance.
+#
+#
 # optimized : Delete `space` relative code.
 #             -               send(pipes[i * space + 1], "e", 1, 0);
 #             +               send(pipes[i * 2 + 1], "e", 1, 0);
