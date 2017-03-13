@@ -153,7 +153,11 @@ void FdChannel::HandleEvent(int sockfd, short which) {
     LOG_TRACE << "HandleEvent fd=" << sockfd << " " << EventsToString();
 
     if ((which & kReadable) && read_fn_) {
+#ifdef H_BENCHMARK_TESTING
+        read_fn_(Timestamp());
+#else
         read_fn_(Timestamp::Now());
+#endif
     }
 
     if ((which & kWritable) && write_fn_) {
