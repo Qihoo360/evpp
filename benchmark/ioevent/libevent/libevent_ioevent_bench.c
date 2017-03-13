@@ -123,7 +123,7 @@ run_once(void)
 	} while (count != fired);
 	evutil_gettimeofday(&te, NULL);
 
-	if (xcount != count) fprintf(stderr, "Xcount: %d, Rcount: %d\n", xcount, count);
+	if (xcount != count) fprintf(stdout, "Xcount: %d, Rcount: %d\n", xcount, count);
 	}
 
 	evutil_timersub(&te, &ts, &te);
@@ -202,7 +202,7 @@ main(int argc, char **argv)
 			tv->tv_sec * 1000000L + tv->tv_usec);
         sum += tv->tv_sec * 1000000L + tv->tv_usec;
 	}
-    fprintf(stdout, "%s Average : %ld\n", argv[0], sum/25);
+    fprintf(stdout, "%s n=%d a=%d w=%d Average : %ld\n", argv[0], num_pipes, num_active, num_writes, sum/25);
 
 	exit(0);
 }

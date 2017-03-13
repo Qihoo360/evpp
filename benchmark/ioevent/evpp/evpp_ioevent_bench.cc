@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
         sum1 += t.first;
         sum2 += t.second;
     }
-    printf("%s Average : %8d %8d\n", argv[0], sum1 / int(costs.size()), sum2 / int(costs.size()));
+    printf("%s n=%d a=%d w=%d Average : %8d %8d\n", argv[0], numPipes, numActive, numWrites, sum1 / int(costs.size()), sum2 / int(costs.size()));
 
     for (auto it = g_channels.begin();
          it != g_channels.end(); ++it) {

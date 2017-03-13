@@ -50,8 +50,9 @@ void ReadCallback(int idx) {
 
 std::pair<int, int> runOnce() {
     Timestamp beforeInit(Timestamp::Now());
+	int space = numPipes / numActive;
     for (int i = 0; i < numActive; ++i) {
-        g_pipes[i]->Notify();
+        g_pipes[i + space]->Notify();
     }
 
     g_fired = numActive;
@@ -121,7 +122,7 @@ int main(int argc, char* argv[]) {
         sum1 += t.first;
         sum2 += t.second;
     }
-    printf("%s Average : %8d %8d\n", argv[0], sum1 / int(costs.size()), sum2 / int(costs.size()));
+    printf("%s n=%d a=%d w=%d Average : %8d %8d\n", argv[0], numPipes, numActive, numWrites, sum1 / int(costs.size()), sum2 / int(costs.size()));
 
     for (auto pipe : g_pipes) {
         pipe->Cancel();

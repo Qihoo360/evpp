@@ -66,8 +66,8 @@ void ReadCallbackOfPipeEventWatcher(int idx) {
 std::pair<int, int> FdChannelRunOnce() {
     Timestamp beforeInit(Timestamp::Now());
 
-    //int space = numPipes / numActive;
-    //space *= 2;
+    int space = numPipes / numActive;
+    space *= 2;
     for (int i = 0; i < numActive; ++i) {
         ::send(g_pipes[i * 2 + 1], "m", 1, 0);
     }
@@ -152,14 +152,17 @@ int main(int argc, char* argv[]) {
         sum1 += t.first;
         sum2 += t.second;
     }
-    printf("%s        FdChannelRunOnce Average : %8d %8d\n", argv[0], sum1 / int(fd_channel_cost.size()), sum2 / int(fd_channel_cost.size()));
+    int c1 = sum2 / int(fd_channel_cost.size());
+    printf("%s               FdChannelRunOnce Average : %8d %8d\n", argv[0], sum1 / int(fd_channel_cost.size()), c1);
 
     sum1 = 0, sum2 = 0;
     for (auto t : pipe_event_watcher_cost) {
         sum1 += t.first;
         sum2 += t.second;
     }
-    printf("%s PipeEventWatcherRunOnce Average : %8d %8d\n", argv[0], sum1 / int(pipe_event_watcher_cost.size()), sum2 / int(pipe_event_watcher_cost.size()));
+    int c2 = sum2 / int(pipe_event_watcher_cost.size());
+    printf("%s        PipeEventWatcherRunOnce Average : %8d %8d\n", argv[0], sum1 / int(pipe_event_watcher_cost.size()), c2);
+    printf(" FdChannelRunOnce/PipeEventWatcherRunOnce : %f\n", double(c1)/double(c2));
 
     for (auto it = g_channels.begin();
          it != g_channels.end(); ++it) {

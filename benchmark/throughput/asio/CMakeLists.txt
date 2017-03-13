@@ -1,5 +1,9 @@
 add_executable(benchmark_tcp_asio_client client.cpp)
 target_link_libraries(benchmark_tcp_asio_client boost_system boost_thread)
 
+#add_executable(benchmark_tcp_asio_client_fixed_send client_fixed_send.cpp)
+#target_link_libraries(benchmark_tcp_asio_client_fixed_send)
+#include_directories(benchmark_tcp_asio_client_fixed_send "asio_alone")
+
 add_executable(benchmark_tcp_asio_server server.cpp)
 target_link_libraries(benchmark_tcp_asio_server boost_system boost_thread)
