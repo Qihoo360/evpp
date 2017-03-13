@@ -1,22 +1,22 @@
 
 ChartType = spline
 Title = IO Event Benchmark
-SubTitle = 1 thread, 500 pipes, optimized, X Axis is the test number.
+SubTitle = 1 thread, 500 pipes, optimized, X Axis is the test number except the last one which is the average value of the privious 10 values.
 ValueSuffix = us
 
 Height = 400
 
 # The x Axis numbers. The count this numbers MUST be the same with the data series
-XAxisNumbers = 1,2,3,4,5,6,7,8,9,10
+XAxisNumbers = 1,2,3,4,5,6,7,8,9,10,666
 
 # The y Axis text
 YAxisText = time in microsecons (lower is better)
 
 # The data and the name of the lines
-Data|muduo-500=639,656,670,640,644,641,640,642,645,647,
-Data|evpp_channel-500=682,687,697,686,689,693,693,692,690,692,
-Data|evpp_pipe-500=645,605,655,642,618,652,619,615,619,619,
-Data|libevent-500=660,693,711,674,674,671,672,671,675,676,
+Data|muduo-500=639,656,670,640,644,641,640,642,645,647,646
+Data|evpp_channel-500=682,687,697,686,689,693,693,692,690,692,690
+Data|evpp_pipe-500=645,605,655,642,618,652,619,615,619,619,628
+Data|libevent-500=660,693,711,674,674,671,672,671,675,676,677
 
 # evpp-0.2.2
 # libevent 2.0.21
