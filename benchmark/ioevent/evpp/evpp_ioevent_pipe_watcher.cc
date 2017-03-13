@@ -50,9 +50,8 @@ void ReadCallback(int idx) {
 
 std::pair<int, int> runOnce() {
     Timestamp beforeInit(Timestamp::Now());
-	int space = numPipes / numActive;
     for (int i = 0; i < numActive; ++i) {
-        g_pipes[i + space]->Notify();
+        g_pipes[i]->Notify();
     }
 
     g_fired = numActive;

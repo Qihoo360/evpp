@@ -50,11 +50,11 @@ void readCallback(Timestamp, int fd, int idx) {
 
 std::pair<int, int> runOnce() {
     Timestamp beforeInit(Timestamp::Now());
-    int space = numPipes / numActive;
-    space *= 2;
+    //int space = numPipes / numActive;
+    //space *= 2;
     char ch = 'm';
     for (int i = 0; i < numActive; ++i) {
-        ::send(g_pipes[i * space + 1], &ch, 1, 0);
+        ::send(g_pipes[i * 2 + 1], &ch, 1, 0);
     }
 
     g_fired = numActive;

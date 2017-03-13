@@ -94,7 +94,7 @@ read_cb(evutil_socket_t fd, short which, void *arg)
 static struct timeval *
 run_once(void)
 {
-	evutil_socket_t *cp, space;
+	evutil_socket_t *cp/*, space*/;
 	long i;
 	static struct timeval ts, te;
 
@@ -108,10 +108,10 @@ run_once(void)
 	event_loop(EVLOOP_ONCE | EVLOOP_NONBLOCK);
 
 	fired = 0;
-	space = num_pipes / num_active;
-	space = space * 2;
+	//space = num_pipes / num_active;
+	//space = space * 2;
 	for (i = 0; i < num_active; i++, fired++)
-		(void) send(pipes[i * space + 1], "e", 1, 0);
+		(void) send(pipes[i * 2 + 1], "e", 1, 0);
 
 	count = 0;
 	writes = num_writes;
