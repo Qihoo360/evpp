@@ -149,7 +149,7 @@ void FdChannel::HandleEvent(int sockfd, short which, void* v) {
 
 void FdChannel::HandleEvent(int sockfd, short which) {
     assert(sockfd == fd_);
-    LOG_TRACE << "HandleEvent fd=" << sockfd << " " << EventsToString();
+    //LOG_TRACE << "HandleEvent fd=" << sockfd << " " << EventsToString();
 
     if ((which & kReadable) && read_fn_) {
 #ifdef H_BENCHMARK_TESTING
