@@ -58,7 +58,7 @@
 |evpp  | 409600 |1950.79 |  2363.68| 1528.97| 1290.17| 1039.96|
 |muduo |  409600|1887.057| 2213.813|1305.899|1131.383|1043.612|
 
-我们用[https://github.com/zieckey/gochart](https://github.com/zieckey/gochart)这个图标绘制工具将上述数据绘制为图表。
+我们用[https://github.com/zieckey/gochart](https://github.com/zieckey/gochart)这个图表绘制工具将上述数据绘制为图表。
 
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-4096-evpp-vs-muduo.png)
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-8192-evpp-vs-muduo.png)
