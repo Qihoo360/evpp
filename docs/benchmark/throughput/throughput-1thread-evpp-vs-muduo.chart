@@ -10,6 +10,8 @@ XAxisNumbers = 1, 10, 100, 1000, 10000
 # The y Axis text
 YAxisText = Throughput (MB/s)
 
+Height = 700
+
 # The data and the name of the lines
 
 Data|evpp-4096    = 229.274,631.611,671.219,495.566,366.071
