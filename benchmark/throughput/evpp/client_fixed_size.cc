@@ -170,6 +170,7 @@ void Session::OnConnection(const evpp::TCPConnPtr& conn) {
 }
 
 int main(int argc, char* argv[]) {
+    google::InitGoogleLogging(argv[0]);
     if (argc != 7) {
         fprintf(stderr, "Usage: client <host_ip> <port> <threads> <blocksize> <sessions> <time_seconds>\n");
         return -1;
