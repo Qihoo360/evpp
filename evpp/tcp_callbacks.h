@@ -2,8 +2,6 @@
 
 #include "evpp/inner_pre.h"
 
-#include "evpp/timestamp.h"
-
 namespace evpp {
 class Buffer;
 class TCPConn;
