@@ -26,8 +26,7 @@ public:
 
 private:
     void OnMessage(const evpp::TCPConnPtr& conn,
-                   evpp::Buffer* msg,
-                   evpp::Timestamp ts) {
+                   evpp::Buffer* msg) {
         std::string s = msg->NextAllString();
         LOG_INFO << "Received a message [" << s << "]";
         if (s == "quit" || s == "exit") {

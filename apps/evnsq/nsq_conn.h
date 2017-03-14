@@ -85,7 +85,7 @@ private:
     void WriteCommand(const Command& cmd);
     void Reconnect();
     void OnTCPConnectionEvent(const evpp::TCPConnPtr& conn);
-    void OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp ts);
+    void OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf);
     void OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf);
     void Identify();
     void Finish(const std::string& id);
