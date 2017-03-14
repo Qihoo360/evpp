@@ -131,7 +131,7 @@ void Connector::HandleWrite() {
 void Connector::HandleError() {
     assert(loop_->IsInLoopThread());
     int serrno = errno;
-    LOG_ERROR << "status=" << StatusToString() << " errno=" << serrno << " " << strerror(serrno);
+    LOG_ERROR << "status=" << StatusToString() << " fd=" << fd_ << " errno=" << serrno << " " << strerror(serrno);
     status_ = kDisconnected;
 
     if (chan_) {
