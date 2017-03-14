@@ -121,10 +121,10 @@ public:
                 totalBytesRead += it->bytes_read();
                 totalMessagesRead += it->messages_read();
             }
-            LOG_WARN << "name=" << name_ << totalBytesRead << " total bytes read";
-            LOG_WARN << "name=" << name_ << totalMessagesRead << " total messages read";
-            LOG_WARN << "name=" << name_ << static_cast<double>(totalBytesRead) / static_cast<double>(totalMessagesRead) << " average message size";
-            LOG_WARN << "name=" << name_ << static_cast<double>(totalBytesRead) / (timeout_ * 1024 * 1024) << " MiB/s throughput";
+            LOG_WARN << "name=" << name_ << " " << totalBytesRead << " total bytes read";
+            LOG_WARN << "name=" << name_ << " " << totalMessagesRead << " total messages read";
+            LOG_WARN << "name=" << name_ << " " << static_cast<double>(totalBytesRead) / static_cast<double>(totalMessagesRead) << " average message size";
+            LOG_WARN << "name=" << name_ << " " << static_cast<double>(totalBytesRead) / (timeout_ * 1024 * 1024) << " MiB/s throughput";
             loop_->QueueInLoop(std::bind(&Client::Quit, this));
         }
     }
@@ -172,6 +172,7 @@ void Session::OnConnection(const evpp::TCPConnPtr& conn) {
 
 int main(int argc, char* argv[]) {
     google::InitGoogleLogging(argv[0]);
+    FLAGS_stderrthreshold = 0;
     if (argc != 7) {
         fprintf(stderr, "Usage: client <host_ip> <port> <threads> <blocksize> <sessions> <time_seconds>\n");
         return -1;
