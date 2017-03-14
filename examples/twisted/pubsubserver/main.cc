@@ -13,7 +13,7 @@ public:
         std::string addr = std::string("0.0.0.0:") + std::to_string(port);
         loop_.reset(new evpp::EventLoop);
         server_.reset(new evpp::TCPServer(loop_.get(), addr, "ChatRoom", 0));
-        server_->SetMessageCallback(std::bind(&Server::OnMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        server_->SetMessageCallback(std::bind(&Server::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
         server_->SetConnectionCallback(std::bind(&Server::OnConnection, this, std::placeholders::_1));
     }
 
