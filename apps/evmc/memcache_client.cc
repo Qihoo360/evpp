@@ -63,7 +63,7 @@ void MemcacheClient::OnResponseData(const evpp::TCPConnPtr& tcp_conn,
         codec_ = new BinaryCodec(this);
     }
 
-    codec_->OnCodecMessage(tcp_conn, buf, ts);
+    codec_->OnCodecMessage(tcp_conn, buf);
 }
 
 
