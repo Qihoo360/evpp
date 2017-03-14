@@ -23,7 +23,9 @@ static void MyEventThread() {
     LOG_INFO << "EventLoop is running ...";
     loop = std::shared_ptr<evpp::EventLoop>(new evpp::EventLoop);
     loop->Run();
-    loop.reset(); // 确保析构时，是在其自身运行的线程中
+
+    // Make sure the loop object is delete in its own thread.
+    loop.reset();
 }
 
 static int periodic_run_count = 0;

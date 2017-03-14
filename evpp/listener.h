@@ -28,7 +28,7 @@ public:
         return listening_;
     }
 private:
-    void HandleAccept(Timestamp ts);
+    void HandleAccept();
 
 private:
     int fd_;// The listening socket fd
