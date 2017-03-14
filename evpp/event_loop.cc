@@ -105,15 +105,17 @@ void EventLoop::Stop() {
 void EventLoop::StopInLoop() {
     LOG_TRACE << "EventLoop is stopping now, tid=" << std::this_thread::get_id();
     assert(running_);
-    for (;;) {
-        DoPendingFunctors();
 
-        std::lock_guard<std::mutex> lock(mutex_);
-
-        if (pending_functors_->empty()) {
-            break;
+    auto f = [this]() {
+        for (;;) {
+            DoPendingFunctors();
+            std::lock_guard<std::mutex> lock(mutex_);
+            if (pending_functors_->empty()) {
+                break;
+            }
         }
-    }
+    };
+    f();
 
 #ifdef H_BENCHMARK_TESTING
     event_base_loopexit(evbase_, NULL);
@@ -121,6 +123,7 @@ void EventLoop::StopInLoop() {
     timeval tv = Duration(0.5).TimeVal(); // Trick : delay 0.5 second
     event_base_loopexit(evbase_, &tv);
 #endif
+    f();
     running_ = false;
 }
 
