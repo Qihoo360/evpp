@@ -91,30 +91,26 @@ public:
         close_delay_ = d;
     }
     void SetTCPNoDelay(bool on);
-    // TODO void SetLinger();
+
+    // TODO Add : SetLinger();
 protected:
-    // These methods are visible only for TCPClient and TCPServer.
-    // We don't want the user layer to access these methods.
     friend class TCPClient;
     friend class TCPServer;
 
-
+    // These methods are visible only for TCPClient and TCPServer.
+    // We don't want the user layer to access these methods.
     void set_type(Type t) {
         type_ = t;
     }
-
     void SetMessageCallback(MessageCallback cb) {
-        msg_fn_ = cb; // This will be called to the user layer
+        msg_fn_ = cb;
     }
-
     void SetConnectionCallback(ConnectionCallback cb) {
-        conn_fn_ = cb; // This will be called to the user layer
+        conn_fn_ = cb;
     }
-
-    void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark); // This will be called to the user layer
-
+    void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
     void SetCloseCallback(CloseCallback cb) {
-        close_fn_ = cb; // This will be called to TCPClient or TCPServer
+        close_fn_ = cb;
     }
     void OnAttachedToLoop();
 private:
@@ -133,7 +129,7 @@ private:
     std::string remote_addr_; // the remote address with form : "ip:port"
     std::unique_ptr<FdChannel> chan_;
     Buffer input_buffer_;
-    Buffer output_buffer_; // TODO use a list<Slice>
+    Buffer output_buffer_; // TODO use a list<Slice> ??
 
     enum { kContextCount = 16, };
     Any context_[kContextCount];
@@ -145,10 +141,10 @@ private:
     // Default is 3 second.
     Duration close_delay_;
 
-    ConnectionCallback conn_fn_;
-    MessageCallback msg_fn_;
-    WriteCompleteCallback write_complete_fn_;
-    HighWaterMarkCallback high_water_mark_fn_;
-    CloseCallback close_fn_;
+    ConnectionCallback conn_fn_; // This will be called to the user application layer
+    MessageCallback msg_fn_; // This will be called to the user application layer
+    WriteCompleteCallback write_complete_fn_; // This will be called to the user application layer
+    HighWaterMarkCallback high_water_mark_fn_; // This will be called to the user application layer
+    CloseCallback close_fn_; // This will be called to TCPClient or TCPServer
 };
 }
