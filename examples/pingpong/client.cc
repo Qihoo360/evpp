@@ -69,7 +69,8 @@ public:
            int threadCount)
         : loop_(loop),
         session_count_(sessionCount),
-        timeout_(timeout_sec) {
+        timeout_(timeout_sec),
+        connected_count_(0) {
         loop->RunAfter(evpp::Duration(double(timeout_sec)), std::bind(&Client::HandleTimeout, this));
         tpool_.reset(new evpp::EventLoopThreadPool(loop, threadCount));
         tpool_->Start(true);
@@ -122,12 +123,12 @@ public:
 
 private:
     void Quit() {
+        tpool_->Stop();
+        loop_->Stop();
         for (auto &it : sessions_) {
             delete it;
         }
         sessions_.clear();
-        tpool_->Stop();
-        loop_->Stop();
         while (!tpool_->IsStopped() || !loop_->IsStopped()) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
