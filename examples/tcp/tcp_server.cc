@@ -8,8 +8,7 @@ int main(int argc, char* argv[]) {
     evpp::EventLoop loop;
     evpp::TCPServer server(&loop, addr, "TCPEchoServer", thread_num);
     server.SetMessageCallback([](const evpp::TCPConnPtr& conn,
-                                 evpp::Buffer* msg,
-                                 evpp::Timestamp ts) {
+                                 evpp::Buffer* msg) {
         conn->Send(msg);
     });
     server.SetConnectionCallback([](const evpp::TCPConnPtr& conn) {

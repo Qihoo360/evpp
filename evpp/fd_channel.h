@@ -24,7 +24,7 @@ public:
         kWritable = 0x04,
     };
     typedef std::function<void()> EventCallback;
-    typedef std::function<void(Timestamp)> ReadEventCallback;
+    typedef std::function<void()> ReadEventCallback;
 
 public:
     FdChannel(EventLoop* loop, int fd,

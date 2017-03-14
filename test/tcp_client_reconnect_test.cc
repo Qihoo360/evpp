@@ -18,8 +18,7 @@ static std::atomic<int> connected_count(0);
 static std::atomic<int> message_recved_count(0);
 const static std::string addr = "127.0.0.1:19099";
 static void OnMessage(const evpp::TCPConnPtr& conn,
-                      evpp::Buffer* msg,
-                      evpp::Timestamp ts) {
+                      evpp::Buffer* msg) {
     message_recved_count++;
 }
 
