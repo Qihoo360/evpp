@@ -1,0 +1,22 @@
+# The chart type , option : spline/line/bar/column/area
+ChartType = spline
+Title = Throughput 
+SubTitle = 1 thread, 100 seconds, X Axis is the connection count
+ValueSuffix = MB/s
+
+# The x Axis numbers. The count this numbers MUST be the same with the data series
+XAxisNumbers = 1, 10, 100, 1000, 10000
+
+# The y Axis text
+YAxisText = Throughput (MB/s)
+
+# The data and the name of the lines
+Data|evpp-1024   = 64.2529,188.201,198.164,167.661,105.592
+Data|evpp-2048   = 119.362,342.96,369.187,265.609,198.586
+Data|evpp-4096   = 229.274,631.611,671.219,495.566,366.071
+Data|evpp-8192   = 394.162,1079.67,1127.09,786.706,645.866
+Data|evpp-16384  = 631.047,1593.7,1662.23,1104.53,949.325
+Data|evpp-81920  = 1565.22,2079.77,1464.16,1323.09,1297.18
+Data|evpp-409600 = 1950.79,2363.68,1528.97,1290.17,1039.96
+
+# evpp : v0.2.4
