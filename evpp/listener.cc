@@ -37,13 +37,13 @@ void Listener::Listen() {
     }
 
     chan_.reset(new FdChannel(loop_, fd_, true, false));
-    chan_->SetReadCallback(std::bind(&Listener::HandleAccept, this, std::placeholders::_1));
+    chan_->SetReadCallback(std::bind(&Listener::HandleAccept, this));
     loop_->RunInLoop(std::bind(&FdChannel::AttachToLoop, chan_.get()));
     listening_ = true;
     LOG_INFO << "TCPServer is running at " << addr_;
 }
 
-void Listener::HandleAccept(Timestamp /*ts*/) {
+void Listener::HandleAccept() {
     LOG_INFO << __FUNCTION__ << " New connection";
     struct sockaddr_storage ss;
     socklen_t addrlen = sizeof(ss);

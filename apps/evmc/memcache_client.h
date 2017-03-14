@@ -53,8 +53,7 @@ public:
 
     void OnConnectTimeout(uint32_t cmd_id);
     void OnResponseData(const evpp::TCPConnPtr& tcp_conn,
-                        evpp::Buffer* buf,
-                        evpp::Timestamp ts);
+                        evpp::Buffer* buf);
     void OnPacketTimeout(uint32_t cmd_id);
 
 private:

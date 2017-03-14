@@ -35,7 +35,7 @@ void NSQConn::Connect(const std::string& addr) {
     tcp_client_ = evpp::TCPClientPtr(new evpp::TCPClient(loop_, addr, std::string("NSQClient-") + addr));
     status_ = kConnecting;
     tcp_client_->SetConnectionCallback(std::bind(&NSQConn::OnTCPConnectionEvent, this, std::placeholders::_1));
-    tcp_client_->SetMessageCallback(std::bind(&NSQConn::OnRecv, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    tcp_client_->SetMessageCallback(std::bind(&NSQConn::OnRecv, this, std::placeholders::_1, std::placeholders::_2));
     tcp_client_->Connect();
 }
 
@@ -90,7 +90,7 @@ void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
     }
 }
 
-void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp ts) {
+void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
     while (buf->size() > 4) {
         size_t size = buf->PeekInt32();
 

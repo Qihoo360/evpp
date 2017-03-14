@@ -19,11 +19,11 @@ typedef std::function<void(const TCPConnPtr&)> CloseCallback;
 typedef std::function<void(const TCPConnPtr&)> WriteCompleteCallback;
 typedef std::function<void(const TCPConnPtr&, size_t)> HighWaterMarkCallback;
 
-typedef std::function<void(const TCPConnPtr&, Buffer*, Timestamp)> MessageCallback;
+typedef std::function<void(const TCPConnPtr&, Buffer*)> MessageCallback;
 
 namespace internal {
 inline void DefaultConnectionCallback(const TCPConnPtr&) {}
-inline void DefaultMessageCallback(const TCPConnPtr&, Buffer*, Timestamp) {}
+inline void DefaultMessageCallback(const TCPConnPtr&, Buffer*) {}
 }
 
 }

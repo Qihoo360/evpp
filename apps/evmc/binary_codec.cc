@@ -7,8 +7,7 @@ namespace evmc {
 static const size_t kHeaderLen = sizeof(protocol_binary_response_header);
 
 void BinaryCodec::OnCodecMessage(const evpp::TCPConnPtr& conn,
-                                 evpp::Buffer* buf,
-                                 evpp::Timestamp ts) {
+                                 evpp::Buffer* buf) {
     while (buf->size() >= kHeaderLen) { // kHeaderLen == 24
         const void* data = buf->data();
         protocol_binary_response_header resp =

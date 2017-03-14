@@ -28,7 +28,7 @@ std::vector<std::shared_ptr<PipeEventWatcher>> g_pipe_event_watchers;
 
 int g_reads, g_writes, g_fired;
 
-void ReadCallbackOfFdChannel(Timestamp, int fd, int idx) {
+void ReadCallbackOfFdChannel(int fd, int idx) {
     char ch = 'm';
 
     g_reads += static_cast<int>(::recv(fd, &ch, sizeof(ch), 0));
