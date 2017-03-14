@@ -61,12 +61,14 @@ private:
 class Client {
 public:
     Client(evpp::EventLoop* loop,
+           const std::string& name,
            const std::string& serverAddr, // ip:port
            int blockSize,
            int sessionCount,
            int timeout_sec,
            int threadCount)
         : loop_(loop),
+        name_(name),
         session_count_(sessionCount),
         timeout_(timeout_sec) {
         loop->RunAfter(evpp::Duration(double(timeout_sec)), std::bind(&Client::HandleTimeout, this));
@@ -109,12 +111,10 @@ public:
                 totalBytesRead += it->bytes_read();
                 totalMessagesRead += it->messages_read();
             }
-            LOG_WARN << totalBytesRead << " total bytes read";
-            LOG_WARN << totalMessagesRead << " total messages read";
-            LOG_WARN << static_cast<double>(totalBytesRead) / static_cast<double>(totalMessagesRead)
-                << " average message size";
-            LOG_WARN << static_cast<double>(totalBytesRead) / (timeout_ * 1024 * 1024)
-                << " MiB/s throughput";
+            LOG_WARN << "name=" << name_ << totalBytesRead << " total bytes read";
+            LOG_WARN << "name=" << name_ << totalMessagesRead << " total messages read";
+            LOG_WARN << "name=" << name_ << static_cast<double>(totalBytesRead) / static_cast<double>(totalMessagesRead) << " average message size";
+            LOG_WARN << "name=" << name_ << static_cast<double>(totalBytesRead) / (timeout_ * 1024 * 1024) << " MiB/s throughput";
             loop_->QueueInLoop(std::bind(&Client::Quit, this));
         }
     }
@@ -141,6 +141,7 @@ private:
     }
 private:
     evpp::EventLoop* loop_;
+    std::string name_;
     std::shared_ptr<evpp::EventLoopThreadPool> tpool_;
     int session_count_;
     int timeout_;
@@ -175,7 +176,7 @@ int main(int argc, char* argv[]) {
     evpp::EventLoop loop;
     std::string serverAddr = std::string(ip) + ":" + std::to_string(port);
 
-    Client client(&loop, serverAddr, blockSize, sessionCount, timeout, threadCount);
+    Client client(&loop, argv[0], serverAddr, blockSize, sessionCount, timeout, threadCount);
     loop.Run();
     return 0;
 }
