@@ -3,11 +3,11 @@
 set -x
 
 killall benchmark_pingpong_server
-timeout=${timeout:-5}
+timeout=${timeout:-100}
 #bufsize=${bufsize:-16384}
 nothreads=1
 
-for bufsize in 1024 2048 4096 8192 16384 81920 409600 819200; do
+for bufsize in 1024 2048 4096 8192 16384 81920 409600; do
 for nosessions in 1 10 100 1000 10000; do
   echo "======================> Bufsize: $bufsize Threads: $nothreads Sessions: $nosessions"
   taskset -c 1 ./benchmark_pingpong_server 33333 $nothreads & srvpid=$!
