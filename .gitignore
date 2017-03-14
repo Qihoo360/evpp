@@ -27,6 +27,7 @@ vsprojects/*.suo
 vsprojects/.vs/
 vsprojects/libevpp.VC.db
 vsprojects/evnsq-test.vcxproj.filters
+vsprojects/enc_temp_folder/
 
 test/evpp-test
 examples/echo/*/simple_echo
