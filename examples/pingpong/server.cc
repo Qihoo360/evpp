@@ -10,8 +10,7 @@ void OnConnection(const evpp::TCPConnPtr& conn) {
 }
 
 void OnMessage(const evpp::TCPConnPtr& conn,
-               evpp::Buffer* msg,
-               evpp::Timestamp ts) {
+               evpp::Buffer* msg) {
     conn->Send(msg);
 }
 

@@ -43,7 +43,7 @@ public:
 private:
     void OnConnection(const evpp::TCPConnPtr& conn);
 
-    void OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp) {
+    void OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
         LOG_TRACE << "bytes_read=" << bytes_read_ << " bytes_writen=" << bytes_written_;
         ++messages_read_;
         bytes_read_ += buf->size();

@@ -48,7 +48,7 @@ public:
 private:
     void OnConnection(const evpp::TCPConnPtr& conn);
 
-    void OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, evpp::Timestamp) {
+    void OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
         ++messages_read_;
         while (buf->size() >= block_size_) {
             bytes_read_ += block_size_;

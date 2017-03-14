@@ -17,8 +17,7 @@ static bool connected = false;
 static bool message_recved = false;
 const static std::string addr = "127.0.0.1:19099";
 static void OnMessage(const evpp::TCPConnPtr& conn,
-                      evpp::Buffer* msg,
-                      evpp::Timestamp ts) {
+                      evpp::Buffer* msg) {
     message_recved = true;
 }
 

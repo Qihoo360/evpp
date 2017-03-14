@@ -17,8 +17,7 @@ public:
     explicit BinaryCodec(MemcacheClient* memc_client) : memc_client_(memc_client) {}
 
     void OnCodecMessage(const evpp::TCPConnPtr& conn,
-                        evpp::Buffer* buf,
-                        evpp::Timestamp ts);
+                        evpp::Buffer* buf);
 
 private:
     // noncopyable
