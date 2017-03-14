@@ -1,0 +1,32 @@
+
+ChartType = spline
+Title = IO Event Benchmark
+SubTitle = 1 thread, X Axis is connection pipes count
+ValueSuffix = us
+
+Height = 800
+
+# The x Axis numbers. The count this numbers MUST be the same with the data series
+XAxisNumbers = 500, 1000, 10000, 30000
+
+# The y Axis text
+YAxisText = time in microsecons (lower is better)
+
+# Every data is the average of 10 times of running
+Data|muduo        = 646, 1260,18781,62381
+Data|evpp_channel = 690, 1345,21013,65035
+Data|evpp_pipe    = 628, 1210,11234,32725
+Data|libevent     = 677, 1324,19204,62400
+
+# evpp-0.2.2
+# libevent 2.0.21
+# muduo v1.0.9
+#	
+# Explaination:
+#   1. The `evpp_pipe` is used PipeEventWatcher to implement the benchmark test
+#   2. The `evpp_channel` is used FdChannel to implement the benchmark test
+# 
+# Conclusion :
+# 	1. `muduo` and `libevent` has the similar performance
+#   2. The `evpp_pipe` has 90% higher performance of `muduo` and `libevent` 
+#   3. The `evpp_channel` has 4.2% lower performance than `muduo`
