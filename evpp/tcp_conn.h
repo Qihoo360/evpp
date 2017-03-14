@@ -5,6 +5,7 @@
 #include "evpp/tcp_callbacks.h"
 #include "evpp/slice.h"
 #include "evpp/any.h"
+#include "evpp/duration.h"
 
 namespace evpp {
 

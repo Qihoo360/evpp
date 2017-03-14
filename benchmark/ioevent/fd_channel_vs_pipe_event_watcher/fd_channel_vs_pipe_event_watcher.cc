@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < numPipes; ++i) {
         FdChannel* channel = new FdChannel(&loop, g_pipes[i * 2], true, false);
         g_channels.push_back(channel);
-        channel->SetReadCallback(std::bind(ReadCallbackOfFdChannel, std::placeholders::_1, channel->fd(), i));
+        channel->SetReadCallback(std::bind(ReadCallbackOfFdChannel, channel->fd(), i));
         channel->AttachToLoop();
 
         auto f = std::bind(&ReadCallbackOfPipeEventWatcher, i);

@@ -21,7 +21,7 @@ public:
         client_.SetConnectionCallback(
             std::bind(&Session::OnConnection, this, std::placeholders::_1));
         client_.SetMessageCallback(
-            std::bind(&Session::OnMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            std::bind(&Session::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
         client_.set_connecting_timeout(evpp::Duration(10.0));
     }
 
