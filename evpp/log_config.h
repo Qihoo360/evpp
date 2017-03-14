@@ -8,20 +8,34 @@
 
 #include <glog/logging.h>
 
-#ifdef GOOGLE_LOG_INFO
+#ifdef GOOGLE_STRIP_LOG
+
+#if GOOGLE_STRIP_LOG == 0
 #define LOG_TRACE LOG(INFO)
 #define LOG_DEBUG LOG(INFO)
 #define LOG_INFO  LOG(INFO)
+#else
+#define LOG_TRACE if (false) LOG(INFO)
+#define LOG_DEBUG if (false) LOG(INFO)
+#define LOG_INFO  if (false) LOG(INFO)
+#endif
+
+#if GOOGLE_STRIP_LOG <= 1
 #define LOG_WARN  LOG(WARNING)
+#else
+#define LOG_WARN  if (false) LOG(WARNING)
+#endif
+
 #define LOG_ERROR LOG(ERROR)
 #define LOG_FATAL LOG(FATAL)
+
 #else
-#define LOG_TRACE std::cout << __FILE__ << ":" << __LINE__
-#define LOG_DEBUG std::cout << __FILE__ << ":" << __LINE__
-#define LOG_INFO  std::cout << __FILE__ << ":" << __LINE__
-#define LOG_WARN  std::cout << __FILE__ << ":" << __LINE__
-#define LOG_ERROR std::cout << __FILE__ << ":" << __LINE__
-#define LOG_FATAL std::cout << __FILE__ << ":" << __LINE__
+#define LOG_TRACE std::cout << __FILE__ << ":" << __LINE__ << " "
+#define LOG_DEBUG std::cout << __FILE__ << ":" << __LINE__ << " "
+#define LOG_INFO  std::cout << __FILE__ << ":" << __LINE__ << " "
+#define LOG_WARN  std::cout << __FILE__ << ":" << __LINE__ << " "
+#define LOG_ERROR std::cout << __FILE__ << ":" << __LINE__ << " "
+#define LOG_FATAL std::cout << __FILE__ << ":" << __LINE__ << " "
 #define CHECK_NOTnullptr(val) LOG_ERROR << "'" #val "' Must be non nullptr";
 #endif
 #endif // end of define __cplusplus
