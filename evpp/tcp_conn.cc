@@ -24,7 +24,7 @@ TCPConn::TCPConn(EventLoop* l,
     , close_delay_(3.000001) {
     if (sockfd >= 0) {
         chan_.reset(new FdChannel(l, sockfd, false, false));
-        chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this, std::placeholders::_1));
+        chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this));
         chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
         chan_->SetCloseCallback(std::bind(&TCPConn::HandleClose, this));
     }
@@ -163,12 +163,12 @@ void TCPConn::SendInLoop(const void* data, size_t len) {
     }
 }
 
-void TCPConn::HandleRead(Timestamp recv_time) {
+void TCPConn::HandleRead() {
     assert(loop_->IsInLoopThread());
     int serrno = 0;
     ssize_t n = input_buffer_.ReadFromFD(chan_->fd(), &serrno);
     if (n > 0) {
-        msg_fn_(shared_from_this(), &input_buffer_, recv_time);
+        msg_fn_(shared_from_this(), &input_buffer_);
     } else if (n == 0) {
         if (type() == kOutgoing) {
             // This is an outgoing connection, we own it and it's done. so close it

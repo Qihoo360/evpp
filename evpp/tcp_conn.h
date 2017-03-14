@@ -114,7 +114,7 @@ protected:
     }
     void OnAttachedToLoop();
 private:
-    void HandleRead(Timestamp recv_time);
+    void HandleRead();
     void HandleWrite();
     void HandleClose();
     void SendInLoop(const Slice& message);
