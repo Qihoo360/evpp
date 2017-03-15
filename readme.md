@@ -52,32 +52,19 @@ Please see [Quick Start](docs/quick_start.md)
 
 ### Throughput
 
-The throughput benchmark of [evpp] is *40%* higher than *`boost.asio`* and *17%* higher than [libevent].
+The throughput benchmark of [evpp] is similar with [boost.asio] and *17%* higher than [libevent].
 The reason of [evpp] has a better throughput benchmark than [libevent] is that [evpp] implements its own IO buffer instead of [libevent]'s evbuffer. 
 
-The benchmark code is here [https://github.com/Qihoo360/evpp/tree/master/benchmark/](https://github.com/Qihoo360/evpp/tree/master/benchmark/).
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-libevent2-1-column.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-libevent2-2-column.png)
 
-
-##### Test objects:
-
-1. [evpp-0.2.0](https://github.com/Qihoo360/evpp/archive/0.2.0.tar.gz) based on libevent-2.0.21
-2. boost.asio-1.53
-3. libevent-2.0.21
-
-##### Environment
-
-- Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64
-- Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz
-
-![](docs/benchmark/throughput-1thread-1024bytes.png)
-![](docs/benchmark/throughput-1thread-2048bytes.png)
-![](docs/benchmark/throughput-1thread-4096bytes.png)
-![](docs/benchmark/throughput-1thread-8192bytes.png)
-![](docs/benchmark/throughput-multi-thread-4096bytes-evpp-vs-asio.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-1-column.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-2-column.png)
 
 ### More Benchmarks
 
 [The throughput benchmark of evpp VS muduo](docs/benchmark_throughput_vs_muduo_cn.md)
+
 [The throughput benchmark of evpp VS boost asio](docs/benchmark_throughput_vs_asio_cn.md)
 
 # Examples
@@ -199,3 +186,7 @@ Thanks for [libevent], [glog], [gtest], [Golang], [LevelDB], [rapidjson] project
 [libevent]:https://github.com/libevent/libevent
 [LevelDB]:https://github.com/google/leveldb
 [rapidjson]:https://github.com/miloyip/
+[Boost.Asio]:http://www.boost.org/
+[boost.asio]:http://www.boost.org/
+[asio]:http://www.boost.org/
+[boost]:http://www.boost.org/
