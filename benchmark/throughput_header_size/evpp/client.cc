@@ -18,8 +18,8 @@ public:
             const size_t total_count,
             Client* owner)
         : client_(loop, serverAddr, name),
-        total_count_(total_count),
-        owner_(owner) {
+        owner_(owner),
+        total_count_(total_count) {
         client_.SetConnectionCallback(
             std::bind(&Session::OnConnection, this, std::placeholders::_1));
         client_.SetMessageCallback(
@@ -60,7 +60,7 @@ private:
         LOG_INFO << " buf->size=" << buf->size();
         const size_t kHeaderLen = sizeof(Header);
         while (buf->size() > kHeaderLen) {
-            Header* header = (Header*)(buf->data());
+            Header* header = reinterpret_cast<Header*>(const_cast<char*>(buf->data()));
             auto full_size = header->get_full_size();
             if (buf->size() < full_size) {
                 // need to read more data
@@ -113,8 +113,8 @@ public:
         tpool_->Start(true);
 
         for (int i = 0; i < sessionCount; ++i) {
-            std::string name = std::to_string(i);
-            Session* session = new Session(tpool_->GetNextLoop(), serverAddr, name, total_count_, this);
+            std::string n = std::to_string(i);
+            Session* session = new Session(tpool_->GetNextLoop(), serverAddr, n, total_count_, this);
             session->Start();
             sessions_.push_back(std::shared_ptr<Session>(session));
         }
@@ -191,7 +191,7 @@ void Session::OnConnection(const evpp::TCPConnPtr& conn) {
         owner_->OnConnect();
         start_time_ = evpp::Timestamp::Now();
 
-        Header* header = (Header*)buffer_;
+        Header* header = reinterpret_cast<Header*>(buffer_);
         header->body_size_ = htonl(get_body_len());
         header->packet_count_ = htonl(1);
 
@@ -210,15 +210,15 @@ int main(int argc, char* argv[]) {
     google::InitGoogleLogging(argv[0]);
     FLAGS_stderrthreshold = 0;
     if (argc != 6) {
-        fprintf(stderr, "Usage: client <host_ip> <port> <threads> <sessions> <total_count>\n");
+        fprintf(stderr, "Usage: client <host_ip> <port> <threads> <total_count> <sessions>\n");
         return -1;
     }
 
     const char* ip = argv[1];
     uint16_t port = static_cast<uint16_t>(atoi(argv[2]));
     int threadCount = atoi(argv[3]);
-    int sessionCount = atoi(argv[4]);
-    int total_count = atoi(argv[5]);
+    int total_count = atoi(argv[4]);
+    int sessionCount = atoi(argv[5]);
 
     evpp::EventLoop loop;
     std::string serverAddr = std::string(ip) + ":" + std::to_string(port);
