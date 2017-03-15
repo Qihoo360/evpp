@@ -1,5 +1,5 @@
 # The chart type , option : spline/line/bar/column/area
-ChartType = spline
+ChartType = column
 Title = Throughput 
 SubTitle = 100 seconds, message size 16384, X Axis is thread count
 ValueSuffix = MB/s

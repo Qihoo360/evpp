@@ -38,8 +38,8 @@ We have done two benchmarks:
 
 #### Single Thread
 
-1. When concurrency is less than 10,000 in the test, [asio] is better, the average is higher than [evpp] ** 5% to 10% **
-2. When concurrency is 1,10,100,1000 in the test, [evpp] performance is better, the average is higher than [asio] ** 10% ~ 20% **
+1. When concurrency is less than 10,000 in the test, [asio] is better, the average is higher than [evpp] **5% to 10%**
+2. When concurrency is 1,10,100,1000 in the test, [evpp] performance is better, the average is higher than [asio] **10% ~ 20%**
 
 For details, see the chart below, the horizontal axis is the number of concurrent. The vertical axis is the throughput, the bigger the better.
 
@@ -57,6 +57,7 @@ For details, see the chart below, the horizontal axis is the number of concurren
 For details, see the chart below. The horizontal axis is the number of threads. The vertical axis is the throughput, the bigger the better.
 
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-asio-from-huyuguang.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-asio-from-huyuguang-column.png)
 
 ### Analysis
 
@@ -67,6 +68,10 @@ In the same time [evpp] is a network library of `Reactor` model, the receiving d
 We will do another benchmark test to verify the analysis. Please look forward to it.
 
 
+
+### Last
+
+The beautiful chart is rendered by [gochart](https://github.com/zieckey/gochart/) 
 
 [Boost.Asio]:http://www.boost.org/
 [boost.asio]:http://www.boost.org/
