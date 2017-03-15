@@ -52,7 +52,7 @@ For details, see the chart below, the horizontal axis is the number of concurren
 #### Multi thread
 
 1. When the number of concurrency is 1000, [evpp] and [asio] have a similar performance and have their own advantages.
-2. When the number of concurrency is 100, [asio] than the [evpp] overall more dominant, throughput higher than ** 10% **
+2. When the number of concurrency is 100, [asio] than the [evpp] overall more dominant, throughput higher than **10%**
 
 For details, see the chart below. The horizontal axis is the number of threads. The vertical axis is the throughput, the bigger the better.
 

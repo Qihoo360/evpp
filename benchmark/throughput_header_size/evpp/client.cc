@@ -150,7 +150,7 @@ public:
             }
 
             LOG_WARN << "name=" << name_ << " error count " << error_count;
-            LOG_WARN << "name=" << name_ << " average time(us) " << total_time.Microseconds()/finished_count;
+            LOG_WARN << "name=" << name_ << " average time(s) " << total_time.Seconds()/finished_count;
             loop_->QueueInLoop(std::bind(&Client::Quit, this));
         }
     }
