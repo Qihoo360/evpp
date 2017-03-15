@@ -94,6 +94,9 @@ public:
     void SetTCPNoDelay(bool on);
 
     // TODO Add : SetLinger();
+
+    void ReserveInputBuffer(size_t len) { input_buffer_.Reserve(len); }
+    void ReserveOutputBuffer(size_t len) { output_buffer_.Reserve(len); }
 protected:
     friend class TCPClient;
     friend class TCPServer;
@@ -114,6 +117,7 @@ protected:
         close_fn_ = cb;
     }
     void OnAttachedToLoop();
+
 private:
     void HandleRead();
     void HandleWrite();
