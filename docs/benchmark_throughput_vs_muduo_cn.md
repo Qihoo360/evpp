@@ -6,14 +6,7 @@
 
 本次测试是参考陈硕的博客文章[muduo与libevent2吞吐量对比](http://blog.csdn.net/solstice/article/details/5864889)，该文章的结论是：[muduo]吞吐量平均比[libevent2]高 **18%** 以上。
 
-由于[evpp]本身是基于[libevent2]实现的，因此我们希望将[evpp]和[muduo]放到一起做一次全面的性能测试。本文是关于这两个库在吞吐量方面的测试。最终测试结论如下：
-
-1. 在吞吐量方面的性能总体来说，比较接近，各擅胜场
-2. 在单个消息较大时（>81K)，[evpp]比[muduo]整体上更快
-2. 在单个消息不太大时，并发数小于1000时，[evpp]占优
-3. 在单个消息不太大时，并发数大于1000时，[muduo]占优
-
-这个测试结果进一步推断，[evpp]比[libevent2]更快（因为[muduo]吞吐量平均比[libevent2]高 **18%** 以上），表面上看不符合逻辑，因为[evpp]的底层就是[libevent2]，但仔细分析发现，[evpp]只是用了[libevent2]核心的事件循环，并没有用[libevent2]中的`evbuffer`相关类和函数来读写网络数据，而是借鉴[muduo]和[Golang]实现了自己独立的[Buffer]类来读写网络数据。
+由于[evpp]本身是基于[libevent2]实现的，因此我们希望将[evpp]和[muduo]放到一起做一次全面的性能测试。本文是关于这两个库在吞吐量方面的测试。
 
 ### 测试对象
 
@@ -45,7 +38,19 @@
 
 ### 单线程测试结果数据
 
-数字越大越好。
+最终测试结论如下：
+
+1. 在吞吐量方面的性能总体来说，比较接近，各擅胜场
+2. 在单个消息较大时（>81K)，[evpp]比[muduo]整体上更快
+2. 在单个消息不太大时，并发数小于1000时，[evpp]占优
+3. 在单个消息不太大时，并发数大于1000时，[muduo]占优
+
+测试中，单个消息较大时，[evpp]比[muduo]整体上更快的结论，我们认为是与`Buffer`类的设计实现有关。[evpp]的`Buffer`类是自己人肉实现的内存管理，而[muduo]的`Buffer`类的底层是用`std::vector<char>`实现的，我们推测[muduo]的这个实现性能方面稍差。本次吞吐量测试中，主要的开销是网络IO事件的触发回调和数据读写，当消息size不太大时，网络IO的事件触发耗费CPU更多；当消息size较大时，数据的读写和拷贝占用更多CPU。当然这只是一个推测，后面如果有时间或大家感兴趣，可以自行验证两个库的`Buffer`类的操作性能。
+
+这个测试结果进一步推断，[evpp]比[libevent2]更快（因为[muduo]吞吐量平均比[libevent2]高 **18%** 以上），表面上看不符合逻辑，因为[evpp]的底层就是[libevent2]，但仔细分析发现，[evpp]只是用了[libevent2]核心的事件循环，并没有用[libevent2]中的`evbuffer`相关类和函数来读写网络数据，而是借鉴[muduo]和[Golang]实现了自己独立的[Buffer]类来读写网络数据。
+
+
+下面是具体的测试数据和图表。
 
 |Name|Message Size|1 connection| 10 connection|100 connection| 1000 connection|10000 connection|
 |-----|--------|-------------|-----|-----|-----|-----|
@@ -67,7 +72,16 @@
 
 ### 多线程测试结果
 
-TODO
+测试结论如下：
+
+1. 在多线程场景下，[evpp]和[muduo]两个库在吞吐量方面，的性能整体上来看没有明显区别，分阶段分别领先
+2. 100并发测试，比1000并发测试，两个库的吞吐量都明显的高得多
+3. 在100并发测试下，随着线程数的增长，吞吐量基本上是线性增长。[muduo]库在中段领先于[evpp]，但在前期和后期又弱于[evpp]
+4. 在1000并发测试下，随着线程数的增长，前期基本上是线性增长，后期增长就不是太明显。[muduo]库这方面表现尤其明显
+
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-muduo.png)
+
+
 
 
 [evpp]:https://github.com/Qihoo360/evpp
