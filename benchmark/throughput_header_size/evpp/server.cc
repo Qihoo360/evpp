@@ -24,7 +24,7 @@ void OnMessage(const evpp::TCPConnPtr& conn,
     LOG_INFO << " buf->size=" << buf->size();
     const size_t kHeaderLen = sizeof(Header);
     while (buf->size() > kHeaderLen) {
-        Header* header = (Header*)(buf->data());
+        Header* header = reinterpret_cast<Header*>(const_cast<char*>(buf->data()));
         auto full_size = header->get_full_size();
         if (buf->size() < full_size) {
             // need to read more data
@@ -50,7 +50,6 @@ int main(int argc, char* argv[]) {
 
     if (argc != 1 && argc != 4) {
         printf("Usage: %s <port> <thread-num> <total-count>\n", argv[0]);
-        printf("  e.g: %s 9099 12\n", argv[0]);
         return 0;
     }
 
