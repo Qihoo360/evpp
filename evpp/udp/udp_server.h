@@ -52,10 +52,13 @@ private:
 
     MessageHandler   message_handler_;
 
-    // 工作线程池，用来处理UDP请求报文
+    // The worker thread pool, used to process UDP package
     std::shared_ptr<EventLoopThreadPool> tpool_;
 
-    size_t recv_buf_size_; // 接收udp包时开辟的缓冲区大小。最小值为1472，最大值为65535。默认值为1472。
+    // The buffer size used to receive an UDP package.
+    // The minimum size is 1472, maximum size is 65535. Default : 1472
+    // We can increase this size to receive a larger UDP package
+    size_t recv_buf_size_;
 private:
     void RecvingLoop(RecvThread* th);
 };
