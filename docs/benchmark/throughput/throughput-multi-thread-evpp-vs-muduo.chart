@@ -1,0 +1,24 @@
+# The chart type , option : spline/line/bar/column/area
+ChartType = spline
+Title = Throughput 
+SubTitle = 100 seconds, message size 16384, X Axis is thread count
+ValueSuffix = MB/s
+
+# The x Axis numbers. The count this numbers MUST be the same with the data series
+XAxisNumbers = 2,3,4,6,8
+
+# The y Axis text
+YAxisText = Throughput (MB/s)
+
+Height = 500
+
+# The data and the name of the lines
+Data|evpp-100   = 2285.48,2818.18,3826.82,4893.94,5648.08
+Data|muduo-100  = 1807.69,3086.99,4064.61,4727.83,5440.14
+Data|evpp-1000  = 1498.22,2092.2,2451.76,2735.9,3040.49
+Data|muduo-1000 = 1484.46,2025.54,2529.75,2862.99,2920.274
+
+
+# evpp  : v0.2.4
+# muduo : v1.0.9
+
