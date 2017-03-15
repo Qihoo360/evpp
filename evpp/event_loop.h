@@ -95,13 +95,16 @@ private:
     bool running_;
 
     std::mutex mutex_;
+    // We use this to notify the thread when we put a task into the pending_functors_ queue
     std::shared_ptr<PipeEventWatcher> watcher_;
+    // When we put a task into the pending_functors_ queue,
+    // we need to notify the thread to execute it. But we don't want to notify repeatedly.
+    std::atomic<bool> notified_;
 #ifdef H_HAVE_BOOST
     boost::lockfree::queue<Functor*>* pending_functors_;
 #else
     std::vector<Functor>* pending_functors_; // @Guarded By mutex_
 #endif
-    bool calling_pending_functors_;
 
     std::atomic<int> pending_functor_count_;
 };
