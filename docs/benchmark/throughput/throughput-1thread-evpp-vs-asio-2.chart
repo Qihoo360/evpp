@@ -1,5 +1,5 @@
 # The chart type , option : spline/line/bar/column/area
-ChartType = spline
+ChartType = column
 Title = Throughput 
 SubTitle = 1 thread, 100 seconds, X Axis is the connection count
 ValueSuffix = MB/s
