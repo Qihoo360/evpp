@@ -63,9 +63,12 @@ The reason of [evpp] has a better throughput benchmark than [libevent] is that [
 
 ### More Benchmarks
 
-[The throughput benchmark of evpp VS muduo](docs/benchmark_throughput_vs_muduo_cn.md)
+[The throughput benchmark of evpp VS boost asio](docs/benchmark_throughput_vs_asio.md)
 
-[The throughput benchmark of evpp VS boost asio](docs/benchmark_throughput_vs_asio_cn.md)
+[The throughput benchmark of evpp VS boost asio 中文](docs/benchmark_throughput_vs_asio_cn.md)
+
+[The throughput benchmark of evpp VS muduo 中文](docs/benchmark_throughput_vs_muduo_cn.md)
+
 
 # Examples
 

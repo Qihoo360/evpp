@@ -1,5 +1,7 @@
 [evpp]与[Boost.Asio]吞吐量对比
 
+[English Version：The throughput benchmark test : evpp VS Boost.Asio](benchmark_throughput_vs_asio_cn.md)
+
 ### 简介
 
 [Boost.Asio]是用于网络和低层IO编程的跨平台C++库,为开发者提供了C++环境下稳定的异步编程模型。也是业内公认的优秀的C++网络库代表。一般来讲，其他的网络库的性能如果不能与[asio]做一下全面的对比和评测，就不能令人信服。
@@ -22,7 +24,7 @@
 
 ### 测试方法
 
-依据 boost.asio 性能测试 [http://think-async.com/Asio/LinuxPerformanceImprovements](http://think-async.com/Asio/LinuxPerformanceImprovements) 的办法，用 ping pong 协议来测试吞吐量。
+依据 [boost.asio] 性能测试 [http://think-async.com/Asio/LinuxPerformanceImprovements](http://think-async.com/Asio/LinuxPerformanceImprovements) 的办法，用 ping pong 协议来测试吞吐量。
 
 简单地说，ping pong 协议是客户端和服务器都实现 echo 协议。当 TCP 连接建立时，客户端向服务器发送一些数据，服务器会 echo 回这些数据，然后客户端再 echo 回服务器。这些数据就会像乒乓球一样在客户端和服务器之间来回传送，直到有一方断开连接为止。这是用来测试吞吐量的常用办法。
 
@@ -79,7 +81,7 @@
 
 #### 多线程场景
 
-1. 在并发数为1000时，[evpp]和[asio]分阶段领衔，各擅胜场
+1. 在并发数为1000时，[evpp]和[asio]分阶段领先，各擅胜场
 2. 在并发数100时，[asio]比[evpp]整体更占优势，吞吐量高出 **10%** 左右
 
 
@@ -92,7 +94,7 @@
 
 在陈硕的测试中，[asio]的那个程序没有发挥出应有的性能，绝对与测试程序本身有关，而不是说[asio]性能差，这从第二次测试结果可以看出来。
 
-在第二次测试中的多线程并发数为100的场景下，[asio]性能比[evpp]高出 **10%** 左右，一开始以为是[evpp]本身的性能在该场景下差一点，但后来仔细分析了胡大师写的这个测试代码 [https://github.com/huyuguang/asio_benchmark](https://github.com/huyuguang/asio_benchmark) 发现，这种ping pong测试中，正好能利用[asio]的`Proactor`的优势，他几乎没有内存分配，没次只读固定大小的数据然后发送出去，然后用通用的BUFFER来进行下一次读取操作。而[evpp]是`Reactor`模式的网络库，其读取数据很可能不是固定的大小，这就涉及到了一些`evpp::Buffer`内部的内存重分配问题，导致过多的内存分配、释放、拷贝等动作。
+在第二次测试中的多线程并发数为100的场景下，[asio]性能比[evpp]高出 **10%** 左右，一开始以为是[evpp]本身的性能在该场景下差一点，但后来仔细分析了胡大师写的这个测试代码 [https://github.com/huyuguang/asio_benchmark](https://github.com/huyuguang/asio_benchmark) 发现，这种ping pong测试中，正好能利用[asio]的`Proactor`的优势，他几乎没有内存分配，每次只读固定大小的数据然后发送出去，然后用通用的BUFFER来进行下一次读取操作。而[evpp]是`Reactor`模式的网络库，其读取数据很可能不是固定的大小，这就涉及到了一些`evpp::Buffer`内部的内存重分配问题，导致过多的内存分配、释放、拷贝等动作。
 
 因此，我们准备再做一轮测试，具体方法是模拟现实应用场景下消息长度不可能固定不变的，每个消息包括两部分，前面是HEADER，后面是BODY，HEADER中有BODY的长度，然后让BODY长度从1增长到100k大小，最后看看两者之间的性能对比数据。
 
