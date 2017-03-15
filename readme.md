@@ -52,7 +52,7 @@ Please see [Quick Start](docs/quick_start.md)
 
 ### Throughput
 
-The throughput benchmark of [evpp] is similar with [boost.asio] and *17%* higher than [libevent].
+The throughput benchmark of [evpp] is *17%* higher than [libevent2] and similar with [boost.asio] and [muduo].
 The reason of [evpp] has a better throughput benchmark than [libevent] is that [evpp] implements its own IO buffer instead of [libevent]'s evbuffer. 
 
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-libevent2-1-column.png)
@@ -184,6 +184,7 @@ Thanks for [libevent], [glog], [gtest], [Golang], [LevelDB], [rapidjson] project
 [Golang]:https://golang.org
 [muduo]:https://github.com/chenshuo/muduo
 [libevent]:https://github.com/libevent/libevent
+[libevent2]:https://github.com/libevent/libevent
 [LevelDB]:https://github.com/google/leveldb
 [rapidjson]:https://github.com/miloyip/
 [Boost.Asio]:http://www.boost.org/
