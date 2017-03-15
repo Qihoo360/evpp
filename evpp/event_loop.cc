@@ -7,7 +7,7 @@
 
 namespace evpp {
 EventLoop::EventLoop()
-    : create_evbase_myself_(true), pending_functor_count_(0) {
+    : create_evbase_myself_(true), notified_(false), pending_functor_count_(0) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct event_config* cfg = event_config_new();
     if (cfg) {
@@ -23,7 +23,7 @@ EventLoop::EventLoop()
 }
 
 EventLoop::EventLoop(struct event_base* base)
-    : evbase_(base), create_evbase_myself_(false) {
+    : evbase_(base), create_evbase_myself_(false), notified_(false), pending_functor_count_(0) {
 
     Init();
 
@@ -70,7 +70,6 @@ void EventLoop::Init() {
 
     running_ = false;
     tid_ = std::this_thread::get_id(); // The default thread id
-    calling_pending_functors_ = false;
 }
 
 void EventLoop::Run() {
@@ -174,13 +173,12 @@ void EventLoop::QueueInLoop(const Functor& cb) {
     }
     ++pending_functor_count_;
 
-    if (calling_pending_functors_ || !IsInLoopThread()) {
+    if (!notified_.load()) {
         watcher_->Notify();
     }
 }
 
 void EventLoop::DoPendingFunctors() {
-    calling_pending_functors_ = true;
 
 #ifdef H_HAVE_BOOST
     Functor* f = nullptr;
@@ -189,10 +187,12 @@ void EventLoop::DoPendingFunctors() {
         delete f;
         --pending_functor_count_;
     }
+    notified_.store(false);
 #else
     std::vector<Functor> functors;
     {
         std::lock_guard<std::mutex> lock(mutex_);
+        notified_.store(false);
         pending_functors_->swap(functors);
     }
 
@@ -201,8 +201,6 @@ void EventLoop::DoPendingFunctors() {
         --pending_functor_count_;
     }
 #endif
-
-    calling_pending_functors_ = false;
 }
 
 void EventLoop::AssertInLoopThread() const {
