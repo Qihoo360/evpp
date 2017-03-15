@@ -78,6 +78,7 @@ The benchmark code is here [https://github.com/Qihoo360/evpp/tree/master/benchma
 ### More Benchmarks
 
 [The throughput benchmark of evpp VS muduo](docs/benchmark_throughput_vs_muduo_cn.md)
+[The throughput benchmark of evpp VS boost asio](docs/benchmark_throughput_vs_asio_cn.md)
 
 # Examples
 
