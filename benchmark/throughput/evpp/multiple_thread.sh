@@ -5,7 +5,7 @@ timeout=${timeout:-100}
 bufsize=${bufsize:-16384}
 
 for nosessions in 100 1000; do
-  for nothreads in 1 2 3 4; do
+  for nothreads in 2 3 4 6 8; do
     sleep 5
     echo "Bufsize: $bufsize Threads: $nothreads Sessions: $nosessions"
     ./benchmark_pingpong_server 33333 $nothreads & srvpid=$!
