@@ -1,0 +1,24 @@
+# The chart type , option : spline/line/bar/column/area
+ChartType = spline
+Title = Throughput 
+SubTitle = 1 thread, 100 seconds, X Axis is the connection count
+ValueSuffix = MB/s
+
+# The x Axis numbers. The count this numbers MUST be the same with the data series
+XAxisNumbers = 1, 10, 100, 1000, 10000
+
+# The y Axis text
+YAxisText = Throughput (MB/s)
+
+# The data and the name of the lines
+Data|evpp-4096      = 176.687, 511.97 , 527.447, 382.304, 293.661
+Data|asio-4096      = 149.091, 374.831, 371.053, 324.166, 270.279 
+Data|evpp-2048      = 91.2897, 272.091, 286.151, 202.784, 157.1   
+Data|asio-2048      = 80.9793, 206.252, 210.062, 182.487, 150.382
+Data|evpp-1024      = 49.0243, 148.691, 154.736, 113.056, 87.2173
+Data|asio-1024      = 42.4815, 114.369, 116.932, 98.9972, 80.4348
+Data|evpp-8192      = 318.147, 880.07 , 902.783, 612.031, 505.419
+Data|asio-8192      = 253.269, 607.09 , 599.779, 502.172, 443.609
+
+# evpp : v0.2.1 base on libevent 2.0.21
+# asio : from boost-1.53 , code is at here : https://github.com/chenshuo/recipes/tree/master/pingpong/asio
