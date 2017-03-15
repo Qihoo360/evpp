@@ -52,3 +52,31 @@ TEST_UNIT(testEventLoop) {
 }
 
 
+namespace {
+    void OnTimer(evpp::EventLoop* loop) {
+
+    }
+}
+
+
+TEST_UNIT(testEventLoop2) {
+    evpp::EventLoop loop;
+    auto timer = [&loop]() {
+        auto close = [&loop]() {
+            loop.Stop();
+        };
+        loop.QueueInLoop(close);
+    };
+    loop.RunAfter(evpp::Duration(0.5), timer);
+    loop.Run();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+}
+
+
+
+
+
+
+
+
+ 
