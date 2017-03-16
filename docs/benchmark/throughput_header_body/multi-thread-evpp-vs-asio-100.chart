@@ -1,0 +1,24 @@
+# The chart type , option : spline/line/bar/column/area
+ChartType = column
+Title = The time spent to do the ping-pong benchmark test
+SubTitle = X Axis is thread number, total back and forth count is 8192, connection count is 100
+ValueSuffix = s
+
+# The x Axis numbers. The count this numbers MUST be the same with the data series
+XAxisNumbers = 1,2,3,4,6,8
+
+# The y Axis text
+YAxisText = The time spent (lower is better) (s)
+
+Height = 500
+
+# The data and the name of the lines
+Data|asio-100 = 4.21429,1.90817,1.23637,0.918871,0.874255,0.683286
+Data|evpp-100 = 3.20859,1.61021,1.1048,0.852965,0.630243,0.574
+
+# evpp  : v0.2.4
+# asio : v1.10.8 code is here https://github.com/huyuguang/asio_benchmark/{server3.cpp,client3.cpp}
+
+
+
+
