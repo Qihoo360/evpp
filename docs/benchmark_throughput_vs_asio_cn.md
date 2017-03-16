@@ -60,7 +60,8 @@
 
 ### 分析
 
-我们有些怀疑上述的测试数据中[asio]的性能太过差，这当不起[boost]的大名。另外陈硕的博客[muduo 与 boost asio 吞吐量对比](http://blog.csdn.net/Solstice/article/details/5863411)中也提到一些想法：`猜测其主要原因是测试代码只使用了一个 io_service，如果改用“io_service per CPU”的话，性能应该有所提高`。于是我们找到公司内对[asio]非常熟悉的大牛胡大师操刀写了一个全新的测试程序，具体代码请见 [https://github.com/huyuguang/asio_benchmark](https://github.com/huyuguang/asio_benchmark)。
+我们有些怀疑上述的测试数据中[asio]的性能太过差，这当不起[boost]的大名。另外陈硕的博客[muduo 与 boost asio 吞吐量对比](http://blog.csdn.net/Solstice/article/details/5863411)中也提到一些想法：`猜测其主要原因是测试代码只使用了一个 io_service，如果改用“io_service per CPU”的话，性能应该有所提高`。于是我们找到公司内对[asio]非常熟悉的大牛胡大师操刀写了一个全新的测试程序，具体代码请见 [https://github.com/huyuguang/asio_benchmark](https://github.com/huyuguang/asio_benchmark)。 版本号：commits `21fc1357d59644400e72a164627c1be5327fbe3d`，并用`client2/server2`测试用例。 测试的脚本用 [single_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/single_thread.sh) 和 [multiple_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/multiple_thread.sh)。
+
 
 新的一轮测试下来，我们发现[asio]的性能上来的。
 
@@ -73,11 +74,12 @@
 
 详情请见下面图表,横轴是并发数。纵轴是吞吐量，越大越好。
 
-![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-1.png)
-![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-2.png)
-
-![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-1-column.png)
-![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-2-column.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-1024.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-16384.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-2048.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-4096.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-8192.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-81920.png)
 
 #### 多线程场景
 
@@ -88,7 +90,9 @@
 详情请见下面图表,横轴是线程个数。纵轴是吞吐量，越大越好。
 
 
-![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-asio-from-huyuguang.png)
+
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-multi-thread-100connection-16384.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-multi-thread-1000connection-16384.png)
 
 ### 进一步分析
 
