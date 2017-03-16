@@ -24,9 +24,9 @@ We use the test method described at [http://think-async.com/Asio/LinuxPerformanc
 
 Simply to explains that the ping pong protocol is the client and the server both implements the echo protocol. When the TCP connection is established, the client sends some data to the server, the server echoes the data, and then the client echoes to the server again and again. The data will be the same as the table tennis in the client and the server back and forth between the transfer until one side disconnects. This is a common way to test throughput.
  
-The test code of [evpp] is at the source code `benchmark/throughput/evpp`, and at here [https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp](https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp). We use `tools/benchmark-build.sh` to compile it.
+The test code of [evpp] is at the source code `benchmark/throughput/evpp`, and at here [https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp](https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp). We use `tools/benchmark-build.sh` to compile it. The test script is [single_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/evpp/single_thread.sh) and [multiple_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/evpp/multiple_thread.sh). 
 
-The test code of [asio] is at [https://github.com/huyuguang/asio_benchmark](https://github.com/huyuguang/asio_benchmark) using commits `21fc1357d59644400e72a164627c1be5327fbe3d` and the `client2/server2` test code.
+The test code of [asio] is at [https://github.com/huyuguang/asio_benchmark](https://github.com/huyuguang/asio_benchmark) using commits `21fc1357d59644400e72a164627c1be5327fbe3d` and the `client2/server2` test code. The test script is [single_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/single_thread.sh) and [multiple_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/multiple_thread.sh). 
 
 We have done two benchmarks:
 
@@ -39,7 +39,7 @@ We have done two benchmarks:
 #### Single Thread
 
 1. When concurrency is less than 10,000 in the test, [asio] is better, the average is higher than [evpp] **5% to 10%**
-2. When concurrency is 1,10,100,1000 in the test, [evpp] performance is better, the average is higher than [asio] **10% ~ 20%**
+2. When concurrency is 1,10,100,1000 in the test, [evpp]'s performance is better, the average is higher than [asio] **10% ~ 20%**
 
 For details, see the chart below, the horizontal axis is the number of concurrent. The vertical axis is the throughput, the bigger the better.
 
@@ -52,7 +52,7 @@ For details, see the chart below, the horizontal axis is the number of concurren
 #### Multi thread
 
 1. When the number of concurrency is 1000, [evpp] and [asio] have a similar performance and have their own advantages.
-2. When the number of concurrency is 100, [asio] than the [evpp] overall more dominant, throughput higher than **10%**
+2. When the number of concurrency is 100, [asio] is better performing to 10% in this case.
 
 For details, see the chart below. The horizontal axis is the number of threads. The vertical axis is the throughput, the bigger the better.
 
