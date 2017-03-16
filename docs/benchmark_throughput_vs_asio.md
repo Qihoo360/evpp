@@ -9,7 +9,7 @@ The throughput benchmark test : [evpp] VS [Boost.Asio]
 ### The testing object
 
 1. [evpp-v0.2.4](https://github.com/Qihoo360/evpp/archive/v0.2.4.zip) based on libevent-2.0.21
-2. [asio-1.10.8](https://github.com/chenshuo/muduo/archive/v1.0.9.zip)
+2. [asio-1.10.8](http://www.boost.org/)
 
 ### Environment
 
@@ -26,7 +26,7 @@ Simply to explains that the ping pong protocol is the client and the server both
  
 The test code of [evpp] is at the source code `benchmark/throughput/evpp`, and at here [https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp](https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp). We use `tools/benchmark-build.sh` to compile it. The test script is [single_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/evpp/single_thread.sh) and [multiple_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/evpp/multiple_thread.sh). 
 
-The test code of [asio] is at [https://github.com/huyuguang/asio_benchmark](https://github.com/huyuguang/asio_benchmark) using commits `21fc1357d59644400e72a164627c1be5327fbe3d` and the `client2/server2` test code. The test script is [single_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/single_thread.sh) and [multiple_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/multiple_thread.sh). 
+The test code of [asio] is at [https://github.com/huyuguang/asio_benchmark](https://github.com/huyuguang/asio_benchmark) using commits `21fc1357d59644400e72a164627c1be5327fbe3d` and the `client2.cpp/server2.cpp` test code. The test script is [single_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/single_thread.sh) and [multiple_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/multiple_thread.sh). 
 
 We have done two benchmarks:
 
@@ -72,7 +72,8 @@ We will do another benchmark test to verify the analysis. Please look forward to
 
 ### Last
 
-The beautiful chart is rendered by [gochart](https://github.com/zieckey/gochart/) 
+
+The beautiful chart is rendered by [gochart]. Thanks for your reading this report. Please feel free to discuss with us for the benchmark test.
 
 [Boost.Asio]:http://www.boost.org/
 [boost.asio]:http://www.boost.org/
@@ -85,3 +86,4 @@ The beautiful chart is rendered by [gochart](https://github.com/zieckey/gochart/
 [Golang]:https://golang.org
 [Buffer]:https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h
 [recipes]:https://github.com/chenshuo/recipes
+[gochart]:https://github.com/zieckey/gochart/
