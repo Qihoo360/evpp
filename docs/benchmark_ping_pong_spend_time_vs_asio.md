@@ -1,4 +1,4 @@
-The ping-pong benchmark test : [evpp] VS [Boost.Asio]
+The ping-pong benchmark test of [evpp] against [Boost.Asio]
 
 ### Brief
 
@@ -20,7 +20,7 @@ The ping-pong benchmark test : [evpp] VS [Boost.Asio]
 
 The benchmark test in [benchmark_throughput_vs_asio.md](benchmark_throughput_vs_asio.md) used the fixed size message to do the ping-pong protocol benchmark.
 
-This test we use the message whose lenght is increase by 1 every time to test the ping pong protocol. Every message            consists of header and body. The header is defined as bellow:
+This test we use the message whose length is increasing by 1 every time to test the ping pong protocol. Every message consists of a header and a body. The header is defined as bellow:
 
 ```C++
 #pragma pack(push,1)
@@ -31,7 +31,7 @@ struct Header {
 #pragma pack(pop)
 ```
 
-At the very begining we set `Header.packet_count=1` and `Header.body_size=100`. When the client establishes a connection with the server, the client send to server the first message #1 which is a 108 bytes length. After the server receives the message, the server increases the packet count, which sets `Header.packet_count=2` and `Header.body_size=100`, and send to client a new message #2 which is a 108 bytes length. And then the client receives the message #2, and increases the packet count and body size, which sets `Header.packet_count=3` and `Header.body_size=101`, and send to server a new message #3 which is a 109 bytes length. And so on ... . Until we the `packet_count` grows up to a `total_count` which is the argument parameter passed by command line.
+At the very begining we set `Header.packet_count=1` and `Header.body_size=100`. When the client establishes a connection with the server, the client send to server the first message #1 which is a 108 bytes length. After the server receives the message, the server increases the packet count, which sets `Header.packet_count=2` and `Header.body_size=100`, and send to client a new message #2 which is a 108 bytes length. And then the client receives the message #2, and increases the packet count and body size, which sets `Header.packet_count=3` and `Header.body_size=101`, and send to server a new message #3 which is a 109 bytes length. And so on ... . Until we the `packet_count` grows up to a `total_count` which is passed by the command line argument parameter.
 
 The test code of [evpp] is at the source code `benchmark/throughput_header_body/evpp`, and at here [https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput_header_body/evpp](https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput_header_body/evpp). We use `tools/benchmark-build.sh` to compile it. The test script is [m3.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput_header_body/evpp/m3.sh). 
 
