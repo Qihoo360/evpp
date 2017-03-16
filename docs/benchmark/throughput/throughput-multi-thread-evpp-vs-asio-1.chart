@@ -11,8 +11,8 @@ XAxisNumbers = 2,3,4,6,8
 YAxisText = Throughput (MB/s)
 
 # The data and the name of the lines
-Data|evpp-100   = 2285.48,2818.18,3826.82,4893.94,5648.08
 Data|asio-100  = 2495.75,2972.09,4054.8,5594.72,6608.77
+Data|evpp-100   = 2285.48,2818.18,3826.82,4893.94,5648.08
 
 
 # evpp  : v0.2.4
