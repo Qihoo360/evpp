@@ -13,7 +13,7 @@
 ### 测试对象
 
 1. [evpp-v0.2.4](https://github.com/Qihoo360/evpp/archive/v0.2.4.zip) based on libevent-2.0.21
-2. [asio-1.10.8](https://github.com/chenshuo/muduo/archive/v1.0.9.zip)
+2. [asio-1.10.8](http://www.boost.org/)
 
 ### 测试环境
 
@@ -102,6 +102,11 @@
 
 因此，我们准备再做一轮测试，具体方法是模拟现实应用场景下消息长度不可能固定不变的，每个消息包括两部分，前面是HEADER，后面是BODY，HEADER中有BODY的长度，然后让BODY长度从1增长到100k大小，最后看看两者之间的性能对比数据。
 
+### 最后 
+
+报告中的图表是使用[gochart]绘制的。
+
+非常感谢您的阅读。如果您有任何以为，请随时在[issue](https://github.com/Qihoo360/evpp/issues)跟我们讨论。谢谢。
 
 [Boost.Asio]:http://www.boost.org/
 [boost.asio]:http://www.boost.org/
@@ -114,3 +119,4 @@
 [Golang]:https://golang.org
 [Buffer]:https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h
 [recipes]:https://github.com/chenshuo/recipes
+[gochart]:https://github.com/zieckey/gochart/
