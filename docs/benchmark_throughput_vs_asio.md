@@ -1,4 +1,4 @@
-The throughput benchmark test : [evpp] VS [Boost.Asio]
+The throughput benchmark test of [evpp] against [Boost.Asio]
 
 [中文版：evpp与Boost.Asio吞吐量对比](benchmark_throughput_vs_asio_cn.md)
 
