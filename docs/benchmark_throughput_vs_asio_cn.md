@@ -63,13 +63,13 @@
 我们有些怀疑上述的测试数据中[asio]的性能太过差，这当不起[boost]的大名。另外陈硕的博客[muduo 与 boost asio 吞吐量对比](http://blog.csdn.net/Solstice/article/details/5863411)中也提到一些想法：`猜测其主要原因是测试代码只使用了一个 io_service，如果改用“io_service per CPU”的话，性能应该有所提高`。于是我们找到公司内对[asio]非常熟悉的大牛胡大师操刀写了一个全新的测试程序，具体代码请见 [https://github.com/huyuguang/asio_benchmark](https://github.com/huyuguang/asio_benchmark)。 版本号：commits `21fc1357d59644400e72a164627c1be5327fbe3d`，并用`client2/server2`测试用例。 测试的脚本用 [single_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/single_thread.sh) 和 [multiple_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/multiple_thread.sh)。
 
 
-新的一轮测试下来，我们发现[asio]的性能上来的。
+新的一轮测试下来，我们发现[asio]的性能上来的，与[evpp] [moduo]等库相当。
 
 测试结论
 
 #### 单线程场景
 
-1. 并发数为10000的测试中低于，[asio]占优，平均比[evpp]高出 **5%~10%** 左右
+1. 并发数为10000的测试中，[asio]占优，平均比[evpp]高出 **5%~10%** 左右
 2. 在并发数为1，10，100，1000这四种场景下的测试中，[evpp]性能更好，平均比[asio]高出 **10%~20%** 左右
 
 详情请见下面图表,横轴是并发数。纵轴是吞吐量，越大越好。
