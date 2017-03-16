@@ -1,7 +1,7 @@
 # The chart type , option : spline/line/bar/column/area
 ChartType = column
 Title = Throughput 
-SubTitle = 1 thread, 100 seconds, message size is 1024, X Axis is the connection count
+SubTitle = 1 thread, 100 seconds, message size is 4096, X Axis is the connection count
 ValueSuffix = MB/s
 
 # The x Axis numbers. The count this numbers MUST be the same with the data series
@@ -12,8 +12,8 @@ YAxisText = Throughput (MB/s)
 
 # The data and the name of the lines
 
-Data|asio-1024   = 60.1116,168.622,172.527,154.808,107.583
-Data|evpp-1024   = 64.2529,188.201,198.164,167.661,105.592
+Data|asio-4096   = 213.333,578.202,594.896,479.957,413.962
+Data|evpp-4096   = 229.274,631.611,671.219,495.566,366.071
 
 # evpp : v0.2.4
 # asio : v1.10.8 code is here https://github.com/huyuguang/asio_benchmark
