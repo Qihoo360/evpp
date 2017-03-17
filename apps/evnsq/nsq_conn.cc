@@ -168,6 +168,15 @@ void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
                 if (doc.HasParseError()) {
                     LOG_ERROR << "Identify Response JSON parsed ERROR. rapidjson ERROR code=" << doc.GetParseError();
                     OnConnectedFailed();
+                } else {
+                    /*
+                        {
+                            "identity": "9a45d3df376d999c7c37b2766ae4113bb4463a09",
+                            "identity_url": "",
+                            "permission_count": 1
+                        }
+                    */
+                    OnConnectedOK();
                 }
             }
 
