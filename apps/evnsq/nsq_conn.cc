@@ -103,6 +103,8 @@ void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
         //LOG_INFO << "Recv a data from NSQD msg body len=" << size - 4 << " body=[" << std::string(buf->data(), size - 4) << "]";
         int32_t frame_type = buf->ReadInt32();
 
+        size_t body_len = size - sizeof(frame_type); // The message body length
+
         switch (status_) {
         case evnsq::NSQConn::kDisconnected:
             break;
@@ -111,24 +113,73 @@ void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
             break;
 
         case evnsq::NSQConn::kIdentifying:
-            if (buf->NextString(size - sizeof(frame_type)) == kOK) {
-                status_ = kConnected;
-                if (conn_fn_) {
-                    auto self = shared_from_this();
-                    conn_fn_(self);
+            if (option_.feature_negotiation) {
+                /*
+                    {
+                        "max_rdy_count": 2500,
+                        "version": "0.3.8",
+                        "max_msg_timeout": 900000,
+                        "msg_timeout": 60000,
+                        "tls_v1": false,
+                        "deflate": false,
+                        "deflate_level": 0,
+                        "max_deflate_level": 6,
+                        "snappy": false,
+                        "sample_rate": 0,
+                        "auth_required": true,
+                        "output_buffer_size": 16384,
+                        "output_buffer_timeout": 250
+                    }
+                */
+                std::string msg = buf->NextString(body_len);
+                rapidjson::Document doc;
+                doc.Parse(msg.data());
+                if (doc.HasParseError()) {
+                    LOG_ERROR << "Identify Response JSON parsed ERROR. rapidjson ERROR code=" << doc.GetParseError();
+                    OnConnectedFailed();
+                }
+                bool auth_required = doc["auth_required"].GetBool();
+                if (auth_required) {
+                    Authenticate();
+                    // TODO store the options responded of the Identify
+                } else {
+                    OnConnectedOK();
                 }
             } else {
-                LOG_ERROR << "Identify ERROR";
-                Reconnect();
+                if (buf->NextString(body_len) == kOK) {
+                    OnConnectedOK();
+                } else {
+                    LOG_ERROR << "Identify ERROR";
+                    OnConnectedFailed();
+                }
             }
+
             break;
+
+        case evnsq::NSQConn::kAuthenticating:
+        {
+            std::string msg = buf->NextString(body_len);
+            if (msg.substr(0, 2) == "E_") {
+                LOG_ERROR << "Authenticate Failed. [" << msg << "]";
+                OnConnectedFailed();
+            } else {
+                rapidjson::Document doc;
+                doc.Parse(msg.data());
+                if (doc.HasParseError()) {
+                    LOG_ERROR << "Identify Response JSON parsed ERROR. rapidjson ERROR code=" << doc.GetParseError();
+                    OnConnectedFailed();
+                }
+            }
+
+            break;
+        }
 
         case evnsq::NSQConn::kConnected:
             assert(false && "It should never come here.");
             break;
 
         case evnsq::NSQConn::kSubscribing:
-            if (buf->NextString(size - sizeof(frame_type)) == kOK) {
+            if (buf->NextString(body_len) == kOK) {
                 status_ = kReady;
                 if (conn_fn_) {
                     auto self = shared_from_this();
@@ -142,7 +193,7 @@ void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
             break;
 
         case evnsq::NSQConn::kReady:
-            OnMessage(size - sizeof(frame_type), frame_type, buf);
+            OnMessage(body_len, frame_type, buf);
             break;
 
         default:
@@ -219,6 +270,25 @@ void NSQConn::Identify() {
     c.Identify(option_.ToJSON());
     WriteCommand(c);
     status_ = kIdentifying;
+}
+
+void NSQConn::OnConnectedOK() {
+    status_ = kConnected;
+    if (conn_fn_) {
+        auto self = shared_from_this();
+        conn_fn_(self);
+    }
+}
+
+void NSQConn::OnConnectedFailed() {
+    Close();
+}
+
+void NSQConn::Authenticate() {
+    Command c;
+    c.Auth(option_.auth_secret);
+    WriteCommand(c);
+    status_ = kAuthenticating;
 }
 
 void NSQConn::Finish(const std::string& id) {
