@@ -38,8 +38,8 @@ We have done two benchmarks:
 
 #### Single Thread
 
-1. When concurrency is less than 10,000 in the test, [asio] is better, the average is higher than [evpp] **5% to 10%**
-2. When concurrency is 1,10,100,1000 in the test, [evpp]'s performance is better, the average is higher than [asio] **10% ~ 20%**
+1. When the number of concurrent connections is 10,000 or more in the test, [asio] is better, the average is higher than [evpp] **5%~10%**
+2. When the number of concurrent connections is 1,10,100,1000 in the test, [evpp]'s performance is better, the average is higher than [asio] **10%~20%**
 
 For details, see the chart below, the horizontal axis is the number of concurrent. The vertical axis is the throughput, the bigger the better.
 
@@ -52,8 +52,8 @@ For details, see the chart below, the horizontal axis is the number of concurren
 
 #### Multi thread
 
-1. When the number of concurrency is 1000, [evpp] and [asio] have a similar performance and have their own advantages.
-2. When the number of concurrency is 100, [asio] is better performing to 10% in this case.
+1. When the number of concurrent connections is 1000, [evpp] and [asio] have a similar performance and have their own advantages.
+2. When the number of concurrent connections is 100, [asio] is better performing to **10%** in this case.
 
 For details, see the chart below. The horizontal axis is the number of threads. The vertical axis is the throughput, the bigger the better.
 
@@ -71,7 +71,6 @@ We will do another benchmark test to verify the analysis. Please look forward to
 
 
 ### Last
-
 
 The beautiful chart is rendered by [gochart]. Thanks for your reading this report. Please feel free to discuss with us for the benchmark test.
 
