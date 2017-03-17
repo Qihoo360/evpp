@@ -81,6 +81,7 @@ void EventWatcher::Cancel() {
 
     if (cancel_callback_) {
         cancel_callback_();
+        cancel_callback_ = Handler();
     }
 }
 
