@@ -28,6 +28,8 @@ vsprojects/.vs/
 vsprojects/libevpp.VC.db
 vsprojects/evnsq-test.vcxproj.filters
 vsprojects/enc_temp_folder/
+vsprojects/evnsq-test.vcxproj.user
+vsprojects/libevpp-test.vcxproj.user
 
 test/evpp-test
 examples/echo/*/simple_echo
@@ -47,6 +49,7 @@ build-release
 
 apps/evnsq/evnsqtail/evnsqtail
 apps/evnsq/test/evnsqtest
+apps/evnsq.bak/
 
 3rdparty/libevent-2.1.5-beta/.vs/
 3rdparty/libevent-2.1.5-beta/Win32/
@@ -93,3 +96,5 @@ benchmark/ioevent/libevent/dat.t0
 benchmark/ioevent/libevent/pingpong_bench
 benchmark/ioevent/libevent/runbench.tmp
 tools/a.sh
+
+
