@@ -60,7 +60,7 @@ private:
 
     std::unique_ptr<FdChannel> chan_;
     std::unique_ptr<TimerEventWatcher> timer_;
-    std::unique_ptr<DNSResolver> dns_resolver_;
+    std::shared_ptr<DNSResolver> dns_resolver_;
     NewConnectionCallback conn_fn_;
 };
 }
