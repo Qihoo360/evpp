@@ -52,7 +52,7 @@
 
 下面是具体的测试数据和图表。
 
-|Name|Message Size|1 connection| 10 connection|100 connection| 1000 connection|10000 connection|
+|Name|Message Size|1 connection| 10 connections|100 connections| 1000 connections|10000 connections|
 |-----|--------|-------------|-----|-----|-----|-----|
 |evpp  | 4096   |229.274 |  631.611| 671.219| 495.566| 366.071|
 |muduo |  4096  |222.117 |  609.152| 631.119| 514.235| 365.959|
@@ -75,9 +75,9 @@
 测试结论如下：
 
 1. 在多线程场景下，[evpp]和[muduo]两个库在吞吐量方面，的性能整体上来看没有明显区别，分阶段分别领先
-2. 100并发测试，比1000并发测试，两个库的吞吐量都明显的高得多
-3. 在100并发测试下，随着线程数的增长，吞吐量基本上是线性增长。[muduo]库在中段领先于[evpp]，但在前期和后期又弱于[evpp]
-4. 在1000并发测试下，随着线程数的增长，前期基本上是线性增长，后期增长就不是太明显。[muduo]库这方面表现尤其明显
+2. 100并发连接比1000并发连接测试，两个库的吞吐量都明显的高得多
+3. 在100并发连接测试下，随着线程数的增长，吞吐量基本上是线性增长。[muduo]库在中段领先于[evpp]，但在前期和后期又弱于[evpp]
+4. 在1000并发连接测试下，随着线程数的增长，前期基本上是线性增长，后期增长乏力。[muduo]库这方面表现尤其明显
 
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/multi-thread-evpp-vs-muduo.png)
 
