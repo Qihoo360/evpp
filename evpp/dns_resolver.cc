@@ -15,14 +15,17 @@ DNSResolver::~DNSResolver() {
 }
 
 void DNSResolver::Start() {
-    LOG_INFO << "DNSResolver::Start tid=" << std::this_thread::get_id() << " this=" << this;
-    assert(loop_->IsInLoopThread());
+    auto f = [this]() {
+        LOG_INFO << "DNSResolver::Start tid=" << std::this_thread::get_id() << " this=" << this;
+        assert(loop_->IsInLoopThread());
 
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
-    AsyncDNSResolve();
+        AsyncDNSResolve();
 #else
-    SyncDNSResolve();
+        SyncDNSResolve();
 #endif
+    };
+    loop_->RunInLoop(f);
 }
 
 void DNSResolver::SyncDNSResolve() {
@@ -65,8 +68,8 @@ void DNSResolver::Cancel() {
 
 void DNSResolver::AsyncWait() {
     LOG_INFO << "DNSResolver::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this;
-    timer_.reset(new TimerEventWatcher(loop_, std::bind(&DNSResolver::OnTimeout, shared_from_this()), timeout_));
-    timer_->SetCancelCallback(std::bind(&DNSResolver::OnCanceled, shared_from_this()));
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&DNSResolver::OnTimeout, this), timeout_));
+    timer_->SetCancelCallback(std::bind(&DNSResolver::OnCanceled, this));
     timer_->Init();
     timer_->AsyncWait();
 }
