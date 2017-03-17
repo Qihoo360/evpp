@@ -1,4 +1,4 @@
-The IOEvent performance benchmark test of [evpp] against [Boost.Asio]
+The IO Event performance benchmark test of [evpp] against [Boost.Asio]
 
 
 
