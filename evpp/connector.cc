@@ -24,7 +24,11 @@ Connector::Connector(EventLoop* l, TCPClient* client)
 Connector::~Connector() {
     assert(loop_->IsInLoopThread());
 
-    if (!IsConnected()) {
+    if (status_ == kDNSResolving) {
+        assert(!chan_.get());
+        assert(!dns_resolver_.get());
+        assert(!timer_.get());
+    } else if (!IsConnected()) {
         // A connected tcp-connection's sockfd has been transfered to TCPConn.
         // But the sockfd of unconnected tcp-connections need to be closed by myself.
         LOG_TRACE << "Connector::~Connector close(" << chan_->fd() << ")";
@@ -46,19 +50,19 @@ void Connector::Start() {
     timer_->Init();
     timer_->AsyncWait();
 
-    if (raddr_.sin_addr.s_addr == 0) {
-        LOG_INFO << "The remote address " << remote_addr_ << " is a host, try to resolve its IP address.";
-        status_ = kDNSResolving;
-        auto index = remote_addr_.rfind(':');
-        assert(index != std::string::npos);
-        auto host = std::string(remote_addr_.data(), index);
-        auto f = std::bind(&Connector::OnDNSResolved, shared_from_this(), std::placeholders::_1);
-        dns_resolver_ = std::make_shared<DNSResolver>(loop_, host, timeout_, f);
-        dns_resolver_->Start();
+    if (raddr_.sin_addr.s_addr != 0) {
+        Connect();
         return;
     }
 
-    Connect();
+    LOG_INFO << "The remote address " << remote_addr_ << " is a host, try to resolve its IP address.";
+    status_ = kDNSResolving;
+    auto index = remote_addr_.rfind(':');
+    assert(index != std::string::npos);
+    auto host = std::string(remote_addr_.data(), index);
+    auto f = std::bind(&Connector::OnDNSResolved, this, std::placeholders::_1);
+    dns_resolver_ = std::make_shared<DNSResolver>(loop_, host, timeout_, f);
+    dns_resolver_->Start();
 }
 
 
@@ -67,10 +71,12 @@ void Connector::Cancel() {
     assert(loop_->IsInLoopThread());
     if (dns_resolver_) {
         dns_resolver_->Cancel();
+        dns_resolver_.reset();
     }
 
     assert(timer_);
     timer_->Cancel();
+    timer_.reset();
 
     if (status_ == kDNSResolving) {
         assert(chan_.get() == NULL);
