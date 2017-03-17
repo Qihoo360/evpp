@@ -35,10 +35,11 @@ public:
         kDisconnected = 0,
         kConnecting = 1,
         kIdentifying = 2,
-        kConnected = 3, // Successfully connected to NSQD
-        kSubscribing = 4,
-        kReady = 5, // Ready to produce messages to NSQD or consume messages from NSQD
-        kDisconnecting = 6,
+        kAuthenticating = 3,
+        kConnected = 4, // Successfully connected to NSQD
+        kSubscribing = 5,
+        kReady = 6, // Ready to produce messages to NSQD or consume messages from NSQD
+        kDisconnecting = 7,
     };
 
     typedef std::function<void(const std::shared_ptr<NSQConn>& conn)> ConnectionCallback;
@@ -80,6 +81,9 @@ public:
     bool IsDisconnected() const {
         return status_ == kDisconnected;
     }
+    bool IsAuthenticating() const {
+        return status_ == kAuthenticating;
+    }
     const std::string& remote_addr() const;
 private:
     void WriteCommand(const Command& cmd);
@@ -88,12 +92,16 @@ private:
     void OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf);
     void OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* buf);
     void Identify();
+    void OnConnectedOK(); // After we do Identify/Authenticate successfully, this function will be called
+    void OnConnectedFailed(); // After we do Identify/Authenticate failed, this function will be called
+    void Authenticate();
     void Finish(const std::string& id);
     void Requeue(const std::string& id);
     void UpdateReady(int count);
     void OnPublishResponse(const char* d, size_t len);
     void PushWaitACKCommand(const CommandPtr& cmd);
     CommandPtr PopWaitACKCommand();
+
 private:
     Client* nsq_client_;
     evpp::EventLoop* loop_;
