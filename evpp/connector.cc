@@ -52,7 +52,8 @@ void Connector::Start() {
         auto index = remote_addr_.rfind(':');
         assert(index != std::string::npos);
         auto host = std::string(remote_addr_.data(), index);
-        dns_resolver_.reset(new DNSResolver(loop_, host, timeout_, std::bind(&Connector::OnDNSResolved, shared_from_this(), std::placeholders::_1)));
+        auto f = std::bind(&Connector::OnDNSResolved, shared_from_this(), std::placeholders::_1);
+        dns_resolver_ = std::make_shared<DNSResolver>(loop_, host, timeout_, f);
         dns_resolver_->Start();
         return;
     }
@@ -70,8 +71,17 @@ void Connector::Cancel() {
 
     assert(timer_);
     timer_->Cancel();
-    chan_->DisableAllEvent();
-    chan_->Close();
+
+    if (status_ == kDNSResolving) {
+        assert(chan_.get() == NULL);
+        conn_fn_(-1, "");
+    }
+
+    if (chan_.get()) {
+        assert(status_ != kDNSResolving);
+        chan_->DisableAllEvent();
+        chan_->Close();
+    }
 }
 
 void Connector::Connect() {
@@ -97,7 +107,9 @@ void Connector::Connect() {
 
 void Connector::HandleWrite() {
     if (status_ == kDisconnected) {
-        // 这里有可能是超时了，但回调时间已经派发到队列中，后来才调用。
+        // The connecting may be timeout, but the write event handler has been
+        // dispatched in the EventLoop pending task queue, and next loop time the handle is invoked.
+        // So we need to check the status whether it is at a kDisconnected
         LOG_INFO << "fd=" << chan_->fd() << " remote_addr=" << remote_addr_ << " receive write event when socket is closed";
         return;
     }
@@ -123,7 +135,7 @@ void Connector::HandleWrite() {
     timer_->Cancel();
     chan_->DisableAllEvent();
     chan_->Close();
-    own_fd_ = false; // 将fd的所有权转移给TCPConn
+    own_fd_ = false; // Move the ownership of the fd to TCPConn
     fd_ = INVALID_SOCKET;
     status_ = kConnected;
 }
