@@ -136,10 +136,12 @@ struct Response {
             buffer = nullptr;
         }
 
-        LOG_TRACE << "free request " << req->uri;
+        // At this time, req is freed by evhttp framework probably.
+        // So don't use req any more.
+        // LOG_TRACE << "free request " << req->uri;
     }
 
-    struct evhttp_request*  req;
+    struct evhttp_request* req;
     struct evbuffer* buffer;
 };
 
