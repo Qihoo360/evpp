@@ -1,5 +1,9 @@
-evpp
+evpp 
 ---
+
+
+<a href="https://github.com/Qihoo360/evpp/releases"><img src="https://img.shields.io/github/release/Qihoo360/evpp.svg" alt="Github release"></a>
+<a href="https://travis-ci.org/Qihoo360/evpp"><img src="https://travis-ci.org/Qihoo360/evpp.svg?branch=master" alt="Build status"></a>
 
 # Introduction  [中文](readme_cn.md)
 
