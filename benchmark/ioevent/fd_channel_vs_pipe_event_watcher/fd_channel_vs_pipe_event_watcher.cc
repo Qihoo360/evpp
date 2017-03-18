@@ -105,9 +105,9 @@ std::pair<int, int> PipeEventWatcherRunOnce() {
 }
 
 int main(int argc, char* argv[]) {
-    numPipes = 1000;
-    numActive = 10;
-    numWrites = 1000;
+    numPipes = 5000;
+    numActive = 100;
+    numWrites = 5000;
 
     g_pipes.resize(2 * numPipes);
     for (int i = 0; i < numPipes; ++i) {
