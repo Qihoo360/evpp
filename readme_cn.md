@@ -50,6 +50,21 @@ evpp
 
 # Benchmark
 
+
+### Benchmark测试报告
+
+[The IO Event performance benchmark against Boost.Asio](docs/benchmark_ioevent_performance_vs_asio.md), 该测试表明[evpp]比[asio]高 **20%~50%** 上下
+
+[The ping-pong benchmark against Boost.Asio](docs/benchmark_ping_pong_spend_time_vs_asio.md), 该测试表明[evpp]比[asio]高 **5%~20%%** 上下
+
+[The throughput benchmark against libevent2](docs/benchmark_throughput_vs_libevent.md), 该测试表明[evpp]比[libevent]高 **17%~130%** 上下
+
+[The throughput benchmark against Boost.Asio](docs/benchmark_throughput_vs_asio.md), 该测试表明[evpp]与[asio]的性能基本相当，互相没有明显优势
+
+[The throughput benchmark against Boost.Asio(中文)](docs/benchmark_throughput_vs_asio_cn.md), 该测试表明[evpp]与[asio]的性能基本相当，互相没有明显优势
+
+[The throughput benchmark against muduo(中文)](docs/benchmark_throughput_vs_muduo_cn.md), 该测试表明[evpp]与[muduo]的性能基本相当，互相没有明显优势
+
 ### 吞吐量测试
 
 本文用 ping pong 测试来对比[evpp]与[libevent]、[boost.asio]、muduo] 等网络的吞吐量，测试结果表明[evpp]吞吐量与[boost.asio]、[muduo]等相当，比[libevent]高17%左右。
@@ -69,23 +84,11 @@ evpp
 - 操作系统：Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64
 - 硬件CPU：Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz
 
-![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-libevent2-1-column.png)
-![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-libevent2-2-column.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-libevent-1thread-all.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-all.png)
 
-![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-1-column.png)
-![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-2-column.png)
 
-### 更多测试
 
-[The IO Event performance benchmark against Boost.Asio](docs/benchmark_ioevent_performance_vs_asio.md), 该测试表明[evpp]比[asio]高 **20%~50%** 上下
-
-[The ping-pong benchmark against Boost.Asio](docs/benchmark_ping_pong_spend_time_vs_asio.md), 该测试表明[evpp]比[asio]高 **5%~20%%** 上下
-
-[The throughput benchmark against Boost.Asio](docs/benchmark_throughput_vs_asio.md), 该测试表明[evpp]与[asio]的性能基本相当，互相没有明显优势
-
-[The throughput benchmark against Boost.Asio(中文)](docs/benchmark_throughput_vs_asio_cn.md), 该测试表明[evpp]与[asio]的性能基本相当，互相没有明显优势
-
-[The throughput benchmark against muduo(中文)](docs/benchmark_throughput_vs_muduo_cn.md), 该测试表明[evpp]与[muduo]的性能基本相当，互相没有明显优势
 
 # Examples
 
