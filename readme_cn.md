@@ -52,7 +52,7 @@ evpp
 
 ### 吞吐量测试
 
-本文用 ping pong 测试来对比[evpp]与[libevent]、*`boost.asio`* 等网络的吞吐量，测试结果表明[evpp]吞吐量平均比 *`boost.asio`*  高 *40%* 左右，比[libevent]高17%左右。
+本文用 ping pong 测试来对比[evpp]与[libevent]、[boost.asio]、muduo] 等网络的吞吐量，测试结果表明[evpp]吞吐量与[boost.asio]、[muduo]等相当，比[libevent]高17%左右。
 
 [evpp]本身是基于[libevent]实现的，不过[evpp]只是用了[libevent]的事件循环，并没有用[libevent]的`evbuffer`，而是自己参考[muduo]和[Golang]实现了自己的网络IO读写类[Buffer](https://github.com/Qihoo360/evpp/blob/master/evpp/buffer.h)。
 
@@ -69,12 +69,23 @@ evpp
 - 操作系统：Linux CentOS 6.2, 2.6.32-220.7.1.el6.x86_64
 - 硬件CPU：Intel(R) Xeon(R) CPU E5-2630 v2 @ 2.60GHz
 
-![](docs/benchmark/throughput-1thread-1024bytes.png)
-![](docs/benchmark/throughput-1thread-2048bytes.png)
-![](docs/benchmark/throughput-1thread-4096bytes.png)
-![](docs/benchmark/throughput-1thread-8192bytes.png)
-![](docs/benchmark/throughput-multi-thread-4096bytes-evpp-vs-asio.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-libevent2-1-column.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-libevent2-2-column.png)
 
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-1-column.png)
+![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-2-column.png)
+
+### 更多测试
+
+[The IO Event performance benchmark against Boost.Asio](docs/benchmark_ioevent_performance_vs_asio.md), 该测试表明[evpp]比[asio]高 **20%~50%** 上下
+
+[The ping-pong benchmark against Boost.Asio](docs/benchmark_ping_pong_spend_time_vs_asio.md), 该测试表明[evpp]比[asio]高 **5%~20%%** 上下
+
+[The throughput benchmark against Boost.Asio](docs/benchmark_throughput_vs_asio.md), 该测试表明[evpp]与[asio]的性能基本相当，互相没有明显优势
+
+[The throughput benchmark against Boost.Asio(中文)](docs/benchmark_throughput_vs_asio_cn.md), 该测试表明[evpp]与[asio]的性能基本相当，互相没有明显优势
+
+[The throughput benchmark against muduo(中文)](docs/benchmark_throughput_vs_muduo_cn.md), 该测试表明[evpp]与[muduo]的性能基本相当，互相没有明显优势
 
 # Examples
 
@@ -172,7 +183,17 @@ int main(int argc, char* argv[]) {
 1. [evpp]深度参考了[muduo]项目的实现和设计，非常感谢[Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
 
 
+
+[gtest]:https://github.com/google/googletest
+[glog]:https://github.com/google/glog
 [evpp]:https://github.com/Qihoo360/evpp
 [Golang]:https://golang.org
 [muduo]:https://github.com/chenshuo/muduo
 [libevent]:https://github.com/libevent/libevent
+[libevent2]:https://github.com/libevent/libevent
+[LevelDB]:https://github.com/google/leveldb
+[rapidjson]:https://github.com/miloyip/
+[Boost.Asio]:http://www.boost.org/
+[boost.asio]:http://www.boost.org/
+[asio]:http://www.boost.org/
+[boost]:http://www.boost.org/
