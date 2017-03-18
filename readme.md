@@ -50,29 +50,28 @@ Please see [Quick Start](docs/quick_start.md)
 
 # Benchmark
 
+### Benchmark Reports
+
+[The IO Event performance benchmark against Boost.Asio](docs/benchmark_ioevent_performance_vs_asio.md) : [evpp] is higher than [asio] about **20%~50%** in this case
+
+[The ping-pong benchmark against Boost.Asio](docs/benchmark_ping_pong_spend_time_vs_asio.md) : [evpp] is higher than [asio] about **5%~20%** in this case
+
+[The throughput benchmark against Boost.Asio](docs/benchmark_throughput_vs_asio.md) : [evpp] and [asio] have the similar performance in this case
+
+[The throughput benchmark against Boost.Asio(中文)](docs/benchmark_throughput_vs_asio_cn.md) : [evpp] and [asio] have the similar performance in this case
+
+[The throughput benchmark against muduo(中文)](docs/benchmark_throughput_vs_muduo_cn.md) : [evpp] and [muduo] have the similar performance in this case
+
 ### Throughput
 
 The throughput benchmark of [evpp] is *17%* higher than [libevent2] and similar with [boost.asio] and [muduo].
-The reason of [evpp] has a better throughput benchmark than [libevent] is that [evpp] implements its own IO buffer instead of [libevent]'s evbuffer. 
+Although [evpp] is based on [libevent], [evpp] has a better throughput benchmark than [libevent]. That's because [evpp] implements its own IO buffer instead of [libevent]'s evbuffer. 
 
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-libevent2-1-column.png)
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-libevent2-2-column.png)
 
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-1-column.png)
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/1thread-evpp-vs-asio-from-huyuguang-2-column.png)
-
-### More Benchmarks
-
-[The IO Event performance benchmark against Boost.Asio](docs/benchmark_ioevent_performance_vs_asio.md)
-
-[The ping-pong benchmark against Boost.Asio](docs/benchmark_ping_pong_spend_time_vs_asio.md)
-
-[The throughput benchmark against Boost.Asio](docs/benchmark_throughput_vs_asio.md)
-
-[The throughput benchmark against Boost.Asio(中文)](docs/benchmark_throughput_vs_asio_cn.md)
-
-[The throughput benchmark against muduo(中文)](docs/benchmark_throughput_vs_muduo_cn.md)
-
 
 # Examples
 
