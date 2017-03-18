@@ -26,6 +26,7 @@ private:
     void OnTimeout();
     void OnCanceled();
     void OnResolved(int errcode, struct addrinfo* addr);
+    void ClearTimer();
     static void OnResolved(int errcode, struct addrinfo* addr, void* arg);
 private:
     EventLoop* loop_;
