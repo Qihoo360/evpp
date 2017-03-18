@@ -160,8 +160,7 @@ static void TestAll() {
 
 
 TEST_UNIT(testHTTPServer1) {
-    for (int j = 0; j < 1000; j++)
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 5; ++i) {
         evpp::http::Server ph(i);
         ph.RegisterDefaultHandler(&DefaultRequestHandler);
         ph.RegisterHandler("/push/boot", &RequestHandler);
