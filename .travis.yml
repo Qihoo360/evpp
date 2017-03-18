@@ -35,9 +35,7 @@ script:
 after_success:
   - cd $CI_HOME
   - pwd
-  - cd build/bin
-  - ./evpp_unittest
-  - cd ../../build-release/bin
-  - ./evpp_unittest
+  - build/bin/evpp_unittest
+  - build-release/bin/evpp_unittest
 #  - coveralls --exclude dependencies --exclude test --exclude include/rpc/msgpack --exclude include/rcp/msgpack.hpp --gcov /usr/bin/gcov-5
 

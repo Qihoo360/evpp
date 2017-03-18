@@ -65,6 +65,7 @@ void DNSResolver::Cancel() {
     assert(loop_->IsInLoopThread());
     if (timer_) {
         timer_->Cancel();
+        timer_.reset();
     }
     functor_ = Functor(); // Release the callback
 }
@@ -95,7 +96,6 @@ void DNSResolver::OnCanceled() {
     evdns_getaddrinfo_cancel(dns_req_);
     dns_req_ = nullptr;
 #endif
-    timer_.reset();
 }
 
 
