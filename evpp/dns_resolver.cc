@@ -56,7 +56,9 @@ void DNSResolver::SyncDNSResolve() {
     }
     evutil_freeaddrinfo(answer);
 
-    functor_(this->addrs_);
+    if (functor_) {
+        functor_(this->addrs_);
+    }
 }
 
 void DNSResolver::Cancel() {
@@ -64,6 +66,7 @@ void DNSResolver::Cancel() {
     if (timer_) {
         timer_->Cancel();
     }
+    functor_ = Functor(); // Release the callback
 }
 
 void DNSResolver::AsyncWait() {
@@ -77,21 +80,23 @@ void DNSResolver::AsyncWait() {
 void DNSResolver::OnTimeout() {
     LOG_INFO << "DNSResolver::OnTimeout tid=" << std::this_thread::get_id() << " this=" << this;
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
-    evdns_base_free(dnsbase_, 0);
     evdns_getaddrinfo_cancel(dns_req_);
-    dnsbase_ = nullptr;
     dns_req_ = nullptr;
+    //evdns_base_free(dnsbase_, 0);
+    //dnsbase_ = nullptr;
 #endif
-    functor_(this->addrs_);
+    if (functor_) {
+        functor_(this->addrs_);
+    }
 }
 
 void DNSResolver::OnCanceled() {
     LOG_INFO << "DNSResolver::OnCanceled tid=" << std::this_thread::get_id() << " this=" << this;
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
-    evdns_base_free(dnsbase_, 0);
     evdns_getaddrinfo_cancel(dns_req_);
-    dnsbase_ = nullptr;
     dns_req_ = nullptr;
+    //evdns_base_free(dnsbase_, 0);
+    //dnsbase_ = nullptr;
 #endif
 }
 
@@ -106,13 +111,17 @@ void DNSResolver::AsyncDNSResolve() {
     hints.ai_protocol = IPPROTO_TCP; /* We want a TCP socket */
     hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
 
+
+    LOG_TRACE << "call shared_from_this";
+    std::shared_ptr<DNSResolver> p = shared_from_this();
+    std::shared_ptr<DNSResolver> *pp = new std::shared_ptr<DNSResolver>(p);
     dnsbase_ = evdns_base_new(loop_->event_base(), 1);
     dns_req_ = evdns_getaddrinfo(dnsbase_
                                     , host_.c_str()
                                     , nullptr /* no service name given */
                                     , &hints
                                     , &DNSResolver::OnResolved
-                                    , this);
+                                    , pp);
     assert(dnsbase_);
     assert(dns_req_);
     AsyncWait();
@@ -133,7 +142,9 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         evdns_base_free(dnsbase_, 0);
         dnsbase_ = nullptr;
 
-        functor_(this->addrs_);
+        if (functor_) {
+            functor_(this->addrs_);
+        }
         return;
     }
 
@@ -145,7 +156,9 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         evdns_base_free(dnsbase_, 0);
         dnsbase_ = nullptr;
 
-        functor_(this->addrs_);
+        if (functor_) {
+            functor_(this->addrs_);
+        }
         return;
     }
 
@@ -171,12 +184,18 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
     LOG_INFO << "delete dns base";
     evdns_base_free(dnsbase_, 0); //TODO Do we need to free dns_req_
     dnsbase_ = nullptr;
-    functor_(this->addrs_);
+    if (functor_) {
+        functor_(this->addrs_);
+    }
 }
 
 void DNSResolver::OnResolved(int errcode, struct addrinfo* addr, void* arg) {
-    DNSResolver* dns = reinterpret_cast<DNSResolver*>(arg);
-    dns->OnResolved(errcode, addr);
+    std::shared_ptr<DNSResolver>* pp = reinterpret_cast<std::shared_ptr<DNSResolver>*>(arg);
+    LOG_TRACE << "this->use_count=" << pp->use_count();
+    (*pp)->OnResolved(errcode, addr);
+    delete pp;
+    //DNSResolver* dns = reinterpret_cast<DNSResolver*>(arg);
+    //dns->OnResolved(errcode, addr);
 }
 #endif
 

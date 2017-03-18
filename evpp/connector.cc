@@ -23,6 +23,7 @@ Connector::Connector(EventLoop* l, TCPClient* client)
 
 Connector::~Connector() {
     assert(loop_->IsInLoopThread());
+    LOG_TRACE << "Connector::~Connector";
 
     if (status_ == kDNSResolving) {
         assert(!chan_.get());
@@ -60,9 +61,15 @@ void Connector::Start() {
     auto index = remote_addr_.rfind(':');
     assert(index != std::string::npos);
     auto host = std::string(remote_addr_.data(), index);
-    auto f = std::bind(&Connector::OnDNSResolved, this, std::placeholders::_1);
+    auto f = std::bind(&Connector::OnDNSResolved, shared_from_this(), std::placeholders::_1);
     dns_resolver_ = std::make_shared<DNSResolver>(loop_, host, timeout_, f);
+    //LOG_INFO << "dns_resolver_.use_count()=" << dns_resolver_.use_count();
+    //std::weak_ptr<DNSResolver> w(dns_resolver_);
+    //auto p = w.lock();
+    //LOG_INFO << "dns_resolver.use_count=" << p.use_count();
     dns_resolver_->Start();
+    //LOG_INFO << "dns_resolver_.use_count()=" << dns_resolver_.use_count();
+
 }
 
 

@@ -43,6 +43,7 @@ void TCPClient::Disconnect() {
 }
 
 void TCPClient::DisconnectInLoop() {
+    LOG_TRACE << "TCPClient::DisconnectInLoop";
     assert(loop_->IsInLoopThread());
     auto_reconnect_.store(false);
 
