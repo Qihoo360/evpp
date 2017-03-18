@@ -10,8 +10,8 @@ DNSResolver::DNSResolver(EventLoop* evloop, const std::string& h, Duration timeo
 
 DNSResolver::~DNSResolver() {
     LOG_INFO << "DNSResolver::~DNSResolver tid=" << std::this_thread::get_id() << " this=" << this;
-
     assert(dnsbase_ == nullptr);
+    assert(!timer_);
 }
 
 void DNSResolver::Start() {
@@ -82,9 +82,8 @@ void DNSResolver::OnTimeout() {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     evdns_getaddrinfo_cancel(dns_req_);
     dns_req_ = nullptr;
-    //evdns_base_free(dnsbase_, 0);
-    //dnsbase_ = nullptr;
 #endif
+    ClearTimer();
     if (functor_) {
         functor_(this->addrs_);
     }
@@ -95,9 +94,8 @@ void DNSResolver::OnCanceled() {
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     evdns_getaddrinfo_cancel(dns_req_);
     dns_req_ = nullptr;
-    //evdns_base_free(dnsbase_, 0);
-    //dnsbase_ = nullptr;
 #endif
+    timer_.reset();
 }
 
 
@@ -130,7 +128,7 @@ void DNSResolver::AsyncDNSResolve() {
 void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
     if (errcode != 0) {
         if (errcode != EVUTIL_EAI_CANCEL) {
-            timer_->Cancel();
+            ClearTimer();
             LOG_ERROR << "dns resolve failed, "
                 << ", error code: " << errcode
                 << ", error msg: " << evutil_gai_strerror(errcode);
@@ -155,7 +153,7 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         LOG_INFO << "delete dns base";
         evdns_base_free(dnsbase_, 0);
         dnsbase_ = nullptr;
-
+        ClearTimer();
         if (functor_) {
             functor_(this->addrs_);
         }
@@ -178,8 +176,7 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         LOG_TRACE << host_ << " resolved a ip=" << inet_ntoa(a->sin_addr);
     }
     evutil_freeaddrinfo(addr);
-    timer_->SetCancelCallback(TimerEventWatcher::Handler());
-    timer_->Cancel();
+    ClearTimer();
 
     LOG_INFO << "delete dns base";
     evdns_base_free(dnsbase_, 0); //TODO Do we need to free dns_req_
@@ -197,6 +194,13 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr, void* arg) {
     //DNSResolver* dns = reinterpret_cast<DNSResolver*>(arg);
     //dns->OnResolved(errcode, addr);
 }
+
+void DNSResolver::ClearTimer() {
+    timer_->SetCancelCallback(TimerEventWatcher::Handler());
+    timer_->Cancel();
+    timer_.reset();
+}
+
 #endif
 
 }
