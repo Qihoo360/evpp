@@ -184,7 +184,7 @@ Thanks for the support of [Qihoo360](http://www.360.cn "http://www.360.cn").
 
 Thanks for [libevent], [glog], [gtest], [Golang], [LevelDB], [rapidjson] projects.
 
-[evpp] is highly inspired by [muduo]. Thanks for the great work of [Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
+[evpp] is highly inspired by [muduo]. Thanks [Chen Shuo](https://github.com/chenshuo "https://github.com/chenshuo")
 
 
 [gtest]:https://github.com/google/googletest
