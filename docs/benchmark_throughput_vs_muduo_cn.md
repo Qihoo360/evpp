@@ -100,7 +100,7 @@
 
 报告中的图表是使用[gochart]绘制的。
 
-非常感谢您的阅读。如果您有任何以为，请随时在[issue](https://github.com/Qihoo360/evpp/issues)跟我们讨论。谢谢。
+非常感谢您的阅读。如果您有任何疑问，请随时在[issue](https://github.com/Qihoo360/evpp/issues)跟我们讨论。谢谢。
 
 [evpp]:https://github.com/Qihoo360/evpp
 [muduo]:https://github.com/chenshuo/muduo
