@@ -11,41 +11,71 @@
 #include <evpp/event_loop.h>
 #include <evpp/event_loop_thread.h>
 
+// 
+// namespace evtimer {
+// static evpp::Duration g_timeout(1.0); // 1s
+// static bool g_event_handler_called = false;
+// static void Handle(struct event_base* base) {
+//     g_event_handler_called = true;
+//     event_base_loopexit(base, 0);
+// }
+// 
+// static void MyEventThread(struct event_base* base, evpp::TimerEventWatcher* ev) {
+//     ev->Init();
+//     ev->AsyncWait();
+//     event_base_loop(base, 0);
+//     delete ev; // make sure to initialize and delete in the same thread.
+// }
+// }
+// 
+// TEST_UNIT(testTimerEventWatcher) {
+//     using namespace evtimer;
+//     struct event_base* base = event_base_new();
+//     evpp::Timestamp start = evpp::Timestamp::Now();
+//     evpp::TimerEventWatcher* ev(new evpp::TimerEventWatcher(base, std::bind(&Handle, base), g_timeout));
+//     std::thread th(MyEventThread, base, ev);
+//     th.join();
+//     evpp::Duration cost = evpp::Timestamp::Now() - start;
+//     H_TEST_ASSERT(g_timeout <= cost);
+//     H_TEST_ASSERT(g_event_handler_called);
+//     event_base_free(base);
+//     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+// }
+
 
 namespace evtimer {
 static evpp::Duration g_timeout(1.0); // 1s
 static bool g_event_handler_called = false;
-static void Handle(struct event_base* base) {
+static void Handle(evpp::EventLoop* loop) {
     g_event_handler_called = true;
-    event_base_loopexit(base, 0);
+    loop->Stop();
 }
 
-static void MyEventThread(struct event_base* base, evpp::TimerEventWatcher* ev) {
+static void MyEventThread(evpp::EventLoop* loop, evpp::TimerEventWatcher* ev) {
     ev->Init();
     ev->AsyncWait();
-    event_base_loop(base, 0);
-    delete ev;// 确保初始化和析构过程在同一个线程中
+    loop->Run();
+    delete ev; // make sure to initialize and delete in the same thread.
 }
 }
 
 TEST_UNIT(testTimerEventWatcher) {
     using namespace evtimer;
-    struct event_base* base = event_base_new();
+    std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
     evpp::Timestamp start = evpp::Timestamp::Now();
-    evpp::TimerEventWatcher* ev(new evpp::TimerEventWatcher(base, std::bind(&Handle, base), g_timeout));
-    std::thread th(MyEventThread, base, ev);
+    evpp::TimerEventWatcher* ev(new evpp::TimerEventWatcher(loop.get(), std::bind(&Handle, loop.get()), g_timeout));
+    std::thread th(MyEventThread, loop.get(), ev);
     th.join();
     evpp::Duration cost = evpp::Timestamp::Now() - start;
     H_TEST_ASSERT(g_timeout <= cost);
     H_TEST_ASSERT(g_event_handler_called);
-    event_base_free(base);
+    loop.reset();
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
 TEST_UNIT(testsocketpair) {
     int sockpair[2];
     memset(sockpair, 0, sizeof(sockpair[0] * 2));
-
     int r = evutil_socketpair(AF_UNIX, SOCK_STREAM, 0, sockpair);
     H_TEST_ASSERT(r >= 0);
     H_TEST_ASSERT(sockpair[0] > 0);
@@ -61,7 +91,7 @@ static void Handle(evpp::EventLoopThread* thread) {
     LOG_INFO << "SIGINT caught.";
     g_event_handler_called = true;
     thread->Stop();
-    delete ev;// 确保初始化和析构过程在同一个线程中
+    delete ev; // make sure to initialize and delete in the same thread.
     ev = nullptr;
 }
 

@@ -14,6 +14,12 @@ EventWatcher::EventWatcher(struct event_base* evbase, const Handler& handler)
     memset(event_, 0, sizeof(struct event));
 }
 
+EventWatcher::EventWatcher(struct event_base* evbase, Handler&& handler)
+    : evbase_(evbase), attached_(false), handler_(std::move(handler)) {
+    event_ = new event;
+    memset(event_, 0, sizeof(struct event));
+}
+
 EventWatcher::~EventWatcher() {
     FreeEvent();
     Close();
@@ -95,15 +101,15 @@ void EventWatcher::SetCancelCallback(const Handler& cb) {
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-PipeEventWatcher::PipeEventWatcher(struct event_base* event_base,
+PipeEventWatcher::PipeEventWatcher(EventLoop* loop,
                                    const Handler& handler)
-    : EventWatcher(event_base, handler) {
+    : EventWatcher(loop->event_base(), handler) {
     memset(pipe_, 0, sizeof(pipe_[0] * 2));
 }
 
 PipeEventWatcher::PipeEventWatcher(EventLoop* loop,
-                                   const Handler& handler)
-    : EventWatcher(loop->event_base(), handler) {
+                                   Handler&& h)
+    : EventWatcher(loop->event_base(), std::move(h)) {
     memset(pipe_, 0, sizeof(pipe_[0] * 2));
 }
 
@@ -117,7 +123,7 @@ bool PipeEventWatcher::DoInit() {
     }
 
     if (evutil_make_socket_nonblocking(pipe_[0]) < 0 ||
-            evutil_make_socket_nonblocking(pipe_[1]) < 0) {
+        evutil_make_socket_nonblocking(pipe_[1]) < 0) {
         goto failed;
     }
 
@@ -172,17 +178,16 @@ void PipeEventWatcher::Notify() {
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-
-TimerEventWatcher::TimerEventWatcher(struct event_base* event_base,
-                                     const Handler& handler,
-                                     Duration timeout)
-    : EventWatcher(event_base, handler)
-    , timeout_(timeout) {}
-
 TimerEventWatcher::TimerEventWatcher(EventLoop* loop,
                                      const Handler& handler,
                                      Duration timeout)
     : EventWatcher(loop->event_base(), handler)
+    , timeout_(timeout) {}
+
+TimerEventWatcher::TimerEventWatcher(EventLoop* loop,
+                                     Handler&& h,
+                                     Duration timeout)
+    : EventWatcher(loop->event_base(), std::move(h))
     , timeout_(timeout) {}
 
 bool TimerEventWatcher::DoInit() {
@@ -203,17 +208,16 @@ bool TimerEventWatcher::AsyncWait() {
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-
-SignalEventWatcher::SignalEventWatcher(int signo, struct event_base* event_base,
+SignalEventWatcher::SignalEventWatcher(int signo, EventLoop* loop,
                                        const Handler& handler)
-    : EventWatcher(event_base, handler)
+    : EventWatcher(loop->event_base(), handler)
     , signo_(signo) {
     assert(signo_);
 }
 
 SignalEventWatcher::SignalEventWatcher(int signo, EventLoop* loop,
-                                       const Handler& handler)
-    : EventWatcher(loop->event_base(), handler)
+                                       Handler&& h)
+    : EventWatcher(loop->event_base(), std::move(h))
     , signo_(signo) {
     assert(signo_);
 }

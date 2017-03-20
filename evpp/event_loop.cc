@@ -186,6 +186,56 @@ void EventLoop::QueueInLoop(const Functor& cb) {
     }
 }
 
+InvokeTimerPtr EventLoop::RunAfter(double delay_ms, Functor&& f) {
+    return RunAfter(Duration(delay_ms / 1000.0), std::move(f));
+}
+
+InvokeTimerPtr EventLoop::RunAfter(Duration delay, Functor&& f) {
+    std::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, delay, std::move(f), false);
+    t->Start();
+    return t;
+}
+
+evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, Functor&& f) {
+    std::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, interval, std::move(f), true);
+    t->Start();
+    return t;
+}
+
+void EventLoop::RunInLoop(Functor&& functor) {
+    if (IsInLoopThread()) {
+        functor();
+    } else {
+        QueueInLoop(std::move(functor));
+    }
+}
+
+void EventLoop::QueueInLoop(Functor&& cb) {
+    //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " QueueInLoop notified_=" << notified_.load() << " pending_functor_count_=" << pending_functor_count_;
+    {
+#ifdef H_HAVE_BOOST
+        auto f = new Functor(std::move(cb)); // TODO Add test code for it
+        while (!pending_functors_->push(f)) {
+        }
+#else
+        std::lock_guard<std::mutex> lock(mutex_);
+        pending_functors_->emplace_back(std::move(cb));
+#endif
+    }
+    ++pending_functor_count_;
+    //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " QueueInLoop notified_=" << notified_.load() << ", queue a new Functor. pending_functor_count_=" << pending_functor_count_;
+    if (!notified_.load()) {
+        //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " QueueInLoop call watcher_->Nofity()";
+        watcher_->Notify();
+
+        //TODO This will cause a bug : miss the notify event and make the functor will never be called.
+        //TODO performance improvement.
+        //notified_.store(true);
+    } else {
+        //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " No need to call watcher_->Nofity()";
+    }
+}
+
 void EventLoop::DoPendingFunctors() {
     //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " DoPendingFunctors pending_functor_count_=" << pending_functor_count_;
 
