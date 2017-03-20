@@ -13,11 +13,16 @@ public:
                                                Duration timeout,
                                                const Functor& f,
                                                bool periodic);
+    static std::shared_ptr<InvokeTimer> Create(EventLoop* evloop,
+                                               Duration timeout,
+                                               Functor&& f,
+                                               bool periodic);
     ~InvokeTimer();
     void Start();
     void Cancel();
 private:
     InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic);
+    InvokeTimer(EventLoop* evloop, Duration timeout, Functor&& f, bool periodic);
     void AsyncWait();
     void OnTimerTriggered();
     void OnCanceled();
