@@ -10,8 +10,19 @@ InvokeTimer::InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f, 
     LOG_INFO << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this;
 }
 
+InvokeTimer::InvokeTimer(EventLoop* evloop, Duration timeout, Functor&& f, bool periodic)
+    : loop_(evloop), timeout_(timeout), functor_(std::move(f)), periodic_(periodic) {
+    LOG_INFO << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this;
+}
+
 std::shared_ptr<InvokeTimer> InvokeTimer::Create(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic) {
     std::shared_ptr<InvokeTimer> it(new InvokeTimer(evloop, timeout, f, periodic));
+    it->self_ = it;
+    return it;
+}
+
+std::shared_ptr<InvokeTimer> InvokeTimer::Create(EventLoop* evloop, Duration timeout, Functor&& f, bool periodic) {
+    std::shared_ptr<InvokeTimer> it(new InvokeTimer(evloop, timeout, std::move(f), periodic));
     it->self_ = it;
     return it;
 }
