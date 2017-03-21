@@ -8,34 +8,34 @@
 
 #include <getopt.h>
 
-int OnMessage(const evnsq::Message* msg) {
-    LOG_INFO << "Received a message, id=" << msg->id << " message=[" << msg->body.ToString() << "]";
-    return 0;
-}
+const size_t kTotalCount = 10;
 
 bool Publish(evnsq::Producer* producer) {
+    LOG_INFO << "Publish(evnsq::Producer* producer) published_count=" << producer->published_count();
+    if (producer->published_count() == 10) {
+        producer->Close();
+        auto loop = producer->loop();
+        evpp::InvokeTimerPtr timer = evpp::any_cast<evpp::InvokeTimerPtr>(loop->context());
+        loop->set_context(evpp::Any());
+        auto quit = [loop]() {
+            loop->Stop();
+        };
+        timer->set_cancel_callback(quit);
+        timer->Cancel();
+        return false;
+    }
     static const std::string topic1 = "test1";
-    static const std::string topic2 = "test2";
     static int i = 0;
     std::stringstream ss;
     ss << "a NSQ message, index=" << i++ << " ";
     std::string msg = ss.str();
     msg.append(1000, 'x');
-    if (!producer->Publish(topic1, msg)) {
-        return false;
-    }
-    //LOG_INFO << "Publish : [" << msg << "]";
-    std::vector<std::string> messages;
-    messages.push_back(msg);
-    messages.push_back(msg);
-    return producer->MultiPublish(topic2, messages);
+    return producer->Publish(topic1, msg);
 }
 
-static bool g_ready = false;
-
 void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
-    g_ready = true;
-    loop->RunEvery(evpp::Duration(0.1), std::bind(&Publish, p));
+    evpp::InvokeTimerPtr timer = loop->RunEvery(evpp::Duration(0.1), std::bind(&Publish, p));
+    loop->set_context(evpp::Any(timer));
 }
 
 void Close(evnsq::Producer* p) {
@@ -90,7 +90,6 @@ int main(int argc, char* argv[]) {
     evnsq::Option op;
     op.auth_secret = auth_secret;
     evnsq::Producer client(&loop, op);
-    client.SetMessageCallback(&OnMessage);
     client.SetReadyCallback(std::bind(&OnReady, &loop, &client));
 
     auto cleanup = [&loop, &client]() {
@@ -111,32 +110,12 @@ int main(int argc, char* argv[]) {
         client.ConnectToNSQDs(nsqd_tcp_addr);
     }
 
-//     auto f = [&loop, &client, &cleanup]() {
-//         std::this_thread::sleep_for(std::chrono::seconds(2));
-//         for (;;) {
-//             if (!g_ready) {
-//                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
-//                 continue;
-//             }
-//             if (loop.pending_functor_count() > 1000) {
-//                 std::this_thread::sleep_for(std::chrono::seconds(2));
-//             } else {
-//                 if (!Publish(&client)) {
-//                     cleanup();
-//                     break;
-//                 }
-//             }
-//         }
-//     };
-//     std::thread publish_thread(f);
-    loop.RunAfter(evpp::Duration(10.0), std::bind(&Close, &client));
     loop.Run();
-//    publish_thread.join();
     return 0;
 }
 
 #ifdef WIN32
-#include "../../../examples/echo/tcpecho/winmain-inl.h"
+#include "../../../../examples/echo/tcpecho/winmain-inl.h"
 #endif
 
 

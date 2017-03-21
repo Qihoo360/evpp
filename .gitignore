@@ -97,4 +97,5 @@ benchmark/ioevent/libevent/pingpong_bench
 benchmark/ioevent/libevent/runbench.tmp
 tools/a.sh
 
+Win32/Debug/ZERO_CHECK
 
