@@ -74,6 +74,7 @@ void EventWatcher::FreeEvent() {
     if (event_) {
         if (attached_) {
             EventDel(event_);
+            attached_ = false;
         }
 
         delete (event_);
