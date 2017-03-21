@@ -38,5 +38,5 @@ int main(int argc, char* argv[]) {
 }
 
 #ifdef WIN32
-#include "../../../examples/echo/tcpecho/winmain-inl.h"
+#include "../../../echo/tcpecho/winmain-inl.h"
 #endif
