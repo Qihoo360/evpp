@@ -60,6 +60,8 @@ public:
         return loop_;
     }
 
+    // @return true if it is ready to produce messages to NSQD or consume messages from NSQD
+    bool IsReady() const;
 protected:
     Client(evpp::EventLoop* loop, Type t, const Option& ops);
     virtual ~Client();
