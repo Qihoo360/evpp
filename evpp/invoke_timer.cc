@@ -33,36 +33,43 @@ InvokeTimer::~InvokeTimer() {
 
 void InvokeTimer::Start() {
     LOG_INFO << "InvokeTimer::Start tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count();
-    loop_->RunInLoop(std::bind(&InvokeTimer::AsyncWait, this));
+    auto f = [this]() {
+        //LOG_INFO << "InvokeTimer::Start(AsyncWait) tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count();
+        timer_.reset(new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, shared_from_this()), timeout_));
+        timer_->SetCancelCallback(std::bind(&InvokeTimer::OnCanceled, shared_from_this()));
+        timer_->Init();
+        timer_->AsyncWait();
+    };
+    loop_->RunInLoop(std::move(f));
 }
 
 void InvokeTimer::Cancel() {
     if (timer_) {
-        loop_->RunInLoop(std::bind(&TimerEventWatcher::Cancel, timer_));
+        loop_->QueueInLoop(std::bind(&TimerEventWatcher::Cancel, timer_));
     }
 }
 
-void InvokeTimer::AsyncWait() {
-    //LOG_INFO << "InvokeTimer::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count();
-    timer_.reset(new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, this), timeout_));
-    timer_->SetCancelCallback(std::bind(&InvokeTimer::OnCanceled, this));
-    timer_->Init();
-    timer_->AsyncWait();
-}
-
 void InvokeTimer::OnTimerTriggered() {
-    //LOG_INFO << "InvokeTimer::OnTimerTriggered tid=" << std::this_thread::get_id() << " this=" << this;
+    LOG_INFO << "InvokeTimer::OnTimerTriggered tid=" << std::this_thread::get_id() << " this=" << this << " use_count=" << self_.use_count();
     functor_();
 
     if (periodic_) {
         timer_->AsyncWait();
     } else {
+        functor_ = Functor();
+        timer_.reset();
         self_.reset();
     }
 }
 
 void InvokeTimer::OnCanceled() {
-    //LOG_INFO << "InvokeTimer::OnCanceled tid=" << std::this_thread::get_id() << " this=" << this;
+    LOG_INFO << "InvokeTimer::OnCanceled tid=" << std::this_thread::get_id() << " this=" << this << " use_count=" << self_.use_count();
+    periodic_ = false;
+    if (cancel_callback_) {
+        cancel_callback_();
+        cancel_callback_ = Functor();
+    }
+    timer_.reset();
     self_.reset();
 }
 }
