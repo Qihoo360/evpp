@@ -44,6 +44,19 @@ public:
     void RunInLoop(const Functor& handler);
     void QueueInLoop(const Functor& handler);
 
+public:
+
+    InvokeTimerPtr RunAfter(double delay_ms, Functor&& f);
+    InvokeTimerPtr RunAfter(Duration delay, Functor&& f);
+
+    // RunEvery executes Functor f every period interval time.
+    InvokeTimerPtr RunEvery(Duration interval, Functor&& f);
+
+    void RunInLoop(Functor&& handler);
+    void QueueInLoop(Functor&& handler);
+
+    // Getter and Setter
+public:
     struct event_base* event_base() {
         return evbase_;
     }
