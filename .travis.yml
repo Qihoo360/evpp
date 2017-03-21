@@ -1,0 +1,41 @@
+dist: trusty
+language: cpp
+compiler:
+  - g++
+
+branches:
+  only:
+    - master
+    - dev
+
+env:
+  global:
+    - CI_HOME=`pwd`
+
+
+install:
+  - sudo apt-get install libboost-all-dev -y
+  - sudo apt-get install libevent-dev -y
+  - sudo apt-get install libgflags-dev -y
+  - sudo apt-get install libgtest-dev -y
+  - sudo apt-get install libgoogle-glog-dev -y
+      
+script:
+  - g++ --version
+  - cmake --version
+  - cd $CI_HOME
+  - mkdir build && cd build
+  - cmake -DCMAKE_BUILD_TYPE=debug ..
+  - make -j2
+  - cd ..
+  - mkdir build-release && cd build-release
+  - cmake -DCMAKE_BUILD_TYPE=release ..
+  - make -j2
+
+after_success:
+  - cd $CI_HOME
+  - pwd
+  - build/bin/evpp_unittest
+  - build-release/bin/evpp_unittest
+#  - coveralls --exclude dependencies --exclude test --exclude include/rpc/msgpack --exclude include/rcp/msgpack.hpp --gcov /usr/bin/gcov-5
+

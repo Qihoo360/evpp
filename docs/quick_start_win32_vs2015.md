@@ -25,7 +25,7 @@ Go to `evpp/3rdparty/libevent-release-2.1.8-stable`
 	$ cmake -G "Visual Studio 14" ..
 	$ start libevent.sln
 	... # here you can use Visual Studio 2015 to compile the three libevent project event,event_core,event_extra in debug and release mode.
-	$ cd 
+	$
 	$ cp lib/Debug/*.* ../../../vsprojects/bin/Debug/
 	$ cp lib/Release/*.* ../../../vsprojects/bin/Release/
 	$ cp -rf ../include/event2 ../../wininclude/
@@ -35,8 +35,6 @@ Note 1: We have modified the source code of libevent-release-2.1.8-stable as bel
 
 1. libevent-release-2.1.8-stable/CMakeList.txt : Add 'set(EVENT__DISABLE_OPENSSL ON)' to disable OPENSSL support
 2. libevent-release-2.1.8-stable/cmake/VersionViaGit.cmake : Delete or comment the tow lines: 'find_package(Git)' and 'include(FindGit)'
-
-Note 2: The precompied windows static library have been uploaded to the proper dir : `vsprojects/bin/Debug` . So you can skip this step. 
 
 ### Compile evpp
 
