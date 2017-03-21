@@ -31,11 +31,11 @@ bool Publish(evnsq::Producer* producer) {
     return producer->MultiPublish(topic2, messages);
 }
 
+static bool g_ready = false;
+
 void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
-    loop->RunEvery(evpp::Duration(0.001), std::bind(&Publish, p));
-    for (int i = 0; i < 20; i++) {
-        Publish(p);
-    }
+    g_ready = true;
+    loop->RunEvery(evpp::Duration(0.1), std::bind(&Publish, p));
 }
 
 void Close(evnsq::Producer* p) {
@@ -93,6 +93,17 @@ int main(int argc, char* argv[]) {
     client.SetMessageCallback(&OnMessage);
     client.SetReadyCallback(std::bind(&OnReady, &loop, &client));
 
+    auto cleanup = [&loop, &client]() {
+        client.Close();
+        auto quit = [&loop]() {
+            loop.Stop();
+        };
+        loop.RunAfter(evpp::Duration(2.0), quit);
+    };
+
+    client.SetCloseCallback(cleanup);
+
+
     if (!lookupd_http_url.empty()) {
         client.ConnectToLookupds(lookupd_http_url);
     } else {
@@ -100,27 +111,27 @@ int main(int argc, char* argv[]) {
         client.ConnectToNSQDs(nsqd_tcp_addr);
     }
 
-    auto f = [&loop, &client]() {
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-        for (;;) {
-            if (loop.pending_functor_count() > 1000) {
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-            } else {
-                if (!Publish(&client)) {
-                    client.Close();
-                    auto quit = [&loop]() {
-                        loop.Stop();
-                    };
-                    loop.RunAfter(evpp::Duration(2.0), quit);
-                    break;
-                }
-            }
-        }
-    };
-    std::thread publish_thread(f);
+//     auto f = [&loop, &client, &cleanup]() {
+//         std::this_thread::sleep_for(std::chrono::seconds(2));
+//         for (;;) {
+//             if (!g_ready) {
+//                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
+//                 continue;
+//             }
+//             if (loop.pending_functor_count() > 1000) {
+//                 std::this_thread::sleep_for(std::chrono::seconds(2));
+//             } else {
+//                 if (!Publish(&client)) {
+//                     cleanup();
+//                     break;
+//                 }
+//             }
+//         }
+//     };
+//     std::thread publish_thread(f);
     loop.RunAfter(evpp::Duration(10.0), std::bind(&Close, &client));
     loop.Run();
-    publish_thread.join();
+//    publish_thread.join();
     return 0;
 }
 
