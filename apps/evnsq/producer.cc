@@ -16,7 +16,6 @@ Producer::Producer(evpp::EventLoop* l, const Option& ops)
     , high_water_mark_(kDefaultHighWaterMark) {
     // TODO Remember to remove these callbacks from EventLoop when stopping this Producer
     ready_to_publish_fn_ = std::bind(&Producer::OnReady, this, std::placeholders::_1);
-    l->RunEvery(evpp::Duration(1.0), std::bind(&Producer::PrintStats, this));
 }
 
 Producer::~Producer() {}
