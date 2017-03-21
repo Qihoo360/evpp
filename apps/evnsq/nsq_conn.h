@@ -101,7 +101,7 @@ private:
     void OnPublishResponse(const char* d, size_t len);
     void PushWaitACKCommand(const CommandPtr& cmd);
     CommandPtr PopWaitACKCommand();
-
+    const char* StatusToString() const;
 private:
     Client* nsq_client_;
     evpp::EventLoop* loop_;
