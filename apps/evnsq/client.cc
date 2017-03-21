@@ -64,14 +64,17 @@ void Client::ConnectToLookupds(const std::string& lookupd_urls/*http://192.168.0
 }
 
 void Client::Close() {
+    LOG_INFO << "Client::Close this=" << this << " conns_.size=" << conns_.size() << " connecting_conns_.size=" << connecting_conns_.size();
     closing_ = true;
 
     auto f = [this]() {
         for (auto it = this->conns_.begin(), ite = this->conns_.end(); it != ite; ++it) {
+            LOG_INFO << "Close connected NSQConn " << (*it).get() << (*it)->remote_addr();
             (*it)->Close();
         }
 
         for (auto it = this->connecting_conns_.begin(), ite = this->connecting_conns_.end(); it != ite; ++it) {
+            LOG_INFO << "Close connecting NSQConn " << it->second.get() << it->second->remote_addr();
             it->second->Close();
         }
 

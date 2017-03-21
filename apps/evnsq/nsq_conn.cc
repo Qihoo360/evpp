@@ -41,12 +41,15 @@ void NSQConn::Connect(const std::string& addr) {
 
 
 void NSQConn::Close() {
+    LOG_WARN << "NSQConn::Close() this=" << this << " status=" << StatusToString();
+    status_ = kDisconnecting;
     assert(loop_->IsInLoopThread());
     tcp_client_->Disconnect();
-    status_ = kDisconnecting;
 }
 
 void NSQConn::Reconnect() {
+    LOG_WARN << "NSQConn::Close() this=" << this << " status=" << StatusToString() << " remote_nsq_addr=" << remote_addr();
+
     // Discards all the messages which were cached by the broken tcp connection.
     if (!wait_ack_.empty()) {
         LOG_WARN << "Discards " << wait_ack_.size() << " NSQ messages. nsq_message_missing";
@@ -63,17 +66,16 @@ const std::string& NSQConn::remote_addr() const {
 }
 
 void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
+    LOG_INFO << "NSQConn::OnTCPConnectionEvent status=" << StatusToString() << " TCPConn=" << conn.get() << " remote_addr=" << conn->remote_addr();
     if (conn->IsConnected()) {
         assert(tcp_client_->conn() == conn);
-        assert(status_ == kConnecting);
-        Identify();
-    } else {
-        if (conn->IsDisconnecting()) {
-            LOG_ERROR << "Connection to " << conn->remote_addr() << " was closed by remote server.";
+        if (status_ == kConnecting) {
+            Identify();
         } else {
-            LOG_ERROR << "Connect to " << conn->remote_addr() << " failed.";
+            // Maybe the user layer has close this NSQConn and then the underlying TCPConn established a connection with NSQD to invoke this callback
+            assert(status_ == kDisconnecting);
         }
-
+    } else {
         if (tcp_client_->auto_reconnect()) {
             // tcp_client_ will reconnect to remote NSQD again automatically
             status_ = kConnecting;
@@ -84,8 +86,7 @@ void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
         }
 
         if (conn_fn_) {
-            auto self = shared_from_this();
-            conn_fn_(self);
+            conn_fn_(shared_from_this());
         }
     }
 }
@@ -248,11 +249,21 @@ void NSQConn::OnMessage(size_t message_len, int32_t frame_type, evpp::Buffer* bu
     }
 
     case kFrameTypeError:
-        LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << std::string(buf->data(), message_len) << "]";
+    {
+        // E_UNAUTHORIZED AUTH failed for PUB on "xyyyy1" ""
+        std::string msg = std::string(buf->data(), message_len);
+        LOG_ERROR << "frame_type=" << frame_type << " kFrameTypeResponse. [" << msg << "]";
+        static const std::string unauthorized = "E_UNAUTHORIZED AUTH";
+        if (strncmp(msg.data(), unauthorized.data(), unauthorized.size()) == 0) {
+            Close();
+            break;
+        }
+
         if (status_ != kDisconnecting) {
             Reconnect();
         }
         break;
+    }
 
     default:
         break;
@@ -347,6 +358,19 @@ CommandPtr NSQConn::PopWaitACKCommand() {
     CommandPtr c = *wait_ack_.begin();
     wait_ack_.pop_front();
     return c;
+}
+
+const char* NSQConn::StatusToString() const {
+    H_CASE_STRING_BIGIN(status_);
+    H_CASE_STRING(kDisconnected);
+    H_CASE_STRING(kConnecting);
+    H_CASE_STRING(kIdentifying);
+    H_CASE_STRING(kAuthenticating);
+    H_CASE_STRING(kConnected);
+    H_CASE_STRING(kSubscribing);
+    H_CASE_STRING(kReady);
+    H_CASE_STRING(kDisconnecting);
+    H_CASE_STRING_END();
 }
 
 void NSQConn::PushWaitACKCommand(const CommandPtr& cmd) {
