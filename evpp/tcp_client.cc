@@ -43,7 +43,7 @@ void TCPClient::Disconnect() {
 }
 
 void TCPClient::DisconnectInLoop() {
-    LOG_TRACE << "TCPClient::DisconnectInLoop";
+    LOG_WARN << "TCPClient::DisconnectInLoop this=" << this << " remote_addr=" << remote_addr_;
     assert(loop_->IsInLoopThread());
     auto_reconnect_.store(false);
 
