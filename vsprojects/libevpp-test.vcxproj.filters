@@ -81,9 +81,6 @@
     <ClCompile Include="..\test\udp_server_test.cc">
       <Filter>udp</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\http_server_test2.cc">
-      <Filter>http</Filter>
-    </ClCompile>
     <ClCompile Include="..\test\tcp_server_test.cc">
       <Filter>tcp</Filter>
     </ClCompile>
