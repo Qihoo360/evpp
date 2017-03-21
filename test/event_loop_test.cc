@@ -72,6 +72,21 @@ TEST_UNIT(testEventLoop2) {
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
+// Test std::move of C++11
+TEST_UNIT(testEventLoop3) {
+    evpp::EventLoop loop;
+    auto timer = [&loop]() {
+        auto close = [&loop]() {
+            loop.Stop();
+        };
+        loop.QueueInLoop(close);
+    };
+    loop.RunAfter(evpp::Duration(0.5), std::move(timer));
+    loop.Run();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+}
+
+
 
 
 

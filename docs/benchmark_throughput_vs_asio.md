@@ -24,7 +24,7 @@ We use the test method described at [http://think-async.com/Asio/LinuxPerformanc
 
 Simply to explains that the ping pong protocol is the client and the server both implements the echo protocol. When the TCP connection is established, the client sends some data to the server, the server echoes the data, and then the client echoes to the server again and again. The data will be the same as the table tennis in the client and the server back and forth between the transfer until one side disconnects. This is a common way to test throughput.
  
-The test code of [evpp] is at the source code `benchmark/throughput/evpp`, and at here [https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp](https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp). We use `tools/benchmark-build.sh` to compile it. The test script is [single_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/evpp/single_thread.sh) and [multiple_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/evpp/multiple_thread.sh). 
+The test code of [evpp] is at the source code `benchmark/throughput/evpp`, and at here [https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp](https://github.com/Qihoo360/evpp/tree/master/benchmark/throughput/evpp). We use `tools/benchmark-build.sh` to compile it. The test script are [single_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/evpp/single_thread.sh) and [multiple_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/evpp/multiple_thread.sh). 
 
 The test code of [asio] is at [https://github.com/huyuguang/asio_benchmark](https://github.com/huyuguang/asio_benchmark) using commits `21fc1357d59644400e72a164627c1be5327fbe3d` and the `client2.cpp/server2.cpp` test code. The test script is [single_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/single_thread.sh) and [multiple_thread.sh](https://github.com/Qihoo360/evpp/blob/master/benchmark/throughput/asio/multiple_thread.sh). 
 
@@ -41,7 +41,7 @@ We have done two benchmarks:
 1. When the number of concurrent connections is 10,000 or more in the test, [asio] is better, the average is higher than [evpp] **5%~10%**
 2. When the number of concurrent connections is 1,10,100,1000 in the test, [evpp]'s performance is better, the average is higher than [asio] **10%~20%**
 
-For details, see the chart below, the horizontal axis is the number of concurrent. The vertical axis is the throughput, the bigger the better.
+For details, see the chart below, the horizontal axis is the number of concurrent connections. The vertical axis is the throughput, the bigger the better.
 
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-1024.png)
 ![](https://raw.githubusercontent.com/zieckey/resources/master/evpp/benchmark/throughput/evpp-vs-asio-1thread-2048.png)
@@ -68,6 +68,19 @@ In the same time [evpp] is a network library of `Reactor` model, the receiving d
 
 We will do another benchmark test to verify the analysis. Please look forward to it.
 
+### All benchmark reports
+
+[The IO Event performance benchmark against Boost.Asio](benchmark_ioevent_performance_vs_asio.md) : [evpp] is higher than [asio] about **20%~50%** in this case
+
+[The ping-pong benchmark against Boost.Asio](benchmark_ping_pong_spend_time_vs_asio.md) : [evpp] is higher than [asio] about **5%~20%** in this case
+
+[The throughput benchmark against libevent2](benchmark_throughput_vs_libevent.md) : [evpp] is higher than [libevent] about **17%~130%** in this case 
+
+[The throughput benchmark against Boost.Asio](benchmark_throughput_vs_asio.md) : [evpp] and [asio] have the similar performance in this case
+
+[The throughput benchmark against Boost.Asio(中文)](benchmark_throughput_vs_asio_cn.md) : [evpp] and [asio] have the similar performance in this case
+
+[The throughput benchmark against muduo(中文)](benchmark_throughput_vs_muduo_cn.md) : [evpp] and [muduo] have the similar performance in this case
 
 
 ### Last
