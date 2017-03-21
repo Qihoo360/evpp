@@ -93,7 +93,7 @@
   <ItemGroup>
     <ClCompile Include="..\3rdparty\win32code\getopt\getopt.c" />
     <ClCompile Include="..\3rdparty\win32code\getopt\getopt_long.c" />
-    <ClCompile Include="..\apps\evnsq\test\main.cc" />
+    <ClCompile Include="..\examples\apps\evnsq\evnsq_producer\main.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

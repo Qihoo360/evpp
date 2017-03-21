@@ -68,6 +68,7 @@ void Client::Close() {
     closing_ = true;
 
     auto f = [this]() {
+        ready_to_publish_fn_ = ReadyToPublishCallback();
         for (auto it = this->conns_.begin(), ite = this->conns_.end(); it != ite; ++it) {
             LOG_INFO << "Close connected NSQConn " << (*it).get() << (*it)->remote_addr();
             (*it)->Close();
@@ -89,6 +90,14 @@ void Client::Close() {
     // That will make the iterators in function f broken down.
     // So we use loop_->QueueInLoop(f) to delay the execution time of f to next loop.
     loop_->QueueInLoop(f);
+}
+
+bool Client::IsReady() const {
+    if (conns_.empty()) {
+        return false;
+    }
+
+    return conns_[0]->IsReady();
 }
 
 void Client::HandleLoopkupdHTTPResponse(
