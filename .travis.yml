@@ -24,18 +24,29 @@ script:
   - g++ --version
   - cmake --version
   - cd $CI_HOME
+  - pwd
   - mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE=debug ..
-  - make -j2
+  - make -j
   - cd ..
   - mkdir build-release && cd build-release
   - cmake -DCMAKE_BUILD_TYPE=release ..
-  - make -j2
+  - make -j
+  - pwd
 
 after_success:
   - cd $CI_HOME
   - pwd
+  - curl -L https://github.com/nsqio/nsq/releases/download/v0.3.8/nsq-0.3.8.linux-amd64.go1.6.2.tar.gz -o nsq-0.3.8.linux-amd64.go1.6.2.tar.gz
+  - tar zxvf nsq-0.3.8.linux-amd64.go1.6.2.tar.gz
+  - pwd
   - build/bin/evpp_unittest
   - build-release/bin/evpp_unittest
+  - cd $CI_HOME
+  - pwd
+  - cd tools/test_scripts
+  - pwd
+  - ./evnsq_test.sh
+  - pwd
 #  - coveralls --exclude dependencies --exclude test --exclude include/rpc/msgpack --exclude include/rcp/msgpack.hpp --gcov /usr/bin/gcov-5
 

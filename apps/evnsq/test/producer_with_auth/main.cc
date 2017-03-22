@@ -8,11 +8,11 @@
 
 #include <getopt.h>
 
-const size_t kTotalCount = 10;
+size_t total_count = 200;
 
 bool Publish(evnsq::Producer* producer) {
     LOG_INFO << "Publish(evnsq::Producer* producer) published_count=" << producer->published_count();
-    if (producer->published_count() == 10) {
+    if (producer->published_count() == total_count) {
         producer->Close();
         auto loop = producer->loop();
         evpp::InvokeTimerPtr timer = evpp::any_cast<evpp::InvokeTimerPtr>(loop->context());
@@ -34,8 +34,10 @@ bool Publish(evnsq::Producer* producer) {
 }
 
 void OnReady(evpp::EventLoop* loop, evnsq::Producer* p) {
-    evpp::InvokeTimerPtr timer = loop->RunEvery(evpp::Duration(0.1), std::bind(&Publish, p));
-    loop->set_context(evpp::Any(timer));
+    if (loop->context().IsEmpty()) {
+        evpp::InvokeTimerPtr timer = loop->RunEvery(evpp::Duration(0.1), std::bind(&Publish, p));
+        loop->set_context(evpp::Any(timer));
+    }
 }
 
 void Close(evnsq::Producer* p) {
@@ -50,11 +52,12 @@ int main(int argc, char* argv[]) {
     int opt = 0;
     //int digit_optind = 0;
     int option_index = 0;
-    const char* optstring = "t:h:s:";
+    const char* optstring = "t:h:s:c:";
     static struct option long_options[] = {
         { "nsqd_tcp_addr", required_argument, NULL, 't' },
         { "lookupd_http_addr", required_argument, NULL, 'h' },
         { "auth_secret", required_argument, NULL, 's' },
+        { "total_count", required_argument, NULL, 'c' },
         { 0, 0, 0, 0 }
     };
 
@@ -78,6 +81,10 @@ int main(int argc, char* argv[]) {
 
         case 's':
             auth_secret = optarg;
+            break;
+
+        case 'c':
+            total_count = size_t(std::atoi(optarg));
             break;
 
         default:
