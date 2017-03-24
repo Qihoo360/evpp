@@ -49,6 +49,7 @@ TCPConn::~TCPConn() {
 
 void TCPConn::Close() {
     LOG_INFO << "TCPConn::Close this=" << this << " fd=" << fd_ << " status=" << StatusToString() << " addr=" << Addr();
+    status_ = kDisconnecting;
     auto c = shared_from_this();
     auto f = [c]() {
         assert(c->loop_->IsInLoopThread());
@@ -145,7 +146,7 @@ void TCPConn::SendInLoop(const void* data, size_t len) {
     }
 
     if (write_error) {
-        HandleClose();
+        HandleError();
         return;
     }
 
@@ -178,6 +179,7 @@ void TCPConn::HandleRead() {
         if (type() == kOutgoing) {
             // This is an outgoing connection, we own it and it's done. so close it
             LOG_DEBUG << "TCPConn::HandleRead this=" << this << " fd=" << fd_ << ". We read 0 bytes and close the socket.";
+            status_ = kDisconnecting;
             HandleClose();
         } else {
             // Fix the half-closing problem : https://github.com/chenshuo/muduo/pull/117
@@ -193,7 +195,7 @@ void TCPConn::HandleRead() {
             LOG_DEBUG << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno);
         } else {
             LOG_DEBUG << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno) << " We are closing this connection now.";
-            HandleClose();
+            HandleError();
         }
     }
 }
@@ -219,12 +221,16 @@ void TCPConn::HandleWrite() {
         if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
             LOG_WARN << "TCPConn::HandleWrite errno=" << serrno << " " << strerror(serrno);
         } else {
-            HandleClose();
+            HandleError();
         }
     }
 }
 
 void TCPConn::DelayClose() {
+    assert(loop_->IsInLoopThread());
+    LOG_INFO << "TCPConn::DelayClose this=" << this << " addr=" << Addr() << " fd=" << fd_ << " status_=" << StatusToString();
+    status_ = kDisconnecting;
+    assert(delay_close_timer_.get());
     delay_close_timer_.reset();
     HandleClose();
 }
@@ -237,7 +243,10 @@ void TCPConn::HandleClose() {
         return;
     }
 
-    assert(status_ == kConnected);
+    // We call HandleClose() from TCPConn's method, the status_ is kConnected
+    // But we call HandleClose() from out of TCPConn's method, the status_ is kDisconnecting
+    assert(status_ == kDisconnecting);
+
     status_ = kDisconnecting;
     assert(loop_->IsInLoopThread());
     chan_->DisableAllEvent();
@@ -259,9 +268,17 @@ void TCPConn::HandleClose() {
         conn_fn_(conn);
     }
 
-    close_fn_(conn);
+    if (close_fn_) {
+        close_fn_(conn);
+    }
     LOG_INFO << "TCPConn::HandleClose exit, this=" << this << " addr=" << Addr() << " fd=" << fd_ << " status_=" << StatusToString() << " use_count=" << conn.use_count();
     status_ = kDisconnected;
+}
+
+void TCPConn::HandleError() {
+    LOG_INFO << "TCPConn::HandleError this=" << this << " fd=" << fd_ << " status=" << StatusToString();
+    status_ = kDisconnecting;
+    HandleClose();
 }
 
 void TCPConn::OnAttachedToLoop() {
