@@ -34,11 +34,11 @@ InvokeTimer::~InvokeTimer() {
 void InvokeTimer::Start() {
     LOG_INFO << "InvokeTimer::Start tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count();
     auto f = [this]() {
-        //LOG_INFO << "InvokeTimer::Start(AsyncWait) tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count();
         timer_.reset(new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, shared_from_this()), timeout_));
         timer_->SetCancelCallback(std::bind(&InvokeTimer::OnCanceled, shared_from_this()));
         timer_->Init();
         timer_->AsyncWait();
+        LOG_INFO << "InvokeTimer::Start(AsyncWait) tid=" << std::this_thread::get_id() << " timer=" << timer_.get() << " this=" << this << " refcount=" << self_.use_count() << " periodic=" << periodic_ << " timeout(ms)=" << timeout_.Milliseconds();
     };
     loop_->RunInLoop(std::move(f));
 }

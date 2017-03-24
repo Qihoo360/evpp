@@ -6,6 +6,7 @@
 #include "evpp/fd_channel.h"
 #include "evpp/event_loop.h"
 #include "evpp/sockets.h"
+#include "evpp/invoke_timer.h"
 
 namespace evpp {
 TCPConn::TCPConn(EventLoop* l,
@@ -26,14 +27,13 @@ TCPConn::TCPConn(EventLoop* l,
         chan_.reset(new FdChannel(l, sockfd, false, false));
         chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this));
         chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
-        chan_->SetCloseCallback(std::bind(&TCPConn::HandleClose, this));
     }
 
-    LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " channel=" << chan_.get() << " fd=" << sockfd;
+    LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " channel=" << chan_.get() << " fd=" << sockfd << " addr=" << Addr();
 }
 
 TCPConn::~TCPConn() {
-    LOG_TRACE << "TCPConn::~TCPConn() name=" << name() << " this=" << this << " channel=" << chan_.get() << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString();
+    LOG_TRACE << "TCPConn::~TCPConn() name=" << name() << " this=" << this << " channel=" << chan_.get() << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString() << " addr=" << Addr();;
     assert(status_ == kDisconnected);
 
     if (fd_ >= 0) {
@@ -43,14 +43,20 @@ TCPConn::~TCPConn() {
         EVUTIL_CLOSESOCKET(fd_);
         fd_ = INVALID_SOCKET;
     }
+
+    assert(!delay_close_timer_.get());
 }
 
 void TCPConn::Close() {
+    LOG_INFO << "TCPConn::Close this=" << this << " fd=" << fd_ << " status=" << StatusToString() << " addr=" << Addr();
+    status_ = kDisconnecting;
     auto c = shared_from_this();
     auto f = [c]() {
         assert(c->loop_->IsInLoopThread());
         c->HandleClose();
     };
+
+    // Use QueueInLoop to fix TCPClient::Close bug when the application delete TCPClient in callback
     loop_->QueueInLoop(f);
 }
 
@@ -140,7 +146,7 @@ void TCPConn::SendInLoop(const void* data, size_t len) {
     }
 
     if (write_error) {
-        HandleClose();
+        HandleError();
         return;
     }
 
@@ -172,22 +178,24 @@ void TCPConn::HandleRead() {
     } else if (n == 0) {
         if (type() == kOutgoing) {
             // This is an outgoing connection, we own it and it's done. so close it
+            LOG_DEBUG << "TCPConn::HandleRead this=" << this << " fd=" << fd_ << ". We read 0 bytes and close the socket.";
+            status_ = kDisconnecting;
             HandleClose();
         } else {
-            // Fix the half-closing problem£ºhttps://github.com/chenshuo/muduo/pull/117
+            // Fix the half-closing problem : https://github.com/chenshuo/muduo/pull/117
 
             // This is an incoming connection, we need to preserve the connection for a while so that we can reply to it.
             // And we set a timer to close the connection eventually.
             chan_->DisableReadEvent();
-            LOG_DEBUG << "channel (fd=" << chan_->fd() << ") DisableReadEvent";
-            loop_->RunAfter(close_delay_, std::bind(&TCPConn::HandleClose, shared_from_this())); // TODO leave it to user layer close.
+            LOG_DEBUG << "TCPConn::HandleRead this=" << this << " channel (fd=" << chan_->fd() << ") DisableReadEvent. And set a timer to delay close this TCPConn";
+            delay_close_timer_ = loop_->RunAfter(close_delay_, std::bind(&TCPConn::DelayClose, shared_from_this())); // TODO leave it to user layer close.
         }
     } else {
         if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
             LOG_DEBUG << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno);
         } else {
             LOG_DEBUG << "TCPConn::HandleRead errno=" << serrno << " " << strerror(serrno) << " We are closing this connection now.";
-            HandleClose();
+            HandleError();
         }
     }
 }
@@ -213,24 +221,44 @@ void TCPConn::HandleWrite() {
         if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
             LOG_WARN << "TCPConn::HandleWrite errno=" << serrno << " " << strerror(serrno);
         } else {
-            HandleClose();
+            HandleError();
         }
     }
 }
 
+void TCPConn::DelayClose() {
+    assert(loop_->IsInLoopThread());
+    LOG_INFO << "TCPConn::DelayClose this=" << this << " addr=" << Addr() << " fd=" << fd_ << " status_=" << StatusToString();
+    status_ = kDisconnecting;
+    assert(delay_close_timer_.get());
+    delay_close_timer_.reset();
+    HandleClose();
+}
+
 void TCPConn::HandleClose() {
+    LOG_INFO << "TCPConn::HandleClose this=" << this << " addr=" << Addr() << " fd=" << fd_ << " status_=" << StatusToString();
+
     // Avoid multi calling
     if (status_ == kDisconnected) {
         return;
     }
 
-    assert(status_ == kConnected);
+    // We call HandleClose() from TCPConn's method, the status_ is kConnected
+    // But we call HandleClose() from out of TCPConn's method, the status_ is kDisconnecting
+    assert(status_ == kDisconnecting);
+
     status_ = kDisconnecting;
     assert(loop_->IsInLoopThread());
     chan_->DisableAllEvent();
     chan_->Close();
 
     TCPConnPtr conn(shared_from_this());
+
+    if (delay_close_timer_) {
+        LOG_INFO << "Cancel the delay closing timer.";
+        delay_close_timer_->Cancel();
+        delay_close_timer_.reset();
+    }
 
     if (conn_fn_) {
         // This callback must be invoked at status kDisconnecting
@@ -240,8 +268,17 @@ void TCPConn::HandleClose() {
         conn_fn_(conn);
     }
 
-    close_fn_(conn);
+    if (close_fn_) {
+        close_fn_(conn);
+    }
+    LOG_INFO << "TCPConn::HandleClose exit, this=" << this << " addr=" << Addr() << " fd=" << fd_ << " status_=" << StatusToString() << " use_count=" << conn.use_count();
     status_ = kDisconnected;
+}
+
+void TCPConn::HandleError() {
+    LOG_INFO << "TCPConn::HandleError this=" << this << " fd=" << fd_ << " status=" << StatusToString();
+    status_ = kDisconnecting;
+    HandleClose();
 }
 
 void TCPConn::OnAttachedToLoop() {
