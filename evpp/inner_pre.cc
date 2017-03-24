@@ -60,6 +60,7 @@ int EventAdd(struct event* ev, const struct timeval* timeout) {
             assert("event_add twice");
         }
     }
+    LOG_DEBUG << "event_add ev=" << ev << " fd=" << ev->ev_fd << " user_ptr=" << ev->ev_arg << " tid=" << std::this_thread::get_id();
 #endif
     return event_add(ev, timeout);
 }
@@ -81,6 +82,7 @@ int EventDel(struct event* ev) {
             evmap.erase(it);
         }
     }
+    LOG_DEBUG << "event_del ev=" << ev << " fd=" << ev->ev_fd << " tid=" << std::this_thread::get_id();
 #endif
     return event_del(ev);
 }

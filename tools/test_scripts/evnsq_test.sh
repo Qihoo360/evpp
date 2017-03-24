@@ -1,5 +1,8 @@
 #!/bin/sh
 
+set -x
+pwd
+ls -l
 
 #check the error code, if there is error happened, we exit
 function check_error
@@ -22,6 +25,7 @@ echo "nsqlookupd_pid=$nsqlookupd_pid"
 echo 11111111111111111111111111111111111111111
 for i in 1 2 3 4 5 6 7 8 9 10; do
 ../../build/bin/unittest_evnsq_producer_with_auth -c 10
+
 check_error
 echo "22222222222222222222222 i=$i"
 done
@@ -50,18 +54,21 @@ check_error
 ../../build/bin/unittest_evnsq_producer_with_auth -c 100 & evnsq_producer_pid=$!
 sleep 5
 kill $nsqd_pid
+sleep 5
 $NSQPATH/nsqd --lookupd-tcp-address=127.0.0.1:4160 & nsqd_pid=$!
 echo "nsqd_pid=$nsqd_pid"
 sleep 5
 kill $nsqd_pid
+sleep 5
 $NSQPATH/nsqd --lookupd-tcp-address=127.0.0.1:4160 & nsqd_pid=$!
 echo "nsqd_pid=$nsqd_pid"
-sleep 20
+sleep 60
 
-curl 'http://127.0.0.1:4151/stats?format=json'| ~/jsonformat
 curl 'http://127.0.0.1:4151/stats?format=json'| grep '"depth":300'
+check_error
 
 echo "nsqd_pid=$nsqd_pid"
 echo "nsqlookupd_pid=$nsqlookupd_pid"
 kill $nsqd_pid
 kill $nsqlookupd_pid
+check_error
