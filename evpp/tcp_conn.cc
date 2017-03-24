@@ -29,11 +29,15 @@ TCPConn::TCPConn(EventLoop* l,
         chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
     }
 
-    LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this << " channel=" << chan_.get() << " fd=" << sockfd << " addr=" << Addr();
+    LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this
+        << " channel=" << chan_.get() << " fd=" << sockfd << " addr=" << Addr();
 }
 
 TCPConn::~TCPConn() {
-    LOG_TRACE << "TCPConn::~TCPConn() name=" << name() << " this=" << this << " channel=" << chan_.get() << " fd=" << fd_ << " type=" << int(type()) << " status=" << StatusToString() << " addr=" << Addr();;
+    LOG_TRACE << "TCPConn::~TCPConn() name=" << name()
+        << " this=" << this << " channel=" << chan_.get()
+        << " fd=" << fd_ << " type=" << int(type())
+        << " status=" << StatusToString() << " addr=" << Addr();
     assert(status_ == kDisconnected);
 
     if (fd_ >= 0) {
