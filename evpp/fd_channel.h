@@ -72,10 +72,6 @@ public:
         write_fn_ = cb;
     }
 
-    void SetCloseCallback(const EventCallback& cb) {
-        close_fn_ = cb;
-    }
-
 private:
     void HandleEvent(int fd, short which);
     static void HandleEvent(int fd, short which, void* v);
@@ -85,7 +81,6 @@ private:
 private:
     ReadEventCallback read_fn_;
     EventCallback write_fn_;
-    EventCallback close_fn_;
 
     EventLoop* loop_;
     bool attached_; // A flag indicate whether this FdChannel has been attached to loop_
