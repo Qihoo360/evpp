@@ -24,6 +24,7 @@ FdChannel::~FdChannel() {
 }
 
 void FdChannel::Close() {
+    LOG_INFO << "FdChannel::Close() this=" << this << " fd=" << fd_;
     assert(event_);
     if (event_) {
         assert(!attached_);
@@ -36,7 +37,6 @@ void FdChannel::Close() {
     }
     read_fn_ = ReadEventCallback();
     write_fn_ = EventCallback();
-    close_fn_ = EventCallback();
 }
 
 void FdChannel::AttachToLoop() {
