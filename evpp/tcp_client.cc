@@ -29,6 +29,11 @@ TCPClient::~TCPClient() {
         // and delete TCPClient object immediately, that will make conn_ to be at disconnecting status.
         assert(c->IsDisconnected() || c->IsDisconnecting());
         if (c->IsDisconnecting()) {
+            // the reference count includes :
+            //  - this
+            //  - c
+            //  - A disconnecting callback which hold a shared_ptr of TCPConn
+            assert(c.use_count() >= 3);
             c->SetCloseCallback(CloseCallback());
         }
     }
@@ -36,6 +41,7 @@ TCPClient::~TCPClient() {
 }
 
 void TCPClient::Connect() {
+    LOG_INFO << "TCPClient::Connect remote_addr=" << remote_addr();
     auto f = [this]() {
         assert(loop_->IsInLoopThread());
         connector_.reset(new Connector(loop_, this));
