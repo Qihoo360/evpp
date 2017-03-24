@@ -98,6 +98,7 @@ void Connector::Cancel() {
 }
 
 void Connector::Connect() {
+    assert(fd_ == INVALID_SOCKET);
     fd_ = sock::CreateNonblockingSocket();
     own_fd_ = true;
     assert(fd_ >= 0);
@@ -146,6 +147,7 @@ void Connector::HandleWrite() {
     std::string laddr = sock::ToIPPort(&addr);
     conn_fn_(chan_->fd(), laddr);
     timer_->Cancel();
+    timer_.reset();
     chan_->DisableAllEvent();
     chan_->Close();
     own_fd_ = false; // Move the ownership of the fd to TCPConn
@@ -156,7 +158,14 @@ void Connector::HandleWrite() {
 void Connector::HandleError() {
     assert(loop_->IsInLoopThread());
     int serrno = errno;
-    LOG_ERROR << "status=" << StatusToString() << " fd=" << fd_ << " errno=" << serrno << " " << strerror(serrno);
+
+    // In this error handling method, we will invoke 'conn_fn_' callback function
+    // to notify the user application layer in which the user maybe call TCPClient::Disconnect.
+    // TCPClient::Disconnect may cause this Connector object desctruct.
+    auto self = shared_from_this();
+
+    LOG_ERROR << "status=" << StatusToString() << " fd=" << fd_ << " errno=" << serrno << " " << strerror(serrno) << " this=" << this << " use_count=" << self.use_count();
+
     status_ = kDisconnected;
 
     if (chan_) {
@@ -166,31 +175,42 @@ void Connector::HandleError() {
     }
 
     timer_->Cancel();
+    timer_.reset();
 
     if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
         conn_fn_(-1, "");
     }
 
-    if (fd_ > 0) {
-        LOG_TRACE << "Connector::HandleError close(" << fd_ << ")";
-        assert(own_fd_);
-        EVUTIL_CLOSESOCKET(fd_);
-        fd_ = INVALID_SOCKET;
-    }
-
+    // Although TCPClient has a Reconnect() method to deal with automatically reconnection problem,
+    // TCPClient's Reconnect() will be invoked when a established connection is broken down.
+    //
+    // But if we could not connect to the remote server at the very beginning,
+    // the TCPClient's Reconnect() will never be triggled.
+    // So Connector needs to do reconnection automatically itself.
     if (owner_tcp_client_->auto_reconnect()) {
+
+        // We must close(fd) firstly and then we can do the reconnection.
+        if (fd_ > 0) {
+            LOG_TRACE << "Connector::HandleError close(" << fd_ << ")";
+            assert(own_fd_);
+            EVUTIL_CLOSESOCKET(fd_);
+            fd_ = INVALID_SOCKET;
+        }
+
         LOG_INFO << "loop=" << loop_ << " auto reconnect in " << owner_tcp_client_->reconnect_interval().Seconds() << "s thread=" << std::this_thread::get_id();
         loop_->RunAfter(owner_tcp_client_->reconnect_interval(), std::bind(&Connector::Start, shared_from_this()));
     }
 }
 
 void Connector::OnConnectTimeout() {
+    LOG_WARN << "Connector::OnConnectTimeout status=" << StatusToString() << " fd=" << fd_ << " this=" << this;
     assert(status_ == kConnecting || status_ == kDNSResolving);
     EVUTIL_SET_SOCKET_ERROR(ETIMEDOUT);
     HandleError();
 }
 
 void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
+    LOG_INFO << "Connector::OnDNSResolved addrs.size=" << addrs.size() << " this=" << this;
     if (addrs.empty()) {
         LOG_ERROR << "DNS Resolve failed. host=" << dns_resolver_->host();
         HandleError();

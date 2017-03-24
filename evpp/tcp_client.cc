@@ -19,11 +19,18 @@ TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& 
 }
 
 TCPClient::~TCPClient() {
+    LOG_INFO << "TCPClient::~TCPClient";
     assert(!connector_.get());
     auto_reconnect_.store(false);
     TCPConnPtr c = conn();
     if (c) {
-        assert(c->IsDisconnected());
+        // Most of the cases, the conn_ is at disconnected status at this time.
+        // But some times, the user application layer will call TCPClient::Close()
+        // and delete TCPClient object immediately, that will make conn_ to be at disconnecting status.
+        assert(c->IsDisconnected() || c->IsDisconnecting());
+        if (c->IsDisconnecting()) {
+            c->SetCloseCallback(CloseCallback());
+        }
     }
     conn_.reset();
 }
@@ -42,12 +49,22 @@ void TCPClient::Disconnect() {
     loop_->RunInLoop(std::bind(&TCPClient::DisconnectInLoop, this));
 }
 
+void TCPClient::SetConnectionCallback(const ConnectionCallback& cb) {
+    conn_fn_ = cb;
+    auto  c = conn();
+    if (c) {
+        c->SetConnectionCallback(cb);
+    }
+}
+
 void TCPClient::DisconnectInLoop() {
     LOG_WARN << "TCPClient::DisconnectInLoop this=" << this << " remote_addr=" << remote_addr_;
     assert(loop_->IsInLoopThread());
     auto_reconnect_.store(false);
 
     if (conn_) {
+        LOG_TRACE << "Close the TCPConn " << conn_.get() << " status=" << conn_->StatusToString();
+        assert(!conn_->IsDisconnected() && !conn_->IsDisconnecting());
         conn_->Close();
     } else {
         // When connector_ is connecting to the remote server ...
@@ -55,7 +72,7 @@ void TCPClient::DisconnectInLoop() {
     }
 
     if (connector_->IsConnected() || connector_->IsDisconnected()) {
-        LOG_TRACE << "Do nothing, Connector::status=" << connector_->status();
+        LOG_TRACE << "Nothing to do with connector_, Connector::status=" << connector_->status();
     } else {
         // When connector_ is trying to connect to the remote server we should cancel it to release the resources.
         connector_->Cancel();
@@ -99,7 +116,7 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
 void TCPClient::OnRemoveConnection(const TCPConnPtr& c) {
     assert(c.get() == conn_.get());
     assert(loop_->IsInLoopThread());
-
+    conn_.reset();
     if (auto_reconnect_.load()) {
         Reconnect();
     }

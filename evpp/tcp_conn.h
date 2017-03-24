@@ -12,6 +12,7 @@ namespace evpp {
 class EventLoop;
 class FdChannel;
 class TCPClient;
+class InvokeTimer;
 
 class EVPP_EXPORT TCPConn : public std::enable_shared_from_this<TCPConn> {
 public:
@@ -45,6 +46,9 @@ public:
 public:
     EventLoop* loop() const {
         return loop_;
+    }
+    int fd() const {
+        return fd_;
     }
     void set_context(const Any& c) {
         context_[0] = c;
@@ -82,6 +86,9 @@ public:
     Type type() const {
         return type_;
     }
+    bool IsIncommingConn() const {
+        return type_ == kIncoming;
+    }
     Status status() const {
         return status_;
     }
@@ -117,15 +124,23 @@ protected:
         close_fn_ = cb;
     }
     void OnAttachedToLoop();
-
+    std::string StatusToString() const;
 private:
     void HandleRead();
     void HandleWrite();
     void HandleClose();
+    void DelayClose();
+    void HandleError();
     void SendInLoop(const Slice& message);
     void SendInLoop(const void* data, size_t len);
     void SendStringInLoop(const std::string& message);
-    std::string StatusToString() const;
+    std::string Addr() const {
+        if (IsIncommingConn()) {
+            return "(" + remote_addr_ + "->" + local_addr_ + "(local))";
+        } else {
+            return "(" + local_addr_ + "(local)->" + remote_addr_ + ")";
+        }
+    }
 private:
     EventLoop* loop_;
     int fd_;
@@ -145,6 +160,7 @@ private:
     // The delay time to close a incoming connection which has been shutdown by peer normally.
     // Default is 3 second.
     Duration close_delay_;
+    std::shared_ptr<InvokeTimer> delay_close_timer_; // The timer to delay close this TCPConn
 
     ConnectionCallback conn_fn_; // This will be called to the user application layer
     MessageCallback msg_fn_; // This will be called to the user application layer
