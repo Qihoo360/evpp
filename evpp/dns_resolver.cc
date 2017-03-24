@@ -191,8 +191,6 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr, void* arg) {
     LOG_TRACE << "this->use_count=" << pp->use_count();
     (*pp)->OnResolved(errcode, addr);
     delete pp;
-    //DNSResolver* dns = reinterpret_cast<DNSResolver*>(arg);
-    //dns->OnResolved(errcode, addr);
 }
 
 void DNSResolver::ClearTimer() {

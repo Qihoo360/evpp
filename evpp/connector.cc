@@ -63,13 +63,7 @@ void Connector::Start() {
     auto host = std::string(remote_addr_.data(), index);
     auto f = std::bind(&Connector::OnDNSResolved, shared_from_this(), std::placeholders::_1);
     dns_resolver_ = std::make_shared<DNSResolver>(loop_, host, timeout_, f);
-    //LOG_INFO << "dns_resolver_.use_count()=" << dns_resolver_.use_count();
-    //std::weak_ptr<DNSResolver> w(dns_resolver_);
-    //auto p = w.lock();
-    //LOG_INFO << "dns_resolver.use_count=" << p.use_count();
     dns_resolver_->Start();
-    //LOG_INFO << "dns_resolver_.use_count()=" << dns_resolver_.use_count();
-
 }
 
 
@@ -217,7 +211,7 @@ void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
         return;
     }
 
-    raddr_.sin_addr = addrs[0]; // TODO random index
+    raddr_.sin_addr = addrs[0]; // TODO random index ?
     status_ = kDNSResolved;
     Connect();
 }
