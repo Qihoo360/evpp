@@ -86,39 +86,3 @@ TEST_UNIT(testTCPClientReconnect) {
 
 
 
-
-TEST_UNIT(testTCPClientConnectFailed) {
-    std::shared_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
-    std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop.get(), addr, "TCPPingPongClient"));
-    client->SetConnectionCallback([ &loop, &client ](const evpp::TCPConnPtr& conn) {
-        H_TEST_ASSERT(!conn->IsConnected());
-        client->Disconnect();
-        loop->Stop();
-    });
-    client->set_auto_reconnect(false);
-    client->Connect();
-    loop->Run();
-    client.reset();
-    loop.reset();
-    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
-}
-
-TEST_UNIT(testTCPClientDisconnectImmediately) {
-    std::shared_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
-    std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop.get(), "cmake.org:80", "TCPPingPongClient"));
-    client->SetConnectionCallback([loop, client](const evpp::TCPConnPtr& conn) {
-        H_TEST_ASSERT(!conn->IsConnected());
-        H_TEST_ASSERT(!loop->IsRunning());
-        auto f = [loop]() { loop->Stop(); };
-        loop->RunAfter(300.0, f);
-    });
-    client->set_auto_reconnect(false);
-    client->Connect();
-    client->Disconnect();
-    loop->Run();
-    client.reset();
-    loop.reset();
-    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
-}
-
-

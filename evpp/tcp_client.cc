@@ -24,7 +24,13 @@ TCPClient::~TCPClient() {
     auto_reconnect_.store(false);
     TCPConnPtr c = conn();
     if (c) {
-        assert(c->IsDisconnected());
+        // Most of the cases, the conn_ is at disconnected status at this time.
+        // But some times, the user application layer will call TCPClient::Close()
+        // and delete TCPClient object immediately, that will make conn_ to be at disconnecting status.
+        assert(c->IsDisconnected() || c->IsDisconnecting());
+        if (c->IsDisconnecting()) {
+            c->SetCloseCallback(CloseCallback());
+        }
     }
     conn_.reset();
 }
@@ -58,6 +64,7 @@ void TCPClient::DisconnectInLoop() {
 
     if (conn_) {
         LOG_TRACE << "Close the TCPConn " << conn_.get() << " status=" << conn_->StatusToString();
+        assert(!conn_->IsDisconnected() && !conn_->IsDisconnecting());
         conn_->Close();
     } else {
         // When connector_ is connecting to the remote server ...
