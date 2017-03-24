@@ -25,9 +25,7 @@ public:
     //      1. Successfully establish a connection : TCPConn::IsConnected() == true
     //      2. An exist connection broken down : TCPConn::IsDisconnecting() == true
     //      3. Failed to establish a connection : TCPConn::IsDisconnected() == true and TCPConn::fd() == -1
-    void SetConnectionCallback(const ConnectionCallback& cb) {
-        conn_fn_ = cb;
-    }
+    void SetConnectionCallback(const ConnectionCallback& cb);
 
     void SetMessageCallback(const MessageCallback& cb) {
         msg_fn_ = cb;

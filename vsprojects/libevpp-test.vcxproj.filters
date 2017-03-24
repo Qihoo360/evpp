@@ -90,6 +90,9 @@
     <ClCompile Include="..\test\dns_resolver_test.cc">
       <Filter>tcp</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\tcp_client_test.cc">
+      <Filter>tcp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\test\test_common.h">
