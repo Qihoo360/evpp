@@ -35,7 +35,12 @@
 #include <event2/dns_compat.h>
 #include <event2/dns_struct.h>
 #include <event2/listener.h>
-#endif
+#ifdef _DEBUG
+#if LIBEVENT_VERSION_NUMBER >= 0x02010500
+#define  ev_arg ev_evcallback.evcb_arg
+#endif // LIBEVENT_VERSION_NUMBER
+#endif // _DEBUG
+#endif // H_LIBEVENT_VERSION_14
 
 #ifndef evtimer_new
 #define evtimer_new(b, cb, arg)        event_new((b), -1, 0, (cb), (arg))
