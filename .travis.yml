@@ -27,7 +27,7 @@ script:
   - pwd
   - mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE=debug ..
-  - make -j2
+  - make -j
   - cd ..
   - mkdir build-release && cd build-release
   - cmake -DCMAKE_BUILD_TYPE=release ..
