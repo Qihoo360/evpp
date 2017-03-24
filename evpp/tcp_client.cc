@@ -43,6 +43,14 @@ void TCPClient::Disconnect() {
     loop_->RunInLoop(std::bind(&TCPClient::DisconnectInLoop, this));
 }
 
+void TCPClient::SetConnectionCallback(const ConnectionCallback& cb) {
+    conn_fn_ = cb;
+    auto  c = conn();
+    if (c) {
+        c->SetConnectionCallback(cb);
+    }
+}
+
 void TCPClient::DisconnectInLoop() {
     LOG_WARN << "TCPClient::DisconnectInLoop this=" << this << " remote_addr=" << remote_addr_;
     assert(loop_->IsInLoopThread());
@@ -101,7 +109,7 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
 void TCPClient::OnRemoveConnection(const TCPConnPtr& c) {
     assert(c.get() == conn_.get());
     assert(loop_->IsInLoopThread());
-
+    conn_.reset();
     if (auto_reconnect_.load()) {
         Reconnect();
     }
