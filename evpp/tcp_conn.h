@@ -124,16 +124,16 @@ protected:
         close_fn_ = cb;
     }
     void OnAttachedToLoop();
-
+    std::string StatusToString() const;
 private:
     void HandleRead();
     void HandleWrite();
     void HandleClose();
     void DelayClose();
+    void HandleError();
     void SendInLoop(const Slice& message);
     void SendInLoop(const void* data, size_t len);
     void SendStringInLoop(const std::string& message);
-    std::string StatusToString() const;
     std::string Addr() const {
         if (IsIncommingConn()) {
             return "(" + remote_addr_ + "->" + local_addr_ + "(local))";
