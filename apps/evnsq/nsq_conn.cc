@@ -381,8 +381,8 @@ void NSQConn::PushWaitACKCommand(const CommandPtr& cmd) {
 void NSQConn::OnPublishResponse(const char* d, size_t len) {
     CommandPtr cmd = PopWaitACKCommand();
     if (len == 2 && d[0] == 'O' && d[1] == 'K') {
-        LOG_INFO << "Get a PublishResponse message 'OK', command=" << cmd.get();
         published_ok_count_++;
+        LOG_INFO << "Get a PublishResponse message 'OK', command=" << cmd.get() << " published_ok_count=" << published_ok_count_;
         publish_response_cb_(cmd, true);
         return;
     }
