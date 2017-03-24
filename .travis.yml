@@ -27,11 +27,11 @@ script:
   - pwd
   - mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE=debug ..
-  - make -j
+  - make -j2
   - cd ..
   - mkdir build-release && cd build-release
   - cmake -DCMAKE_BUILD_TYPE=release ..
-  - make -j
+  - make -j2
   - pwd
 
 after_success:
