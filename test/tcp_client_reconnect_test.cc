@@ -18,10 +18,6 @@ static std::shared_ptr<evpp::TCPServer> tsrv;
 static std::atomic<int> connected_count(0);
 static std::atomic<int> message_recved_count(0);
 const static std::string addr = "127.0.0.1:19099";
-static void OnMessage(const evpp::TCPConnPtr& conn,
-                      evpp::Buffer* msg) {
-    message_recved_count++;
-}
 
 void OnClientConnection(const evpp::TCPConnPtr& conn) {
     if (conn->IsConnected()) {
@@ -40,9 +36,6 @@ evpp::TCPClient* StartTCPClient(evpp::EventLoop* loop) {
     return client;
 }
 
-void DeleteTCPClient(evpp::TCPClient* client) {
-    delete client;
-}
 }
 
 
@@ -56,10 +49,13 @@ TEST_UNIT(testTCPClientReconnect) {
     evpp::TCPClient* client = StartTCPClient(tcp_client_thread->event_loop());
     client->set_reconnect_interval(evpp::Duration(0.1));
 
-    int test_count = 2;
+    int test_count = 3;
     for (int i = 0; i < test_count; i++) {
-        tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), addr, "tcp_server", 1)); //TODO FIXME 修改为0个线程，会出现map/vector iterator崩溃
-        tsrv->SetMessageCallback(&OnMessage);
+        tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), addr, "tcp_server", i));
+        tsrv->SetMessageCallback([](const evpp::TCPConnPtr& conn,
+                                    evpp::Buffer* msg) {
+            message_recved_count++;
+        });
         tsrv->Init()&& tsrv->Start();
         usleep(evpp::Duration(2.0).Microseconds());
         tsrv->Stop();
@@ -67,8 +63,8 @@ TEST_UNIT(testTCPClientReconnect) {
         tsrv.reset();
     }
     LOG_INFO << "XXXXXXXXXX connected_count=" << connected_count << " message_recved_count=" << message_recved_count;
-    tcp_client_thread->event_loop()->RunInLoop(std::bind(&evpp::TCPClient::Disconnect, client));
-    tcp_client_thread->event_loop()->RunAfter(evpp::Duration(1.0), std::bind(&DeleteTCPClient, client));
+    tcp_client_thread->event_loop()->RunInLoop([client]() {client->Disconnect(); });
+    tcp_client_thread->event_loop()->RunAfter(evpp::Duration(1.0), [client]() {delete client; });
     usleep(evpp::Duration(2.0).Microseconds());
     client = nullptr;
     tcp_client_thread->Stop(true);

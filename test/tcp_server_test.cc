@@ -16,14 +16,7 @@ namespace {
 static bool connected = false;
 static bool message_recved = false;
 const static std::string addr = "127.0.0.1:19099";
-static void OnMessage(const evpp::TCPConnPtr& conn,
-                      evpp::Buffer* msg) {
-    message_recved = true;
-}
 
-static void StopTCPServer(evpp::TCPServer* t) {
-    t->Stop();
-}
 
 void OnClientConnection(const evpp::TCPConnPtr& conn) {
     if (conn->IsConnected()) {
@@ -52,10 +45,16 @@ TEST_UNIT(testTCPServer1) {
     tcp_client_thread->Start();
     std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
     std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), addr, "tcp_server", 2));
-    tsrv->SetMessageCallback(&OnMessage);
-    tsrv->Init()&& tsrv->Start();
-    loop->RunAfter(evpp::Duration(1.4), std::bind(&StopTCPServer, tsrv.get()));
-    loop->RunAfter(evpp::Duration(1.6), std::bind(&evpp::EventLoop::Stop, loop.get()));
+    tsrv->SetMessageCallback([](const evpp::TCPConnPtr& conn,
+                                evpp::Buffer* msg) {
+        message_recved = true;
+    });
+    bool rc = tsrv->Init();
+    H_TEST_ASSERT(rc);
+    rc = tsrv->Start();
+    H_TEST_ASSERT(rc);
+    loop->RunAfter(evpp::Duration(1.4), [&tsrv]() { tsrv->Stop(); });
+    loop->RunAfter(evpp::Duration(1.6), [&loop]() { loop->Stop(); });
     std::shared_ptr<evpp::TCPClient> client = StartTCPClient(tcp_client_thread->event_loop());
     loop->Run();
     tcp_client_thread->Stop(true);
@@ -73,8 +72,8 @@ TEST_UNIT(testTCPServerSilenceShutdown) {
     std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
     std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), addr, "tcp_server", 2));
     tsrv->Init()&& tsrv->Start();
-    loop->RunAfter(evpp::Duration(1.2), std::bind(&StopTCPServer, tsrv.get()));
-    loop->RunAfter(evpp::Duration(1.3), std::bind(&evpp::EventLoop::Stop, loop.get()));
+    loop->RunAfter(evpp::Duration(1.2), [&tsrv]() { tsrv->Stop(); });
+    loop->RunAfter(evpp::Duration(1.3), [&loop]() { loop->Stop(); });
     loop->Run();
     loop.reset();
     tsrv.reset();
