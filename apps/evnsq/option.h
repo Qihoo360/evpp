@@ -21,6 +21,10 @@ public:
     evpp::Duration read_timeout = evpp::Duration(60.0); // min:"100ms" max:"5m"
     evpp::Duration write_timeout = evpp::Duration(1.0); // min:"100ms" max:"5m"
 
+    // The server-side message timeout for messages delivered to this client
+    // min:"0"
+    evpp::Duration msg_timeout = evpp::Duration(0);
+
     // Identifiers sent to nsqd representing this client
     // UserAgent is in the spirit of HTTP (default: "<client_library_name>/<version>")
     std::string client_id = "evnsq"; // (defaults: short hostname)
@@ -37,5 +41,9 @@ public:
     std::string auth_secret;
 
     bool feature_negotiation = true;
+
+    // Integer percentage to sample the channel (requires nsqd 0.2.25+)
+    // min:"0" max : "99"
+    int sample_rate = 0;
 };
 }
