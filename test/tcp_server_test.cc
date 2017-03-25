@@ -68,12 +68,29 @@ TEST_UNIT(testTCPServer1) {
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
-TEST_UNIT(testTCPServerSilenceShutdown) {
+TEST_UNIT(testTCPServerSilenceShutdown1) {
     std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
     std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), addr, "tcp_server", 2));
-    tsrv->Init()&& tsrv->Start();
+    bool rc = tsrv->Init();
+    H_TEST_ASSERT(rc);
+    rc = tsrv->Start();
+    H_TEST_ASSERT(rc);
     loop->RunAfter(evpp::Duration(1.2), [&tsrv]() { tsrv->Stop(); });
     loop->RunAfter(evpp::Duration(1.3), [&loop]() { loop->Stop(); });
+    loop->Run();
+    loop.reset();
+    tsrv.reset();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+}
+
+TEST_UNIT(testTCPServerSilenceShutdown2) {
+    std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
+    std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), addr, "tcp_server", 2));
+    bool rc = tsrv->Init();
+    H_TEST_ASSERT(rc);
+    rc = tsrv->Start();
+    H_TEST_ASSERT(rc);
+    loop->RunAfter(evpp::Duration(1.0), [&tsrv, &loop]() { tsrv->Stop(); loop->Stop(); });
     loop->Run();
     loop.reset();
     tsrv.reset();
