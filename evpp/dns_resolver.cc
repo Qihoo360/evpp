@@ -11,7 +11,10 @@ DNSResolver::DNSResolver(EventLoop* evloop, const std::string& h, Duration timeo
 DNSResolver::~DNSResolver() {
     LOG_INFO << "DNSResolver::~DNSResolver tid=" << std::this_thread::get_id() << " this=" << this;
     assert(dnsbase_ == nullptr);
+
+#if LIBEVENT_VERSION_NUMBER >= 0x02001500
     assert(!timer_);
+#endif
 }
 
 void DNSResolver::Start() {

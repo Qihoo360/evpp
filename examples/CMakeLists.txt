@@ -70,3 +70,6 @@ target_link_libraries(example_http_client_request04 ${LIBRARIES})
 
 add_executable(example_http_client_request05 http_client_request/client05.cc)
 target_link_libraries(example_http_client_request05 ${LIBRARIES})
+
+add_executable(example_dns_resolve dns_resolve/main.cc)
+target_link_libraries(example_dns_resolve ${LIBRARIES})
