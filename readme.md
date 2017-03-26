@@ -19,7 +19,8 @@ evpp
 1. A nonblocking multi-threaded HTTP server based on the buildin http server of libevent
 1. A nonblocking HTTP client
 1. A nonblocking multi-threaded UDP server
-1. EventLoop/Thread Pool/Timer
+1. Async DNS resolving
+1. EventLoop/ThreadPool/Timer
 
 And also provides some libraries based on [evpp]:
 

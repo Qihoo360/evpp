@@ -3,7 +3,6 @@
 #include <evpp/event_loop.h>
 #include <evpp/event_loop_thread.h>
 #include <evpp/dns_resolver.h>
-#include <atomic>
 
 TEST_UNIT(testDNSResolver) {
     for (int i = 0; i < 6; i++) {
