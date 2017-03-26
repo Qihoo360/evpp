@@ -74,5 +74,8 @@ target_link_libraries(example_http_client_request05 ${LIBRARIES})
 add_executable(example_dns_resolve dns_resolve/main.cc)
 target_link_libraries(example_dns_resolve ${LIBRARIES})
 
-add_executable(example_signal signal/main.cc)
-target_link_libraries(example_signal ${LIBRARIES})
+add_executable(example_signal01 signal/signal01.cc)
+target_link_libraries(example_signal01 ${LIBRARIES})
+
+add_executable(example_signal02 signal/signal02.cc)
+target_link_libraries(example_signal02 ${LIBRARIES})
