@@ -5,13 +5,9 @@
 #include "../echo/tcpecho/winmain-inl.h"
 #endif
 
-void Print() {
-    std::cout << "Hello, world!\n";
-}
-
 int main() {
     evpp::EventLoop loop;
-    loop.RunEvery(evpp::Duration(1.0), &Print);
+    loop.RunEvery(evpp::Duration(1.0), []() { std::cout << "Hello, world!\n"; });
     loop.Run();
     return 0;
 }
