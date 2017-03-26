@@ -5,23 +5,11 @@
 
 #include "examples/winmain-inl.h"
 
-//int main(int argc, char* argv[]) {
-//    evpp::EventLoop loop;
-//    std::unique_ptr<evpp::SignalEventWatcher> ev(
-//        new evpp::SignalEventWatcher(
-//            SIGINT, &loop, []() { LOG_INFO << "SIGINT caught.";}));
-//    ev->Init();
-//    ev->AsyncWait();
-//    loop.Run();
-//    return 0;
-//}
-
-
-std::unique_ptr<evpp::SignalEventWatcher> ev;
 
 int main(int argc, char* argv[]) {
     evpp::EventLoop loop;
-    auto f1 = [&loop]() {
+    std::unique_ptr<evpp::SignalEventWatcher> ev;
+    auto f = [&ev, &loop]() {
         ev.reset(new evpp::SignalEventWatcher(
             SIGINT, &loop, []() {
             LOG_INFO << "SIGINT caught.";
@@ -29,7 +17,7 @@ int main(int argc, char* argv[]) {
         ev->Init();
         ev->AsyncWait();
     };
-    loop.RunAfter(evpp::Duration(1.0), f1);
+    loop.RunAfter(evpp::Duration(0.001), f);
     loop.Run();
     return 0;
 }
