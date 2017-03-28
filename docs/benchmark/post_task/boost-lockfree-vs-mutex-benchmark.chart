@@ -1,0 +1,19 @@
+# The chart type , option : spline/line/bar/column/area
+ChartType = column
+Title = Post Task Test
+SubTitle = 1 thread reads, multi threads write. X Axis is the writing thread count. Total write count 1000000
+ValueSuffix = s
+
+# The x Axis numbers. The count this numbers MUST be the same with the data series
+XAxisNumbers = 2, 4, 6, 8, 12, 16, 20
+
+# The y Axis text
+YAxisText = Cost Time (s) Lower is better
+
+# The data and the name of the lines
+
+Data|std::mutex      = 2.04538,5.45523,9.03564,13.6443,19.3664,27.0369,33.8794
+Data|boost::lockfree = 0.988319,2.17819,4.058,4.99668,11.778,14.6983,19.3277
+
+# evpp : v0.3.1
+

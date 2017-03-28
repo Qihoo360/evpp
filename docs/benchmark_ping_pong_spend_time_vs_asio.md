@@ -95,11 +95,14 @@ In the mean time, [evpp] is `reactor` model, it will try to read data as much as
 
 [The throughput benchmark against libevent2](benchmark_throughput_vs_libevent.md) : [evpp] is higher than [libevent] about **17%~130%** in this case 
 
+[The performance benchmark of `queue with std::mutex` against `boost::lockfree::queue`](benchmark_lockfree_vs_mutex.md) : `boost::lockfree::queue` is better, the average is higher than `queue with std::mutex` about **75%~150%**
+
 [The throughput benchmark against Boost.Asio](benchmark_throughput_vs_asio.md) : [evpp] and [asio] have the similar performance in this case
 
 [The throughput benchmark against Boost.Asio(中文)](benchmark_throughput_vs_asio_cn.md) : [evpp] and [asio] have the similar performance in this case
 
 [The throughput benchmark against muduo(中文)](benchmark_throughput_vs_muduo_cn.md) : [evpp] and [muduo] have the similar performance in this case
+
 
 ### Last
 
