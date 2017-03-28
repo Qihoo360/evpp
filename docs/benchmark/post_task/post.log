@@ -1,0 +1,290 @@
+[weizili ~/git/evpp/benchmark/post_task]$ ./bench.sh 
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:57.523757 25069 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=2 post_count=10000 use time: 0.056827 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:57.581154 25072 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=2 post_count=10000 use time: 0.050002 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:57.644537 25075 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=2 post_count=10000 use time: 0.060085 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:57.709172 25078 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=2 post_count=10000 use time: 0.058088 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:57.737543 25081 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=2 post_count=10000 use time: 0.024433 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:57.760658 25085 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=2 post_count=10000 use time: 0.009829 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:57.825290 25089 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=4 post_count=10000 use time: 0.060131 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:57.897054 25094 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=4 post_count=10000 use time: 0.059553 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:57.928184 25099 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=4 post_count=10000 use time: 0.025868 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:57.954290 25104 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=4 post_count=10000 use time: 0.013674 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.000552 25109 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=4 post_count=10000 use time: 0.040032 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.039285 25115 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=4 post_count=10000 use time: 0.014015 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.105536 25121 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=6 post_count=10000 use time: 0.059225 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.180673 25128 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=6 post_count=10000 use time: 0.057162 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.205819 25135 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=6 post_count=10000 use time: 0.017804 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.231652 25142 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=6 post_count=10000 use time: 0.007909 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.334218 25149 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=6 post_count=10000 use time: 0.09558 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.420243 25157 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=6 post_count=10000 use time: 0.038167 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.487959 25165 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=8 post_count=10000 use time: 0.0575 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.569766 25174 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=8 post_count=10000 use time: 0.058154 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.594949 25183 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=8 post_count=10000 use time: 0.016041 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.631809 25192 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=8 post_count=10000 use time: 0.013103 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.768784 25201 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=8 post_count=10000 use time: 0.128592 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.902050 25211 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=8 post_count=10000 use time: 0.067852 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:58.973261 25221 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=12 post_count=10000 use time: 0.05833 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:59.067478 25234 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=12 post_count=10000 use time: 0.059653 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:59.090867 25247 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=12 post_count=10000 use time: 0.01025 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:59.136422 25260 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=12 post_count=10000 use time: 0.010906 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:59.326551 25273 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=12 post_count=10000 use time: 0.179043 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:59.518306 25287 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=12 post_count=10000 use time: 0.100864 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:59.599345 25301 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=16 post_count=10000 use time: 0.063948 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:59.704538 25318 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=16 post_count=10000 use time: 0.060105 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:59.730569 25335 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=16 post_count=10000 use time: 0.009348 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:03:59.784348 25352 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=16 post_count=10000 use time: 0.008689 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:00.072067 25369 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=16 post_count=10000 use time: 0.273626 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:00.316695 25387 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=16 post_count=10000 use time: 0.132895 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:00.398903 25405 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=20 post_count=10000 use time: 0.060677 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:00.518699 25426 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=20 post_count=10000 use time: 0.064304 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:00.546013 25447 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=20 post_count=10000 use time: 0.007002 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:00.608131 25468 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=20 post_count=10000 use time: 0.006795 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:00.951505 25489 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=20 post_count=10000 use time: 0.326551 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:01.256567 25511 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=20 post_count=10000 use time: 0.174436 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:01.764279 25540 post_task3.cc:72] ../../build-release/bin/benchmark_post_task3 post_count=10000 use time: 0.010892 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:02.269383 25543 post_task3.cc:72] ../../build-release/bin/benchmark_post_lockfree_task3 post_count=10000 use time: 0.010528 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:02.772336 25546 post_task4.cc:96] ../../build-release/bin/benchmark_post_task4 post_count=10000 use time: 0.000755 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:03.276994 25548 post_task4.cc:96] ../../build-release/bin/benchmark_post_lockfree_task4 post_count=10000 use time: 0.001698 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:03.783730 25550 post_task5.cc:99] ../../build-release/bin/benchmark_post_task5 post_count=10000 use time: 0.004784 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:04.293702 25552 post_task5.cc:99] ../../build-release/bin/benchmark_post_lockfree_task5 post_count=10000 use time: 0.006958 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:04.801553 25554 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=2 post_count=100000 use time: 0.505215 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:04.900599 25557 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=2 post_count=100000 use time: 0.09251 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:05.463914 25560 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=2 post_count=100000 use time: 0.559485 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:05.564371 25563 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=2 post_count=100000 use time: 0.093004 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:05.776695 25566 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=2 post_count=100000 use time: 0.207912 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:05.889775 25570 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=2 post_count=100000 use time: 0.100418 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:06.467717 25574 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=4 post_count=100000 use time: 0.573404 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:07.057723 25579 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=4 post_count=100000 use time: 0.577514 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:07.336086 25589 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=4 post_count=100000 use time: 0.272566 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:07.399574 25594 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=4 post_count=100000 use time: 0.050592 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:07.840119 25599 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=4 post_count=100000 use time: 0.434136 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:08.007884 25605 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=4 post_count=100000 use time: 0.142801 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:08.582211 25611 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=6 post_count=100000 use time: 0.565135 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:09.193307 25618 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=6 post_count=100000 use time: 0.592977 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:09.383285 25625 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=6 post_count=100000 use time: 0.18265 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:09.455231 25633 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=6 post_count=100000 use time: 0.053871 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:10.398512 25640 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=6 post_count=100000 use time: 0.935361 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:10.627954 25648 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=6 post_count=100000 use time: 0.196203 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:11.222201 25656 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=8 post_count=100000 use time: 0.57697 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:11.794214 25665 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=8 post_count=100000 use time: 0.547782 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:11.944221 25674 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=8 post_count=100000 use time: 0.140992 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:12.023380 25683 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=8 post_count=100000 use time: 0.055458 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:13.293997 25692 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=8 post_count=100000 use time: 1.26133 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:13.751013 25702 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=8 post_count=100000 use time: 0.410403 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:14.316135 25712 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=12 post_count=100000 use time: 0.533018 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:14.956420 25725 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=12 post_count=100000 use time: 0.605418 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:15.085916 25738 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=12 post_count=100000 use time: 0.116316 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:15.167987 25751 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=12 post_count=100000 use time: 0.047455 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:17.152065 25764 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=12 post_count=100000 use time: 1.97272 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:18.314441 25783 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=12 post_count=100000 use time: 1.07544 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:18.954031 25797 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=16 post_count=100000 use time: 0.576549 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:19.597187 25814 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=16 post_count=100000 use time: 0.59799 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:19.705181 25831 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=16 post_count=100000 use time: 0.091125 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:19.799165 25848 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=16 post_count=100000 use time: 0.048871 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:22.500741 25865 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=16 post_count=100000 use time: 2.68744 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:23.881342 25883 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=16 post_count=100000 use time: 1.27704 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:24.554741 25901 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=20 post_count=100000 use time: 0.587096 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:25.214853 25922 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=20 post_count=100000 use time: 0.604506 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:25.298738 25943 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=20 post_count=100000 use time: 0.063636 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:25.391698 25964 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=20 post_count=100000 use time: 0.037472 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:28.737167 25985 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=20 post_count=100000 use time: 3.32896 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:30.771906 26049 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=20 post_count=100000 use time: 1.90977 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:31.398906 26071 post_task3.cc:72] ../../build-release/bin/benchmark_post_task3 post_count=100000 use time: 0.113971 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:31.904144 26074 post_task3.cc:72] ../../build-release/bin/benchmark_post_lockfree_task3 post_count=100000 use time: 0.095346 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:32.413897 26077 post_task4.cc:96] ../../build-release/bin/benchmark_post_task4 post_count=100000 use time: 0.007528 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:32.932355 26079 post_task4.cc:96] ../../build-release/bin/benchmark_post_lockfree_task4 post_count=100000 use time: 0.01555 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:33.481999 26081 post_task5.cc:99] ../../build-release/bin/benchmark_post_task5 post_count=100000 use time: 0.047712 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:34.054540 26083 post_task5.cc:99] ../../build-release/bin/benchmark_post_lockfree_task5 post_count=100000 use time: 0.069586 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:39.868511 26085 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=2 post_count=1000000 use time: 5.81137 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:40.850196 26118 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=2 post_count=1000000 use time: 0.973888 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:45.921819 26121 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=2 post_count=1000000 use time: 5.06812 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:46.690711 26124 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=2 post_count=1000000 use time: 0.762136 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:48.739755 26127 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=2 post_count=1000000 use time: 2.04538 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:49.741878 26136 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=2 post_count=1000000 use time: 0.988319 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:04:54.922180 26142 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=4 post_count=1000000 use time: 5.17536 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:00.238603 26147 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=4 post_count=1000000 use time: 5.30391 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:02.786582 26194 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=4 post_count=1000000 use time: 2.54233 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:03.598106 26218 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=4 post_count=1000000 use time: 0.799112 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:09.058606 26223 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=4 post_count=1000000 use time: 5.45523 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:11.266207 26235 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=4 post_count=1000000 use time: 2.17819 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:16.567571 26241 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=6 post_count=1000000 use time: 5.16582 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:21.881141 26248 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=6 post_count=1000000 use time: 5.29527 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:23.588011 26260 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=6 post_count=1000000 use time: 1.69965 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:24.029361 26267 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=6 post_count=1000000 use time: 0.423146 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:33.071787 26274 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=6 post_count=1000000 use time: 9.03564 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:37.177403 26324 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=6 post_count=1000000 use time: 4.058 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:42.677242 26357 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=8 post_count=1000000 use time: 5.2693 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:48.253659 26371 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=8 post_count=1000000 use time: 5.55258 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:49.746886 26389 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=8 post_count=1000000 use time: 1.4841 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:05:50.220393 26400 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=8 post_count=1000000 use time: 0.449926 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:06:03.873468 26409 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=8 post_count=1000000 use time: 13.6443 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:06:08.926947 26468 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=8 post_count=1000000 use time: 4.99668 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:06:14.780221 26484 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=12 post_count=1000000 use time: 5.33746 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:06:20.318769 26497 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=12 post_count=1000000 use time: 5.50352 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:06:21.413977 26515 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=12 post_count=1000000 use time: 1.08211 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:06:21.769841 26528 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=12 post_count=1000000 use time: 0.320948 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:06:41.148425 26541 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=12 post_count=1000000 use time: 19.3664 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:06:53.005226 26627 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=12 post_count=1000000 use time: 11.778 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:06:59.142694 26648 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=16 post_count=1000000 use time: 5.33316 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:07:04.728078 26707 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=16 post_count=1000000 use time: 5.54049 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:07:05.494725 26731 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=16 post_count=1000000 use time: 0.749936 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:07:05.845363 26748 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=16 post_count=1000000 use time: 0.305224 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:07:32.896255 26765 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=16 post_count=1000000 use time: 27.0369 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:07:47.701863 26836 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=16 post_count=1000000 use time: 14.6983 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:07:54.162132 26892 post_task1.cc:80] ../../build-release/bin/benchmark_post_task1 thread_count=20 post_count=1000000 use time: 5.35737 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:07:59.736760 26913 post_task1.cc:80] ../../build-release/bin/benchmark_post_lockfree_task1 thread_count=20 post_count=1000000 use time: 5.5189 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:08:00.374821 26976 post_task2.cc:88] ../../build-release/bin/benchmark_post_task2 thread_count=20 post_count=1000000 use time: 0.617752 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:08:00.703735 26997 post_task2.cc:88] ../../build-release/bin/benchmark_post_lockfree_task2 thread_count=20 post_count=1000000 use time: 0.273109 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:08:34.599653 27018 post_task6.cc:86] ../../build-release/bin/benchmark_post_task6 thread_count=20 post_count=1000000 use time: 33.8794 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:08:54.051354 27100 post_task6.cc:86] ../../build-release/bin/benchmark_post_lockfree_task6 thread_count=20 post_count=1000000 use time: 19.3277 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:08:56.405200 27159 post_task3.cc:72] ../../build-release/bin/benchmark_post_task3 post_count=1000000 use time: 0.865735 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:08:57.410958 27162 post_task3.cc:72] ../../build-release/bin/benchmark_post_lockfree_task3 post_count=1000000 use time: 0.870723 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:08:57.984722 27200 post_task4.cc:96] ../../build-release/bin/benchmark_post_task4 post_count=1000000 use time: 0.071245 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:08:58.731649 27204 post_task4.cc:96] ../../build-release/bin/benchmark_post_lockfree_task4 post_count=1000000 use time: 0.24394 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:08:59.725250 27211 post_task5.cc:99] ../../build-release/bin/benchmark_post_task5 post_count=1000000 use time: 0.4914 seconds
+WARNING: Logging before InitGoogleLogging() is written to STDERR
+W0328 15:09:00.785500 27213 post_task5.cc:99] ../../build-release/bin/benchmark_post_lockfree_task5 post_count=1000000 use time: 0.557144 seconds
+
