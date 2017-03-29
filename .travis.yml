@@ -46,7 +46,7 @@ after_success:
   - pwd
   - cd tools/test_scripts
   - pwd
-  - ./evnsq_test.sh
+  - /bin/bash ./evnsq_test.sh
   - pwd
 #  - coveralls --exclude dependencies --exclude test --exclude include/rpc/msgpack --exclude include/rcp/msgpack.hpp --gcov /usr/bin/gcov-5
 
