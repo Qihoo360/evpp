@@ -34,7 +34,7 @@ Go to `evpp/3rdparty/libevent-release-2.1.8-stable`
 Note 1: We have modified the source code of libevent-release-2.1.8-stable as bellow:
 
 1. libevent-release-2.1.8-stable/CMakeList.txt : Add 'set(EVENT__DISABLE_OPENSSL ON)' to disable OPENSSL support
-2. libevent-release-2.1.8-stable/cmake/VersionViaGit.cmake : Delete or comment the tow lines: 'find_package(Git)' and 'include(FindGit)'
+2. libevent-release-2.1.8-stable/cmake/VersionViaGit.cmake : Delete or comment the two lines: 'find_package(Git)' and 'include(FindGit)'
 
 ### Compile evpp
 
