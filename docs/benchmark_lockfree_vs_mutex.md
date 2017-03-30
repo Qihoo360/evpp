@@ -77,7 +77,7 @@ void EventLoop::DoPendingFunctors() {
 }
 ```
 
-We have done tow benchmarks:
+We have done two benchmarks:
 
 1. The total count of tasks is 1000000, and the count of producer threads is set to 2/4/6/8/12/16/20
 2. The total count of tasks is 1000000, and the count of producer threads is set to 1, and runs 10 times.

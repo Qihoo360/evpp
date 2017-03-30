@@ -25,9 +25,9 @@ public:
 public:
     EventLoop();
 
-    // Build a EventLoop object using an existing event_base object,
-    // so we can embed EventLoop object into the old applications based on libevent
-    // NOTE: Be careful to deal with the releasing work of event_base_ and watcher_ objects.
+    // Build an EventLoop using an existing event_base object,
+    // so we can embed an EventLoop object into the old applications based on libevent
+    // NOTE: Be careful to deal with the destructing work of event_base_ and watcher_ objects.
     explicit EventLoop(struct event_base* base);
     ~EventLoop();
 

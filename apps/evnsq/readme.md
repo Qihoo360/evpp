@@ -13,7 +13,7 @@ This library is currently used in production which processes more than 20 billio
 1. Support single `NSQD` instance
 2. Support a cluster of `NSQDs`
 3. Support `nsqlookupd`
-4. Support tow modes : producer and consumer
+4. Support two modes : producer and consumer
 5. Support AUTH
 6. Support failover and load balance
 
