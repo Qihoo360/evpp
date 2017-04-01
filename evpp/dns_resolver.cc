@@ -104,6 +104,9 @@ void DNSResolver::OnCanceled() {
 
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
 void DNSResolver::AsyncDNSResolve() {
+    // Set a timer to watch the DNS resolving
+    AsyncWait();
+
     /* Build the hints to tell getaddrinfo how to act. */
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -117,15 +120,13 @@ void DNSResolver::AsyncDNSResolve() {
     std::shared_ptr<DNSResolver> p = shared_from_this();
     std::shared_ptr<DNSResolver> *pp = new std::shared_ptr<DNSResolver>(p);
     dnsbase_ = evdns_base_new(loop_->event_base(), 1);
-    dns_req_ = evdns_getaddrinfo(dnsbase_
-                                    , host_.c_str()
-                                    , nullptr /* no service name given */
-                                    , &hints
-                                    , &DNSResolver::OnResolved
-                                    , pp);
     assert(dnsbase_);
-    assert(dns_req_);
-    AsyncWait();
+    dns_req_ = evdns_getaddrinfo(dnsbase_
+                                 , host_.c_str()
+                                 , nullptr /* no service name given */
+                                 , &hints
+                                 , &DNSResolver::OnResolved
+                                 , pp);
 }
 
 void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
