@@ -87,5 +87,19 @@ TEST_UNIT(testTCPClientDisconnectAndDestruct) {
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
+TEST_UNIT(testTCPClientConnectLocalhost) {
+    evpp::EventLoop loop;
+    evpp::TCPClient client(&loop, "localhost:39099", "TestClient");
+    client.SetConnectionCallback([&loop, &client](const evpp::TCPConnPtr& conn) {
+        H_TEST_ASSERT(!conn->IsConnected());
+        client.Disconnect();
+        loop.Stop();
+    });
+    client.SetMessageCallback([](const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {});
+    client.Connect();
+    loop.Run();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+}
+
 
 
