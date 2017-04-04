@@ -23,6 +23,7 @@ public:
     bool Start();
     void Stop(); // TODO ADD a parameter : bool wait_until_stopped
 
+public:
     // Set a connection event relative callback when the TCPServer
     // receives a new connection or an exist connection breaks down.
     // When these two events happened, the value of the parameter in the callback is:
@@ -55,7 +56,7 @@ private:
     ConnectionCallback conn_fn_;
     MessageCallback msg_fn_;
 
-    // always in loop thread
+    // always in the listening loop thread
     uint64_t next_conn_id_;
     typedef std::map<std::string/*the name of the connection*/, TCPConnPtr> ConnectionMap;
     ConnectionMap connections_;

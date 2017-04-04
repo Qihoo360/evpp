@@ -94,7 +94,7 @@ public:
     }
 
     // TODO XXX Little-Endian/Big-Endian problem.
-#define evppbswap_64(x)                              \
+#define evppbswap_64(x)                          \
     ((((x) & 0xff00000000000000ull) >> 56)       \
      | (((x) & 0x00ff000000000000ull) >> 40)     \
      | (((x) & 0x0000ff0000000000ull) >> 24)     \
