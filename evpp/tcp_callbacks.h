@@ -9,7 +9,8 @@ class TCPConn;
 typedef std::shared_ptr<TCPConn> TCPConnPtr;
 typedef std::function<void()> TimerCallback;
 
-// When a connection established, broken down, connecting failed, this callback will be called.
+// When a connection established, broken down, connecting failed, this callback will be called
+// This is called from a work-thread this is not the listening thread probably
 typedef std::function<void(const TCPConnPtr&)> ConnectionCallback;
 
 
