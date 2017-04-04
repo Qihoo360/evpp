@@ -1,6 +1,5 @@
 
 
-#include <evpp/exp.h>
 #include <evpp/event_loop.h>
 #include <evpp/fd_channel.h>
 #include <evpp/libevent_headers.h>
@@ -14,7 +13,7 @@
 #include <sys/socket.h>
 #endif
 
-#include "../../../examples/echo/tcpecho/winmain-inl.h"
+#include "../../../examples/winmain-inl.h"
 
 using namespace evpp;
 

@@ -1,6 +1,5 @@
 #include <atomic>
 
-#include <evpp/exp.h>
 #include <evpp/http/http_server.h>
 #include "../../winmain-inl.h"
 

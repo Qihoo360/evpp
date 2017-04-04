@@ -1,6 +1,5 @@
 #include "test_common.h"
 
-#include <evpp/exp.h>
 #include <evpp/udp/sync_udp_client.h>
 #include <evpp/udp/udp_server.h>
 

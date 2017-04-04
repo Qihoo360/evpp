@@ -1,6 +1,5 @@
 #include <set>
 
-#include <evpp/exp.h>
 #include <evpp/tcp_server.h>
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>

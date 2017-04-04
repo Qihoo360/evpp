@@ -1,4 +1,3 @@
-#include <evpp/exp.h>
 #include <evpp/event_loop.h>
 
 #ifdef _WIN32

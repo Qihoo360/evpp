@@ -1,6 +1,5 @@
 #include "test_common.h"
 
-#include <evpp/exp.h>
 #include <evpp/libevent_headers.h>
 #include <evpp/libevent_watcher.h>
 #include <evpp/event_loop.h>
