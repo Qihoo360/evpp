@@ -102,6 +102,14 @@ public:
 
     // TODO Add : SetLinger();
 
+    std::string AddrToString() const {
+        if (IsIncommingConn()) {
+            return "(" + remote_addr_ + "->" + local_addr_ + "(local))";
+        } else {
+            return "(" + local_addr_ + "(local)->" + remote_addr_ + ")";
+        }
+    }
+
     void ReserveInputBuffer(size_t len) { input_buffer_.Reserve(len); }
     void ReserveOutputBuffer(size_t len) { output_buffer_.Reserve(len); }
 protected:
@@ -134,13 +142,7 @@ private:
     void SendInLoop(const Slice& message);
     void SendInLoop(const void* data, size_t len);
     void SendStringInLoop(const std::string& message);
-    std::string Addr() const {
-        if (IsIncommingConn()) {
-            return "(" + remote_addr_ + "->" + local_addr_ + "(local))";
-        } else {
-            return "(" + local_addr_ + "(local)->" + remote_addr_ + ")";
-        }
-    }
+
 private:
     EventLoop* loop_;
     int fd_;
