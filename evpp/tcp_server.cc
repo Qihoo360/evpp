@@ -39,6 +39,7 @@ bool TCPServer::Init() {
 }
 
 bool TCPServer::Start() {
+    assert(listener_.get());
     return tpool_->Start(true);
 }
 
