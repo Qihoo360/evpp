@@ -1,6 +1,5 @@
 // Modified from https://github.com/chenshuo/muduo/blob/master/examples/pingpong/client.cc
 
-#include <evpp/exp.h>
 #include <evpp/tcp_client.h>
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>
@@ -184,7 +183,7 @@ int main(int argc, char* argv[]) {
 
 
 #ifdef WIN32
-#include "../echo/tcpecho/winmain-inl.h"
+#include "../winmain-inl.h"
 #endif
 
 

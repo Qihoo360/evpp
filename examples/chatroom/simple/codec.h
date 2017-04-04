@@ -1,6 +1,5 @@
 #pragma once
 
-#include <evpp/exp.h>
 #include <evpp/tcp_conn.h>
 #include <evpp/buffer.h>
 

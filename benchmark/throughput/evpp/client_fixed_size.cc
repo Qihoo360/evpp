@@ -3,7 +3,6 @@
 // Every time, we need to receive the whole message and then we can send the next one.
 //
 
-#include <evpp/exp.h>
 #include <evpp/tcp_client.h>
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>
