@@ -1,4 +1,3 @@
-#include <evpp/exp.h>
 #include <evpp/log_config.h>
 
 #include "test_common.h"

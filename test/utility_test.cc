@@ -1,6 +1,5 @@
 #include "test_common.h"
 
-#include <evpp/exp.h>
 #include <evpp/utility.h>
 
 TEST_UNIT(testStringSplit1) {

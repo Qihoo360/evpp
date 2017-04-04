@@ -1,7 +1,5 @@
 #pragma once
 
-#include "evpp/exp.h"
-
 #include "evpp/libevent_watcher.h"
 #include "evpp/event_loop_thread.h"
 #include "evpp/buffer.h"

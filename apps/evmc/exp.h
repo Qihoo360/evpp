@@ -2,7 +2,7 @@
 
 #include <evpp/exp.h>
 
-#ifdef H_OS_WINDOWS
-H_LINK_LIB("evmc_static")
+#ifdef _WIN32
+#pragma comment(lib, "evmc_static.lib")
 #endif
 

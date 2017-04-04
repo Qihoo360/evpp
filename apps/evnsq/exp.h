@@ -5,6 +5,6 @@
 #include "consumer.h"
 
 #ifdef H_OS_WINDOWS
-H_LINK_LIB("evnsq_static")
+#pragma comment(lib, "evnsq_static.lib")
 #endif
 

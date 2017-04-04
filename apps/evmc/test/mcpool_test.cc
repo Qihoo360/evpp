@@ -5,6 +5,8 @@
 
 #include <evpp/gettimeofday.h>
 
+#include "../../../examples/winmain-inl.h"
+
 #include <thread>
 
 namespace {
