@@ -87,9 +87,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\examples\echo\winmain-inl.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\apps\evmc\test\mcpool_test.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

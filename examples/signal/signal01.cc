@@ -1,5 +1,4 @@
 #include <signal.h>
-#include <evpp/exp.h>
 #include <evpp/libevent_watcher.h>
 #include <evpp/event_loop.h>
 

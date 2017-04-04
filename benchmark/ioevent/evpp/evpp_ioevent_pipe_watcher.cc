@@ -3,7 +3,6 @@
 // Benchmark inspired by libevent/test/bench.c
 // See also: http://libev.schmorp.de/bench.html
 
-#include <evpp/exp.h>
 #include <evpp/event_loop.h>
 #include <evpp/fd_channel.h>
 #include <evpp/libevent_watcher.h>
