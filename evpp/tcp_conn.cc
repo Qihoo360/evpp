@@ -30,14 +30,14 @@ TCPConn::TCPConn(EventLoop* l,
     }
 
     LOG_DEBUG << "TCPConn::[" << name_ << "] this=" << this
-        << " channel=" << chan_.get() << " fd=" << sockfd << " addr=" << Addr();
+        << " channel=" << chan_.get() << " fd=" << sockfd << " addr=" << AddrToString();
 }
 
 TCPConn::~TCPConn() {
     LOG_TRACE << "TCPConn::~TCPConn() name=" << name()
         << " this=" << this << " channel=" << chan_.get()
         << " fd=" << fd_ << " type=" << int(type())
-        << " status=" << StatusToString() << " addr=" << Addr();
+        << " status=" << StatusToString() << " addr=" << AddrToString();
     assert(status_ == kDisconnected);
 
     if (fd_ >= 0) {
@@ -52,7 +52,7 @@ TCPConn::~TCPConn() {
 }
 
 void TCPConn::Close() {
-    LOG_INFO << "TCPConn::Close this=" << this << " fd=" << fd_ << " status=" << StatusToString() << " addr=" << Addr();
+    LOG_INFO << "TCPConn::Close this=" << this << " fd=" << fd_ << " status=" << StatusToString() << " addr=" << AddrToString();
     status_ = kDisconnecting;
     auto c = shared_from_this();
     auto f = [c]() {
@@ -232,7 +232,7 @@ void TCPConn::HandleWrite() {
 
 void TCPConn::DelayClose() {
     assert(loop_->IsInLoopThread());
-    LOG_INFO << "TCPConn::DelayClose this=" << this << " addr=" << Addr() << " fd=" << fd_ << " status_=" << StatusToString();
+    LOG_INFO << "TCPConn::DelayClose this=" << this << " addr=" << AddrToString() << " fd=" << fd_ << " status_=" << StatusToString();
     status_ = kDisconnecting;
     assert(delay_close_timer_.get());
     delay_close_timer_.reset();
@@ -240,7 +240,7 @@ void TCPConn::DelayClose() {
 }
 
 void TCPConn::HandleClose() {
-    LOG_INFO << "TCPConn::HandleClose this=" << this << " addr=" << Addr() << " fd=" << fd_ << " status_=" << StatusToString();
+    LOG_INFO << "TCPConn::HandleClose this=" << this << " addr=" << AddrToString() << " fd=" << fd_ << " status_=" << StatusToString();
 
     // Avoid multi calling
     if (status_ == kDisconnected) {
@@ -275,7 +275,7 @@ void TCPConn::HandleClose() {
     if (close_fn_) {
         close_fn_(conn);
     }
-    LOG_INFO << "TCPConn::HandleClose exit, this=" << this << " addr=" << Addr() << " fd=" << fd_ << " status_=" << StatusToString() << " use_count=" << conn.use_count();
+    LOG_INFO << "TCPConn::HandleClose exit, this=" << this << " addr=" << AddrToString() << " fd=" << fd_ << " status_=" << StatusToString() << " use_count=" << conn.use_count();
     status_ = kDisconnected;
 }
 

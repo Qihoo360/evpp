@@ -5,7 +5,9 @@
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>
 
-#include "../../echo/tcpecho/winmain-inl.h"
+#include "../../winmain-inl.h"
+
+// Example from http://twistedmatrix.com/trac/#pubsubserver
 
 class Server {
 public:
@@ -53,7 +55,6 @@ private:
     std::shared_ptr<evpp::TCPServer> server_;
     std::set<evpp::TCPConnPtr> conns_;
 };
-
 
 int main(int argc, char* argv[]) {
     int port = 1025;
