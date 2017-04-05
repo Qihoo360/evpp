@@ -86,10 +86,19 @@ public:
         grow(len + reserved_prepend_size_);
     }
 
-    // ToText appends char '\0' to buffer to convert the underlying data to a c string text.
+    // Make sure there is enough memory space to append more data with length len
+    void EnsureWritableBytes(size_t len) {
+        if (WritableBytes() < len) {
+            grow(len);
+        }
+
+        assert(WritableBytes() >= len);
+    }
+
+    // ToText appends char '\0' to buffer to convert the underlying data to a c-style string text.
     // It will not change the length of buffer.
     void ToText() {
-        AppendInt8('0');
+        AppendInt8('\0');
         UnwriteBytes(1);
     }
 
@@ -107,7 +116,7 @@ public:
     // Write
 public:
     void Write(const void* /*restrict*/ d, size_t len) {
-        ensureWritableBytes(len);
+        EnsureWritableBytes(len);
         memcpy(WriteBegin(), d, len);
         assert(write_index_ + len <= capacity_);
         write_index_ += len;
@@ -388,14 +397,6 @@ private:
 
     const char* begin() const {
         return buffer_;
-    }
-
-    void ensureWritableBytes(size_t len) {
-        if (WritableBytes() < len) {
-            grow(len);
-        }
-
-        assert(WritableBytes() >= len);
     }
 
     void grow(size_t len) {
