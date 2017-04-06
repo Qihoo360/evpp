@@ -14,7 +14,6 @@ public:
     void OnMessage(const evpp::TCPConnPtr& conn,
                    evpp::Buffer* buf) {
         while (buf->size() >= kHeaderLen) {
-            const void* data = buf->data();
             const int32_t len = buf->PeekInt32();
             if (len > 65536 || len < 0) {
                 LOG_ERROR << "Invalid length " << len;

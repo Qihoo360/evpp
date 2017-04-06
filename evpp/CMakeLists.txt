@@ -37,7 +37,7 @@ if (UNIX)
     include (utils)
     include (packages)
     set_target_properties (
-        evpp evpp_boost PROPERTIES
+        evpp evpp_boost evpp_concurrentqueue PROPERTIES
         VERSION     "${PACKAGE_VERSION}"
         SOVERSION   "${PACKAGE_SOVERSION}"
     )
