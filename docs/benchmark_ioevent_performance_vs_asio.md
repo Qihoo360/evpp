@@ -66,7 +66,7 @@ For details, please see the charts below. The horizontal axis is the number of p
 
 [The throughput benchmark against libevent2](benchmark_throughput_vs_libevent.md) : [evpp] is higher than [libevent] about **17%~130%** in this case 
 
-[The performance benchmark of `queue with std::mutex` against `boost::lockfree::queue`](benchmark_lockfree_vs_mutex.md) : `boost::lockfree::queue` is better, the average is higher than `queue with std::mutex` about **75%~150%**
+[The performance benchmark of `queue with std::mutex` against `boost::lockfree::queue` and `moodycamel::ConcurrentQueue`](benchmark_lockfree_vs_mutex.md) : `moodycamel::ConcurrentQueue` is the best, the average is higher than `boost::lockfree::queue` about **25%~100%** and higher than `queue with std::mutex` about **100%~500%**
 
 [The throughput benchmark against Boost.Asio](benchmark_throughput_vs_asio.md) : [evpp] and [asio] have the similar performance in this case
 
