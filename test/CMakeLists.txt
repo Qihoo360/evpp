@@ -14,10 +14,23 @@ endif (MSVC)
 add_executable(evpp_unittest ${evpp_unittest_SRCS})
 
 if (UNIX)
-target_link_libraries(evpp_unittest evpp event glog pthread)
+    target_link_libraries(evpp_unittest evpp event glog pthread)
+
+    add_executable(evpp_unittest_boost_lockfree ${evpp_unittest_SRCS})
+    target_link_libraries(evpp_unittest_boost_lockfree evpp_boost event glog pthread)
+
+    add_executable(evpp_unittest_concurrentqueue ${evpp_unittest_SRCS})
+    target_link_libraries(evpp_unittest_concurrentqueue evpp_concurrentqueue event glog pthread)
+
 else (UNIX)
 target_link_libraries(evpp_unittest evpp_static event libglog_static)
 endif (UNIX)
 
 include (CTest)
 add_test(NAME evpp_unittest COMMAND evpp_unittest)
+
+if (UNIX)
+    add_test(NAME evpp_unittest_concurrentqueue COMMAND evpp_unittest_concurrentqueue)
+    add_test(NAME evpp_unittest_boost_lockfree  COMMAND evpp_unittest_boost_lockfree)
+endif (UNIX)
+
