@@ -1,4 +1,4 @@
-The performance benchmark of `queue with std::mutex` against `boost::lockfree::queue`
+The performance benchmark of `queue with std::mutex` against `boost::lockfree::queue` and `moodycamel::ConcurrentQueue`
 
 ### Brief
 
@@ -9,8 +9,9 @@ We can use a queue to store the task. The producer can put tasks to the queue an
 ### The testing object
 
 1. [evpp-v0.3.1](https://github.com/Qihoo360/evpp/archive/v0.3.1.zip) based on libevent-2.0.21
-2. std::mutex
+2. std::mutex gcc 4.8.2
 2. [boost::lockfree::queue from boost-1.58](http://www.boost.org/)
+3. [moodycamel::ConcurrentQueue](https://github.com/cameron314/concurrentqueue) with commit c54341183f8674c575913a65ef7c651ecce47243
 
 ### Environment
 
@@ -28,6 +29,8 @@ The relative code of event_loop.h is bellow:
     std::shared_ptr<PipeEventWatcher> watcher_;
 #ifdef H_HAVE_BOOST
     boost::lockfree::queue<Functor*>* pending_functors_;
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+    moodycamel::ConcurrentQueue<Functor>* pending_functors_;
 #else
     std::mutex mutex_;
     std::vector<Functor>* pending_functors_; // @Guarded By mutex_
@@ -47,6 +50,9 @@ void EventLoop::QueueInLoop(const Functor& cb) {
         auto f = new Functor(cb);
         while (!pending_functors_->push(f)) {
         }
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+        while (!pending_functors_->enqueue(cb)) {
+        }
 #else
         std::lock_guard<std::mutex> lock(mutex_);
         pending_functors_->emplace_back(cb);
@@ -62,6 +68,12 @@ void EventLoop::DoPendingFunctors() {
     while (pending_functors_->pop(f)) {
         (*f)();
         delete f;
+    }
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+    Functor f;
+    while (pending_functors_->try_dequeue(f)) {
+        f();
+        --pending_functor_count_;
     }
 #else
     std::vector<Functor> functors;
@@ -84,10 +96,10 @@ We have done two benchmarks:
 
 ### Benchmark conclusion
 
-1. When we have only one producer and only one consumer, most of the time `boost::lockfree::queue` has only a little advantages to `queue with std::mutex`. But some times, `queue with std::mutex`'s performance is very low. That means `queue with std::mutex`'s perforance is not steady. On the contrary `boost::lockfree::queue` is very very steady.
-1. When we have multi producers, `boost::lockfree::queue` is better, the average is higher than `queue with std::mutex` about **75%~150%**
+1. When we have only one producer and only one consumer, most of the time `boost::lockfree::queue` has only a little advantages to `queue with std::mutex` and `moodycamel::ConcurrentQueue`'s performance is the best.
+1. When we have multi producers, `boost::lockfree::queue` is better, the average is higher than `queue with std::mutex` about **75%~150%**. `moodycamel::ConcurrentQueue` is the best, the average is higher than `boost::lockfree::queue` about **25%~100%**, and higher than `queue with std::mutex` about **100%~500%**. The more the number of producers, the more obvious advantages.
 
-So we suggest to use `boost::lockfree::queue` to exchange datas between threads insdead of `queue with std::mutex`.
+So we suggest to use `moodycamel::ConcurrentQueue` to exchange datas between threads insdead of `queue with std::mutex` or `boost::lockfree::queue`
 
 For more details, see the chart below, the horizontal axis is the count of producer threads. The vertical axis is the executing time in seconds, lower is better.
 
@@ -102,7 +114,7 @@ For more details, see the chart below, the horizontal axis is the count of produ
 
 [The throughput benchmark against libevent2](benchmark_throughput_vs_libevent.md) : [evpp] is higher than [libevent] about **17%~130%** in this case 
 
-[The performance benchmark of `queue with std::mutex` against `boost::lockfree::queue`](benchmark_lockfree_vs_mutex.md) : `boost::lockfree::queue` is better, the average is higher than `queue with std::mutex` about **75%~150%**
+[The performance benchmark of `queue with std::mutex` against `boost::lockfree::queue` and `moodycamel::ConcurrentQueue`](benchmark_lockfree_vs_mutex.md) : `moodycamel::ConcurrentQueue` is the best, the average is higher than `boost::lockfree::queue` about **25%~100%** and higher than `queue with std::mutex` about **100%~500%**
 
 [The throughput benchmark against Boost.Asio](benchmark_throughput_vs_asio.md) : [evpp] and [asio] have the similar performance in this case
 

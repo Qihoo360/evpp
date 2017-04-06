@@ -62,8 +62,10 @@ EventLoop::~EventLoop() {
 
 void EventLoop::Init() {
 #ifdef H_HAVE_BOOST
-    enum { kPendingFunctorCount = 1024 * 16 };
+    const size_t kPendingFunctorCount = 1024 * 16;
     this->pending_functors_ = new boost::lockfree::queue<Functor*>(kPendingFunctorCount);
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+    this->pending_functors_ = new moodycamel::ConcurrentQueue<Functor>();
 #else
     this->pending_functors_ = new std::vector<Functor>();
 #endif
@@ -108,10 +110,16 @@ void EventLoop::StopInLoop() {
     auto f = [this]() {
         for (;;) {
             DoPendingFunctors();
+#ifdef H_HAVE_CAMERON314_CONCURRENTQUEUE
+            if (pending_functors_->size_approx() == 0) {
+                break;
+            }
+#else
             std::lock_guard<std::mutex> lock(mutex_);
             if (pending_functors_->empty()) {
                 break;
             }
+#endif
         }
     };
     f();
@@ -167,9 +175,41 @@ void EventLoop::QueueInLoop(const Functor& cb) {
         auto f = new Functor(cb);
         while (!pending_functors_->push(f)) {
         }
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+        while (!pending_functors_->enqueue(cb)) {
+        }
 #else
         std::lock_guard<std::mutex> lock(mutex_);
         pending_functors_->emplace_back(cb);
+#endif
+    }
+    ++pending_functor_count_;
+    //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " QueueInLoop notified_=" << notified_.load() << ", queue a new Functor. pending_functor_count_=" << pending_functor_count_;
+    if (!notified_.load()) {
+        //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " QueueInLoop call watcher_->Nofity()";
+        watcher_->Notify();
+
+        //TODO This will cause a bug : miss the notify event and make the functor will never be called.
+        //TODO performance improvement.
+        //notified_.store(true);
+    } else {
+        //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " No need to call watcher_->Nofity()";
+    }
+}
+
+void EventLoop::QueueInLoop(Functor&& cb) {
+    //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " QueueInLoop notified_=" << notified_.load() << " pending_functor_count_=" << pending_functor_count_;
+    {
+#ifdef H_HAVE_BOOST
+        auto f = new Functor(std::move(cb)); // TODO Add test code for it
+        while (!pending_functors_->push(f)) {
+        }
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+        while (!pending_functors_->enqueue(std::move(cb))) {
+        }
+#else
+        std::lock_guard<std::mutex> lock(mutex_);
+        pending_functors_->emplace_back(std::move(cb));
 #endif
     }
     ++pending_functor_count_;
@@ -210,32 +250,6 @@ void EventLoop::RunInLoop(Functor&& functor) {
     }
 }
 
-void EventLoop::QueueInLoop(Functor&& cb) {
-    //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " QueueInLoop notified_=" << notified_.load() << " pending_functor_count_=" << pending_functor_count_;
-    {
-#ifdef H_HAVE_BOOST
-        auto f = new Functor(std::move(cb)); // TODO Add test code for it
-        while (!pending_functors_->push(f)) {
-        }
-#else
-        std::lock_guard<std::mutex> lock(mutex_);
-        pending_functors_->emplace_back(std::move(cb));
-#endif
-    }
-    ++pending_functor_count_;
-    //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " QueueInLoop notified_=" << notified_.load() << ", queue a new Functor. pending_functor_count_=" << pending_functor_count_;
-    if (!notified_.load()) {
-        //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " QueueInLoop call watcher_->Nofity()";
-        watcher_->Notify();
-
-        //TODO This will cause a bug : miss the notify event and make the functor will never be called.
-        //TODO performance improvement.
-        //notified_.store(true);
-    } else {
-        //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " No need to call watcher_->Nofity()";
-    }
-}
-
 void EventLoop::DoPendingFunctors() {
     //LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " DoPendingFunctors pending_functor_count_=" << pending_functor_count_;
 
@@ -244,6 +258,13 @@ void EventLoop::DoPendingFunctors() {
     while (pending_functors_->pop(f)) {
         (*f)();
         delete f;
+        --pending_functor_count_;
+    }
+    notified_.store(false);
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+    Functor f;
+    while (pending_functors_->try_dequeue(f)) {
+        f();
         --pending_functor_count_;
     }
     notified_.store(false);

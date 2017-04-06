@@ -25,6 +25,7 @@ script:
   - cmake --version
   - cd $CI_HOME
   - pwd
+  - git submodule update --init --recursive
   - mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE=debug ..
   - make -j2

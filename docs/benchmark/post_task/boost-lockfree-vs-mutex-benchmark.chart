@@ -12,8 +12,9 @@ YAxisText = Cost Time (s) Lower is better
 
 # The data and the name of the lines
 
-Data|std::mutex      = 2.04538,5.45523,9.03564,13.6443,19.3664,27.0369,33.8794
-Data|boost::lockfree = 0.988319,2.17819,4.058,4.99668,11.778,14.6983,19.3277
+Data|std::mutex                  = 2.04538,5.45523,9.03564,13.6443,19.3664,27.0369,33.8794
+Data|boost::lockfree::queue      = 1.27025,2.17819,4.058,4.99668,11.778,14.6983,19.3277
+Data|moodycamel::ConcurrentQueue = 1.00532,1.08969,2.37993,2.78818,4.65252,6.97016,9.68365
 
 # evpp : v0.3.1
 

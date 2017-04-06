@@ -11,9 +11,12 @@
 #include "evpp/any.h"
 #include "evpp/invoke_timer.h"
 
-
 #ifdef H_HAVE_BOOST
 #include <boost/lockfree/queue.hpp>
+#endif
+
+#ifdef H_HAVE_CAMERON314_CONCURRENTQUEUE
+#include <concurrentqueue/concurrentqueue.h>
 #endif
 
 
@@ -115,6 +118,8 @@ private:
     std::atomic<bool> notified_;
 #ifdef H_HAVE_BOOST
     boost::lockfree::queue<Functor*>* pending_functors_;
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+    moodycamel::ConcurrentQueue<Functor>* pending_functors_;
 #else
     std::vector<Functor>* pending_functors_; // @Guarded By mutex_
 #endif
