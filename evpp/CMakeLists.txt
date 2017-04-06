@@ -17,12 +17,21 @@ if (UNIX)
     target_link_libraries(evpp        event glog pthread)
     target_link_libraries(evpp_static event glog pthread)
 
+    # boost lockfree queue
     add_library(evpp_boost SHARED ${evpp_SRCS})
     add_library(evpp_boost_static STATIC ${evpp_SRCS})
     target_compile_definitions(evpp_boost PRIVATE -DH_HAVE_BOOST=1)
     target_compile_definitions(evpp_boost_static PRIVATE -DH_HAVE_BOOST=1)
     target_link_libraries(evpp_boost        event glog pthread)
     target_link_libraries(evpp_boost_static event glog pthread)
+
+    # https://github.com/cameron314/concurrentqueue
+    add_library(evpp_concurrentqueue SHARED ${evpp_SRCS})
+    add_library(evpp_concurrentqueue_static STATIC ${evpp_SRCS})
+    target_compile_definitions(evpp_concurrentqueue PRIVATE -DH_HAVE_CAMERON314_CONCURRENTQUEUE=1)
+    target_compile_definitions(evpp_concurrentqueue_static PRIVATE -DH_HAVE_CAMERON314_CONCURRENTQUEUE=1)
+    target_link_libraries(evpp_concurrentqueue        event glog pthread)
+    target_link_libraries(evpp_concurrentqueue_static event glog pthread)
 
     set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
     include (utils)
@@ -34,7 +43,7 @@ if (UNIX)
     )
 
     install (
-      TARGETS evpp evpp_static evpp_boost evpp_boost_static
+      TARGETS evpp evpp_static evpp_boost evpp_boost_static evpp_concurrentqueue evpp_concurrentqueue_static
       EXPORT ${PACKAGE_NAME}
       RUNTIME DESTINATION bin
       LIBRARY DESTINATION lib

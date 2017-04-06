@@ -2,7 +2,7 @@
 include_directories(${PROJECT_SOURCE_DIR}/apps ${PROJECT_SOURCE_DIR}/3rdparty)
 
 if (UNIX)
-set(LIBRARIES evpp event glog pthread)
+set(LIBRARIES evpp_concurrentqueue event glog pthread)
 link_directories("/home/s/safe/lib" ${PROJECT_BUILD_DIR}/lib)
 else(UNIX)
 set(LIBRARIES evpp_static event libglog_static)
