@@ -17,6 +17,8 @@
 
 #include "../../examples/winmain-inl.h"
 
+#include "stability.h"
+
 #include "stability_dns.h"
 #include "stability_tcp1_client.h"
 #include "stability_tcp2_client.h"
@@ -49,7 +51,6 @@ static void DefaultRequestHandler(evpp::EventLoop* loop, const evpp::http::Conte
 }
 
 namespace {
-    static std::vector<int> g_listening_port;
 
     static std::string GetHttpServerURL() {
         assert(g_listening_port.size() > 0);

@@ -12,7 +12,6 @@ namespace {
     static std::shared_ptr<evpp::TCPServer> tsrv;
     static std::atomic<int> connected_count(0);
     static std::atomic<int> message_recved_count(0);
-    const static std::string addr = "127.0.0.1:19099";
 
     void OnClientConnection1(const evpp::TCPConnPtr& conn) {
         if (conn->IsConnected()) {
@@ -25,7 +24,7 @@ namespace {
     }
 
     evpp::TCPClient* StartTCPClient1(evpp::EventLoop* loop) {
-        evpp::TCPClient* client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
+        evpp::TCPClient* client(new evpp::TCPClient(loop, GetListenAddr(), "TCPPingPongClient"));
         client->SetConnectionCallback(&OnClientConnection1);
         client->Connect();
         return client;
@@ -34,6 +33,9 @@ namespace {
 }
 
 void TestTCPClientReconnect() {
+    tsrv.reset();
+    connected_count = (0);
+    message_recved_count = (0);
     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
     tcp_client_thread->SetName("TCPClientThread");
     tcp_client_thread->Start(true);
@@ -45,7 +47,7 @@ void TestTCPClientReconnect() {
 
     int test_count = 3;
     for (int i = 0; i < test_count; i++) {
-        tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), addr, "tcp_server", i));
+        tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), GetListenAddr(), "tcp_server", i));
         tsrv->SetMessageCallback([](const evpp::TCPConnPtr& conn,
                                     evpp::Buffer* msg) {
             message_recved_count++;
