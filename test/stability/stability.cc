@@ -6,7 +6,6 @@
 #include <evpp/timestamp.h>
 #include <evpp/event_loop_thread.h>
 #include <evpp/event_loop.h>
-#include <evpp/dns_resolver.h>
 
 #include <evpp/httpc/request.h>
 #include <evpp/httpc/conn.h>
@@ -15,7 +14,13 @@
 #include <evpp/http/service.h>
 #include <evpp/http/context.h>
 #include <evpp/http/http_server.h>
+
 #include "../../examples/winmain-inl.h"
+
+#include "stability_dns.h"
+#include "stability_tcp1_client.h"
+#include "stability_tcp2_client.h"
+#include "stability_tcp3.h"
 
 static bool g_stopping = false;
 static void RequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
@@ -178,43 +183,6 @@ void TestHTTPServer() {
     }
 }
 
-void TestDNSResolver() {
-    for (int i = 0; i < 40; i++) {
-        bool resolved = false;
-        bool deleted = false;
-        auto fn_resolved = [&resolved](const std::vector <struct in_addr>& addrs) {
-            LOG_INFO << "Entering fn_resolved";
-            resolved = true;
-        };
-
-        evpp::Duration delay(double(3.0)); // 3s
-        std::unique_ptr<evpp::EventLoopThread> t(new evpp::EventLoopThread);
-        t->Start(true);
-        std::shared_ptr<evpp::DNSResolver> dns_resolver(new evpp::DNSResolver(t->event_loop(), "www.so.com", evpp::Duration(1.0), fn_resolved));
-        dns_resolver->Start();
-
-        while (!resolved) {
-            usleep(1);
-        }
-
-        auto fn_deleter = [&deleted, dns_resolver]() {
-            LOG_INFO << "Entering fn_deleter";
-            deleted = true;
-        };
-
-        t->event_loop()->QueueInLoop(fn_deleter);
-        dns_resolver.reset();
-        while (!deleted) {
-            usleep(1);
-        }
-
-        t->Stop(true);
-        t.reset();
-        if (evpp::GetActiveEventCount() != 0) {
-            assert(evpp::GetActiveEventCount() == 0);
-        }
-    }
-}
 
 int main(int argc, char* argv[]) {
     int port = 8080;
@@ -245,6 +213,14 @@ int main(int argc, char* argv[]) {
     for (;;) {
         TestHTTPServer();
         TestDNSResolver();
+        TestTCPClientReconnect();
+        TestTCPClientConnectFailed();
+        TestTCPClientDisconnectImmediately();
+        TestTCPClientDisconnectAndDestruct();
+        TestTCPClientConnectLocalhost();
+        TestTCPServer1();
+        TestTCPServerSilenceShutdown1();
+        TestTCPServerSilenceShutdown2();
     }
     return 0;
 }

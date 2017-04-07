@@ -6,19 +6,19 @@
 #				 ${PROJECT_SOURCE_DIR}/3rdparty/glog-0.3.4/${CMAKE_BUILD_TYPE})
 #endif (MSVC)
 
-add_executable(test_evpp_stability stability.cc)
+file(GLOB SROUCES *.cc *.h)
+add_executable(test_evpp_stability ${SROUCES})
 
 if (UNIX)
     target_link_libraries(test_evpp_stability evpp event glog pthread)
 
-    add_executable(test_evpp_stability_boost_lockfree stability.cc)
+    add_executable(test_evpp_stability_boost_lockfree ${SROUCES})
     target_link_libraries(test_evpp_stability_boost_lockfree evpp_boost event glog pthread)
 
-    add_executable(test_evpp_stability_concurrentqueue stability.cc)
+    add_executable(test_evpp_stability_concurrentqueue ${SROUCES})
     target_link_libraries(test_evpp_stability_concurrentqueue evpp_concurrentqueue event glog pthread)
 
 else (UNIX)
 target_link_libraries(test_evpp_stability evpp_static event libglog_static)
 endif (UNIX)
-
 
