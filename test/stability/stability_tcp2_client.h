@@ -9,7 +9,7 @@
 
 void TestTCPClientConnectFailed() {
     std::shared_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
-    std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop.get(), "127.0.0.1:39723", "TCPPingPongClient"));
+    std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop.get(), GetListenAddr(), "TCPPingPongClient"));
     client->SetConnectionCallback([&loop, &client](const evpp::TCPConnPtr& conn) {
         assert(!conn->IsConnected());
         client->Disconnect();
@@ -86,7 +86,7 @@ void TestTCPClientDisconnectAndDestruct() {
 
 void TestTCPClientConnectLocalhost() {
     evpp::EventLoop loop;
-    evpp::TCPClient client(&loop, "localhost:39099", "TestClient");
+    evpp::TCPClient client(&loop, GetListenAddr(), "TestClient");
     client.SetConnectionCallback([&loop, &client](const evpp::TCPConnPtr& conn) {
         assert(!conn->IsConnected());
         client.Disconnect();
