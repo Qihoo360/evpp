@@ -26,9 +26,6 @@ public:
 
     void AddResponseHeader(const std::string& key, const std::string& value);
 
-    // The original URI, with original parameters, e.g. : /status.html?code=utf8
-    const char* original_uri() const;
-
     // Finds the value belonging to a header.
     //
     // @param key the name of the header to find
@@ -36,6 +33,10 @@ public:
     // could not be found.
     const char* FindRequestHeader(const char* key);
 
+    // The original URI, with original parameters, e.g. : /status.html?code=utf8
+    const char* original_uri() const;
+
+    // The URI without any parameters
     const  std::string& uri() const {
         return uri_;
     }
@@ -59,8 +60,8 @@ private:
     // The URI without any parameters : e.g. /status.html
     std::string uri_;
 
-    // The remote client ip.
-    // If the HTTP request is forworded by Nginx,
+    // The remote client IP.
+    // If the HTTP request is forwarded by Nginx,
     // we will prefer to use the value of 'clientip' parameter in URL
     // @see The reverse proxy Nginx configuration : proxy_pass http://127.0.0.1:8080/get/?clientip=$remote_addr;
     std::string remote_ip_;

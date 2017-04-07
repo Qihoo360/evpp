@@ -19,6 +19,7 @@
 
 static bool g_stopping = false;
 static void RequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+    LOG_INFO << "DefaultRequestHandler loop=" << loop << " ctx.url=" << ctx->original_uri() << " tid=" << std::this_thread::get_id();
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << " OK"
         << " ip=" << ctx->remote_ip() << "\n"
@@ -28,7 +29,7 @@ static void RequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& 
 }
 
 static void DefaultRequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
-    //std::cout << __func__ << " called ...\n";
+    LOG_INFO << "DefaultRequestHandler loop=" << loop << " ctx.url=" << ctx->original_uri() << " tid=" << std::this_thread::get_id();
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << "\n"
         << " ip=" << ctx->remote_ip() << "\n"
@@ -53,83 +54,88 @@ namespace {
         return oss.str();
     }
 
-    void testDefaultHandler1(evpp::EventLoop* loop, int* finished) {
+    void testDefaultHandler1(evpp::EventLoop* loop, std::atomic<int>* finished) {
         std::string uri = "/status?a=1";
         std::string url = GetHttpServerURL() + uri;
         auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
         auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
+            LOG_INFO << "request=" << r << " response=" << response.get() << " tid=" << std::this_thread::get_id();
             std::string result = response->body().ToString();
             assert(!result.empty());
             assert(result.find("uri=/status") != std::string::npos);
             assert(result.find("uri=/status?a=1") == std::string::npos);
             assert(result.find("func=DefaultRequestHandler") != std::string::npos);
-            *finished += 1;
+            finished->fetch_add(1);
             delete r;
         };
 
         r->Execute(f);
     }
 
-    void testDefaultHandler2(evpp::EventLoop* loop, int* finished) {
+    void testDefaultHandler2(evpp::EventLoop* loop, std::atomic<int>* finished) {
         std::string uri = "/status";
         std::string body = "The http request body.";
         std::string url = GetHttpServerURL() + uri;
         auto r = new evpp::httpc::Request(loop, url, body, evpp::Duration(1.0));
         auto f = [body, r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
+            LOG_INFO << "request=" << r << " response=" << response.get() << " tid=" << std::this_thread::get_id();
             std::string result = response->body().ToString();
             assert(!result.empty());
             assert(result.find("uri=/status") != std::string::npos);
             assert(result.find("func=DefaultRequestHandler") != std::string::npos);
             assert(result.find(body.c_str()) != std::string::npos);
-            *finished += 1;
+            finished->fetch_add(1);
             delete r;
         };
 
         r->Execute(f);
     }
 
-    void testDefaultHandler3(evpp::EventLoop* loop, int* finished) {
+    void testDefaultHandler3(evpp::EventLoop* loop, std::atomic<int>* finished) {
         std::string uri = "/status/method/method2/xx";
         std::string url = GetHttpServerURL() + uri;
         auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
         auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
+            LOG_INFO << "request=" << r << " response=" << response.get() << " tid=" << std::this_thread::get_id();
             std::string result = response->body().ToString();
             assert(!result.empty());
             assert(result.find("uri=/status/method/method2/xx") != std::string::npos);
             assert(result.find("func=DefaultRequestHandler") != std::string::npos);
-            *finished += 1;
+            finished->fetch_add(1);
             delete r;
         };
 
         r->Execute(f);
     }
 
-    void testPushBootHandler(evpp::EventLoop* loop, int* finished) {
+    void testPushBootHandler(evpp::EventLoop* loop, std::atomic<int>* finished) {
         std::string uri = "/push/boot";
         std::string url = GetHttpServerURL() + uri;
         auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
         auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
+            LOG_INFO << "request=" << r << " response=" << response.get() << " tid=" << std::this_thread::get_id();
             std::string result = response->body().ToString();
             assert(!result.empty());
             assert(result.find("uri=/push/boot") != std::string::npos);
             assert(result.find("func=RequestHandler") != std::string::npos);
-            *finished += 1;
+            finished->fetch_add(1);
             delete r;
         };
 
         r->Execute(f);
     }
 
-    void testStop(evpp::EventLoop* loop, int* finished) {
+    void testStop(evpp::EventLoop* loop, std::atomic<int>* finished) {
         std::string uri = "/mod/stop";
         std::string url = GetHttpServerURL() + uri;
         auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
         auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
+            LOG_INFO << "request=" << r << " response=" << response.get() << " tid=" << std::this_thread::get_id();
             std::string result = response->body().ToString();
             assert(!result.empty());
             assert(result.find("uri=/mod/stop") != std::string::npos);
             assert(result.find("func=DefaultRequestHandler") != std::string::npos);
-            *finished += 1;
+            finished->fetch_add(1);
             delete r;
         };
 
@@ -137,9 +143,10 @@ namespace {
     }
 
     static void TestAll() {
+        LOG_INFO << "TestAll start";
         evpp::EventLoopThread t;
         t.Start(true);
-        int finished = 0;
+        std::atomic<int> finished(0);
         testDefaultHandler1(t.event_loop(), &finished);
         testDefaultHandler2(t.event_loop(), &finished);
         testDefaultHandler3(t.event_loop(), &finished);
@@ -149,12 +156,13 @@ namespace {
         while (true) {
             usleep(10);
 
-            if (finished == 5) {
+            if (finished.load() == 5) {
                 break;
             }
         }
 
         t.Stop(true);
+        LOG_INFO << "TestAll end";
     }
 }
 
