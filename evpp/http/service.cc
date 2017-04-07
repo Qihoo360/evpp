@@ -17,6 +17,7 @@ Service::Service(EventLoop* l)
 Service::~Service() {
     assert(!evhttp_);
     assert(!listen_loop_);
+    assert(!evhttp_bound_socket_);
 }
 
 bool Service::Listen(int port) {
@@ -39,20 +40,24 @@ bool Service::Listen(int port) {
 }
 
 void Service::Stop() {
+    LOG_TRACE << "this=" << this << " http service is stopping";
     assert(listen_loop_->IsInLoopThread());
 
     if (evhttp_) {
         evhttp_free(evhttp_);
         evhttp_ = nullptr;
+        evhttp_bound_socket_ = nullptr;
     }
 
     listen_loop_ = nullptr;
     callbacks_.clear();
     default_callback_ = HTTPRequestCallback();
+    LOG_TRACE << "this=" << this << " http service stopped";
 }
 
 
 void Service::Pause() {
+    LOG_TRACE << "this=" << this << " http service pause";
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     if (evhttp_bound_socket_) {
         evconnlistener_disable(evhttp_bound_socket_get_listener(evhttp_bound_socket_));
@@ -64,6 +69,7 @@ void Service::Pause() {
 }
 
 void Service::Continue() {
+    LOG_TRACE << "this=" << this << " http service continue";
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     if (evhttp_bound_socket_) {
         evconnlistener_enable(evhttp_bound_socket_get_listener(evhttp_bound_socket_));
@@ -113,6 +119,7 @@ void Service::HandleRequest(struct evhttp_request* req) {
 }
 
 void Service::DefaultHandleRequest(const ContextPtr& ctx) {
+    LOG_TRACE << "this=" << this << " DefaultHandleRequest url=" << ctx->original_uri();
     if (default_callback_) {
         auto f = std::bind(&Service::SendReply, this, ctx->req(), std::placeholders::_1);
         default_callback_(listen_loop_, ctx, f);
@@ -147,7 +154,7 @@ struct Response {
 
 void Service::SendReply(struct evhttp_request* req, const std::string& response_data) {
     // In the worker thread
-    LOG_TRACE << "send reply in working thread";
+    LOG_TRACE << "this=" << this << " send reply in working thread";
 
     // Build the response package in the worker thread
     std::shared_ptr<Response> response(new Response(req, response_data));
@@ -155,7 +162,7 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
     auto f = [this, response]() {
         // In the main HTTP listening thread
         assert(listen_loop_->IsInLoopThread());
-        LOG_TRACE << "send http reply";
+        LOG_TRACE << "this=" << this << " send reply in listenning thread";
 
         if (!response->buffer) {
             evhttp_send_reply(response->req, HTTP_NOTFOUND, "Not Found", nullptr);

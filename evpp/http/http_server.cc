@@ -101,6 +101,7 @@ bool Server::Start() {
 }
 
 void Server::Stop(bool wait_thread_exit /*= false*/) {
+    LOG_INFO << "this=" << this << " http server is stopping";
     for (auto& lt : listen_threads_) {
         // 1. Service::Stop will be called automatically when listen_thread_ is existing
         // 2. EventLoopThread::Stop will be called to terminate the thread
@@ -138,9 +139,11 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
         assert(lt.thread->IsStopped());
     }
     assert(IsStopped());
+    LOG_INFO << "this=" << this << " http server stopped";
 }
 
 void Server::Pause() {
+    LOG_INFO << "this=" << this << " http server pause";
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->event_loop();
         auto f = [&lt]() {
@@ -151,6 +154,7 @@ void Server::Pause() {
 }
 
 void Server::Continue() {
+    LOG_INFO << "this=" << this << " http server continue";
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->event_loop();
         auto f = [&lt]() {
