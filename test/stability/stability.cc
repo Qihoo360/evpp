@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
         g_listening_port.push_back (port);
     } else {
         for (int i = 1; i < argc; i++) {
-            port = std::atoi(argv[1]);
+            port = std::atoi(argv[i]);
             g_listening_port.push_back(port);
         }
     }
