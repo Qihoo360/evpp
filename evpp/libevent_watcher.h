@@ -53,6 +53,7 @@ class EVPP_EXPORT PipeEventWatcher : public EventWatcher {
 public:
     PipeEventWatcher(EventLoop* loop, const Handler& handler);
     PipeEventWatcher(EventLoop* loop, Handler&& handler);
+    ~PipeEventWatcher();
 
     bool AsyncWait();
     void Notify();

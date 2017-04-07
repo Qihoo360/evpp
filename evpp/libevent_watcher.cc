@@ -114,6 +114,11 @@ PipeEventWatcher::PipeEventWatcher(EventLoop* loop,
     memset(pipe_, 0, sizeof(pipe_[0] * 2));
 }
 
+
+PipeEventWatcher::~PipeEventWatcher() {
+    Close();
+}
+
 bool PipeEventWatcher::DoInit() {
     assert(pipe_[0] == 0);
 
