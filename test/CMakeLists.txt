@@ -34,3 +34,4 @@ if (UNIX)
     add_test(NAME evpp_unittest_boost_lockfree  COMMAND evpp_unittest_boost_lockfree)
 endif (UNIX)
 
+add_subdirectory (stability)
