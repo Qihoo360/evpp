@@ -211,9 +211,8 @@ int main(int argc, char* argv[]) {
 
     // We are running forever
     // If the program stops at somewhere there must be a bug to be fixed.
-    for (;;) {
-        TestHTTPServer();
-        TestDNSResolver();
+    for (size_t i = 0;;i++) {
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop " << i;
         TestTCPClientReconnect();
         TestTCPClientConnectFailed();
         TestTCPClientDisconnectImmediately();
@@ -222,6 +221,8 @@ int main(int argc, char* argv[]) {
         TestTCPServer1();
         TestTCPServerSilenceShutdown1();
         TestTCPServerSilenceShutdown2();
+        TestHTTPServer();
+        TestDNSResolver();
     }
     return 0;
 }
