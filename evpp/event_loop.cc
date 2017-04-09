@@ -100,7 +100,7 @@ void EventLoop::Run() {
 
 void EventLoop::Stop() {
     assert(running_);
-    RunInLoop(std::bind(&EventLoop::StopInLoop, this));
+    QueueInLoop(std::bind(&EventLoop::StopInLoop, this));
 }
 
 void EventLoop::StopInLoop() {
@@ -123,15 +123,17 @@ void EventLoop::StopInLoop() {
         }
     };
     f();
-
+    LOG_INFO << "this=" << this << " start event_base_loopexit";
 #ifdef H_BENCHMARK_TESTING
     event_base_loopexit(evbase_, NULL);
 #else
     timeval tv = Duration(0.5).TimeVal(); // Trick : delay 0.5 second
     event_base_loopexit(evbase_, &tv);
 #endif
+    LOG_INFO << "this=" << this << " after event_base_loopexit";
     f();
     running_ = false;
+    LOG_INFO << "this=" << this << " end of StopInLoop";
 }
 
 void EventLoop::AfterFork() {
@@ -161,6 +163,7 @@ evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, const Functor& f) {
 }
 
 void EventLoop::RunInLoop(const Functor& functor) {
+    assert(IsRunning());
     if (IsInLoopThread()) {
         functor();
     } else {
