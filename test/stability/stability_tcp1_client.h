@@ -52,7 +52,10 @@ void TestTCPClientReconnect() {
                                     evpp::Buffer* msg) {
             message_recved_count++;
         });
-        tsrv->Init() && tsrv->Start();
+        bool rc = tsrv->Init();
+        assert(rc);
+        rc = tsrv->Start();
+        assert(rc);
         usleep(evpp::Duration(2.0).Microseconds());
         tsrv->Stop();
         usleep(evpp::Duration(2.0).Microseconds());

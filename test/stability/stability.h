@@ -10,6 +10,6 @@
 static std::vector<int> g_listening_port;
 
 std::string GetListenAddr() {
-    return std::string("0.0.0.0:") + std::to_string(g_listening_port[0]);
+    return std::string("127.0.0.1:") + std::to_string(g_listening_port[0]);
 }
 
