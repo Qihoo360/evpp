@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include "service.h"
 #include "evpp/thread_dispatch_policy.h"
 
@@ -57,7 +59,7 @@ private:
                   const HTTPRequestCallback& user_callback);
 
     EventLoop* GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx);
-
+    void OnListenThreadExited(int exited_listen_thread_count);
 private:
     struct ListenThread {
         // The listening main thread
