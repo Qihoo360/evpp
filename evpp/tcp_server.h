@@ -4,14 +4,16 @@
 #include "evpp/event_loop.h"
 #include "evpp/event_loop_thread_pool.h"
 #include "evpp/tcp_callbacks.h"
+
 #include "evpp/thread_dispatch_policy.h"
+#include "evpp/server_status.h"
 
 #include <map>
 
 namespace evpp {
 class Listener;
 
-class EVPP_EXPORT TCPServer : public ThreadDispatchPolicy {
+class EVPP_EXPORT TCPServer : public ThreadDispatchPolicy, public ServerStatus {
 public:
     TCPServer(EventLoop* loop,
               const std::string& listen_addr/*ip:port*/,
@@ -57,7 +59,7 @@ private:
     MessageCallback msg_fn_;
 
     // always in the listening loop thread
-    uint64_t next_conn_id_;
+    uint64_t next_conn_id_ = 0;
     typedef std::map<std::string/*the name of the connection*/, TCPConnPtr> ConnectionMap;
     ConnectionMap connections_;
 };
