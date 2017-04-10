@@ -145,10 +145,15 @@ bool Server::Start() {
         LOG_ERROR << "MessageHandler DO NOT set!";
         return false;
     }
+
     for (auto& rt : recv_threads_) {
         if (!rt->Run()) {
             return false;
         }
+    }
+
+    while (!IsRunning()) {
+        usleep(1);
     }
     return true;
 }

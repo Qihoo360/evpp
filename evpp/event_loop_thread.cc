@@ -63,6 +63,7 @@ void EventLoopThread::Stop(bool wait_thread_exit) {
         while (!IsStopped()) {
             usleep(1);
         }
+
         if (thread_->joinable()) {
             try {
                 thread_->join();

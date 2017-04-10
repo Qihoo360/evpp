@@ -68,6 +68,7 @@
     <ClInclude Include="..\evpp\log_config.h" />
     <ClInclude Include="..\evpp\memmem.h" />
     <ClInclude Include="..\evpp\platform_config.h" />
+    <ClInclude Include="..\evpp\server_status.h" />
     <ClInclude Include="..\evpp\slice.h" />
     <ClInclude Include="..\evpp\sockets.h" />
     <ClInclude Include="..\evpp\sys_addrinfo.h" />
