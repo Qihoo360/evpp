@@ -212,16 +212,25 @@ int main(int argc, char* argv[]) {
     // We are running forever
     // If the program stops at somewhere there must be a bug to be fixed.
     for (size_t i = 0;;i++) {
-        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop " << i;
-        TestTCPClientReconnect();
-        TestTCPClientConnectFailed();
-        TestTCPClientDisconnectImmediately();
-        TestTCPClientDisconnectAndDestruct();
-        TestTCPClientConnectLocalhost();
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop TestTCPServer1 " << i;
         TestTCPServer1();
-        TestTCPServerSilenceShutdown1();
-        TestTCPServerSilenceShutdown2();
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop TestHTTPServer " << i;
         TestHTTPServer();
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop TestTCPClientReconnect " << i;
+        TestTCPClientReconnect();
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop TestTCPClientConnectFailed " << i;
+        TestTCPClientConnectFailed();
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop TestTCPClientDisconnectImmediately " << i;
+        TestTCPClientDisconnectImmediately();
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop TestTCPClientDisconnectAndDestruct " << i;
+        TestTCPClientDisconnectAndDestruct();
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop TestTCPClientConnectLocalhost " << i;
+        TestTCPClientConnectLocalhost();
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop TestTCPServerSilenceShutdown1 " << i;
+        TestTCPServerSilenceShutdown1();
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop TestTCPServerSilenceShutdown2 " << i;
+        TestTCPServerSilenceShutdown2();
+        LOG_WARN << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Running test loop TestDNSResolver " << i;
         TestDNSResolver();
     }
     return 0;
