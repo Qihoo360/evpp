@@ -111,6 +111,7 @@ private:
     void StopInLoop();
     void DoPendingFunctors();
     size_t GetPendingQueueSize();
+    bool IsPendingQueueEmpty();
 private:
     struct event_base* evbase_;
     bool create_evbase_myself_;
