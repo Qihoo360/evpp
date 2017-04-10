@@ -110,7 +110,7 @@ private:
     void InitEventWatcher();
     void StopInLoop();
     void DoPendingFunctors();
-
+    size_t GetPendingQueueSize();
 private:
     struct event_base* evbase_;
     bool create_evbase_myself_;
