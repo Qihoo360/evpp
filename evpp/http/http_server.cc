@@ -37,7 +37,7 @@ bool Server::Init(int listen_port) {
 bool Server::Init(const std::vector<int>& listen_ports) {
     bool rc = true;
     for (auto lp : listen_ports) {
-        rc &= Init(lp);
+        rc = rc && Init(lp);
     }
     return rc;
 }
@@ -68,10 +68,15 @@ bool Server::AfterFork() {
 }
 
 bool Server::Start() {
+    std::shared_ptr<std::atomic<int>> exited_listen_thread_count(new std::atomic<int>(0));
     bool rc = tpool_->Start(true);
     for (auto& lt : listen_threads_) {
-        auto http_close_fn = std::bind(&Service::Stop, lt.hserver);
-        rc &= lt.thread->Start(true,
+        auto http_close_fn = [=]() {
+            lt.hserver->Stop();
+            LOG_INFO << "http service at 0.0.0.0:" << lt.hserver->port() << " has stopped.";
+            OnListenThreadExited(exited_listen_thread_count->fetch_add(1) + 1);
+        };
+        rc = rc && lt.thread->Start(true,
                                EventLoopThread::Functor(),
                                http_close_fn);
         assert(lt.thread->IsRunning());
@@ -102,12 +107,15 @@ bool Server::Start() {
 
 void Server::Stop(bool wait_thread_exit /*= false*/) {
     LOG_INFO << "this=" << this << " http server is stopping";
+
+    // First we stop all the listening threads
+    // And then after listening threads have stopped,
+    // Server::OnListenThreadExited will be invoked, in which we will stop the working thread pool.
     for (auto& lt : listen_threads_) {
         // 1. Service::Stop will be called automatically when listen_thread_ is existing
         // 2. EventLoopThread::Stop will be called to terminate the thread
         lt.thread->Stop();
     }
-    tpool_->Stop();
 
     if (!wait_thread_exit) {
         return;
@@ -259,6 +267,14 @@ EventLoop* Server::GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx) {
     uint64_t hash = std::hash<std::string>()(ctx->remote_ip());
     return tpool_->GetNextLoopWithHash(hash);
 #endif
+}
+
+void Server::OnListenThreadExited(int exited_listen_thread_count) {
+    LOG_INFO << "this=" << this << " OnListenThreadExited exited_listen_thread_count=" << exited_listen_thread_count << " listen_threads_.size=" << listen_threads_.size();
+    if (exited_listen_thread_count == int(listen_threads_.size())) {
+        LOG_INFO << "this=" << this << " stop the working thread pool.";
+        tpool_->Stop();
+    }
 }
 
 Service* Server::service(int index) const {

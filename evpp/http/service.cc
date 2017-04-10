@@ -20,17 +20,18 @@ Service::~Service() {
     assert(!evhttp_bound_socket_);
 }
 
-bool Service::Listen(int port) {
+bool Service::Listen(int listen_port) {
     assert(evhttp_);
     assert(listen_loop_->IsInLoopThread());
+    port_ = listen_port;
 
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
-    evhttp_bound_socket_ = evhttp_bind_socket_with_handle(evhttp_, "0.0.0.0", port);
+    evhttp_bound_socket_ = evhttp_bind_socket_with_handle(evhttp_, "0.0.0.0", listen_port);
     if (!evhttp_bound_socket_) {
         return false;
     }
 #else
-    if (evhttp_bind_socket(evhttp_, "0.0.0.0", port) != 0) {
+    if (evhttp_bind_socket(evhttp_, "0.0.0.0", listen_port) != 0) {
         return false;
     }
 #endif
@@ -162,7 +163,7 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
     auto f = [this, response]() {
         // In the main HTTP listening thread
         assert(listen_loop_->IsInLoopThread());
-        LOG_TRACE << "this=" << this << " send reply in listenning thread";
+        LOG_TRACE << "this=" << this << " send reply in listening thread";
 
         if (!response->buffer) {
             evhttp_send_reply(response->req, HTTP_NOTFOUND, "Not Found", nullptr);
@@ -173,7 +174,13 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
     };
 
     // Forward this response sending task to HTTP listening thread
-    listen_loop_->RunInLoop(f);
+    if (listen_loop_->IsRunning()) {
+        LOG_INFO << "this=" << this << " dispatch this SendReply to listening thread";
+        listen_loop_->RunInLoop(f);
+    } else {
+        LOG_WARN << "this=" << this << " listening thread is going to stop. we discards this request.";
+        // TODO do we need do some resource recycling about the evhttp_request?
+    }
 }
 }
 }
