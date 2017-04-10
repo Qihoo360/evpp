@@ -31,12 +31,17 @@ public:
     EventLoop* event_loop() const {
         return listen_loop_;
     }
+
+    int port() const {
+        return port_;
+    }
 private:
     static void GenericCallback(struct evhttp_request* req, void* arg);
     void HandleRequest(struct evhttp_request* req);
     void DefaultHandleRequest(const ContextPtr& ctx);
     void SendReply(struct evhttp_request* req, const std::string& response);
 private:
+    int port_ = 0;
     struct evhttp* evhttp_;
     struct evhttp_bound_socket* evhttp_bound_socket_;
     EventLoop* listen_loop_;
