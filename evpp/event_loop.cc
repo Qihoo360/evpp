@@ -108,13 +108,17 @@ void EventLoop::StopInLoop() {
     assert(running_);
 
     auto f = [this]() {
-        for (;;) {
+        for (int i = 0;;i++) {
+            LOG_INFO << "this=" << this << " calling DoPendingFunctors index=" << i;
             DoPendingFunctors();
-            if (GetPendingQueueSize() == 0) {
+            if (IsPendingQueueEmpty()) {
                 break;
             }
         }
     };
+
+    LOG_INFO << "this=" << this << " before event_base_loopexit, we invoke DoPendingFunctors";
+
     f();
 
     LOG_INFO << "this=" << this << " start event_base_loopexit";
@@ -124,7 +128,7 @@ void EventLoop::StopInLoop() {
     timeval tv = Duration(0.005).TimeVal(); // Trick : delay 0.005 second
     event_base_loopexit(evbase_, &tv);
 #endif
-    LOG_INFO << "this=" << this << " after event_base_loopexit";
+    LOG_INFO << "this=" << this << " after event_base_loopexit, we invoke DoPendingFunctors";
 
     f();
 
@@ -292,6 +296,16 @@ size_t EventLoop::GetPendingQueueSize() {
     return pending_functors_->size_approx();
 #else
     return pending_functors_->size();
+#endif
+}
+
+bool EventLoop::IsPendingQueueEmpty() {
+#ifdef H_HAVE_BOOST
+    return pending_functors_->empty();
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
+    return pending_functors_->size_approx() == 0;
+#else
+    return pending_functors_->empty();
 #endif
 }
 
