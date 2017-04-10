@@ -96,7 +96,7 @@ bool EventLoopThreadPool::IsStopped() const {
 EventLoop* EventLoopThreadPool::GetNextLoop() {
     EventLoop* loop = base_loop_;
 
-    if (!threads_.empty()) {
+    if (started_ && !threads_.empty()) {
         // No need to lock here
         int64_t next = next_.fetch_add(1);
         next = next % threads_.size();
@@ -109,7 +109,7 @@ EventLoop* EventLoopThreadPool::GetNextLoop() {
 EventLoop* EventLoopThreadPool::GetNextLoopWithHash(uint64_t hash) {
     EventLoop* loop = base_loop_;
 
-    if (!threads_.empty()) {
+    if (started_ && !threads_.empty()) {
         uint64_t next = hash % threads_.size();
         loop = (threads_[next])->event_loop();
     }

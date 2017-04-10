@@ -27,6 +27,7 @@ TCPServer::~TCPServer() {
 }
 
 bool TCPServer::Init() {
+    assert(status_ == kNull);
     listener_.reset(new Listener(loop_, listen_addr_));
     listener_->Listen();
     listener_->SetNewConnectionCallback(
@@ -35,16 +36,25 @@ bool TCPServer::Init() {
                   std::placeholders::_1,
                   std::placeholders::_2,
                   std::placeholders::_3));
+    status_.store(kInitialized);
     return true;
 }
 
 bool TCPServer::Start() {
+    assert(status_ == kInitialized);
     assert(listener_.get());
-    return tpool_->Start(true);
+    bool rc = tpool_->Start(true);
+    if (rc) {
+        status_.store(kRunning);
+    }
+    return rc;
 }
 
-
 bool TCPServer::IsRunning() const {
+    if (status_ != kRunning) {
+        return false;
+    }
+
     if (!loop_->IsRunning()) {
         return false;
     }
@@ -71,6 +81,8 @@ bool TCPServer::IsStopped() const {
 }
 
 void TCPServer::Stop() {
+    assert(status_ == kRunning);
+    status_.store(kStopping);
     loop_->RunInLoop(std::bind(&TCPServer::StopInLoop, this));
 }
 
@@ -79,19 +91,26 @@ void TCPServer::StopInLoop() {
     listener_->Stop();
     listener_.reset();
 
-    for (auto& c : connections_) {
-        c.second->Close();
+    if (connections_.empty()) {
+        // Stop all the working threads now.
+        tpool_->Stop(true);
+        assert(tpool_->IsStopped());
+        status_.store(kStopped);
+    } else {
+        for (auto& c : connections_) {
+            c.second->Close();
+        }
+        // The working threads will be stopped after all the connections closed.
     }
 
-    tpool_->Stop(true);
-    assert(tpool_->IsStopped());
-    LOG_TRACE << "TCPServer::StopInLoop exited";
+    LOG_TRACE << "TCPServer::StopInLoop exited, status=" << ToString();
 }
 
 void TCPServer::HandleNewConn(int sockfd,
                               const std::string& remote_addr/*ip:port*/,
                               const struct sockaddr_in* raddr) {
     assert(loop_->IsInLoopThread());
+    assert(IsRunning());
     EventLoop* io_loop = GetNextLoop(raddr);
     std::string n = name_ + "-" + remote_addr + "#" + std::to_string(next_conn_id_++); // TODO use string buffer
     TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
@@ -117,6 +136,12 @@ void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
         LOG_INFO << "TCPServer::RemoveConnection conn=" << conn.get() << " fd="<< conn->fd();
         assert(this->loop_->IsInLoopThread());
         this->connections_.erase(conn->name());
+        if (status_ == kStopping && this->connections_.empty()) {
+            // At last, we stop all the working threads
+            tpool_->Stop(true);
+            assert(tpool_->IsStopped());
+            status_.store(kStopped);
+        }
     };
     loop_->RunInLoop(f);
 }

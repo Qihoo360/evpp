@@ -1,7 +1,7 @@
 #pragma once
 
 namespace evpp {
-class EVPP_EXPORT ThreadDispatchPolicy {
+class ThreadDispatchPolicy {
 public:
     enum Policy {
         kRoundRobin,
