@@ -47,7 +47,7 @@ private:
         }
 
         if (need_post) {
-            loop_.event_loop()->RunInLoop([this]() {
+            loop_.loop()->RunInLoop([this]() {
                 temp_tasks_.clear();
 
                 {

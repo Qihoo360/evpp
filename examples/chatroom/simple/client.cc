@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
     std::string host = argv[1];
     std::string port = argv[2];
 
-    ChatClient client(loop.event_loop(), host + ":" + port);
+    ChatClient client(loop.loop(), host + ":" + port);
     client.Connect();
     std::string line;
     while (std::getline(std::cin, line)) {

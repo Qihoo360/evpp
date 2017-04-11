@@ -83,13 +83,13 @@ const std::string& EventLoopThread::name() const {
 }
 
 
-EventLoop* EventLoopThread::event_loop() const {
+EventLoop* EventLoopThread::loop() const {
     return event_loop_.get();
 }
 
 
 struct event_base* EventLoopThread::event_base() {
-    return event_loop()->event_base();
+    return loop()->event_base();
 }
 
 std::thread::id EventLoopThread::tid() const {
@@ -116,7 +116,7 @@ bool EventLoopThread::IsStopped() const {
 
 
 void EventLoopThread::AfterFork() {
-    event_loop()->AfterFork();
+    loop()->AfterFork();
 }
 
 }

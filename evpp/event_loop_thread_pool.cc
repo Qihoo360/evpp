@@ -100,7 +100,7 @@ EventLoop* EventLoopThreadPool::GetNextLoop() {
         // No need to lock here
         int64_t next = next_.fetch_add(1);
         next = next % threads_.size();
-        loop = (threads_[next])->event_loop();
+        loop = (threads_[next])->loop();
     }
 
     return loop;
@@ -111,7 +111,7 @@ EventLoop* EventLoopThreadPool::GetNextLoopWithHash(uint64_t hash) {
 
     if (started_ && !threads_.empty()) {
         uint64_t next = hash % threads_.size();
-        loop = (threads_[next])->event_loop();
+        loop = (threads_[next])->loop();
     }
 
     return loop;

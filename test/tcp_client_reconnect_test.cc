@@ -45,12 +45,12 @@ TEST_UNIT(testTCPClientReconnect) {
     std::unique_ptr<evpp::EventLoopThread> tcp_server_thread(new evpp::EventLoopThread);
     tcp_server_thread->SetName("TCPServerThread");
     tcp_server_thread->Start(true);
-    evpp::TCPClient* client = StartTCPClient(tcp_client_thread->event_loop());
+    evpp::TCPClient* client = StartTCPClient(tcp_client_thread->loop());
     client->set_reconnect_interval(evpp::Duration(0.1));
 
     int test_count = 3;
     for (int i = 0; i < test_count; i++) {
-        tsrv.reset(new evpp::TCPServer(tcp_server_thread->event_loop(), addr, "tcp_server", i));
+        tsrv.reset(new evpp::TCPServer(tcp_server_thread->loop(), addr, "tcp_server", i));
         tsrv->SetMessageCallback([](const evpp::TCPConnPtr& conn,
                                     evpp::Buffer* msg) {
             message_recved_count++;
@@ -62,8 +62,8 @@ TEST_UNIT(testTCPClientReconnect) {
         tsrv.reset();
     }
     LOG_INFO << "XXXXXXXXXX connected_count=" << connected_count << " message_recved_count=" << message_recved_count;
-    tcp_client_thread->event_loop()->RunInLoop([client]() {client->Disconnect(); });
-    tcp_client_thread->event_loop()->RunAfter(evpp::Duration(1.0), [client]() {delete client; });
+    tcp_client_thread->loop()->RunInLoop([client]() {client->Disconnect(); });
+    tcp_client_thread->loop()->RunAfter(evpp::Duration(1.0), [client]() {delete client; });
     usleep(evpp::Duration(2.0).Microseconds());
     client = nullptr;
     tcp_client_thread->Stop(true);

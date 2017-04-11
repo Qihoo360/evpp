@@ -52,7 +52,7 @@ void TestTCPServer1() {
     assert(rc);
     loop->RunAfter(evpp::Duration(1.4), [&tsrv]() { tsrv->Stop(); });
     loop->RunAfter(evpp::Duration(1.6), [&loop]() { loop->Stop(); });
-    std::shared_ptr<evpp::TCPClient> client = StartTCPClient(tcp_client_thread->event_loop());
+    std::shared_ptr<evpp::TCPClient> client = StartTCPClient(tcp_client_thread->loop());
     loop->Run();
     tcp_client_thread->Stop(true);
     assert(!loop->running());
