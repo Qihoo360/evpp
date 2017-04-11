@@ -58,6 +58,8 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
     assert(event_loop_->IsStopped());
     LOG_INFO << "this=" << this << " EventLoopThread stopped";
     status_ = kStopped;
+    usleep(10 * 1000 * 1000);
+    LOG_INFO << "this=" << this << " EventLoopThread stopped. The end";
 }
 
 void EventLoopThread::Stop(bool wait_thread_exit) {
