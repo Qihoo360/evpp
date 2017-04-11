@@ -47,9 +47,9 @@ namespace {
     struct NSQConn {
         NSQConn(evpp::EventLoop* loop) : loop_(loop) {
             client_ = std::make_shared<evpp::TCPClient>(loop, "www.so.com:80", "TCPPingPongClient");
-            client_->SetConnectionCallback([=](const evpp::TCPConnPtr& conn) {
+            client_->SetConnectionCallback([this](const evpp::TCPConnPtr& conn) {
                 assert(conn->IsConnected());
-                assert(loop->IsRunning());
+                assert(this->loop_->IsRunning());
                 this->connected_ = true;
                 client_->SetConnectionCallback(evpp::ConnectionCallback());
             });
