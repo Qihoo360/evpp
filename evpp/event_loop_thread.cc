@@ -5,22 +5,26 @@
 
 namespace evpp {
 EventLoopThread::EventLoopThread()
-    : event_loop_(new EventLoop)
-    , status_(kStopped) {
+    : event_loop_(new EventLoop) {
+    LOG_INFO << "this=" << this << " EventLoopThread::EventLoopThread loop=" << event_loop_;
 }
 
 EventLoopThread::~EventLoopThread() {
+    LOG_INFO << "this=" << this << " EventLoopThread::~EventLoopThread";
+    assert(IsStopped());
     if (thread_ && thread_->joinable()) {
+        LOG_INFO << "this=" << this << " thread=" << thread_ << " joinable";
         try {
             thread_->join();
         } catch (const std::system_error& e) {
-            LOG_ERROR << "Caught a system_error:" << e.what();
+            LOG_ERROR << "Caught a system_error:" << e.what() << " code=" << e.code();
         }
     }
 }
 
 bool EventLoopThread::Start(bool wait_until_thread_started,
                             const Functor& pre, const Functor& post) {
+    status_ = kStarting;
     thread_.reset(new std::thread(
                       std::bind(&EventLoopThread::Run, this, pre, post)));
 
@@ -37,6 +41,7 @@ bool EventLoopThread::Start(bool wait_until_thread_started,
 }
 
 void EventLoopThread::Run(const Functor& pre, const Functor& post) {
+    LOG_INFO << "this=" << this << " EventLoopThread::Run loop=" << event_loop_;
     if (name_.empty()) {
         std::ostringstream os;
         os << "thread-" << std::this_thread::get_id();
@@ -51,6 +56,7 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
         post();
     }
     event_loop_.reset(); // Make sure construct, initialize and destruct in the same thread
+    LOG_INFO << "this=" << this << " EventLoopThread stopped";
     status_ = kStopped;
 }
 
@@ -68,8 +74,9 @@ void EventLoopThread::Stop(bool wait_thread_exit) {
             try {
                 thread_->join();
             } catch (const std::system_error& e) {
-                LOG_ERROR << "Caught a system_error:" << e.what();
+                LOG_ERROR << "Caught a system_error:" << e.what() << " code=" << e.code();
             }
+            thread_.reset();
         }
     }
 }
@@ -101,8 +108,8 @@ std::thread::id EventLoopThread::tid() const {
 }
 
 bool EventLoopThread::IsRunning() const {
-    // Using event_loop_->running() is more exact to query where thread is running or not,
-    // instead of status_ == kRunning
+    // Using event_loop_->running() is more exact to query where thread is
+    // running or not instead of status_ == kRunning
     //
     // Because in some particular circumstances,
     // when status_==kRunning and event_loop_::running_ == false,
