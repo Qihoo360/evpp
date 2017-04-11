@@ -159,8 +159,9 @@ static void TestAll() {
 }
 
 
-TEST_UNIT(testHTTPServer1) {
+TEST_UNIT(testHTTPServer) {
     for (int i = 0; i < 5; ++i) {
+        LOG_INFO << "Running testHTTPServer i=" << i;
         evpp::http::Server ph(i);
         ph.RegisterDefaultHandler(&DefaultRequestHandler);
         ph.RegisterHandler("/push/boot", &RequestHandler);
@@ -168,6 +169,7 @@ TEST_UNIT(testHTTPServer1) {
         H_TEST_ASSERT(r);
         TestAll();
         ph.Stop(true);
+        usleep(1000 * 1000);
     }
 }
 

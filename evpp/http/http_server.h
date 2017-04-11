@@ -59,14 +59,14 @@ private:
                   const HTTPRequestCallback& user_callback);
 
     EventLoop* GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx);
-    void OnListenThreadExited(int exited_listen_thread_count);
+    void OnListeningThreadExited(int exited_listen_thread_count);
 private:
     struct ListenThread {
         // The listening main thread
         std::shared_ptr<EventLoopThread> thread;
 
         // Every listening main thread runs a HTTP Service to listen, receive, dispatch, send response the HTTP request.
-        std::shared_ptr<Service> hserver;
+        std::shared_ptr<Service> hservice;
     };
 
     std::vector<ListenThread> listen_threads_;
