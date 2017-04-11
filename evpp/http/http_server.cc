@@ -110,7 +110,7 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
     LOG_INFO << "this=" << this << " http server is stopping";
 
     // First we stop all the listening threads
-    // And then after listening threads have stopped,
+    // And then after all listening threads have been stopped,
     // Server::OnListenThreadExited will be invoked automatically
     // in which we will stop the working thread pool
     for (auto& lt : listen_threads_) {
