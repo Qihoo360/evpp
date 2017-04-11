@@ -12,15 +12,17 @@ Quick Start using VS2015
 ### Download the source code of evpp
 
 	$ git clone https://github.com/Qihoo360/evpp
+	$ cd evpp
+	$ git submodule update --init --recursive
 
 ### Compile third-party dependent open source code
 
 The `evpp` source is dependent with `libevent`, we suggest you choose the lastest version of libevent. 
 Right now, Feb 2017, the latest version of libevent is `2.1.8`.
 
-Go to `evpp/3rdparty/libevent-release-2.1.8-stable`
+Go to `3rdparty/libevent-release-2.1.8-stable`
 
-	$ cd evpp/3rdparty/libevent-release-2.1.8-stable
+	$ cd 3rdparty/libevent-release-2.1.8-stable
 	$ mkdir build && cd build
 	$ cmake -G "Visual Studio 14" ..
 	$ start libevent.sln
