@@ -39,7 +39,7 @@ void TestTCPServer1() {
     message_recved = false;
     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
     tcp_client_thread->SetName("TCPClientThread");
-    tcp_client_thread->Start();
+    tcp_client_thread->Start(true);
     std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
     std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), GetListenAddr(), "tcp_server", 2));
     tsrv->SetMessageCallback([](const evpp::TCPConnPtr& conn,
