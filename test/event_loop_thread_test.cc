@@ -27,7 +27,7 @@ TEST_UNIT(testEventLoopThread) {
     t->Start(true);
     usleep(1000);
     evpp::Timestamp begin = evpp::Timestamp::Now();
-    t->event_loop()->RunAfter(delay, &OnTimeout);
+    t->loop()->RunAfter(delay, &OnTimeout);
 
     while (!g_timeout) {
         usleep(1);
@@ -35,10 +35,10 @@ TEST_UNIT(testEventLoopThread) {
 
     evpp::Duration cost = evpp::Timestamp::Now() - begin;
     H_TEST_ASSERT(delay <= cost);
-    t->event_loop()->RunInLoop(&OnCount);
-    t->event_loop()->RunInLoop(&OnCount);
-    t->event_loop()->RunInLoop(&OnCount);
-    t->event_loop()->RunInLoop(&OnCount);
+    t->loop()->RunInLoop(&OnCount);
+    t->loop()->RunInLoop(&OnCount);
+    t->loop()->RunInLoop(&OnCount);
+    t->loop()->RunInLoop(&OnCount);
     t->Stop(true);
     t.reset();
     H_TEST_ASSERT(g_count == 4);

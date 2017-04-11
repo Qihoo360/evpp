@@ -16,10 +16,10 @@ public:
     void Start() {
         loop1_.Start(true);
         loop2_.Start(true);
-        loop1_.event_loop()->RunInLoop([this]() {
+        loop1_.loop()->RunInLoop([this]() {
             start_time_ = clock_us();
             for (size_t i = 0; i < post_count_; ++i) {
-                loop2_.event_loop()->RunInLoop([this]() {
+                loop2_.loop()->RunInLoop([this]() {
                     count_ += 1;
                     if (count_ == post_count_) {
                         stop();

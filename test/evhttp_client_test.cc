@@ -55,7 +55,7 @@ TEST_UNIT(testHTTPRequest1) {
     evpp::EventLoopThread t;
     t.Start(true);
     std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("www.360.cn", 80, evpp::Duration(2.0)));
-    evpp::httpc::Request* r = new evpp::httpc::Request(pool.get(), t.event_loop(), "/robots.txt", "");
+    evpp::httpc::Request* r = new evpp::httpc::Request(pool.get(), t.loop(), "/robots.txt", "");
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
 
@@ -75,7 +75,7 @@ TEST_UNIT(testHTTPRequest2) {
     Init();
     evpp::EventLoopThread t;
     t.Start(true);
-    evpp::httpc::Request* r = new evpp::httpc::Request(t.event_loop(), "http://www.360.cn/robots.txt?a=1", "", evpp::Duration(2.0));
+    evpp::httpc::Request* r = new evpp::httpc::Request(t.loop(), "http://www.360.cn/robots.txt?a=1", "", evpp::Duration(2.0));
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
 
@@ -94,7 +94,7 @@ TEST_UNIT(testHTTPRequest3) {
     evpp::EventLoopThread t;
     t.Start(true);
     std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("www.360.cn", 80, evpp::Duration(2.0)));
-    evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(pool.get(), t.event_loop(), "/robots.txt");
+    evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(pool.get(), t.loop(), "/robots.txt");
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
 
@@ -114,7 +114,7 @@ TEST_UNIT(testHTTPRequest4) {
     Init();
     evpp::EventLoopThread t;
     t.Start(true);
-    evpp::httpc::PostRequest* r = new evpp::httpc::PostRequest(t.event_loop(), "http://www.360.cn/robots.txt?a=1", "", evpp::Duration(2.0));
+    evpp::httpc::PostRequest* r = new evpp::httpc::PostRequest(t.loop(), "http://www.360.cn/robots.txt?a=1", "", evpp::Duration(2.0));
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
 
@@ -152,7 +152,7 @@ TEST_UNIT(testHTTPRequest5) {
     hc::Init();
     evpp::EventLoopThread t;
     t.Start(true);
-    evpp::httpc::PostRequest* r = new evpp::httpc::PostRequest(t.event_loop(), "http://www.360.cn/robots.txt?a=1", "", evpp::Duration(2.0));
+    evpp::httpc::PostRequest* r = new evpp::httpc::PostRequest(t.loop(), "http://www.360.cn/robots.txt?a=1", "", evpp::Duration(2.0));
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&hc::HandleHTTPResponse, std::placeholders::_1, r, &t));
 

@@ -72,7 +72,7 @@ private:
                 stop_time_ = evpp::Timestamp::Now();
                 finished_ = true;
                 LOG_INFO << "stopping session " << client_.name();
-                client_.event_loop()->RunInLoop(std::bind(&Session::Stop, shared_from_this()));
+                client_.loop()->RunInLoop(std::bind(&Session::Stop, shared_from_this()));
                 break;
             } else {
                 header->body_size_ = htonl(get_body_len());

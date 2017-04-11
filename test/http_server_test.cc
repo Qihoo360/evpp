@@ -140,11 +140,11 @@ static void TestAll() {
     evpp::EventLoopThread t;
     t.Start(true);
     int finished = 0;
-    testDefaultHandler1(t.event_loop(), &finished);
-    testDefaultHandler2(t.event_loop(), &finished);
-    testDefaultHandler3(t.event_loop(), &finished);
-    testPushBootHandler(t.event_loop(), &finished);
-    testStop(t.event_loop(), &finished);
+    testDefaultHandler1(t.loop(), &finished);
+    testDefaultHandler2(t.loop(), &finished);
+    testDefaultHandler3(t.loop(), &finished);
+    testPushBootHandler(t.loop(), &finished);
+    testStop(t.loop(), &finished);
 
     while (true) {
         usleep(10);

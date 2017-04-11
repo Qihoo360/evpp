@@ -28,7 +28,7 @@ public:
 
     void RegisterDefaultHandler(HTTPRequestCallback callback);
 
-    EventLoop* event_loop() const {
+    EventLoop* loop() const {
         return listen_loop_;
     }
 
