@@ -24,11 +24,11 @@ bool Server::Init(int listen_port) {
     lt.thread = std::make_shared<EventLoopThread>();
     lt.thread->SetName(std::string("StandaloneHTTPServer-Main-") + std::to_string(listen_port));
 
-    lt.hserver = std::make_shared<Service>(lt.thread->loop());
-    if (!lt.hserver->Listen(listen_port)) {
+    lt.hservice = std::make_shared<Service>(lt.thread->loop());
+    if (!lt.hservice->Listen(listen_port)) {
         int serrno = errno;
         LOG_ERROR << "this=" << this << " http server listen at port " << listen_port << " failed. errno=" << serrno << " " << strerror(serrno);
-        lt.hserver->Stop();
+        lt.hservice->Stop();
         return false;
     }
     listen_threads_.push_back(lt);
@@ -71,34 +71,44 @@ bool Server::AfterFork() {
 bool Server::Start() {
     std::shared_ptr<std::atomic<int>> exited_listen_thread_count(new std::atomic<int>(0));
     bool rc = tpool_->Start(true);
+    if (!rc) {
+        LOG_ERROR << "this=" << this << " start thread pool failed.";
+        return false;
+    }
     for (auto& lt : listen_threads_) {
-        auto http_close_fn = [=]() {
-            lt.hserver->Stop();
-            LOG_INFO << "this=" << this << " http service at 0.0.0.0:" << lt.hserver->port() << " has stopped.";
-            OnListenThreadExited(exited_listen_thread_count->fetch_add(1) + 1);
+        auto& hservice = lt.hservice;
+        auto& lthread = lt.thread;
+        auto http_close_fn = [hservice, this, exited_listen_thread_count]() {
+            hservice->Stop();
+            LOG_INFO << "this=" << this << " http service at 0.0.0.0:" << hservice->port() << " has stopped.";
+            this->OnListeningThreadExited(exited_listen_thread_count->fetch_add(1) + 1);
         };
-        rc = rc && lt.thread->Start(true,
+        rc = lthread->Start(true,
                                EventLoopThread::Functor(),
                                http_close_fn);
-        assert(lt.thread->IsRunning());
+        if (!rc) {
+            LOG_ERROR << "this=" << this << " start listening thread failed.";
+            return false;
+        }
+
+        assert(lthread->IsRunning());
         for (auto& c : callbacks_) {
             auto cb = std::bind(&Server::Dispatch, this,
                                 std::placeholders::_1,
                                 std::placeholders::_2,
                                 std::placeholders::_3,
                                 c.second);
-            lt.hserver->RegisterHandler(c.first, cb);
+            hservice->RegisterHandler(c.first, cb);
         }
         HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
                                            std::placeholders::_1,
                                            std::placeholders::_2,
                                            std::placeholders::_3,
                                            default_callback_);
-        lt.hserver->RegisterDefaultHandler(cb);
-        if (!rc) {
-            return false;
-        }
+        hservice->RegisterDefaultHandler(cb);
     }
+
+    assert(rc);
     while (!IsRunning()) {
         usleep(1);
     }
@@ -157,7 +167,7 @@ void Server::Pause() {
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->loop();
         auto f = [&lt]() {
-            lt.hserver->Pause();
+            lt.hservice->Pause();
         };
         loop->RunInLoop(f);
     }
@@ -168,7 +178,7 @@ void Server::Continue() {
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->loop();
         auto f = [&lt]() {
-            lt.hserver->Continue();
+            lt.hservice->Continue();
         };
         loop->RunInLoop(f);
     }
@@ -271,7 +281,7 @@ EventLoop* Server::GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx) {
 #endif
 }
 
-void Server::OnListenThreadExited(int exited_listen_thread_count) {
+void Server::OnListeningThreadExited(int exited_listen_thread_count) {
     LOG_INFO << "this=" << this << " OnListenThreadExited exited_listen_thread_count=" << exited_listen_thread_count << " listen_threads_.size=" << listen_threads_.size();
     if (exited_listen_thread_count == int(listen_threads_.size())) {
         LOG_INFO << "this=" << this << " stop the working thread pool.";
@@ -281,7 +291,7 @@ void Server::OnListenThreadExited(int exited_listen_thread_count) {
 
 Service* Server::service(int index) const {
     if (index < int(listen_threads_.size())) {
-        return listen_threads_[index].hserver.get();
+        return listen_threads_[index].hservice.get();
     }
 
     return nullptr;
