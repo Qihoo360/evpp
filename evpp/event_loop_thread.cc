@@ -55,7 +55,7 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
     if (post) {
         post();
     }
-    event_loop_.reset(); // Make sure construct, initialize and destruct in the same thread
+    assert(event_loop_->IsStopped());
     LOG_INFO << "this=" << this << " EventLoopThread stopped";
     status_ = kStopped;
 }
