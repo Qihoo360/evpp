@@ -16,7 +16,6 @@ Service::Service(EventLoop* l)
 
 Service::~Service() {
     assert(!evhttp_);
-    assert(!listen_loop_);
     assert(!evhttp_bound_socket_);
 }
 
@@ -50,7 +49,6 @@ void Service::Stop() {
         evhttp_bound_socket_ = nullptr;
     }
 
-    listen_loop_ = nullptr;
     callbacks_.clear();
     default_callback_ = HTTPRequestCallback();
     LOG_TRACE << "this=" << this << " http service stopped";
@@ -163,7 +161,13 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
     auto f = [this, response]() {
         // In the main HTTP listening thread
         assert(listen_loop_->IsInLoopThread());
-        LOG_TRACE << "this=" << this << " send reply in listening thread";
+        LOG_TRACE << "this=" << this << " send reply in listening thread. evhttp_=" << evhttp_;
+
+        // At this moment, this Service maybe already stopped.
+        if (!evhttp_) {
+            LOG_WARN << "this=" << this << " Service has been stopped.";
+            return;
+        }
 
         if (!response->buffer) {
             evhttp_send_reply(response->req, HTTP_NOTFOUND, "Not Found", nullptr);
