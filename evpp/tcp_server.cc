@@ -131,7 +131,7 @@ EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
 }
 
 void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
-    auto f = [ = ]() {
+    auto f = [this, conn]() {
         // Remove the connection in the listening EventLoop
         LOG_INFO << "TCPServer::RemoveConnection conn=" << conn.get() << " fd="<< conn->fd();
         assert(this->loop_->IsInLoopThread());
