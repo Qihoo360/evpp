@@ -15,6 +15,7 @@ Server::Server(uint32_t thread_num) {
 }
 
 Server::~Server() {
+    assert(tpool_->IsStopped());
     tpool_.reset();
 }
 
@@ -26,7 +27,7 @@ bool Server::Init(int listen_port) {
     lt.hserver = std::make_shared<Service>(lt.thread->loop());
     if (!lt.hserver->Listen(listen_port)) {
         int serrno = errno;
-        LOG_ERROR << "http server listen at port " << listen_port << " failed. errno=" << serrno << " " << strerror(serrno);
+        LOG_ERROR << "this=" << this << " http server listen at port " << listen_port << " failed. errno=" << serrno << " " << strerror(serrno);
         lt.hserver->Stop();
         return false;
     }
@@ -51,7 +52,7 @@ bool Server::Init(const std::string& listen_ports/*"80,8080,443"*/) {
     for (auto& s : vec) {
         int i = std::atoi(s.c_str());
         if (i <= 0) {
-            LOG_ERROR << "Cannot convert [" << s << "] to a integer. 'listen_ports' format wrong.";
+            LOG_ERROR << "this=" << this << " Cannot convert [" << s << "] to a integer. 'listen_ports' format wrong.";
             return false;
         }
         v.push_back(i);
@@ -73,7 +74,7 @@ bool Server::Start() {
     for (auto& lt : listen_threads_) {
         auto http_close_fn = [=]() {
             lt.hserver->Stop();
-            LOG_INFO << "http service at 0.0.0.0:" << lt.hserver->port() << " has stopped.";
+            LOG_INFO << "this=" << this << " http service at 0.0.0.0:" << lt.hserver->port() << " has stopped.";
             OnListenThreadExited(exited_listen_thread_count->fetch_add(1) + 1);
         };
         rc = rc && lt.thread->Start(true,
@@ -101,7 +102,7 @@ bool Server::Start() {
     while (!IsRunning()) {
         usleep(1);
     }
-    LOG_TRACE << "http server is running" ;
+    LOG_TRACE << "this=" << this << " http server is running" ;
     return true;
 }
 
@@ -110,7 +111,8 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
 
     // First we stop all the listening threads
     // And then after listening threads have stopped,
-    // Server::OnListenThreadExited will be invoked, in which we will stop the working thread pool.
+    // Server::OnListenThreadExited will be invoked automatically
+    // in which we will stop the working thread pool
     for (auto& lt : listen_threads_) {
         // 1. Service::Stop will be called automatically when listen_thread_ is existing
         // 2. EventLoopThread::Stop will be called to terminate the thread
@@ -221,13 +223,13 @@ void Server::Dispatch(EventLoop* listening_loop,
                       const HTTPRequestCallback& user_callback) {
     // Make sure it is running in the HTTP listening thread
     assert(listening_loop->IsInLoopThread());
-    LOG_TRACE << "dispatch request " << ctx->req() << " url=" << ctx->original_uri() << " in main thread";
+    LOG_TRACE << "this=" << this << " dispatch request " << ctx->req() << " url=" << ctx->original_uri() << " in main thread";
     EventLoop* loop = nullptr;
     loop = GetNextLoop(listening_loop, ctx);
 
     // Forward this HTTP request to a worker thread to process
-    auto f = [loop, ctx, response_callback, user_callback]() {
-        LOG_TRACE << "process request " << ctx->req()
+    auto f = [loop, ctx, response_callback, user_callback, this]() {
+        LOG_TRACE << "this=" << this << " process request " << ctx->req()
                   << " url=" << ctx->original_uri() << " in working thread";
 
         // This is in the worker thread.
