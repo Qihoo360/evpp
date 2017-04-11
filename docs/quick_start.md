@@ -22,10 +22,11 @@ Quick Start
 ### Download the source code of evpp
 
 	$ git clone https://github.com/Qihoo360/evpp
+	$ cd evpp
+	$ git submodule update --init --recursive
 
 ### Compile and run unit tests.
 	
-	$ cd evpp
 	$ mkdir -p build && cd build
 	$ cmake -DCMAKE_BUILD_TYPE=Debug ..
 	$ make -j
