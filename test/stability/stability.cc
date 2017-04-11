@@ -174,6 +174,7 @@ namespace {
 
 void TestHTTPServer() {
     for (int i = 0; i < 40; ++i) {
+        LOG_INFO << "Running TestHTTPServer i=" << i;
         evpp::http::Server ph(i);
         ph.RegisterDefaultHandler(&DefaultRequestHandler);
         ph.RegisterHandler("/push/boot", &RequestHandler);
@@ -181,6 +182,7 @@ void TestHTTPServer() {
         assert(r);
         TestAll();
         ph.Stop(true);
+        usleep(1000 * 1000); // sleep a while to release the listening address and port
     }
 }
 
