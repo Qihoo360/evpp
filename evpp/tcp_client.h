@@ -63,7 +63,7 @@ public:
     const std::string& name() const {
         return name_;
     }
-    EventLoop* event_loop() const {
+    EventLoop* loop() const {
         return loop_;
     }
 private:

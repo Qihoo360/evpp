@@ -16,7 +16,7 @@ TEST_UNIT(testDNSResolver) {
         evpp::Duration delay(double(3.0)); // 3s
         std::unique_ptr<evpp::EventLoopThread> t(new evpp::EventLoopThread);
         t->Start(true);
-        std::shared_ptr<evpp::DNSResolver> dns_resolver(new evpp::DNSResolver(t->event_loop(), "www.so.com", evpp::Duration(1.0), fn_resolved));
+        std::shared_ptr<evpp::DNSResolver> dns_resolver(new evpp::DNSResolver(t->loop(), "www.so.com", evpp::Duration(1.0), fn_resolved));
         dns_resolver->Start();
 
         while (!resolved) {
@@ -28,7 +28,7 @@ TEST_UNIT(testDNSResolver) {
             deleted = true;
         };
 
-        t->event_loop()->QueueInLoop(fn_deleter);
+        t->loop()->QueueInLoop(fn_deleter);
         dns_resolver.reset();
         while (!deleted) {
             usleep(1);

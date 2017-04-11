@@ -23,7 +23,7 @@ public:
 
     void SetName(const std::string& n);
     const std::string& name() const;
-    EventLoop* event_loop() const;
+    EventLoop* loop() const;
     struct event_base* event_base();
     std::thread::id tid() const;
     bool IsRunning() const;
