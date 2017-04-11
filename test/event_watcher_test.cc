@@ -104,7 +104,7 @@ TEST_UNIT(testSignalEventWatcher) {
     using namespace evsignal;
     std::shared_ptr<evpp::EventLoopThread> thread(new evpp::EventLoopThread);
     thread->Start(true);
-    evpp::EventLoop* loop = thread->event_loop();
+    evpp::EventLoop* loop = thread->loop();
     ev = new evpp::SignalEventWatcher(SIGINT, loop, std::bind(&Handle, thread.get()));
     loop->RunInLoop(&WatchSignalInt);
     auto f = []() {

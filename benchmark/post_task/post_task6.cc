@@ -36,7 +36,7 @@ private:
     void post() {
         auto p = [this]() {
             for (uint64_t i = 0; i < total_post_count_; i++) {
-                loop_.event_loop()->RunInLoop([this]() {
+                loop_.loop()->RunInLoop([this]() {
                     count_++;
                     if (count_ == total_post_count_ * pool_.thread_num()) {
                         Stop();

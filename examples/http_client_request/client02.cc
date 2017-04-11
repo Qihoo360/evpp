@@ -26,11 +26,11 @@ static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& res
 int main() {
     evpp::EventLoopThread t;
     t.Start(true);
-    evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(t.event_loop(), "http://www.360.cn/robots.txt", evpp::Duration(5.0));
+    evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(t.loop(), "http://www.360.cn/robots.txt", evpp::Duration(5.0));
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, r));
-    r = new evpp::httpc::GetRequest(t.event_loop(), "http://www.sohu.com/robots.txt", evpp::Duration(5.0));
+    r = new evpp::httpc::GetRequest(t.loop(), "http://www.sohu.com/robots.txt", evpp::Duration(5.0));
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, r));
-    r = new evpp::httpc::GetRequest(t.event_loop(), "http://www.so.com/status.html", evpp::Duration(5.0));
+    r = new evpp::httpc::GetRequest(t.loop(), "http://www.so.com/status.html", evpp::Duration(5.0));
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, r));
     while (responsed != 3) {
         usleep(1);

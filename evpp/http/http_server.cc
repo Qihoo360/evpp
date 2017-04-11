@@ -23,7 +23,7 @@ bool Server::Init(int listen_port) {
     lt.thread = std::make_shared<EventLoopThread>();
     lt.thread->SetName(std::string("StandaloneHTTPServer-Main-") + std::to_string(listen_port));
 
-    lt.hserver = std::make_shared<Service>(lt.thread->event_loop());
+    lt.hserver = std::make_shared<Service>(lt.thread->loop());
     if (!lt.hserver->Listen(listen_port)) {
         int serrno = errno;
         LOG_ERROR << "http server listen at port " << listen_port << " failed. errno=" << serrno << " " << strerror(serrno);
@@ -62,7 +62,7 @@ bool Server::Init(const std::string& listen_ports/*"80,8080,443"*/) {
 
 bool Server::AfterFork() {
     for (auto& lt : listen_threads_) {
-        lt.thread->event_loop()->AfterFork();
+        lt.thread->loop()->AfterFork();
     }
     return true;
 }
@@ -153,7 +153,7 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
 void Server::Pause() {
     LOG_INFO << "this=" << this << " http server pause";
     for (auto& lt : listen_threads_) {
-        EventLoop* loop = lt.thread->event_loop();
+        EventLoop* loop = lt.thread->loop();
         auto f = [&lt]() {
             lt.hserver->Pause();
         };
@@ -164,7 +164,7 @@ void Server::Pause() {
 void Server::Continue() {
     LOG_INFO << "this=" << this << " http server continue";
     for (auto& lt : listen_threads_) {
-        EventLoop* loop = lt.thread->event_loop();
+        EventLoop* loop = lt.thread->loop();
         auto f = [&lt]() {
             lt.hserver->Continue();
         };

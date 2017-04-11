@@ -24,7 +24,7 @@ int main() {
     evpp::EventLoopThread t;
     t.Start(true);
     std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("www.360.cn", 80, evpp::Duration(2.0)));
-    evpp::httpc::Request* r = new evpp::httpc::Request(pool.get(), t.event_loop(), "/robots.txt", "");
+    evpp::httpc::Request* r = new evpp::httpc::Request(pool.get(), t.loop(), "/robots.txt", "");
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, r));
 
