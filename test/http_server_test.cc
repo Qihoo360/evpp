@@ -169,7 +169,7 @@ TEST_UNIT(testHTTPServer) {
         H_TEST_ASSERT(r);
         TestAll();
         ph.Stop(true);
-        usleep(1000 * 1000);
+        usleep(1000 * 1000); // sleep a while to release the listening address and port
     }
 }
 
