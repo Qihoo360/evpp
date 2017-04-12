@@ -4,8 +4,10 @@
 #include "evpp/event_loop_thread.h"
 
 namespace evpp {
+
 EventLoopThread::EventLoopThread()
-    : event_loop_(new EventLoop) {
+    : event_loop_(new EventLoop)
+    , post_task_([]() { return kOK; }) {
     LOG_INFO << "this=" << this << " EventLoopThread::EventLoopThread loop=" << event_loop_;
 }
 
@@ -22,42 +24,60 @@ EventLoopThread::~EventLoopThread() {
     }
 }
 
-bool EventLoopThread::Start(bool wait_until_thread_started,
-                            const Functor& pre, const Functor& post) {
+bool EventLoopThread::Start(bool wait_thread_started, Functor pre, Functor post) {
     status_ = kStarting;
-    thread_.reset(new std::thread(
-                      std::bind(&EventLoopThread::Run, this, pre, post)));
 
-    // waiting until the thread started
-    while (wait_until_thread_started) {
-        if (IsRunning()) {
-            break;
+    auto fn = [post, this]() {
+        LOG_INFO << "this=" << this << " execute post functor.";
+        if (post) {
+            post();
         }
 
-        usleep(1);
-    }
+        LOG_INFO << "this=" << this << " set status.";
+        status_ = kStopped;
+        return kOK;
+    };
+    post_task_ = std::packaged_task<int()>(std::move(fn));
 
-    return true;
+    thread_.reset(new std::thread(std::bind(&EventLoopThread::Run, this, pre)));
+
+    int rc = kOK;
+    if (wait_thread_started) {
+        auto result = pre_task_promise_.get_future();
+        result.wait();
+        rc = result.get();
+        assert(IsRunning());
+    }
+    return rc == kOK;
 }
 
-void EventLoopThread::Run(const Functor& pre, const Functor& post) {
+void EventLoopThread::Run(const Functor& pre) {
     LOG_INFO << "this=" << this << " EventLoopThread::Run loop=" << event_loop_;
     if (name_.empty()) {
         std::ostringstream os;
         os << "thread-" << std::this_thread::get_id();
         name_ = os.str();
     }
+
     status_ = kRunning;
-    if (pre) {
-        pre();
-    }
+
+    LOG_INFO << "this=" << this << " execute pre functor.";
+    auto fn = [this, pre]() {
+        if (pre) {
+            pre_task_promise_.set_value(pre());
+        } else {
+            pre_task_promise_.set_value(kOK);
+        }
+    };
+    event_loop_->QueueInLoop(std::move(fn));
+
     event_loop_->Run();
-    if (post) {
-        post();
-    }
+
+    LOG_INFO << "this=" << this << " execute post promise task.";
+    post_task_.make_ready_at_thread_exit();
+
     assert(event_loop_->IsStopped());
     LOG_INFO << "this=" << this << " EventLoopThread stopped";
-    status_ = kStopped;
 }
 
 void EventLoopThread::Stop(bool wait_thread_exit) {
@@ -66,9 +86,10 @@ void EventLoopThread::Stop(bool wait_thread_exit) {
     event_loop_->Stop();
 
     if (wait_thread_exit) {
-        while (!IsStopped()) {
-            usleep(1);
-        }
+        auto result = post_task_.get_future();
+        result.wait();
+
+        LOG_INFO << "this=" << this << " post function execution result is " << result.get();
 
         if (thread_->joinable()) {
             try {

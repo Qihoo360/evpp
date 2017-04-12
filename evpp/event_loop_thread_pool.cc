@@ -18,7 +18,7 @@ EventLoopThreadPool::~EventLoopThreadPool() {
     threads_.clear();
 }
 
-bool EventLoopThreadPool::Start(bool wait_until_thread_started) {
+bool EventLoopThreadPool::Start(bool wait_thread_started) {
     assert(!started_.load());
     if (started_.load()) {
         return true;
@@ -29,14 +29,23 @@ bool EventLoopThreadPool::Start(bool wait_until_thread_started) {
         return true;
     }
 
-    std::shared_ptr<std::atomic<uint32_t>> count(new std::atomic<uint32_t>(0));
+    std::shared_ptr<std::atomic<uint32_t>> started_count(new std::atomic<uint32_t>(0));
+    std::shared_ptr<std::atomic<uint32_t>> exited_count(new std::atomic<uint32_t>(0));
     for (uint32_t i = 0; i < thread_num_; ++i) {
-        auto fn = [this, count]() {
+        auto prefn = [this, started_count]() {
             LOG_INFO << "this=" << this << " a working thread started tid=" << std::this_thread::get_id();
-            this->OnThreadStarted(count->fetch_add(1) + 1);
+            this->OnThreadStarted(started_count->fetch_add(1) + 1);
+            return EventLoopThread::kOK;
         };
+
+        auto postfn = [this, exited_count]() {
+            LOG_INFO << "this=" << this << " a working thread started tid=" << std::this_thread::get_id();
+            this->OnThreadExited(exited_count->fetch_add(1) + 1);
+            return EventLoopThread::kOK;
+        };
+
         EventLoopThreadPtr t(new EventLoopThread());
-        if (!t->Start(wait_until_thread_started, fn)) {
+        if (!t->Start(wait_thread_started, prefn, postfn)) {
             //FIXME error process
             LOG_ERROR << "start thread failed!";
             return false;
@@ -55,15 +64,28 @@ bool EventLoopThreadPool::Start(bool wait_until_thread_started) {
 }
 
 void EventLoopThreadPool::Stop(bool wait_thread_exit) {
+    Stop(wait_thread_exit, Functor());
+}
+
+void EventLoopThreadPool::Stop(Functor on_stopped_cb) {
+    Stop(false, on_stopped_cb);
+}
+
+void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
+    stopped_cb_ = on_stopped_cb;
+
     for (uint32_t i = 0; i < thread_num_; ++i) {
         EventLoopThreadPtr& t = threads_[i];
-        t->Stop(wait_thread_exit);
+        t->Stop();
     }
 
     if (thread_num_ > 0 && wait_thread_exit) {
-        while (!IsStopped()) {
-            usleep(1);
-        }
+        exit_promise_.get_future().wait();
+    }
+
+    if (thread_num_ == 0 && stopped_cb_) {
+        stopped_cb_();
+        stopped_cb_ = Functor();
     }
 
     started_.store(false);
@@ -134,6 +156,18 @@ void EventLoopThreadPool::OnThreadStarted(uint32_t count) {
     if (count == thread_num_) {
         LOG_INFO << "this=" << this << " thread pool totally started.";
         started_.store(true);
+    }
+}
+
+void EventLoopThreadPool::OnThreadExited(uint32_t count) {
+    LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " count=" << count << " exited.";
+    if (count == thread_num_) {
+        LOG_INFO << "this=" << this << " this is the last thread stopped. Thread pool totally exited.";
+        exit_promise_.set_value_at_thread_exit();
+        if (stopped_cb_) {
+            stopped_cb_();
+            stopped_cb_ = Functor();
+        }
     }
 }
 

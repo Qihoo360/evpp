@@ -1,5 +1,7 @@
 #include "http_server.h"
 
+#include <future>
+
 #include "evpp/libevent_headers.h"
 #include "evpp/libevent_watcher.h"
 #include "evpp/event_loop.h"
@@ -82,10 +84,11 @@ bool Server::Start() {
             hservice->Stop();
             LOG_INFO << "this=" << this << " http service at 0.0.0.0:" << hservice->port() << " has stopped.";
             this->OnListeningThreadExited(exited_listen_thread_count->fetch_add(1) + 1);
+            return EventLoopThread::kOK;
         };
         rc = lthread->Start(true,
-                               EventLoopThread::Functor(),
-                               http_close_fn);
+                            EventLoopThread::Functor(),
+                            http_close_fn);
         if (!rc) {
             LOG_ERROR << "this=" << this << " start listening thread failed.";
             return false;
@@ -133,25 +136,7 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
         return;
     }
 
-    for (;;) {
-        bool stopped = true;
-        for (auto& lt : listen_threads_) {
-            if (!lt.thread->IsStopped()) {
-                stopped = false;
-                break;
-            }
-        }
-
-        if (!tpool_->IsStopped()) {
-            stopped = false;
-        }
-
-        if (stopped) {
-            break;
-        }
-
-        usleep(1);
-    }
+    exit_promise_.get_future().wait();
 
     assert(tpool_->IsStopped());
     for (auto& lt : listen_threads_) {
@@ -285,7 +270,10 @@ void Server::OnListeningThreadExited(int exited_listen_thread_count) {
     LOG_INFO << "this=" << this << " OnListenThreadExited exited_listen_thread_count=" << exited_listen_thread_count << " listen_threads_.size=" << listen_threads_.size();
     if (exited_listen_thread_count == int(listen_threads_.size())) {
         LOG_INFO << "this=" << this << " stop the working thread pool.";
-        tpool_->Stop();
+        auto fn = [this]() {
+            exit_promise_.set_value_at_thread_exit();
+        };
+        tpool_->Stop(fn);
     }
 }
 

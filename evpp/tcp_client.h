@@ -75,8 +75,8 @@ private:
     EventLoop* loop_;
     std::string remote_addr_; // host:port
     std::string name_;
-    std::atomic<bool> auto_reconnect_; // The flag whether it reconnects automatically, Default : true
-    Duration reconnect_interval_; // Default : 3 seconds
+    std::atomic<bool> auto_reconnect_ = { true }; // The flag whether it reconnects automatically, Default : true
+    Duration reconnect_interval_ = Duration(3.0); // Default : 3 seconds
 
     Any context_;
 
@@ -84,7 +84,7 @@ private:
     TCPConnPtr conn_;
 
     std::shared_ptr<Connector> connector_;
-    Duration connecting_timeout_; // Default : 3 seconds
+    Duration connecting_timeout_ = Duration(3.0); // Default : 3 seconds
 
     ConnectionCallback conn_fn_;
     MessageCallback msg_fn_;

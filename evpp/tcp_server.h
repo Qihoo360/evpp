@@ -16,6 +16,7 @@ class Listener;
 
 class EVPP_EXPORT TCPServer : public ThreadDispatchPolicy, public ServerStatus {
 public:
+    typedef std::function<void()> Functor;
     TCPServer(EventLoop* loop,
               const std::string& listen_addr/*ip:port*/,
               const std::string& name,
@@ -24,7 +25,7 @@ public:
 
     bool Init();
     bool Start();
-    void Stop(); // TODO ADD a parameter : bool wait_until_stopped
+    void Stop(Functor on_stopped_cb = Functor()); // TODO ADD a parameter : bool wait_until_stopped
 
 public:
     // Set a connection event relative callback when the TCPServer
@@ -46,7 +47,7 @@ public:
         return listen_addr_;
     }
 private:
-    void StopInLoop();
+    void StopInLoop(Functor on_stopped_cb);
     void RemoveConnection(const TCPConnPtr& conn);
     void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/, const struct sockaddr_in* raddr);
     EventLoop* GetNextLoop(const struct sockaddr_in* raddr);
@@ -58,6 +59,8 @@ private:
     std::shared_ptr<EventLoopThreadPool> tpool_;
     ConnectionCallback conn_fn_;
     MessageCallback msg_fn_;
+
+    Functor stopped_cb_;
 
     // always in the listening loop thread
     uint64_t next_conn_id_ = 0;
