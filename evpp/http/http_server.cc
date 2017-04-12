@@ -271,7 +271,7 @@ void Server::OnListeningThreadExited(int exited_listen_thread_count) {
     if (exited_listen_thread_count == int(listen_threads_.size())) {
         LOG_INFO << "this=" << this << " stop the working thread pool.";
         auto fn = [this]() {
-            exit_promise_.set_value_at_thread_exit();
+            exit_promise_.set_value();
         };
         tpool_->Stop(fn);
     }
