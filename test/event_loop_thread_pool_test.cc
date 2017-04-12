@@ -50,3 +50,27 @@ TEST_UNIT(testEventLoopThreadPool) {
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
+
+TEST_UNIT(testEventLoopThreadPool2) {
+    std::unique_ptr<evpp::EventLoopThread> loop(new evpp::EventLoopThread);
+    loop->Start(true);
+    assert(loop->IsRunning());
+
+    int thread_num = 24;
+    for (int i = 0; i < thread_num; i++) {
+        std::unique_ptr<evpp::EventLoopThreadPool> pool(new evpp::EventLoopThreadPool(loop->loop(), thread_num));
+        auto rc = pool->Start(true);
+        H_TEST_ASSERT(rc);
+        H_TEST_ASSERT(pool->IsRunning());
+        pool->Stop(true);
+        H_TEST_ASSERT(pool->IsStopped());
+        pool.reset();
+    }
+
+    assert(loop->IsRunning());
+    loop->Stop(true);
+    assert(loop->IsStopped());
+    loop.reset();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+}
+

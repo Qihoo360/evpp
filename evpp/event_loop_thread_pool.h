@@ -21,10 +21,13 @@ public:
     uint32_t thread_num() const;
 
 private:
+    void OnThreadStarted(uint32_t count);
+private:
+
     EventLoop* base_loop_;
-    bool started_;
-    uint32_t thread_num_;
-    std::atomic<int64_t> next_;
+    std::atomic<bool> started_ = { false };
+    uint32_t thread_num_ = 0;
+    std::atomic<int64_t> next_ = { 0 };
 
     typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
     std::vector<EventLoopThreadPtr> threads_;
