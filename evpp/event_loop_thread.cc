@@ -27,17 +27,9 @@ EventLoopThread::~EventLoopThread() {
 bool EventLoopThread::Start(bool wait_thread_started, Functor pre, Functor post) {
     status_ = kStarting;
 
-    auto fn = [post, this]() {
-        LOG_INFO << "this=" << this << " execute post functor.";
-        if (post) {
-            post();
-        }
-
-        LOG_INFO << "this=" << this << " set status.";
-        status_ = kStopped;
-        return kOK;
-    };
-    post_task_ = std::packaged_task<int()>(std::move(fn));
+    if (post) {
+        post_task_ = std::packaged_task<int()>(std::move(post));
+    }
 
     thread_.reset(new std::thread(std::bind(&EventLoopThread::Run, this, pre)));
 
@@ -59,7 +51,6 @@ void EventLoopThread::Run(const Functor& pre) {
         name_ = os.str();
     }
 
-    status_ = kRunning;
 
     LOG_INFO << "this=" << this << " execute pre functor.";
     auto fn = [this, pre]() {
@@ -71,10 +62,14 @@ void EventLoopThread::Run(const Functor& pre) {
     };
     event_loop_->QueueInLoop(std::move(fn));
 
+    status_ = kRunning;
     event_loop_->Run();
+    status_ = kStopped;
 
-    LOG_INFO << "this=" << this << " execute post promise task.";
-    post_task_.make_ready_at_thread_exit();
+    LOG_INFO << "this=" << this << " execute post functor.";
+    if (post_task_.valid()) {
+        post_task_();
+    }
 
     assert(event_loop_->IsStopped());
     LOG_INFO << "this=" << this << " EventLoopThread stopped";
