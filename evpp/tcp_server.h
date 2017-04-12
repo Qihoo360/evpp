@@ -11,6 +11,7 @@
 #include <map>
 
 namespace evpp {
+
 class Listener;
 
 class EVPP_EXPORT TCPServer : public ThreadDispatchPolicy, public ServerStatus {

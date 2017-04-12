@@ -8,7 +8,7 @@
 
 namespace evpp {
 Listener::Listener(EventLoop* l, const std::string& addr)
-    : fd_(-1), loop_(l), listening_(false), addr_(addr) {}
+    : loop_(l), addr_(addr) {}
 
 Listener::~Listener() {
     LOG_TRACE << "Listener::~Listener fd=" << chan_->fd();
@@ -20,31 +20,35 @@ Listener::~Listener() {
 void Listener::Listen() {
     fd_ = sock::CreateNonblockingSocket();
     if (fd_ < 0) {
+        int serrno = errno;
+        LOG_FATAL << "Create a nonblocking socket failed " << strerror(serrno);
         return;
     }
 
     struct sockaddr_in addr = sock::ParseFromIPPort(addr_.data());
     int ret = ::bind(fd_, sock::sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
-    int serrno = errno;
     if (ret < 0) {
+        int serrno = errno;
         LOG_FATAL << "bind error :" << strerror(serrno);
     }
 
     ret = ::listen(fd_, SOMAXCONN);
     if (ret < 0) {
-        serrno = errno;
+        int serrno = errno;
         LOG_FATAL << "Listen failed " << strerror(serrno);
     }
+}
 
+void Listener::Accept() {
     chan_.reset(new FdChannel(loop_, fd_, true, false));
     chan_->SetReadCallback(std::bind(&Listener::HandleAccept, this));
     loop_->RunInLoop(std::bind(&FdChannel::AttachToLoop, chan_.get()));
-    listening_ = true;
     LOG_INFO << "TCPServer is running at " << addr_;
 }
 
 void Listener::HandleAccept() {
     LOG_INFO << __FUNCTION__ << " New connection";
+    assert(loop_->IsInLoopThread());
     struct sockaddr_storage ss;
     socklen_t addrlen = sizeof(ss);
     int nfd = -1;
@@ -83,6 +87,5 @@ void Listener::Stop() {
     assert(loop_->IsInLoopThread());
     chan_->DisableAllEvent();
     chan_->Close();
-    listening_ = false;
 }
 }

@@ -17,23 +17,24 @@ public:
     Listener(EventLoop* loop, const std::string& addr/*local listening address : ip:port*/);
     ~Listener();
 
+    // socket listen
     void Listen();
+
+    // nonblocking accept
+    void Accept();
+
     void Stop();
 
     void SetNewConnectionCallback(NewConnectionCallback cb) {
         new_conn_fn_ = cb;
     }
 
-    bool listening() const {
-        return listening_;
-    }
 private:
     void HandleAccept();
 
 private:
-    int fd_;// The listening socket fd
+    int fd_ = -1;// The listening socket fd
     EventLoop* loop_;
-    bool listening_;
     std::string addr_;
     std::unique_ptr<FdChannel> chan_;
     NewConnectionCallback new_conn_fn_;
