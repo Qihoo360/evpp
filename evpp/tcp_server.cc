@@ -3,6 +3,7 @@
 #include "evpp/tcp_server.h"
 #include "evpp/listener.h"
 #include "evpp/tcp_conn.h"
+#include "evpp/libevent_headers.h"
 
 namespace evpp {
 TCPServer::TCPServer(EventLoop* loop,
@@ -30,21 +31,24 @@ bool TCPServer::Init() {
     assert(status_ == kNull);
     listener_.reset(new Listener(loop_, listen_addr_));
     listener_->Listen();
-    listener_->SetNewConnectionCallback(
-        std::bind(&TCPServer::HandleNewConn,
-                  this,
-                  std::placeholders::_1,
-                  std::placeholders::_2,
-                  std::placeholders::_3));
     status_.store(kInitialized);
     return true;
 }
 
 bool TCPServer::Start() {
     assert(status_ == kInitialized);
+    status_.store(kStarting);
     assert(listener_.get());
     bool rc = tpool_->Start(true);
     if (rc) {
+        assert(tpool_->IsRunning());
+        listener_->SetNewConnectionCallback(
+            std::bind(&TCPServer::HandleNewConn,
+                      this,
+                      std::placeholders::_1,
+                      std::placeholders::_2,
+                      std::placeholders::_3));
+        listener_->Accept();
         status_.store(kRunning);
     }
     return rc;
@@ -100,6 +104,7 @@ void TCPServer::StopInLoop() {
         for (auto& c : connections_) {
             c.second->Close();
         }
+
         // The working threads will be stopped after all the connections closed.
     }
 
@@ -110,6 +115,12 @@ void TCPServer::HandleNewConn(int sockfd,
                               const std::string& remote_addr/*ip:port*/,
                               const struct sockaddr_in* raddr) {
     assert(loop_->IsInLoopThread());
+    if (status_.load() == kStopping) {
+        LOG_WARN << "The server is at stopping status. Discard this socket fd=" << sockfd << " remote_addr=" << remote_addr;
+        EVUTIL_CLOSESOCKET(sockfd);
+        return;
+    }
+
     assert(IsRunning());
     EventLoop* io_loop = GetNextLoop(raddr);
     std::string n = name_ + "-" + remote_addr + "#" + std::to_string(next_conn_id_++); // TODO use string buffer

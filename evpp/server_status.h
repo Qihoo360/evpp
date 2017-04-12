@@ -10,9 +10,10 @@ public:
     enum Status {
         kNull = 0,
         kInitialized = 1,
-        kRunning = 2,
-        kStopping = 3,
-        kStopped = 4,
+        kStarting = 2,
+        kRunning = 3,
+        kStopping = 4,
+        kStopped = 5,
     };
 
     std::string ToString() const {
