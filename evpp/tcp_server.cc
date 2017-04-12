@@ -84,13 +84,13 @@ bool TCPServer::IsStopped() const {
     return true;
 }
 
-void TCPServer::Stop() {
+void TCPServer::Stop(Functor on_stopped_cb) {
     assert(status_ == kRunning);
     status_.store(kStopping);
-    loop_->RunInLoop(std::bind(&TCPServer::StopInLoop, this));
+    loop_->RunInLoop(std::bind(&TCPServer::StopInLoop, this, on_stopped_cb));
 }
 
-void TCPServer::StopInLoop() {
+void TCPServer::StopInLoop(Functor on_stopped_cb) {
     LOG_TRACE << "Entering TCPServer::StopInLoop";
     listener_->Stop();
     listener_.reset();
@@ -100,10 +100,15 @@ void TCPServer::StopInLoop() {
         tpool_->Stop(true);
         assert(tpool_->IsStopped());
         status_.store(kStopped);
+        if (on_stopped_cb) {
+            on_stopped_cb();
+        }
     } else {
         for (auto& c : connections_) {
             c.second->Close();
         }
+
+        stopped_cb_ = on_stopped_cb;
 
         // The working threads will be stopped after all the connections closed.
     }
@@ -152,6 +157,10 @@ void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
             tpool_->Stop(true);
             assert(tpool_->IsStopped());
             status_.store(kStopped);
+            if (stopped_cb_) {
+                stopped_cb_();
+                stopped_cb_ = Functor();
+            }
         }
     };
     loop_->RunInLoop(f);

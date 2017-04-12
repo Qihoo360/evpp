@@ -58,7 +58,7 @@ TEST_UNIT(testEventLoopThreadPool2) {
 
     int thread_num = 24;
     for (int i = 0; i < thread_num; i++) {
-        std::unique_ptr<evpp::EventLoopThreadPool> pool(new evpp::EventLoopThreadPool(loop->loop(), thread_num));
+        std::unique_ptr<evpp::EventLoopThreadPool> pool(new evpp::EventLoopThreadPool(loop->loop(), i));
         auto rc = pool->Start(true);
         H_TEST_ASSERT(rc);
         H_TEST_ASSERT(pool->IsRunning());
