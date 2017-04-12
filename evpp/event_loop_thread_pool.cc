@@ -163,7 +163,7 @@ void EventLoopThreadPool::OnThreadExited(uint32_t count) {
     LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " count=" << count << " exited.";
     if (count == thread_num_) {
         LOG_INFO << "this=" << this << " this is the last thread stopped. Thread pool totally exited.";
-        exit_promise_.set_value_at_thread_exit();
+        exit_promise_.set_value();
         if (stopped_cb_) {
             stopped_cb_();
             stopped_cb_ = Functor();
