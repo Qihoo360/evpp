@@ -30,9 +30,8 @@ TEST_UNIT(testTCPClientDisconnectImmediately) {
     std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop.get(), "cmake.org:80", "TCPPingPongClient"));
     client->SetConnectionCallback([loop, client](const evpp::TCPConnPtr& conn) {
         H_TEST_ASSERT(!conn->IsConnected());
-        H_TEST_ASSERT(!loop->IsRunning());
         auto f = [loop]() { loop->Stop(); };
-        loop->RunAfter(300.0, f);
+        loop->RunAfter(1.0, f);
     });
     client->set_auto_reconnect(false);
     client->Connect();

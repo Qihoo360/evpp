@@ -55,14 +55,6 @@ void TCPClient::Disconnect() {
     loop_->RunInLoop(std::bind(&TCPClient::DisconnectInLoop, this));
 }
 
-void TCPClient::SetConnectionCallback(const ConnectionCallback& cb) {
-    conn_fn_ = cb;
-    auto  c = conn();
-    if (c) {
-        c->SetConnectionCallback(cb);
-    }
-}
-
 void TCPClient::DisconnectInLoop() {
     LOG_WARN << "TCPClient::DisconnectInLoop this=" << this << " remote_addr=" << remote_addr_;
     assert(loop_->IsInLoopThread());
@@ -90,6 +82,14 @@ void TCPClient::DisconnectInLoop() {
 void TCPClient::Reconnect() {
     LOG_INFO << "Try to reconnect to " << remote_addr_ << " in " << reconnect_interval_.Seconds() << "s again";
     Connect();
+}
+
+void TCPClient::SetConnectionCallback(const ConnectionCallback& cb) {
+    conn_fn_ = cb;
+    auto  c = conn();
+    if (c) {
+        c->SetConnectionCallback(cb);
+    }
 }
 
 void TCPClient::OnConnection(int sockfd, const std::string& laddr) {

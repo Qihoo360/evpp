@@ -107,7 +107,6 @@ public:
     }
 private:
     void Init();
-    void InitEventWatcher();
     void StopInLoop();
     void DoPendingFunctors();
     size_t GetPendingQueueSize();
