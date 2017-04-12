@@ -27,17 +27,10 @@ EventLoop::EventLoop(struct event_base* base)
 
     Init();
 
-    // When we build an EventLoop object from an existing event_base object
-    // we won't call EventLoop::Run method.
-    // So we need to do the initialization work of watcher_ here.
-    InitEventWatcher();
-}
-
-void EventLoop::InitEventWatcher() {
-    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
-    int rc = watcher_->Init();
-    assert(rc);
-    rc = rc && watcher_->AsyncWait();
+    // When we build an EventLoop instance from an existing event_base
+    // object, we will never call EventLoop::Run() method.
+    // So we need to watch the task queue here.
+    bool rc = watcher_->AsyncWait();
     assert(rc);
     if (!rc) {
         LOG_FATAL << "PipeEventWatcher init failed.";
@@ -45,11 +38,7 @@ void EventLoop::InitEventWatcher() {
 }
 
 EventLoop::~EventLoop() {
-    if (!create_evbase_myself_) {
-        assert(watcher_);
-        watcher_.reset();
-    }
-    assert(!watcher_.get());
+    watcher_.reset();
 
     if (evbase_ != nullptr && create_evbase_myself_) {
         event_base_free(evbase_);
@@ -72,18 +61,29 @@ void EventLoop::Init() {
 
     running_ = false;
     tid_ = std::this_thread::get_id(); // The default thread id
+
+    // Initialized task queue watcher
+    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
+    int rc = watcher_->Init();
+    assert(rc);
+    if (!rc) {
+        LOG_FATAL << "PipeEventWatcher init failed.";
+    }
 }
 
 void EventLoop::Run() {
     tid_ = std::this_thread::get_id(); // The actual thread id
 
-    // Initialize it in the EventLoop thread
-    InitEventWatcher();
+    int rc = watcher_->AsyncWait();
+    assert(rc);
+    if (!rc) {
+        LOG_FATAL << "PipeEventWatcher init failed.";
+    }
 
     // After everything have initialized, mark this running_ flag to true
     running_ = true;
 
-    int rc = event_base_dispatch(evbase_);
+    rc = event_base_dispatch(evbase_);
     if (rc == 1) {
         LOG_ERROR << "event_base_dispatch error: no event registered";
     } else if (rc == -1) {
@@ -163,11 +163,18 @@ evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, const Functor& f) {
 }
 
 void EventLoop::RunInLoop(const Functor& functor) {
-    assert(IsRunning());
-    if (IsInLoopThread()) {
+    if (IsRunning() && IsInLoopThread()) {
         functor();
     } else {
         QueueInLoop(functor);
+    }
+}
+
+void EventLoop::RunInLoop(Functor&& functor) {
+    if (IsRunning() && IsInLoopThread()) {
+        functor();
+    } else {
+        QueueInLoop(std::move(functor));
     }
 }
 
@@ -244,14 +251,6 @@ evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, Functor&& f) {
     std::shared_ptr<InvokeTimer> t = InvokeTimer::Create(this, interval, std::move(f), true);
     t->Start();
     return t;
-}
-
-void EventLoop::RunInLoop(Functor&& functor) {
-    if (IsInLoopThread()) {
-        functor();
-    } else {
-        QueueInLoop(std::move(functor));
-    }
 }
 
 void EventLoop::DoPendingFunctors() {
