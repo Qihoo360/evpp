@@ -1,5 +1,5 @@
 #include <evpp/libevent_headers.h>
-#include <evpp/libevent_watcher.h>
+#include <evpp/event_watcher.h>
 #include <evpp/event_loop.h>
 #include <evpp/event_loop_thread.h>
 #include <evpp/tcp_server.h>
@@ -38,7 +38,7 @@ void TestTCPServer1() {
     connected = false;
     message_recved = false;
     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
-    tcp_client_thread->SetName("TCPClientThread");
+    tcp_client_thread->set_name("TCPClientThread");
     tcp_client_thread->Start(true);
     std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
     std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), GetListenAddr(), "tcp_server", 2));
@@ -55,7 +55,7 @@ void TestTCPServer1() {
     std::shared_ptr<evpp::TCPClient> client = StartTCPClient(tcp_client_thread->loop());
     loop->Run();
     tcp_client_thread->Stop(true);
-    assert(!loop->running());
+    assert(!loop->IsRunning());
     assert(tcp_client_thread->IsStopped());
     assert(connected);
     assert(message_recved);

@@ -6,16 +6,14 @@
 #include <atomic>
 
 #include "evpp/inner_pre.h"
-#include "evpp/libevent_watcher.h"
+#include "evpp/event_watcher.h"
 #include "evpp/duration.h"
 #include "evpp/any.h"
 #include "evpp/invoke_timer.h"
 
 #ifdef H_HAVE_BOOST
 #include <boost/lockfree/queue.hpp>
-#endif
-
-#ifdef H_HAVE_CAMERON314_CONCURRENTQUEUE
+#elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -28,9 +26,12 @@
 
 #endif
 
-
 namespace evpp {
 
+// This is the IO Event driving kernel. Reactor model.
+// This class is a wrapper of event_base but not only a wrapper.
+// It provides a simple way to run a IO Event driving loop.
+// One thread one loop.
 class EVPP_EXPORT EventLoop {
 public:
     typedef std::function<void()> Functor;
@@ -43,9 +44,15 @@ public:
     explicit EventLoop(struct event_base* base);
     ~EventLoop();
 
+    // @brief Run the IO Event driving loop forever
+    // @note It must be called in the IO Event thread
     void Run();
+
+    // @brief Stop the event loop
     void Stop();
-    void AfterFork(); // Reinitialized the event base after a fork
+
+    // @brief Reinitialize the event_base object after a fork
+    void AfterFork();
 
     InvokeTimerPtr RunAfter(double delay_ms, const Functor& f);
     InvokeTimerPtr RunAfter(Duration delay, const Functor& f);
@@ -75,7 +82,6 @@ public:
     bool IsInLoopThread() const {
         return tid_ == std::this_thread::get_id();
     }
-    void AssertInLoopThread() const;
     void set_context(const Any& c) {
         context_[0] = c;
     }
@@ -90,20 +96,17 @@ public:
         assert(index < kContextCount && index >= 0);
         return context_[index];
     }
-    bool running() const {
-        return running_;
-    }
-    bool IsRunning() const {
-        return running();
-    }
-    bool IsStopped() const {
-        return !running();
-    }
     int pending_functor_count() const {
         return pending_functor_count_.load();
     }
     const std::thread::id& tid() const {
         return tid_;
+    }
+    bool IsRunning() const {
+        return running_;
+    }
+    bool IsStopped() const {
+        return !IsRunning();
     }
 private:
     void Init();

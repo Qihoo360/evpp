@@ -11,6 +11,7 @@ endif(UNIX)
 
 add_subdirectory(apps)
 add_subdirectory(chatroom)
+add_subdirectory(recipes)
 
 add_executable(example_httpecho echo/httpecho/main.cc)
 target_link_libraries(example_httpecho ${LIBRARIES})
