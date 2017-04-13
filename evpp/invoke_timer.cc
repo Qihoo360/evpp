@@ -7,12 +7,12 @@ namespace evpp {
 
 InvokeTimer::InvokeTimer(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic)
     : loop_(evloop), timeout_(timeout), functor_(f), periodic_(periodic) {
-    LOG_INFO << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this;
+    LOG_INFO << "InvokeTimer::InvokeTimer this=" << this << " loop=" << loop_;
 }
 
 InvokeTimer::InvokeTimer(EventLoop* evloop, Duration timeout, Functor&& f, bool periodic)
     : loop_(evloop), timeout_(timeout), functor_(std::move(f)), periodic_(periodic) {
-    LOG_INFO << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this;
+    LOG_INFO << "InvokeTimer::InvokeTimer this=" << this << " loop=" << loop_;
 }
 
 InvokeTimerPtr InvokeTimer::Create(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic) {
@@ -28,17 +28,17 @@ InvokeTimerPtr InvokeTimer::Create(EventLoop* evloop, Duration timeout, Functor&
 }
 
 InvokeTimer::~InvokeTimer() {
-    LOG_INFO << "InvokeTimer::~InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this;
+    LOG_INFO << "InvokeTimer::~InvokeTimer this=" << this << " loop=" << loop_;
 }
 
 void InvokeTimer::Start() {
-    LOG_INFO << "InvokeTimer::Start tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count();
+    LOG_INFO << "InvokeTimer::Start this=" << this << " loop=" << loop_ << " refcount=" << self_.use_count();
     auto f = [this]() {
         timer_.reset(new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, shared_from_this()), timeout_));
         timer_->SetCancelCallback(std::bind(&InvokeTimer::OnCanceled, shared_from_this()));
         timer_->Init();
         timer_->AsyncWait();
-        LOG_INFO << "InvokeTimer::Start(AsyncWait) tid=" << std::this_thread::get_id() << " timer=" << timer_.get() << " this=" << this << " refcount=" << self_.use_count() << " periodic=" << periodic_ << " timeout(ms)=" << timeout_.Milliseconds();
+        LOG_INFO << "InvokeTimer::Start(AsyncWait) timer=" << timer_.get() << " this=" << this << " loop=" << loop_ << " refcount=" << self_.use_count() << " periodic=" << periodic_ << " timeout(ms)=" << timeout_.Milliseconds();
     };
     loop_->RunInLoop(std::move(f));
 }
@@ -50,7 +50,7 @@ void InvokeTimer::Cancel() {
 }
 
 void InvokeTimer::OnTimerTriggered() {
-    LOG_INFO << "InvokeTimer::OnTimerTriggered tid=" << std::this_thread::get_id() << " this=" << this << " use_count=" << self_.use_count();
+    LOG_INFO << "InvokeTimer::OnTimerTriggered this=" << this << " loop=" << loop_ << " use_count=" << self_.use_count();
     functor_();
 
     if (periodic_) {
@@ -64,7 +64,7 @@ void InvokeTimer::OnTimerTriggered() {
 }
 
 void InvokeTimer::OnCanceled() {
-    LOG_INFO << "InvokeTimer::OnCanceled tid=" << std::this_thread::get_id() << " this=" << this << " use_count=" << self_.use_count();
+    LOG_INFO << "InvokeTimer::OnCanceled this=" << this << " loop=" << loop_ << " use_count=" << self_.use_count();
     periodic_ = false;
     if (cancel_callback_) {
         cancel_callback_();
