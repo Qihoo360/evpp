@@ -122,12 +122,13 @@ void EventLoop::StopInLoop() {
     f();
 
     LOG_INFO << "this=" << this << " start event_base_loopexit";
-#ifdef H_BENCHMARK_TESTING
     event_base_loopexit(evbase_, NULL);
-#else
-    timeval tv = Duration(0.005).TimeVal(); // Trick : delay 0.005 second
-    event_base_loopexit(evbase_, &tv);
-#endif
+//#ifdef H_BENCHMARK_TESTING
+//    event_base_loopexit(evbase_, NULL);
+//#else
+//    timeval tv = Duration(0.005).TimeVal(); // Trick : delay 0.005 second
+//    event_base_loopexit(evbase_, &tv);
+//#endif
     LOG_INFO << "this=" << this << " after event_base_loopexit, we invoke DoPendingFunctors";
 
     f();

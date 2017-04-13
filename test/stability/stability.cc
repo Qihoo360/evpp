@@ -182,7 +182,7 @@ void TestHTTPServer() {
         assert(r);
         TestAll();
         ph.Stop(true);
-        usleep(1000 * 1000); // sleep a while to release the listening address and port
+        //usleep(1000 * 1000); // sleep a while to release the listening address and port
     }
 }
 
