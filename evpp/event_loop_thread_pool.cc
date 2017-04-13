@@ -53,7 +53,7 @@ bool EventLoopThreadPool::Start(bool wait_thread_started) {
 
         std::stringstream ss;
         ss << "EventLoopThreadPool-thread-" << i << "th";
-        t->SetName(ss.str());
+        t->set_name(ss.str());
         threads_.push_back(t);
     }
 

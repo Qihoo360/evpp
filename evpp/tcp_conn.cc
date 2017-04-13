@@ -20,9 +20,7 @@ TCPConn::TCPConn(EventLoop* l,
     , local_addr_(laddr)
     , remote_addr_(raddr)
     , type_(kIncoming)
-    , status_(kDisconnected)
-    , high_water_mark_(128 * 1024 * 1024)
-    , close_delay_(3.000001) {
+    , status_(kDisconnected) {
     if (sockfd >= 0) {
         chan_.reset(new FdChannel(l, sockfd, false, false));
         chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this));

@@ -97,7 +97,7 @@ void EventLoopThread::Stop(bool wait_thread_exit) {
     }
 }
 
-void EventLoopThread::SetName(const std::string& n) {
+void EventLoopThread::set_name(const std::string& n) {
     name_ = n;
 }
 
@@ -130,7 +130,7 @@ bool EventLoopThread::IsRunning() const {
     // Because in some particular circumstances,
     // when status_==kRunning and event_loop_::running_ == false,
     // the application will broke down
-    return event_loop_->running();
+    return event_loop_->IsRunning();
 }
 
 bool EventLoopThread::IsStopped() const {
