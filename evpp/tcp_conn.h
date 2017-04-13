@@ -157,11 +157,11 @@ private:
     Any context_[kContextCount];
     Type type_;
     Status status_;
-    size_t high_water_mark_; // Default 128MB
+    size_t high_water_mark_ = 128 * 1024 * 1024; // Default 128MB
 
     // The delay time to close a incoming connection which has been shutdown by peer normally.
     // Default is 3 second.
-    Duration close_delay_;
+    Duration close_delay_ = Duration(3.0);
     std::shared_ptr<InvokeTimer> delay_close_timer_; // The timer to delay close this TCPConn
 
     ConnectionCallback conn_fn_; // This will be called to the user application layer
