@@ -10,7 +10,7 @@ class EventLoop;
 class PipeEventWatcher;
 namespace http {
 
-// A service does not run itself, it must be attached into a EventLoop
+// A service can not run itself, it must be attached into one EventLoop
 // So we can embed this Service to the existing EventLoop
 class EVPP_EXPORT Service {
 public:
@@ -23,7 +23,7 @@ public:
     void Continue();
 
     // @Note The URI must not hold any parameters
-    // @uri The URI of the request
+    // @param uri - The URI of the request without any parameters
     void RegisterHandler(const std::string& uri, HTTPRequestCallback callback);
 
     void RegisterDefaultHandler(HTTPRequestCallback callback);

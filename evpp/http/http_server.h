@@ -21,8 +21,15 @@ class Service;
 // The listening main thread has responsibility to listen a TCP port,
 // receive HTTP request, dispatch the request and send the HTTP response.
 //
-// if the thread_num is not 0, it will also start new worker thread pool
-// to help process HTTP request.
+// If the thread_num is not 0, it will also start a working thread pool
+// to help process HTTP requests.
+// The typical usage is :
+//      1. Create a Server object
+//      2. Set the message callback and connection callback
+//      3. Call Server::Init()
+//      4. Call Server::Start()
+//      5. Process HTTP request in callbacks
+//      6. At last call Server::Stop() to stop the whole server
 class EVPP_EXPORT Server : public ThreadDispatchPolicy {
 public:
     Server(uint32_t thread_num = 0);
@@ -32,16 +39,20 @@ public:
     bool Init(int listen_port);
     bool Init(const std::vector<int>& listen_ports);
     bool Init(const std::string& listen_ports/*like "80,8080,443"*/);
-    bool AfterFork();
+
     bool Start();
+
     void Stop(bool wait_thread_exit = false);
+
     void Pause();
     void Continue();
 
-    Service* service(int index = 0) const;
+    // @brief Reinitialize the event_base object after a fork
+    void AfterFork();
+
 public:
     // @Note The URI must not hold any parameters
-    // @uri The URI of the request
+    // @param uri - The URI of the request without any parameters
     void RegisterHandler(const std::string& uri,
                          HTTPRequestCallback callback);
 
@@ -53,6 +64,9 @@ public:
     std::shared_ptr<EventLoopThreadPool> pool() const {
         return tpool_;
     }
+
+    // Get the service object hold by this http server.
+    Service* service(int index = 0) const;
 private:
     void Dispatch(EventLoop* listening_loop,
                   const ContextPtr& ctx,
