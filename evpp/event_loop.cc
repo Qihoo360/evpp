@@ -308,7 +308,4 @@ bool EventLoop::IsPendingQueueEmpty() {
 #endif
 }
 
-void EventLoop::AssertInLoopThread() const {
-    assert(IsInLoopThread());
-}
 }

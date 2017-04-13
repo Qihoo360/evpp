@@ -15,14 +15,14 @@ InvokeTimer::InvokeTimer(EventLoop* evloop, Duration timeout, Functor&& f, bool 
     LOG_INFO << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this;
 }
 
-std::shared_ptr<InvokeTimer> InvokeTimer::Create(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic) {
-    std::shared_ptr<InvokeTimer> it(new InvokeTimer(evloop, timeout, f, periodic));
+InvokeTimerPtr InvokeTimer::Create(EventLoop* evloop, Duration timeout, const Functor& f, bool periodic) {
+    InvokeTimerPtr it(new InvokeTimer(evloop, timeout, f, periodic));
     it->self_ = it;
     return it;
 }
 
-std::shared_ptr<InvokeTimer> InvokeTimer::Create(EventLoop* evloop, Duration timeout, Functor&& f, bool periodic) {
-    std::shared_ptr<InvokeTimer> it(new InvokeTimer(evloop, timeout, std::move(f), periodic));
+InvokeTimerPtr InvokeTimer::Create(EventLoop* evloop, Duration timeout, Functor&& f, bool periodic) {
+    InvokeTimerPtr it(new InvokeTimer(evloop, timeout, std::move(f), periodic));
     it->self_ = it;
     return it;
 }
@@ -57,6 +57,7 @@ void InvokeTimer::OnTimerTriggered() {
         timer_->AsyncWait();
     } else {
         functor_ = Functor();
+        cancel_callback_ = Functor();
         timer_.reset();
         self_.reset();
     }
@@ -69,7 +70,9 @@ void InvokeTimer::OnCanceled() {
         cancel_callback_();
         cancel_callback_ = Functor();
     }
+    functor_ = Functor();
     timer_.reset();
     self_.reset();
 }
+
 }

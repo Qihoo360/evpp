@@ -12,11 +12,36 @@
 
 namespace evpp {
 class Connector;
+
+// We can use this class to create a TCP client.
+// The typical usage is :
+//      1. Create a TCPClient object
+//      2. Set the message callback and connection callback
+//      3. Call TCPClient::Connect() to try to establish a connection with remote server
+//      4. Use TCPClient::Send(...) to send messages to remote server
+//      5. Handle the connection and messages in callbacks
+//      6. Call TCPClient::Disonnect() to disconnect from remote server
+//
 class EVPP_EXPORT TCPClient {
 public:
-    TCPClient(EventLoop* loop, const std::string& remote_addr/*host:port*/, const std::string& name);
+    // @brief The constructor of the class
+    // @param[in] loop - The EventLoop runs this object
+    // @param[in] remote_addr - The remote server address with format "host:port"
+    //  If the host is not IP, it will automatically do the DNS resolving asynchronously
+    // @param[in] name -
+    TCPClient(EventLoop* loop,
+              const std::string& remote_addr/*host:port*/,
+              const std::string& name);
     ~TCPClient();
+
+    // @brief Try to establish a connection with remote server asynchronously
+    //  If the connection callback is set properly it will be invoked when
+    //  the connection is established successfully or timeout or cannot
+    //  establish a connection.
     void Connect();
+
+    // @brief Disconnect from the remote server. When the connection is
+    //  broken down, the connection callback will be invoked.
     void Disconnect();
 public:
     // Set a connection event relative callback when the TCPClient
@@ -27,9 +52,12 @@ public:
     //      3. Failed to establish a connection : TCPConn::IsDisconnected() == true and TCPConn::fd() == -1
     void SetConnectionCallback(const ConnectionCallback& cb);
 
+    // Set the message callback to handle the messages from remote server
     void SetMessageCallback(const MessageCallback& cb) {
         msg_fn_ = cb;
     }
+
+public:
     bool auto_reconnect() const {
         return auto_reconnect_;
     }

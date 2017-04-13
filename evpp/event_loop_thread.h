@@ -22,24 +22,26 @@ public:
     EventLoopThread();
     ~EventLoopThread();
 
-    // 
-    // @param wait_thread_started - If it is true we will wait the thread totally started
-    // @param pre
-    // @param post
+    // @param wait_thread_started - If it is true this method will block
+    //  until the thread totally started
+    // @param pre - This functor will be executed immediately when the thread is started. 
+    // @param post - This functor will be executed at the moment when the thread is going to stop.
     bool Start(bool wait_thread_started = true,
                Functor pre = Functor(),
                Functor post = Functor());
+
     void Stop(bool wait_thread_exit = false);
 
-    void SetName(const std::string& n);
+    void AfterFork();
+
+public:
+    void set_name(const std::string& n);
     const std::string& name() const;
     EventLoop* loop() const;
     struct event_base* event_base();
     std::thread::id tid() const;
     bool IsRunning() const;
     bool IsStopped() const;
-
-    void AfterFork();
 
 private:
     void Run(const Functor& pre);
@@ -57,9 +59,7 @@ private:
         kStopping = 2,
         kStopped = 3,
     };
-
     Status status_ = kStopped;
-
     std::string name_;
 };
 }

@@ -24,7 +24,7 @@ Server::~Server() {
 bool Server::Init(int listen_port) {
     ListenThread lt;
     lt.thread = std::make_shared<EventLoopThread>();
-    lt.thread->SetName(std::string("StandaloneHTTPServer-Main-") + std::to_string(listen_port));
+    lt.thread->set_name(std::string("StandaloneHTTPServer-Main-") + std::to_string(listen_port));
 
     lt.hservice = std::make_shared<Service>(lt.thread->loop());
     if (!lt.hservice->Listen(listen_port)) {
@@ -63,11 +63,10 @@ bool Server::Init(const std::string& listen_ports/*"80,8080,443"*/) {
     return Init(v);
 }
 
-bool Server::AfterFork() {
+void Server::AfterFork() {
     for (auto& lt : listen_threads_) {
         lt.thread->loop()->AfterFork();
     }
-    return true;
 }
 
 bool Server::Start() {

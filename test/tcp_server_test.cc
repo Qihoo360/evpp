@@ -40,7 +40,7 @@ std::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop) {
 
 TEST_UNIT(testTCPServer1) {
     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
-    tcp_client_thread->SetName("TCPClientThread");
+    tcp_client_thread->set_name("TCPClientThread");
     tcp_client_thread->Start(true);
     std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
     std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), addr, "tcp_server", 2));
@@ -57,7 +57,7 @@ TEST_UNIT(testTCPServer1) {
     std::shared_ptr<evpp::TCPClient> client = StartTCPClient(tcp_client_thread->loop());
     loop->Run();
     tcp_client_thread->Stop(true);
-    H_TEST_ASSERT(!loop->running());
+    H_TEST_ASSERT(!loop->IsRunning());
     H_TEST_ASSERT(tcp_client_thread->IsStopped());
     H_TEST_ASSERT(connected);
     H_TEST_ASSERT(message_recved);
