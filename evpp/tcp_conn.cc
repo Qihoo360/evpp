@@ -189,7 +189,7 @@ void TCPConn::HandleRead() {
             // This is an incoming connection, we need to preserve the connection for a while so that we can reply to it.
             // And we set a timer to close the connection eventually.
             chan_->DisableReadEvent();
-            LOG_DEBUG << "TCPConn::HandleRead this=" << this << " channel (fd=" << chan_->fd() << ") DisableReadEvent. And set a timer to delay close this TCPConn";
+            LOG_DEBUG << "TCPConn::HandleRead this=" << this << " channel (fd=" << chan_->fd() << ") DisableReadEvent. And set a timer to delay close this TCPConn, delay time " << close_delay_.Seconds() << "s";
             delay_close_timer_ = loop_->RunAfter(close_delay_, std::bind(&TCPConn::DelayClose, shared_from_this())); // TODO leave it to user layer close.
         }
     } else {
@@ -257,7 +257,7 @@ void TCPConn::HandleClose() {
     TCPConnPtr conn(shared_from_this());
 
     if (delay_close_timer_) {
-        LOG_INFO << "Cancel the delay closing timer.";
+        LOG_INFO << "this=" << this << " loop=" << loop_ << " Cancel the delay closing timer.";
         delay_close_timer_->Cancel();
         delay_close_timer_.reset();
     }
