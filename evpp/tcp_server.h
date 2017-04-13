@@ -14,18 +14,67 @@ namespace evpp {
 
 class Listener;
 
+// We can use this class to create a TCP server.
+// The typical usage is :
+//      1. Create a TCPServer object
+//      2. Set the message callback and connection callback
+//      3. Call TCPServer::Init()
+//      4. Call TCPServer::Start()
+//      5. Process TCP client connections and messages in callbacks
+//      6. At last call Server::Stop() to stop the whole server
+//
+// The examples code is as bellow:
+// <code>
+//     std::string addr = "0.0.0.0:9099";
+//     int thread_num = 4;
+//     evpp::EventLoop loop;
+//     evpp::TCPServer server(&loop, addr, "TCPEchoServer", thread_num);
+//     server.SetMessageCallback([](const evpp::TCPConnPtr& conn,
+//                                  evpp::Buffer* msg,
+//                                  evpp::Timestamp ts) {
+//         conn->Send(msg);
+//     });
+//     server.SetConnectionCallback([](const evpp::TCPConnPtr& conn) {
+//         if (conn->IsConnected()) {
+//             LOG_INFO << "A new connection from " << conn->remote_addr();
+//         } else {
+//             LOG_INFO << "Lost the connection from " << conn->remote_addr();
+//         }
+//     });
+//     server.Init();
+//     server.Start();
+//     loop.Run();
+// </code>
+//
 class EVPP_EXPORT TCPServer : public ThreadDispatchPolicy, public ServerStatus {
 public:
     typedef std::function<void()> Functor;
+
+    // @brief The constructor of a TCPServer.
+    // @param loop -
+    // @param listen_addr - The listening address with "ip:port" format
+    // @param name - The name of this object
+    // @param thread_num - The working thread count
     TCPServer(EventLoop* loop,
               const std::string& listen_addr/*ip:port*/,
               const std::string& name,
               uint32_t thread_num);
     ~TCPServer();
 
+    // @brief Do the initialization works here.
+    //  It will create a nonblocking TCP socket, and bind with the give address
+    //  then listen on it. If there is anything wrong it will return false.
+    // @return bool - True if anything goes well
     bool Init();
+
+    // @brief Start the TCP server and we can accept new connections now.
+    // @return bool - True if anything goes well
     bool Start();
-    void Stop(Functor on_stopped_cb = Functor()); // TODO ADD a parameter : bool wait_until_stopped
+
+    // @brief Stop the TCP server
+    // @param on_stopped_cb - the callback on_stopped_cb will be invoked when
+    //  the TCP server is totally stopped
+    void Stop(Functor on_stopped_cb = Functor());
 
 public:
     // Set a connection event relative callback when the TCPServer
@@ -37,10 +86,12 @@ public:
         conn_fn_ = cb;
     }
 
+    // Set the message callback to handle the messages from remote client
     void SetMessageCallback(MessageCallback cb) {
         msg_fn_ = cb;
     }
 
+public:
     bool IsRunning() const;
     bool IsStopped() const;
     const std::string& listen_addr() const {

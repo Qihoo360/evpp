@@ -1,7 +1,7 @@
 #include "evpp/inner_pre.h"
 
 #include "evpp/libevent_headers.h"
-#include "evpp/libevent_watcher.h"
+#include "evpp/event_watcher.h"
 #include "evpp/event_loop.h"
 #include "evpp/invoke_timer.h"
 
@@ -97,8 +97,8 @@ void EventLoop::Run() {
     LOG_TRACE << "this=" << this << " EventLoop stopped, tid=" << std::this_thread::get_id();
 }
 
-
 void EventLoop::Stop() {
+    LOG_INFO << "this=" << this << " EventLoop::Stop";
     assert(running_);
     QueueInLoop(std::bind(&EventLoop::StopInLoop, this));
 }
@@ -164,6 +164,7 @@ evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, const Functor& f) {
 }
 
 void EventLoop::RunInLoop(const Functor& functor) {
+    LOG_TRACE << "this=" << this << " RunInLoop";
     if (IsRunning() && IsInLoopThread()) {
         functor();
     } else {
@@ -172,6 +173,7 @@ void EventLoop::RunInLoop(const Functor& functor) {
 }
 
 void EventLoop::RunInLoop(Functor&& functor) {
+    LOG_TRACE << "this=" << this << " RunInLoop";
     if (IsRunning() && IsInLoopThread()) {
         functor();
     } else {
@@ -309,7 +311,4 @@ bool EventLoop::IsPendingQueueEmpty() {
 #endif
 }
 
-void EventLoop::AssertInLoopThread() const {
-    assert(IsInLoopThread());
-}
 }

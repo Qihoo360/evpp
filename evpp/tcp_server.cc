@@ -99,12 +99,13 @@ void TCPServer::Stop(Functor on_stopped_cb) {
 }
 
 void TCPServer::StopInLoop(Functor on_stopped_cb) {
-    LOG_TRACE << "Entering TCPServer::StopInLoop";
+    LOG_TRACE << "this=" << this << "Entering TCPServer::StopInLoop";
     listener_->Stop();
     listener_.reset();
 
     if (connections_.empty()) {
         // Stop all the working threads now.
+        LOG_INFO << "this=" << this << " TCPServer::StopInLoop no connections";
         tpool_->Stop(true);
         assert(tpool_->IsStopped());
         status_.store(kStopped);
@@ -155,9 +156,10 @@ EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
 }
 
 void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
+    LOG_INFO << "this=" << this << " TCPServer::RemoveConnection conn=" << conn.get() << " fd="<< conn->fd();
     auto f = [this, conn]() {
         // Remove the connection in the listening EventLoop
-        LOG_INFO << "TCPServer::RemoveConnection conn=" << conn.get() << " fd="<< conn->fd();
+        LOG_INFO << "this=" << this << " TCPServer::RemoveConnection conn=" << conn.get() << " fd="<< conn->fd();
         assert(this->loop_->IsInLoopThread());
         this->connections_.erase(conn->name());
         if (status_ == kStopping && this->connections_.empty()) {

@@ -39,7 +39,7 @@ bool EventLoopThreadPool::Start(bool wait_thread_started) {
         };
 
         auto postfn = [this, exited_count]() {
-            LOG_INFO << "this=" << this << " a working thread started tid=" << std::this_thread::get_id();
+            LOG_INFO << "this=" << this << " a working thread exiting, tid=" << std::this_thread::get_id();
             this->OnThreadExited(exited_count->fetch_add(1) + 1);
             return EventLoopThread::kOK;
         };
@@ -53,7 +53,7 @@ bool EventLoopThreadPool::Start(bool wait_thread_started) {
 
         std::stringstream ss;
         ss << "EventLoopThreadPool-thread-" << i << "th";
-        t->SetName(ss.str());
+        t->set_name(ss.str());
         threads_.push_back(t);
     }
 
@@ -64,14 +64,17 @@ bool EventLoopThreadPool::Start(bool wait_thread_started) {
 }
 
 void EventLoopThreadPool::Stop(bool wait_thread_exit) {
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop wait_thread_exit=" << wait_thread_exit;
     Stop(wait_thread_exit, Functor());
 }
 
 void EventLoopThreadPool::Stop(Functor on_stopped_cb) {
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop";
     Stop(false, on_stopped_cb);
 }
 
 void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop wait_thread_exit=" << wait_thread_exit;
     stopped_cb_ = on_stopped_cb;
 
     for (uint32_t i = 0; i < thread_num_; ++i) {
@@ -85,11 +88,14 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
     // assert(EventLoopThreadPool::IsStopped()) to check the status.
     started_.store(false);
 
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop before promise wait";
     if (thread_num_ > 0 && wait_thread_exit) {
         exit_promise_.get_future().wait();
     }
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop after promise wait";
 
     if (thread_num_ == 0 && stopped_cb_) {
+        LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop calling stopped callback";
         stopped_cb_();
         stopped_cb_ = Functor();
     }
