@@ -5,7 +5,7 @@
 #include <thread>
 
 #include <evpp/libevent_headers.h>
-#include <evpp/libevent_watcher.h>
+#include <evpp/event_watcher.h>
 #include <evpp/timestamp.h>
 #include <evpp/event_loop.h>
 #include <evpp/event_loop_thread.h>

@@ -11,7 +11,9 @@ public:
 
     EventLoopThreadPool(EventLoop* base_loop, uint32_t thread_num);
     ~EventLoopThreadPool();
+
     bool Start(bool wait_thread_started = false);
+
     void Stop(bool wait_thread_exited = false);
     void Stop(Functor on_stopped_cb);
 
