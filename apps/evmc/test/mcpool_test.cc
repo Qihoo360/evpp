@@ -176,7 +176,7 @@ int main() {
 
     g_loop = new evpp::EventLoop;
     std::thread th(MyEventThread);
-    while (!g_loop->running()) {
+    while (!g_loop->IsRunning()) {
         usleep(1000);
     }
     MemcacheClientSerial mcp("10.102.16.25:20099", 200);
