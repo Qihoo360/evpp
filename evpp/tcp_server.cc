@@ -48,8 +48,16 @@ bool TCPServer::Start() {
                       std::placeholders::_1,
                       std::placeholders::_2,
                       std::placeholders::_3));
-        listener_->Accept();
+
+        // We must set status_ to kRunning firstly and then we can accept new
+        // connections. If we use the following code :
+        //     listener_->Accept();
+        //     status_.store(kRunning);
+        // there is chance : we have accept a connection but status_ is not
+        // kRunning that will make the assert(status_ == kRuning) failed in
+        // TCPServer::HandleNewConn.
         status_.store(kRunning);
+        listener_->Accept();
     }
     return rc;
 }
