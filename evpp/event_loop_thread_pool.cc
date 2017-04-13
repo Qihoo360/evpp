@@ -79,6 +79,12 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
         t->Stop();
     }
 
+    // We must store started_ to false before 'exit_promise_.get_future().wait()'
+    // When this thread pool really stopped, stopped_cb_ will be
+    // invoked in which the user layer will use
+    // assert(EventLoopThreadPool::IsStopped()) to check the status.
+    started_.store(false);
+
     if (thread_num_ > 0 && wait_thread_exit) {
         exit_promise_.get_future().wait();
     }
@@ -87,8 +93,6 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
         stopped_cb_();
         stopped_cb_ = Functor();
     }
-
-    started_.store(false);
 }
 
 bool EventLoopThreadPool::IsRunning() const {
