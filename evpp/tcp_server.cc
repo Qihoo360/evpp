@@ -21,10 +21,12 @@ TCPServer::TCPServer(EventLoop* loop,
 
 TCPServer::~TCPServer() {
     LOG_TRACE << "TCPServer::~TCPServer()";
-    assert(tpool_->IsStopped());
     assert(connections_.empty());
     assert(!listener_);
-    tpool_.reset();
+    if (tpool_) {
+        assert(tpool_->IsStopped());
+        tpool_.reset();
+    }
 }
 
 bool TCPServer::Init() {
@@ -98,19 +100,31 @@ void TCPServer::Stop(Functor on_stopped_cb) {
     loop_->RunInLoop(std::bind(&TCPServer::StopInLoop, this, on_stopped_cb));
 }
 
+void TCPServer::StopThreadPool() {
+    LOG_INFO << "this=" << this << " StopThreadPool pool=" << tpool_.get();
+    assert(loop_->IsInLoopThread());
+    tpool_->Stop(true);
+    assert(tpool_->IsStopped());
+
+    // To make sure all the working threads totally stopped.
+    tpool_->Join();
+    tpool_.reset();
+}
+
 void TCPServer::StopInLoop(Functor on_stopped_cb) {
     LOG_TRACE << "this=" << this << "Entering TCPServer::StopInLoop";
+    assert(loop_->IsInLoopThread());
     listener_->Stop();
     listener_.reset();
 
     if (connections_.empty()) {
         // Stop all the working threads now.
         LOG_INFO << "this=" << this << " TCPServer::StopInLoop no connections";
-        tpool_->Stop(true);
-        assert(tpool_->IsStopped());
+        StopThreadPool();
         status_.store(kStopped);
         if (on_stopped_cb) {
             on_stopped_cb();
+            on_stopped_cb = Functor();
         }
     } else {
         for (auto& c : connections_) {
@@ -164,8 +178,8 @@ void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
         this->connections_.erase(conn->name());
         if (status_ == kStopping && this->connections_.empty()) {
             // At last, we stop all the working threads
-            tpool_->Stop(true);
-            assert(tpool_->IsStopped());
+            LOG_INFO << "this=" << this << " TCPServer::RemoveConnection stop thread pool";
+            StopThreadPool();
             status_.store(kStopped);
             if (stopped_cb_) {
                 stopped_cb_();
