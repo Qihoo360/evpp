@@ -53,7 +53,10 @@ private:
 
 private:
     std::shared_ptr<EventLoop> event_loop_;
-    std::shared_ptr<std::thread> thread_;
+
+    std::mutex mutex_;
+    std::shared_ptr<std::thread> thread_; // Guard by mutex_
+
 
     std::promise<int> pre_task_promise_;
     std::packaged_task<int()> post_task_;

@@ -17,8 +17,16 @@ Server::Server(uint32_t thread_num) {
 }
 
 Server::~Server() {
+    if (!listen_threads_.empty()) {
+        for (auto& lt : listen_threads_) {
+            lt.thread->Join();
+        }
+        listen_threads_.clear();
+    }
+
     if (tpool_) {
         assert(tpool_->IsStopped());
+        tpool_->Join();
         tpool_.reset();
     }
 }
@@ -145,9 +153,15 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
     }
     assert(IsStopped());
 
-    // To make sure all the working threads totally stopped.
+    // Make sure all the working threads totally stopped.
     tpool_->Join();
     tpool_.reset();
+
+    // Make sure all the listening threads totally stopped.
+    for (auto& lt : listen_threads_) {
+        lt.thread->Join();
+    }
+    listen_threads_.clear();
 
     LOG_INFO << "this=" << this << " http server stopped";
 }
