@@ -17,8 +17,10 @@ Server::Server(uint32_t thread_num) {
 }
 
 Server::~Server() {
-    assert(tpool_->IsStopped());
-    tpool_.reset();
+    if (tpool_) {
+        assert(tpool_->IsStopped());
+        tpool_.reset();
+    }
 }
 
 bool Server::Init(int listen_port) {
@@ -44,7 +46,6 @@ bool Server::Init(const std::vector<int>& listen_ports) {
     }
     return rc;
 }
-
 
 bool Server::Init(const std::string& listen_ports/*"80,8080,443"*/) {
     std::vector<std::string> vec;
@@ -143,6 +144,11 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
         assert(lt.thread->IsStopped());
     }
     assert(IsStopped());
+
+    // To make sure all the working threads totally stopped.
+    tpool_->Join();
+    tpool_.reset();
+
     LOG_INFO << "this=" << this << " http server stopped";
 }
 

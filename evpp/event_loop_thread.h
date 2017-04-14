@@ -32,6 +32,11 @@ public:
 
     void Stop(bool wait_thread_exit = false);
 
+    // @brief Join the thread. If you forget to call this method,
+    // it will be invoked automatically in the destruct method ~EventLoopThread().
+    // @note DO NOT call this method from any of the working thread.
+    void Join();
+
     void AfterFork();
 
 public:
