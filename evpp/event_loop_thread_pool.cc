@@ -9,11 +9,7 @@ EventLoopThreadPool::EventLoopThreadPool(EventLoop* base_loop, uint32_t thread_n
       thread_num_(thread_number) {}
 
 EventLoopThreadPool::~EventLoopThreadPool() {
-    assert(thread_num_ == threads_.size());
-    for (uint32_t i = 0; i < thread_num_; i++) {
-        assert(threads_[i]->IsStopped());
-    }
-
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::~EventLoopThreadPool thread_num=" << thread_num();
     Join();
     threads_.clear();
 }
@@ -77,8 +73,7 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop wait_thread_exit=" << wait_thread_exit;
     stopped_cb_ = on_stopped_cb;
 
-    for (uint32_t i = 0; i < thread_num_; ++i) {
-        EventLoopThreadPtr& t = threads_[i];
+    for (auto &t : threads_) {
         t->Stop();
     }
 
@@ -103,10 +98,10 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
 
 void EventLoopThreadPool::Join() {
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Join thread_num=" << thread_num();
-    for (uint32_t i = 0; i < thread_num_; ++i) {
-        EventLoopThreadPtr& t = threads_[i];
+    for (auto &t : threads_) {
         t->Join();
     }
+    threads_.clear();
 }
 
 bool EventLoopThreadPool::IsRunning() const {
@@ -114,9 +109,7 @@ bool EventLoopThreadPool::IsRunning() const {
         return false;
     }
 
-    for (uint32_t i = 0; i < thread_num_; ++i) {
-        const EventLoopThreadPtr& t = threads_[i];
-
+    for (auto &t : threads_) {
         if (!t->IsRunning()) {
             return false;
         }
@@ -130,9 +123,7 @@ bool EventLoopThreadPool::IsStopped() const {
         return !started_.load();
     }
 
-    for (uint32_t i = 0; i < thread_num_; ++i) {
-        const EventLoopThreadPtr& t = threads_[i];
-
+    for (auto &t : threads_) {
         if (!t->IsStopped()) {
             return false;
         }
