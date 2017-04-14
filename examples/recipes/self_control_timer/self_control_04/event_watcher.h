@@ -53,7 +53,6 @@ public:
 
     bool AsyncWait();
     void Notify();
-    int wfd() const {        return pipe_[0];    }
 private:
     virtual bool DoInit();
     virtual void DoClose();
