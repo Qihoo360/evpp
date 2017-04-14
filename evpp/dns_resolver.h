@@ -25,8 +25,9 @@ private:
     void AsyncWait();
     void OnTimeout();
     void OnCanceled();
-    void OnResolved(int errcode, struct addrinfo* addr);
     void ClearTimer();
+    void OnResolved(int errcode, struct addrinfo* addr);
+    void OnResolved();
     static void OnResolved(int errcode, struct addrinfo* addr, void* arg);
 private:
     EventLoop* loop_;
