@@ -1,6 +1,5 @@
 #include "http_server.h"
 
-#include <future>
 
 #include "evpp/libevent_headers.h"
 #include "evpp/event_watcher.h"
@@ -144,7 +143,25 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
         return;
     }
 
-    exit_promise_.get_future().wait();
+    for (;;) {
+        bool stopped = true;
+        for (auto& lt : listen_threads_) {
+            if (!lt.thread->IsStopped()) {
+                stopped = false;
+                break;
+            }
+        }
+
+        if (!tpool_->IsStopped()) {
+            stopped = false;
+        }
+
+        if (stopped) {
+            break;
+        }
+
+        usleep(1);
+    }
 
     assert(tpool_->IsStopped());
     for (auto& lt : listen_threads_) {
@@ -289,10 +306,7 @@ void Server::OnListeningThreadExited(int exited_listen_thread_count) {
     LOG_INFO << "this=" << this << " OnListenThreadExited exited_listen_thread_count=" << exited_listen_thread_count << " listen_threads_.size=" << listen_threads_.size();
     if (exited_listen_thread_count == int(listen_threads_.size())) {
         LOG_INFO << "this=" << this << " stop the working thread pool.";
-        auto fn = [this]() {
-            exit_promise_.set_value();
-        };
-        tpool_->Stop(fn);
+        tpool_->Stop();
     }
 }
 
