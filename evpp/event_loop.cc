@@ -24,7 +24,6 @@ EventLoop::EventLoop()
 
 EventLoop::EventLoop(struct event_base* base)
     : evbase_(base), create_evbase_myself_(false), notified_(false), pending_functor_count_(0) {
-
     Init();
 
     // When we build an EventLoop instance from an existing event_base
@@ -35,6 +34,7 @@ EventLoop::EventLoop(struct event_base* base)
     if (!rc) {
         LOG_FATAL << "PipeEventWatcher init failed.";
     }
+    status_.store(kRunning);
 }
 
 EventLoop::~EventLoop() {
@@ -50,6 +50,7 @@ EventLoop::~EventLoop() {
 }
 
 void EventLoop::Init() {
+    status_.store(kInitializing);
 #ifdef H_HAVE_BOOST
     const size_t kPendingFunctorCount = 1024 * 16;
     this->pending_functors_ = new boost::lockfree::queue<Functor*>(kPendingFunctorCount);
@@ -59,7 +60,6 @@ void EventLoop::Init() {
     this->pending_functors_ = new std::vector<Functor>();
 #endif
 
-    running_ = false;
     tid_ = std::this_thread::get_id(); // The default thread id
 
     // Initialized task queue watcher
@@ -69,9 +69,12 @@ void EventLoop::Init() {
     if (!rc) {
         LOG_FATAL << "PipeEventWatcher init failed.";
     }
+
+    status_.store(kInitialized);
 }
 
 void EventLoop::Run() {
+    status_.store(kStarting);
     tid_ = std::this_thread::get_id(); // The actual thread id
 
     int rc = watcher_->AsyncWait();
@@ -80,8 +83,8 @@ void EventLoop::Run() {
         LOG_FATAL << "PipeEventWatcher init failed.";
     }
 
-    // After everything have initialized, mark this running_ flag to true
-    running_ = true;
+    // After everything have initialized, we set the status to kRunning
+    status_.store(kRunning);
 
     rc = event_base_dispatch(evbase_);
     if (rc == 1) {
@@ -91,21 +94,23 @@ void EventLoop::Run() {
         LOG_ERROR << "event_base_dispatch error " << serrno << " " << strerror(serrno);
     }
 
-    // Make sure watcher_ does construct,initialize and destruct in the same thread.
+    // Make sure watcher_ does construct, initialize and destruct in the same thread.
     watcher_.reset();
-    running_ = false;
     LOG_TRACE << "this=" << this << " EventLoop stopped, tid=" << std::this_thread::get_id();
+
+    status_.store(kStopped);
 }
 
 void EventLoop::Stop() {
+    assert(status_.load() == kRunning);
+    status_.store(kStopping);
     LOG_INFO << "this=" << this << " EventLoop::Stop";
-    assert(running_);
     QueueInLoop(std::bind(&EventLoop::StopInLoop, this));
 }
 
 void EventLoop::StopInLoop() {
     LOG_TRACE << "this=" << this << " EventLoop is stopping now, tid=" << std::this_thread::get_id();
-    assert(running_);
+    assert(status_.load() == kStopping);
 
     auto f = [this]() {
         for (int i = 0;;i++) {
@@ -133,7 +138,6 @@ void EventLoop::StopInLoop() {
 
     f();
 
-    running_ = false;
     LOG_INFO << "this=" << this << " end of StopInLoop";
 }
 
@@ -208,7 +212,17 @@ void EventLoop::QueueInLoop(const Functor& cb) {
         //  3. Then the CPU changed to run on thread1 and set notified_ to true
         //  4. Then, some thread except thread2 call this QueueInLoop to push a task into the queue, and find notified_ is true, so there is no change to wakeup thread2 to execute this task
         notified_.store(true);
-        watcher_->Notify();
+
+        // Sometimes one thread invoke EventLoop::QueueInLoop(...), but anther
+        // thread is invoking EventLoop::Stop() to stop this loop. At this moment
+        // this loop maybe is stopping and the watcher_ object maybe has been
+        // released already.
+        if (watcher_) {
+            watcher_->Notify();
+        } else {
+            LOG_WARN << "this=" << this << " status=" << ToString();
+            assert(!IsRunning());
+        }
     } else {
          LOG_TRACE << "this=" << this << " No need to call watcher_->Nofity()";
     }
@@ -234,7 +248,12 @@ void EventLoop::QueueInLoop(Functor&& cb) {
     if (!notified_.load()) {
         LOG_TRACE << "this=" << this << " QueueInLoop call watcher_->Nofity() notified_.store(true)";
         notified_.store(true);
-        watcher_->Notify();
+        if (watcher_) {
+            watcher_->Notify();
+        } else {
+            LOG_WARN << "this=" << this << " status=" << ToString();
+            assert(!IsRunning());
+        }
     } else {
         LOG_TRACE << "this=" << this << " No need to call watcher_->Nofity()";
     }
