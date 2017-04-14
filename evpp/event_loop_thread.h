@@ -2,8 +2,8 @@
 
 #include "evpp/inner_pre.h"
 
-#include <future>
 #include <thread>
+#include <mutex>
 
 struct event_base;
 struct event;
@@ -49,17 +49,13 @@ public:
     bool IsStopped() const;
 
 private:
-    void Run(const Functor& pre);
+    void Run(const Functor& pre, const Functor& post);
 
 private:
     std::shared_ptr<EventLoop> event_loop_;
 
     std::mutex mutex_;
     std::shared_ptr<std::thread> thread_; // Guard by mutex_
-
-
-    std::promise<int> pre_task_promise_;
-    std::packaged_task<int()> post_task_;
 
     enum Status {
         kStarting = 0,
