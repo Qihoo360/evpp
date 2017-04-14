@@ -11,6 +11,10 @@ InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Fun
     std::cout << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
 }
 
+InvokeTimer* InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor& f) {
+    return new InvokeTimer(evloop, timeout_ms, f);
+}
+
 InvokeTimer::~InvokeTimer() {
     std::cout << "InvokeTimer::~InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
 }
@@ -27,6 +31,7 @@ void InvokeTimer::OnTimerTriggered() {
     std::cout << "InvokeTimer::OnTimerTriggered tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
     functor_();
     functor_ = Functor();
+    delete this;
 }
 
 }
