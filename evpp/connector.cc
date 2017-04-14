@@ -80,7 +80,7 @@ void Connector::Cancel() {
     timer_.reset();
 
     if (status_ == kDNSResolving) {
-        assert(chan_.get() == NULL);
+        assert(chan_.get() == nullptr);
         conn_fn_(-1, "");
     }
 

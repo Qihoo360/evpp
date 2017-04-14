@@ -107,7 +107,7 @@ void TCPServer::StopThreadPool() {
     tpool_->Stop(true);
     assert(tpool_->IsStopped());
 
-    // To make sure all the working threads totally stopped.
+    // Make sure all the working threads totally stopped.
     tpool_->Join();
     tpool_.reset();
 }
