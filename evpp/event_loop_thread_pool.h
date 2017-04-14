@@ -41,7 +41,6 @@ private:
     std::atomic<int64_t> next_ = { 0 };
 
     Functor stopped_cb_;
-    std::promise<void> exit_promise_; // wait all threads exited
 
     typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
     std::vector<EventLoopThreadPtr> threads_;
