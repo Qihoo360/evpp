@@ -93,6 +93,7 @@ bool TCPServer::IsStopped() const {
 }
 
 void TCPServer::Stop(Functor on_stopped_cb) {
+    LOG_TRACE << "this=" << this << "Entering TCPServer::Stop";
     assert(status_ == kRunning);
     status_.store(kStopping);
     loop_->RunInLoop(std::bind(&TCPServer::StopInLoop, this, on_stopped_cb));
