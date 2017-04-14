@@ -46,7 +46,7 @@ void DNSResolver::SyncDNSResolve() {
     struct addrinfo* answer = nullptr;
     int err = getaddrinfo(host_.c_str(), nullptr, &hints, &answer);
     if (err != 0) {
-        LOG_ERROR << "getaddrinfo failed. err=" << err << " " << gai_strerror(err);
+        LOG_ERROR << "this=" << this << " getaddrinfo failed. err=" << err << " " << gai_strerror(err);
     } else {
         for (struct addrinfo* rp = answer; rp != nullptr; rp = rp->ai_next) {
             struct sockaddr_in* a = reinterpret_cast<struct sockaddr_in*>(rp->ai_addr);
@@ -56,14 +56,11 @@ void DNSResolver::SyncDNSResolve() {
             }
 
             addrs_.push_back(a->sin_addr);
-            LOG_TRACE << host_ << " resolved a ip=" << inet_ntoa(a->sin_addr);
+            LOG_TRACE << "this=" << this << " host=" << host_ << " resolved a ip=" << inet_ntoa(a->sin_addr);
         }
     }
     evutil_freeaddrinfo(answer);
-
-    if (functor_) {
-        functor_(this->addrs_);
-    }
+    OnResolved();
 }
 
 void DNSResolver::Cancel() {
@@ -76,7 +73,7 @@ void DNSResolver::Cancel() {
 }
 
 void DNSResolver::AsyncWait() {
-    LOG_INFO << "DNSResolver::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this;
+    LOG_INFO << "this=" << this << " DNSResolver::AsyncWait tid=" << std::this_thread::get_id() << " this=" << this;
     timer_.reset(new TimerEventWatcher(loop_, std::bind(&DNSResolver::OnTimeout, this), timeout_));
     timer_->SetCancelCallback(std::bind(&DNSResolver::OnCanceled, this));
     timer_->Init();
@@ -84,19 +81,17 @@ void DNSResolver::AsyncWait() {
 }
 
 void DNSResolver::OnTimeout() {
-    LOG_INFO << "DNSResolver::OnTimeout tid=" << std::this_thread::get_id() << " this=" << this;
+    LOG_INFO << "this=" << this << " DNSResolver::OnTimeout tid=" << std::this_thread::get_id() << " this=" << this;
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     evdns_getaddrinfo_cancel(dns_req_);
     dns_req_ = nullptr;
 #endif
     ClearTimer();
-    if (functor_) {
-        functor_(this->addrs_);
-    }
+    OnResolved();
 }
 
 void DNSResolver::OnCanceled() {
-    LOG_INFO << "DNSResolver::OnCanceled tid=" << std::this_thread::get_id() << " this=" << this;
+    LOG_INFO << "this=" << this << " DNSResolver::OnCanceled tid=" << std::this_thread::get_id() << " this=" << this;
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     evdns_getaddrinfo_cancel(dns_req_);
     dns_req_ = nullptr;
@@ -118,7 +113,7 @@ void DNSResolver::AsyncDNSResolve() {
     hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
 
 
-    LOG_TRACE << "call shared_from_this";
+    LOG_TRACE << "this=" << this << " call shared_from_this";
     std::shared_ptr<DNSResolver> p = shared_from_this();
     std::shared_ptr<DNSResolver> *pp = new std::shared_ptr<DNSResolver>(p);
     dnsbase_ = evdns_base_new(loop_->event_base(), 1);
@@ -135,40 +130,35 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
     if (errcode != 0) {
         if (errcode != EVUTIL_EAI_CANCEL) {
             ClearTimer();
-            LOG_ERROR << "dns resolve failed, "
+            LOG_ERROR << "DNS resolve failed, "
                 << ", error code: " << errcode
                 << ", error msg: " << evutil_gai_strerror(errcode);
         } else {
-            LOG_WARN << "dns resolve cancel, may be timeout";
+            LOG_WARN << "this=" << this << " DNS resolve cancel, may be timeout";
         }
 
-        LOG_INFO << "delete dns base";
+        LOG_INFO << "this=" << this << " delete DNS base";
         evdns_base_free(dnsbase_, 0);
         dnsbase_ = nullptr;
-
-        if (functor_) {
-            functor_(this->addrs_);
-        }
+        OnResolved();
         return;
     }
 
 
     if (addr == nullptr) {
-        LOG_ERROR << "dns resolve error, addr can not be nullptr";
+        LOG_ERROR << "this=" << this << " dns resolve error, addr can not be nullptr";
 
-        LOG_INFO << "delete dns base";
+        LOG_INFO << "this=" << this << " delete dns base";
         evdns_base_free(dnsbase_, 0);
         dnsbase_ = nullptr;
         ClearTimer();
-        if (functor_) {
-            functor_(this->addrs_);
-        }
+        OnResolved();
         return;
     }
 
 
     if (addr->ai_canonname) {
-        LOG_INFO << "resolve canon name: " << addr->ai_canonname;
+        LOG_INFO << "this=" << this << " resolve canon name: " << addr->ai_canonname;
     }
 
     for (struct addrinfo* rp = addr; rp != nullptr; rp = rp->ai_next) {
@@ -179,17 +169,15 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         }
 
         addrs_.push_back(a->sin_addr);
-        LOG_TRACE << host_ << " resolved a ip=" << inet_ntoa(a->sin_addr);
+        LOG_TRACE << "this=" << this << " host=" << host_ << " resolved a ip=" << inet_ntoa(a->sin_addr);
     }
     evutil_freeaddrinfo(addr);
     ClearTimer();
 
-    LOG_INFO << "delete dns base";
-    evdns_base_free(dnsbase_, 0); //TODO Do we need to free dns_req_
+    LOG_INFO << "this=" << this << " delete DNS base";
+    evdns_base_free(dnsbase_, 0); //TODO Do we need to free dns_req_?
     dnsbase_ = nullptr;
-    if (functor_) {
-        functor_(this->addrs_);
-    }
+    OnResolved();
 }
 
 void DNSResolver::OnResolved(int errcode, struct addrinfo* addr, void* arg) {
@@ -197,6 +185,18 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr, void* arg) {
     LOG_TRACE << "this->use_count=" << pp->use_count();
     (*pp)->OnResolved(errcode, addr);
     delete pp;
+}
+
+void DNSResolver::OnResolved() {
+    if (functor_) {
+        functor_(addrs_);
+
+        // Release the callback immediately.
+        // Sometimes, when it is timeout, this callback will be invoked in OnTimeout()
+        // and `evdns_getaddrinfo_cancel(dns_req_)` will also invoke
+        // OnResolved in next loop time. So we need to release this callback.
+        functor_ = Functor();
+    }
 }
 
 void DNSResolver::ClearTimer() {
