@@ -127,9 +127,9 @@ void EventLoop::StopInLoop() {
     f();
 
     LOG_INFO << "this=" << this << " start event_base_loopexit";
-    event_base_loopexit(evbase_, NULL);
+    event_base_loopexit(evbase_, nullptr);
 //#ifdef H_BENCHMARK_TESTING
-//    event_base_loopexit(evbase_, NULL);
+//    event_base_loopexit(evbase_, nullptr);
 //#else
 //    timeval tv = Duration(0.005).TimeVal(); // Trick : delay 0.005 second
 //    event_base_loopexit(evbase_, &tv);

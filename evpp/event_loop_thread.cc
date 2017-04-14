@@ -24,6 +24,7 @@ bool EventLoopThread::Start(bool wait_thread_started, Functor pre, Functor post)
         post_task_ = std::packaged_task<int()>(std::move(post));
     }
 
+    assert(thread_.get() == nullptr);
     thread_.reset(new std::thread(std::bind(&EventLoopThread::Run, this, pre)));
 
     int rc = kOK;
@@ -85,6 +86,8 @@ void EventLoopThread::Stop(bool wait_thread_exit) {
 }
 
 void EventLoopThread::Join() {
+    // To avoid multi other threads call Join simultaneously
+    std::lock_guard<std::mutex> guard(mutex_);
     if (thread_ && thread_->joinable()) {
         LOG_INFO << "this=" << this << " thread=" << thread_ << " joinable";
         try {
