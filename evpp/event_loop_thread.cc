@@ -14,14 +14,7 @@ EventLoopThread::EventLoopThread()
 EventLoopThread::~EventLoopThread() {
     LOG_INFO << "this=" << this << " EventLoopThread::~EventLoopThread";
     assert(IsStopped());
-    if (thread_ && thread_->joinable()) {
-        LOG_INFO << "this=" << this << " thread=" << thread_ << " joinable";
-        try {
-            thread_->join();
-        } catch (const std::system_error& e) {
-            LOG_ERROR << "Caught a system_error:" << e.what() << " code=" << e.code();
-        }
-    }
+    Join();
 }
 
 bool EventLoopThread::Start(bool wait_thread_started, Functor pre, Functor post) {
@@ -87,14 +80,19 @@ void EventLoopThread::Stop(bool wait_thread_exit) {
 
         LOG_INFO << "this=" << this << " post function execution result is " << result.get();
 
-        if (thread_->joinable()) {
-            try {
-                thread_->join();
-            } catch (const std::system_error& e) {
-                LOG_ERROR << "Caught a system_error:" << e.what() << " code=" << e.code();
-            }
-            thread_.reset();
+        Join();
+    }
+}
+
+void EventLoopThread::Join() {
+    if (thread_ && thread_->joinable()) {
+        LOG_INFO << "this=" << this << " thread=" << thread_ << " joinable";
+        try {
+            thread_->join();
+        } catch (const std::system_error& e) {
+            LOG_ERROR << "Caught a system_error:" << e.what() << " code=" << e.code();
         }
+        thread_.reset();
     }
 }
 
