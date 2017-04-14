@@ -10,11 +10,11 @@ EventLoopThreadPool::EventLoopThreadPool(EventLoop* base_loop, uint32_t thread_n
 
 EventLoopThreadPool::~EventLoopThreadPool() {
     assert(thread_num_ == threads_.size());
-
     for (uint32_t i = 0; i < thread_num_; i++) {
         assert(threads_[i]->IsStopped());
     }
 
+    Join();
     threads_.clear();
 }
 
@@ -98,6 +98,14 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
         LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop calling stopped callback";
         stopped_cb_();
         stopped_cb_ = Functor();
+    }
+}
+
+void EventLoopThreadPool::Join() {
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::Join thread_num=" << thread_num();
+    for (uint32_t i = 0; i < thread_num_; ++i) {
+        EventLoopThreadPtr& t = threads_[i];
+        t->Join();
     }
 }
 

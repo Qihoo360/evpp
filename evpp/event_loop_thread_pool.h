@@ -17,6 +17,10 @@ public:
     void Stop(bool wait_thread_exited = false);
     void Stop(Functor on_stopped_cb);
 
+    // @brief Join all the working thread. If you forget to call this method,
+    // it will be invoked automatically in the destruct method ~EventLoopThreadPool().
+    // @note DO NOT call this method from any of the working thread.
+    void Join();
 public:
     EventLoop* GetNextLoop();
     EventLoop* GetNextLoopWithHash(uint64_t hash);
