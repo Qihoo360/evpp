@@ -98,6 +98,7 @@ public:
         return listen_addr_;
     }
 private:
+    void StopThreadPool();
     void StopInLoop(Functor on_stopped_cb);
     void RemoveConnection(const TCPConnPtr& conn);
     void HandleNewConn(int sockfd, const std::string& remote_addr/*ip:port*/, const struct sockaddr_in* raddr);
