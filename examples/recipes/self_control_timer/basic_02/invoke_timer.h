@@ -20,8 +20,6 @@ public:
 
     ~InvokeTimer();
 
-    // It is thread safe.
-    // Start this timer.
     void Start();
 
 private:
