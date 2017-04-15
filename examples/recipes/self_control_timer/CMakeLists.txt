@@ -1,4 +1,5 @@
 add_subdirectory(basic_01)
 add_subdirectory(basic_02)
-add_subdirectory(basic_periodic_03)
-add_subdirectory(self_control_04)
+add_subdirectory(cancel_03)
+add_subdirectory(periodic_04)
+add_subdirectory(final_05)
