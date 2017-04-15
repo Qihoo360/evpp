@@ -6,7 +6,9 @@ namespace evpp {
 
 EventLoopThreadPool::EventLoopThreadPool(EventLoop* base_loop, uint32_t thread_number)
     : base_loop_(base_loop),
-      thread_num_(thread_number) {}
+      thread_num_(thread_number) {
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::EventLoopThreadPool thread_num=" << thread_num() << " base loop=" << base_loop_;
+}
 
 EventLoopThreadPool::~EventLoopThreadPool() {
     LOG_INFO << "this=" << this << " EventLoopThreadPool::~EventLoopThreadPool thread_num=" << thread_num();
@@ -15,6 +17,7 @@ EventLoopThreadPool::~EventLoopThreadPool() {
 }
 
 bool EventLoopThreadPool::Start(bool wait_thread_started) {
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::Start thread_num=" << thread_num() << " base loop=" << base_loop_ << " wait_thread_started=" << wait_thread_started;
     assert(!started_.load());
     if (started_.load()) {
         return true;

@@ -161,7 +161,7 @@ private:
 
     // The delay time to close a incoming connection which has been shutdown by peer normally.
     // Default is 3 second.
-    Duration close_delay_ = Duration(3.0);
+    Duration close_delay_ = Duration(3.0); // TODO When we have a large scale of concurrent connections, this delay close will be a huge burden for the TCPServer
     std::shared_ptr<InvokeTimer> delay_close_timer_; // The timer to delay close this TCPConn
 
     ConnectionCallback conn_fn_; // This will be called to the user application layer
