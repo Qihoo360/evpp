@@ -16,6 +16,7 @@ TCPServer::TCPServer(EventLoop* loop,
     , conn_fn_(&internal::DefaultConnectionCallback)
     , msg_fn_(&internal::DefaultMessageCallback)
     , next_conn_id_(0) {
+    LOG_INFO << "this=" << this << " TCPServer::TCPServer name=" << name << " listening addr " << laddr << " thread_num=" << thread_num;
     tpool_.reset(new EventLoopThreadPool(loop_, thread_num));
 }
 
@@ -30,6 +31,7 @@ TCPServer::~TCPServer() {
 }
 
 bool TCPServer::Init() {
+    LOG_INFO << "this=" << this << " TCPServer::Init";
     assert(status_ == kNull);
     listener_.reset(new Listener(loop_, listen_addr_));
     listener_->Listen();
@@ -38,6 +40,7 @@ bool TCPServer::Init() {
 }
 
 bool TCPServer::Start() {
+    LOG_INFO << "this=" << this << " TCPServer::Start";
     assert(status_ == kInitialized);
     status_.store(kStarting);
     assert(listener_.get());

@@ -30,6 +30,7 @@ void OnClientConnection(const evpp::TCPConnPtr& conn) {
 
 evpp::TCPClient* StartTCPClient(evpp::EventLoop* loop) {
     evpp::TCPClient* client(new evpp::TCPClient(loop, addr, "TCPPingPongClient"));
+    client->set_reconnect_interval(evpp::Duration(0.1));
     client->SetConnectionCallback(&OnClientConnection);
     client->Connect();
     return client;
@@ -46,7 +47,6 @@ TEST_UNIT(testTCPClientReconnect) {
     tcp_server_thread->set_name("TCPServerThread");
     tcp_server_thread->Start(true);
     evpp::TCPClient* client = StartTCPClient(tcp_client_thread->loop());
-    client->set_reconnect_interval(evpp::Duration(0.1));
 
     int test_count = 3;
     for (int i = 0; i < test_count; i++) {
