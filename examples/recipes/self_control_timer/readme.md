@@ -200,17 +200,285 @@ bool TimerEventWatcher::AsyncWait() {
 ```
 
 
-### 一个最基本的实现：basic-01
+### 1. 一个最基本的实现：basic-01
 
-仅仅是能够实现功能
+我们先尝试实现一个能满足最基本需求的定时器。
 
-### 能够实现最基本自我管理：basic-02
+```C++
+
+// 头文件
+#include <memory>
+#include <functional>
+
+struct event_base;
+
+namespace recipes {
+
+class TimerEventWatcher;
+class InvokeTimer;
+
+class InvokeTimer {
+public:
+    typedef std::function<void()> Functor;
+
+    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f);
+    ~InvokeTimer();
+
+    void Start();
+
+private:
+    void OnTimerTriggered();
+
+private:
+    struct event_base* loop_;
+    double timeout_ms_;
+    Functor functor_;
+    std::shared_ptr<TimerEventWatcher> timer_;
+};
+
+}
+
+
+
+// 实现文件
+#include "invoke_timer.h"
+#include "event_watcher.h"
+
+#include <thread>
+#include <iostream>
+
+namespace recipes {
+
+InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f)
+    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f) {
+    std::cout << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+}
+
+InvokeTimer::~InvokeTimer() {
+    std::cout << "InvokeTimer::~InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+}
+
+void InvokeTimer::Start() {
+    std::cout << "InvokeTimer::Start tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, this), timeout_ms_));
+    timer_->Init();
+    timer_->AsyncWait();
+    std::cout << "InvokeTimer::Start(AsyncWait) tid=" << std::this_thread::get_id() << " timer=" << timer_.get() << " this=" << this << " timeout(ms)=" << timeout_ms_ << std::endl;
+}
+
+void InvokeTimer::OnTimerTriggered() {
+    std::cout << "InvokeTimer::OnTimerTriggered tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+    functor_();
+    functor_ = Functor();
+}
+
+}
+
+
+```
+
+测试main.cc
+
+```C++
+#include "invoke_timer.h"
+#include "event_watcher.h"
+#include "winmain-inl.h"
+
+#include <event2/event.h>
+
+void Print() {
+    std::cout << __FUNCTION__ << " hello world." << std::endl;
+}
+
+int main() {
+    struct event_base* base = event_base_new();
+    auto timer = new recipes::InvokeTimer(base, 1000.0, &Print);
+    timer->Start();
+    event_base_dispatch(base);
+    delete timer;
+    return 0;
+}
+```
+
+我们先创建一个`event_base`对象，随后创建一个`InvokeTimer`对象，随后让timer启动起来，即将timer注册到`event_base`对象中，最后运行`event_base_dispatch(base)`。
+
+下面编译运行，结果是符合预期的：当timer到期后，能顺利触发回调。
+
+```shell
+$ ls -l
+total 80
+-rw-rw-r-- 1 weizili weizili  2729 Apr 15 20:39 event_watcher.cc
+-rw-rw-r-- 1 weizili weizili   996 Apr 15 20:39 event_watcher.h
+-rw-rw-r-- 1 weizili weizili  1204 Apr 14 10:55 invoke_timer.cc
+-rw-rw-r-- 1 weizili weizili   805 Apr 14 10:55 invoke_timer.h
+-rw-rw-r-- 1 weizili weizili   374 Apr 14 10:55 main.cc
+$ g++ -std=c++11 event_watcher.cc invoke_timer.cc main.cc -levent
+$ ./a.out 
+InvokeTimer::InvokeTimer tid=139965845526336 this=0x7ffd2790f780
+InvokeTimer::Start tid=139965845526336 this=0x7ffd2790f780
+InvokeTimer::Start(AsyncWait) tid=139965845526336 timer=0x14504c0 this=0x7ffd2790f780 timeout(ms)=1000
+InvokeTimer::OnTimerTriggered tid=139965845526336 this=0x7ffd2790f780
+Print hello world.
+InvokeTimer::~InvokeTimer tid=139965845526336 this=0x7ffd2790f780
+```
+
+这个实现方式，`InvokeTimer`对象生命周期的管理是一个问题，它需要调用者自己管理。
+
+
+### 2. 能够实现最基本自我管理：basic-02
+
+为了实现`InvokeTimer`对象生命周期的自我管理，其实就是调用者不需要关心`InvokeTimer`对象的生命周期问题。可以设想一下，假如`InvokeTimer`对象创建后，当定时时间一到，我们就调用其绑定的毁掉回函，然后`InvokeTimer`对象自我销毁，是不是就可以实现自我管理了呢？嗯，这个可行。请看下面代码。
+
+```C++
+
+// 头文件
+
+#include <memory>
+#include <functional>
+
+struct event_base;
+
+namespace recipes {
+
+class TimerEventWatcher;
+class InvokeTimer;
+
+class InvokeTimer {
+public:
+    typedef std::function<void()> Functor;
+
+    static InvokeTimer* Create(struct event_base* evloop,
+                                 double timeout_ms,
+                                 const Functor& f);
+
+    ~InvokeTimer();
+
+    void Start();
+
+private:
+    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f);
+    void OnTimerTriggered();
+
+private:
+    struct event_base* loop_;
+    double timeout_ms_;
+    Functor functor_;
+    std::shared_ptr<TimerEventWatcher> timer_;
+};
+
+}
+
+
+// 实现文件
+
+#include "invoke_timer.h"
+#include "event_watcher.h"
+
+#include <thread>
+#include <iostream>
+
+namespace recipes {
+
+InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f)
+    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f) {
+    std::cout << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+}
+
+InvokeTimer* InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor& f) {
+    return new InvokeTimer(evloop, timeout_ms, f);
+}
+
+InvokeTimer::~InvokeTimer() {
+    std::cout << "InvokeTimer::~InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+}
+
+void InvokeTimer::Start() {
+    std::cout << "InvokeTimer::Start tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, this), timeout_ms_));
+    timer_->Init();
+    timer_->AsyncWait();
+    std::cout << "InvokeTimer::Start(AsyncWait) tid=" << std::this_thread::get_id() << " timer=" << timer_.get() << " this=" << this << " timeout(ms)=" << timeout_ms_ << std::endl;
+}
+
+void InvokeTimer::OnTimerTriggered() {
+    std::cout << "InvokeTimer::OnTimerTriggered tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+    functor_();
+    functor_ = Functor();
+    delete this;
+}
+
+}
+
+```
+
+请注意，上述实现中，为了实现自我销毁，我们必须调用 **delete** ，这就注定了`InvokeTimer`对象必须在堆上创建，因此我们隐藏了它的构造函数，然后用一个静态的 **Create** 成员来创建`InvokeTimer`对象的实例。
+
+相应的，`main.cc`也做了一点点修改代码如下：
+
+
+```C++
+#include "invoke_timer.h"
+#include "event_watcher.h"
+#include "winmain-inl.h"
+
+#include <event2/event.h>
+
+void Print() {
+    std::cout << __FUNCTION__ << " hello world." << std::endl;
+}
+
+int main() {
+    struct event_base* base = event_base_new();
+    auto timer = recipes::InvokeTimer::Create(base, 1000.0, &Print);
+    timer->Start(); // 启动完成后，就不用关注该对象了
+    event_base_dispatch(base);
+    return 0;
+}
+```
+
+这个实现，就不需要上层调用者手工`delete`这个`InvokeTimer`对象的实例，从而达到`InvokeTimer`对象自我管理的目的。
+
+下面编译运行，结果是符合预期的：当timer到期后，能顺利触发回调，并且`InvokeTimer`对象也自动析构了。
+
+```shell
+$ ls -l
+total 80
+-rw-rw-r-- 1 weizili weizili  2729 Apr 15 20:39 event_watcher.cc
+-rw-rw-r-- 1 weizili weizili   996 Apr 15 20:39 event_watcher.h
+-rw-rw-r-- 1 weizili weizili  1204 Apr 14 10:55 invoke_timer.cc
+-rw-rw-r-- 1 weizili weizili   805 Apr 14 10:55 invoke_timer.h
+-rw-rw-r-- 1 weizili weizili   374 Apr 14 10:55 main.cc
+$ g++ -std=c++11 event_watcher.cc invoke_timer.cc main.cc -levent
+$ ./a.out 
+InvokeTimer::InvokeTimer tid=139965845526336 this=0x7ffd2790f780
+InvokeTimer::Start tid=139965845526336 this=0x7ffd2790f780
+InvokeTimer::Start(AsyncWait) tid=139965845526336 timer=0x14504c0 this=0x7ffd2790f780 timeout(ms)=1000
+InvokeTimer::OnTimerTriggered tid=139965845526336 this=0x7ffd2790f780
+Print hello world.
+InvokeTimer::~InvokeTimer tid=139965845526336 this=0x7ffd2790f780
+```
+
+
+### 3. 如果要取消一个定时器怎么办：cancel-03
+
+上面第2种实现方式，实现了定时器的自我管理，调用者不需要关心定时器的生命周期的管理问题。接下来，新的需求又来了，上层调用者说，在对外发起一个请求时，可以设置一个定时器来处理超时问题，但如果请求及时的回来了，我们得及时取消该定时器啊，这又如何处理呢？
+
+这就相当于要把应用层还得一直保留`InvokeTimer`对象的实例，以便在需要的时候，提前取消掉该定时器。
+
+//TODO
+
 
 ### 实现一个周期性的定时器
 
-### 如果要取消怎么办
 
 ### 最终版本
+
+
+
+### 最后
+
+[evpp]项目官网地址为：[https://github.com/Qihoo360/evpp]
+本文中的详细代码实现请参考 [https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer]
 
 
 [gtest]:https://github.com/google/googletest
@@ -234,3 +502,4 @@ bool TimerEventWatcher::AsyncWait() {
 [https://github.com/Qihoo360/evpp/blob/master/evpp/event_watcher.cc]:https://github.com/Qihoo360/evpp/blob/master/evpp/event_watcher.cc
 [event_watcher.h]:https://github.com/Qihoo360/evpp/blob/master/evpp/event_watcher.h
 [event_watcher.cc]:https://github.com/Qihoo360/evpp/blob/master/evpp/event_watcher.cc
+[https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer]:https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer
