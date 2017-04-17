@@ -18,8 +18,7 @@ public:
 
     static InvokeTimerPtr Create(struct event_base* evloop,
                                  double timeout_ms,
-                                 const Functor& f,
-                                 bool periodic);
+                                 const Functor& f);
 
     ~InvokeTimer();
 
@@ -31,7 +30,7 @@ public:
         cancel_callback_ = fn;
     }
 private:
-    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f, bool periodic);
+    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f);
     void OnTimerTriggered();
     void OnCanceled();
 
