@@ -9,11 +9,12 @@ class ServerStatus {
 public:
     enum Status {
         kNull = 0,
-        kInitialized = 1,
-        kStarting = 2,
-        kRunning = 3,
-        kStopping = 4,
-        kStopped = 5,
+        kInitializing = 1,
+        kInitialized = 2,
+        kStarting = 3,
+        kRunning = 4,
+        kStopping = 5,
+        kStopped = 6,
     };
 
     std::string ToString() const {
@@ -27,6 +28,6 @@ public:
     }
 
 protected:
-    std::atomic<int> status_ = { kNull };
+    std::atomic<Status> status_ = { kNull };
 };
 }

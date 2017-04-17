@@ -2,8 +2,8 @@
 
 #include "evpp/inner_pre.h"
 
-#include <future>
 #include <thread>
+#include <mutex>
 
 struct event_base;
 struct event;
@@ -32,6 +32,11 @@ public:
 
     void Stop(bool wait_thread_exit = false);
 
+    // @brief Join the thread. If you forget to call this method,
+    // it will be invoked automatically in the destruct method ~EventLoopThread().
+    // @note DO NOT call this method from any of the working thread.
+    void Join();
+
     void AfterFork();
 
 public:
@@ -44,14 +49,13 @@ public:
     bool IsStopped() const;
 
 private:
-    void Run(const Functor& pre);
+    void Run(const Functor& pre, const Functor& post);
 
 private:
     std::shared_ptr<EventLoop> event_loop_;
-    std::shared_ptr<std::thread> thread_;
 
-    std::promise<int> pre_task_promise_;
-    std::packaged_task<int()> post_task_;
+    std::mutex mutex_;
+    std::shared_ptr<std::thread> thread_; // Guard by mutex_
 
     enum Status {
         kStarting = 0,

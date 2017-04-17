@@ -16,18 +16,22 @@ TCPServer::TCPServer(EventLoop* loop,
     , conn_fn_(&internal::DefaultConnectionCallback)
     , msg_fn_(&internal::DefaultMessageCallback)
     , next_conn_id_(0) {
+    LOG_INFO << "this=" << this << " TCPServer::TCPServer name=" << name << " listening addr " << laddr << " thread_num=" << thread_num;
     tpool_.reset(new EventLoopThreadPool(loop_, thread_num));
 }
 
 TCPServer::~TCPServer() {
     LOG_TRACE << "TCPServer::~TCPServer()";
-    assert(tpool_->IsStopped());
     assert(connections_.empty());
     assert(!listener_);
-    tpool_.reset();
+    if (tpool_) {
+        assert(tpool_->IsStopped());
+        tpool_.reset();
+    }
 }
 
 bool TCPServer::Init() {
+    LOG_INFO << "this=" << this << " TCPServer::Init";
     assert(status_ == kNull);
     listener_.reset(new Listener(loop_, listen_addr_));
     listener_->Listen();
@@ -36,6 +40,7 @@ bool TCPServer::Init() {
 }
 
 bool TCPServer::Start() {
+    LOG_INFO << "this=" << this << " TCPServer::Start";
     assert(status_ == kInitialized);
     status_.store(kStarting);
     assert(listener_.get());
@@ -93,24 +98,37 @@ bool TCPServer::IsStopped() const {
 }
 
 void TCPServer::Stop(Functor on_stopped_cb) {
+    LOG_TRACE << "this=" << this << "Entering TCPServer::Stop";
     assert(status_ == kRunning);
     status_.store(kStopping);
     loop_->RunInLoop(std::bind(&TCPServer::StopInLoop, this, on_stopped_cb));
 }
 
+void TCPServer::StopThreadPool() {
+    LOG_INFO << "this=" << this << " StopThreadPool pool=" << tpool_.get();
+    assert(loop_->IsInLoopThread());
+    tpool_->Stop(true);
+    assert(tpool_->IsStopped());
+
+    // Make sure all the working threads totally stopped.
+    tpool_->Join();
+    tpool_.reset();
+}
+
 void TCPServer::StopInLoop(Functor on_stopped_cb) {
     LOG_TRACE << "this=" << this << "Entering TCPServer::StopInLoop";
+    assert(loop_->IsInLoopThread());
     listener_->Stop();
     listener_.reset();
 
     if (connections_.empty()) {
         // Stop all the working threads now.
         LOG_INFO << "this=" << this << " TCPServer::StopInLoop no connections";
-        tpool_->Stop(true);
-        assert(tpool_->IsStopped());
+        StopThreadPool();
         status_.store(kStopped);
         if (on_stopped_cb) {
             on_stopped_cb();
+            on_stopped_cb = Functor();
         }
     } else {
         for (auto& c : connections_) {
@@ -164,8 +182,8 @@ void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
         this->connections_.erase(conn->name());
         if (status_ == kStopping && this->connections_.empty()) {
             // At last, we stop all the working threads
-            tpool_->Stop(true);
-            assert(tpool_->IsStopped());
+            LOG_INFO << "this=" << this << " TCPServer::RemoveConnection stop thread pool";
+            StopThreadPool();
             status_.store(kStopped);
             if (stopped_cb_) {
                 stopped_cb_();

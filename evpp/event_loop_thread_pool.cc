@@ -6,19 +6,18 @@ namespace evpp {
 
 EventLoopThreadPool::EventLoopThreadPool(EventLoop* base_loop, uint32_t thread_number)
     : base_loop_(base_loop),
-      thread_num_(thread_number) {}
+      thread_num_(thread_number) {
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::EventLoopThreadPool thread_num=" << thread_num() << " base loop=" << base_loop_;
+}
 
 EventLoopThreadPool::~EventLoopThreadPool() {
-    assert(thread_num_ == threads_.size());
-
-    for (uint32_t i = 0; i < thread_num_; i++) {
-        assert(threads_[i]->IsStopped());
-    }
-
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::~EventLoopThreadPool thread_num=" << thread_num();
+    Join();
     threads_.clear();
 }
 
 bool EventLoopThreadPool::Start(bool wait_thread_started) {
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::Start thread_num=" << thread_num() << " base loop=" << base_loop_ << " wait_thread_started=" << wait_thread_started;
     assert(!started_.load());
     if (started_.load()) {
         return true;
@@ -60,6 +59,12 @@ bool EventLoopThreadPool::Start(bool wait_thread_started) {
     // when all the working thread have started,
     // started_ will be stored with true in method OnThreadStarted
 
+    if (wait_thread_started) {
+        while (!IsRunning()) {
+            usleep(1);
+        }
+    }
+
     return true;
 }
 
@@ -77,8 +82,7 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop wait_thread_exit=" << wait_thread_exit;
     stopped_cb_ = on_stopped_cb;
 
-    for (uint32_t i = 0; i < thread_num_; ++i) {
-        EventLoopThreadPtr& t = threads_[i];
+    for (auto &t : threads_) {
         t->Stop();
     }
 
@@ -90,7 +94,9 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
 
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop before promise wait";
     if (thread_num_ > 0 && wait_thread_exit) {
-        exit_promise_.get_future().wait();
+        while (!IsStopped()) {
+            usleep(1);
+        }
     }
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop after promise wait";
 
@@ -101,14 +107,20 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
     }
 }
 
+void EventLoopThreadPool::Join() {
+    LOG_INFO << "this=" << this << " EventLoopThreadPool::Join thread_num=" << thread_num();
+    for (auto &t : threads_) {
+        t->Join();
+    }
+    threads_.clear();
+}
+
 bool EventLoopThreadPool::IsRunning() const {
     if (!started_.load()) {
         return false;
     }
 
-    for (uint32_t i = 0; i < thread_num_; ++i) {
-        const EventLoopThreadPtr& t = threads_[i];
-
+    for (auto &t : threads_) {
         if (!t->IsRunning()) {
             return false;
         }
@@ -122,9 +134,7 @@ bool EventLoopThreadPool::IsStopped() const {
         return !started_.load();
     }
 
-    for (uint32_t i = 0; i < thread_num_; ++i) {
-        const EventLoopThreadPtr& t = threads_[i];
-
+    for (auto &t : threads_) {
         if (!t->IsStopped()) {
             return false;
         }
@@ -173,7 +183,6 @@ void EventLoopThreadPool::OnThreadExited(uint32_t count) {
     LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " count=" << count << " exited.";
     if (count == thread_num_) {
         LOG_INFO << "this=" << this << " this is the last thread stopped. Thread pool totally exited.";
-        exit_promise_.set_value();
         if (stopped_cb_) {
             stopped_cb_();
             stopped_cb_ = Functor();
