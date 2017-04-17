@@ -10,6 +10,7 @@
 #include "evpp/duration.h"
 #include "evpp/any.h"
 #include "evpp/invoke_timer.h"
+#include "evpp/server_status.h"
 
 #ifdef H_HAVE_BOOST
 #include <boost/lockfree/queue.hpp>
@@ -32,7 +33,7 @@ namespace evpp {
 // This class is a wrapper of event_base but not only a wrapper.
 // It provides a simple way to run a IO Event driving loop.
 // One thread one loop.
-class EVPP_EXPORT EventLoop {
+class EVPP_EXPORT EventLoop : public ServerStatus {
 public:
     typedef std::function<void()> Functor;
 public:
@@ -103,10 +104,10 @@ public:
         return tid_;
     }
     bool IsRunning() const {
-        return running_;
+        return status_.load() == kRunning;
     }
     bool IsStopped() const {
-        return !IsRunning();
+        return status_.load() == kStopped;
     }
 private:
     void Init();
@@ -120,7 +121,6 @@ private:
     std::thread::id tid_;
     enum { kContextCount = 16, };
     Any context_[kContextCount];
-    bool running_;
 
     std::mutex mutex_;
     // We use this to notify the thread when we put a task into the pending_functors_ queue

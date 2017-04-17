@@ -1,6 +1,5 @@
 #include "http_server.h"
 
-#include <future>
 
 #include "evpp/libevent_headers.h"
 #include "evpp/event_watcher.h"
@@ -17,8 +16,18 @@ Server::Server(uint32_t thread_num) {
 }
 
 Server::~Server() {
-    assert(tpool_->IsStopped());
-    tpool_.reset();
+    if (!listen_threads_.empty()) {
+        for (auto& lt : listen_threads_) {
+            lt.thread->Join();
+        }
+        listen_threads_.clear();
+    }
+
+    if (tpool_) {
+        assert(tpool_->IsStopped());
+        tpool_->Join();
+        tpool_.reset();
+    }
 }
 
 bool Server::Init(int listen_port) {
@@ -44,7 +53,6 @@ bool Server::Init(const std::vector<int>& listen_ports) {
     }
     return rc;
 }
-
 
 bool Server::Init(const std::string& listen_ports/*"80,8080,443"*/) {
     std::vector<std::string> vec;
@@ -135,7 +143,25 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
         return;
     }
 
-    exit_promise_.get_future().wait();
+    for (;;) {
+        bool stopped = true;
+        for (auto& lt : listen_threads_) {
+            if (!lt.thread->IsStopped()) {
+                stopped = false;
+                break;
+            }
+        }
+
+        if (!tpool_->IsStopped()) {
+            stopped = false;
+        }
+
+        if (stopped) {
+            break;
+        }
+
+        usleep(1);
+    }
 
     assert(tpool_->IsStopped());
     for (auto& lt : listen_threads_) {
@@ -143,6 +169,17 @@ void Server::Stop(bool wait_thread_exit /*= false*/) {
         assert(lt.thread->IsStopped());
     }
     assert(IsStopped());
+
+    // Make sure all the working threads totally stopped.
+    tpool_->Join();
+    tpool_.reset();
+
+    // Make sure all the listening threads totally stopped.
+    for (auto& lt : listen_threads_) {
+        lt.thread->Join();
+    }
+    listen_threads_.clear();
+
     LOG_INFO << "this=" << this << " http server stopped";
 }
 
@@ -269,10 +306,7 @@ void Server::OnListeningThreadExited(int exited_listen_thread_count) {
     LOG_INFO << "this=" << this << " OnListenThreadExited exited_listen_thread_count=" << exited_listen_thread_count << " listen_threads_.size=" << listen_threads_.size();
     if (exited_listen_thread_count == int(listen_threads_.size())) {
         LOG_INFO << "this=" << this << " stop the working thread pool.";
-        auto fn = [this]() {
-            exit_promise_.set_value();
-        };
-        tpool_->Stop(fn);
+        tpool_->Stop();
     }
 }
 

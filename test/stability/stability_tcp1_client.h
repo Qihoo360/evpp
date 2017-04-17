@@ -25,6 +25,7 @@ namespace {
 
     evpp::TCPClient* StartTCPClient1(evpp::EventLoop* loop) {
         evpp::TCPClient* client(new evpp::TCPClient(loop, GetListenAddr(), "TCPPingPongClient"));
+        client->set_reconnect_interval(evpp::Duration(0.1));
         client->SetConnectionCallback(&OnClientConnection1);
         client->Connect();
         return client;
@@ -43,7 +44,6 @@ void TestTCPClientReconnect() {
     tcp_server_thread->set_name("TCPServerThread");
     tcp_server_thread->Start(true);
     evpp::TCPClient* client = StartTCPClient1(tcp_client_thread->loop());
-    client->set_reconnect_interval(evpp::Duration(0.1));
 
     int test_count = 3;
     for (int i = 0; i < test_count; i++) {

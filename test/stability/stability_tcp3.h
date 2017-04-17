@@ -25,7 +25,7 @@ namespace {
 
     std::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop) {
         std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop, GetListenAddr(), "TCPPingPongClient"));
-        client->set_reconnect_interval(evpp::Duration(0.01));
+        client->set_reconnect_interval(evpp::Duration(0.1));
         client->SetConnectionCallback(&OnClientConnection);
         client->Connect();
         loop->RunAfter(evpp::Duration(1.0), std::bind(&evpp::TCPClient::Disconnect, client));

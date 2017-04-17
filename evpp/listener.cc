@@ -8,16 +8,19 @@
 
 namespace evpp {
 Listener::Listener(EventLoop* l, const std::string& addr)
-    : loop_(l), addr_(addr) {}
+    : loop_(l), addr_(addr) {
+    LOG_TRACE << "this=" << this << " Listener::Listener addr=" << addr;
+}
 
 Listener::~Listener() {
-    LOG_TRACE << "Listener::~Listener fd=" << chan_->fd();
+    LOG_TRACE << "this=" << this << " Listener::~Listener fd=" << chan_->fd();
     chan_.reset();
     EVUTIL_CLOSESOCKET(fd_);
     fd_ = INVALID_SOCKET;
 }
 
 void Listener::Listen() {
+    LOG_TRACE << "this=" << this << " Listener::Listen";
     fd_ = sock::CreateNonblockingSocket();
     if (fd_ < 0) {
         int serrno = errno;
@@ -26,6 +29,7 @@ void Listener::Listen() {
     }
 
     struct sockaddr_in addr = sock::ParseFromIPPort(addr_.data());
+    // TODO Add retry
     int ret = ::bind(fd_, sock::sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
     if (ret < 0) {
         int serrno = errno;
@@ -40,6 +44,7 @@ void Listener::Listen() {
 }
 
 void Listener::Accept() {
+    LOG_TRACE << "this=" << this << " Listener::Accept";
     chan_.reset(new FdChannel(loop_, fd_, true, false));
     chan_->SetReadCallback(std::bind(&Listener::HandleAccept, this));
     loop_->RunInLoop(std::bind(&FdChannel::AttachToLoop, chan_.get()));
@@ -47,7 +52,7 @@ void Listener::Accept() {
 }
 
 void Listener::HandleAccept() {
-    LOG_INFO << __FUNCTION__ << " New connection";
+    LOG_INFO << "this=" << this << " Listener::HandleAccept. A new connection is comming in";
     assert(loop_->IsInLoopThread());
     struct sockaddr_storage ss;
     socklen_t addrlen = sizeof(ss);
