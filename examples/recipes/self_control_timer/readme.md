@@ -1,7 +1,9 @@
 # evpp设计细节系列(1)：实现一个自管理的定时器
 
 
-[https://github.com/Qihoo360/evpp]项目中有一个`InvokeTimer`对象，详细代码请参见[https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h]。它是一个能自我管理定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
+[https://github.com/Qihoo360/evpp] 项目中有一个`InvokeTimer`对象，接口头文件详细代码请参见[https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h]。它是一个能自我管理定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
+
+现在我们复盘一下这个功能的实现细节和演化过程。
 
 定时器原型声明可能是下面的样子：
 
@@ -618,10 +620,124 @@ int main() {
 
 ### 实现一个周期性的定时器：periodic-04
 
+上述几个实现中，都是一次性的定时器任务。但是如果我们想实现一个周期性的定时器该如何实现呢？例如，我们有一个任务，需要每分钟做一次。
+
+其实，基于上述第三个版本的实现，可以很容易的实现周期性的定时器功能。只需要在回调函数中，继续调用`timer->AsyncWait()`即可。详细的修改情况如下。
 
 
-### 最终版本
+头文件 invoke_timer.h 改变：
 
+```diff
+
+@@ -18,7 +18,8 @@ public:
+
+     static InvokeTimerPtr Create(struct event_base* evloop,
+                                  double timeout_ms,
+-                                 const Functor& f);
++                                 const Functor& f,
++                                 bool periodic);
+
+     ~InvokeTimer();
+
+@@ -30,7 +31,7 @@ public:
+         cancel_callback_ = fn;
+     }
+ private:
+-    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f);
++    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f, bool periodic);
+     void OnTimerTriggered();
+     void OnCanceled();
+
+@@ -40,6 +41,7 @@ private:
+     Functor functor_;
+     Functor cancel_callback_;
+     std::shared_ptr<TimerEventWatcher> timer_;
++    bool periodic_;
+     std::shared_ptr<InvokeTimer> self_; // Hold myself
+ };
+```
+
+
+实现文件 invoke_timer.cc 改变：
+
+```diff
+
+ namespace recipes {
+
+-InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f)
+-    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f) {
++InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f, bool periodic)
++    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f), periodic_(periodic) {
+     std::cout << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+ }
+
+-InvokeTimerPtr InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor& f) {
+-    InvokeTimerPtr it(new InvokeTimer(evloop, timeout_ms, f));
++InvokeTimerPtr InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor& f, bool periodic) {
++    InvokeTimerPtr it(new InvokeTimer(evloop, timeout_ms, f, periodic));
+     it->self_ = it;
+     return it;
+ }
+@@ -27,7 +27,7 @@ void InvokeTimer::Start() {
+     timer_->SetCancelCallback(std::bind(&InvokeTimer::OnCanceled, shared_from_this()));
+     timer_->Init();
+     timer_->AsyncWait();
+ }
+
+ void InvokeTimer::Cancel() {
+@@ -39,14 +39,20 @@ void InvokeTimer::Cancel() {
+ void InvokeTimer::OnTimerTriggered() {
+     std::cout << "InvokeTimer::OnTimerTriggered tid=" << std::this_thread::get_id() << " this=" << this << " use_count=" << self_.use_count() << std::endl;
+     functor_();
+-    functor_ = Functor();
+-    cancel_callback_ = Functor();
+-    timer_.reset();
+-    self_.reset();
++
++    if (periodic_) {
++        timer_->AsyncWait();
++    } else {
++        functor_ = Functor();
++        cancel_callback_ = Functor();
++        timer_.reset();
++        self_.reset();
++    }
+ }
+
+ void InvokeTimer::OnCanceled() {
+     std::cout << "InvokeTimer::OnCanceled tid=" << std::this_thread::get_id() << " this=" << this << " use_count=" << self_.use_count() << std::endl;
++    periodic_ = false;
+     if (cancel_callback_) {
+         cancel_callback_();
+         cancel_callback_ = Functor();
+
+```
+
+main.cc测试示例代码也有所修改，具体如下：
+
+
+```C++
+#include "invoke_timer.h"
+#include "event_watcher.h"
+#include "winmain-inl.h"
+
+#include <event2/event.h>
+
+void Print() {
+    std::cout << __FUNCTION__ << " hello world." << std::endl;
+}
+
+int main() {
+    struct event_base* base = event_base_new();
+    auto timer = recipes::InvokeTimer::Create(base, 1000.0, &Print, true);
+    timer->Start();
+    timer.reset();
+    event_base_dispatch(base);
+    return 0;
+}
+```
+
+该版本是最终的实现版本。相关代码都在[https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer]这里，为了便于演示，其不依赖[evpp]。
 
 
 ### 最后
