@@ -1,7 +1,6 @@
 #pragma once
 
 #include <atomic>
-#include <future>
 
 #include "service.h"
 #include "evpp/thread_dispatch_policy.h"
@@ -88,8 +87,6 @@ private:
 
     // The worker thread pool used to process HTTP request
     std::shared_ptr<EventLoopThreadPool> tpool_;
-
-    std::promise<void> exit_promise_; // wait all working threads and listener threads exited
 
     HTTPRequestCallbackMap callbacks_;
     HTTPRequestCallback default_callback_;
