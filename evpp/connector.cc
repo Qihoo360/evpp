@@ -23,7 +23,7 @@ Connector::Connector(EventLoop* l, TCPClient* client)
 
 Connector::~Connector() {
     assert(loop_->IsInLoopThread());
-    LOG_TRACE << "Connector::~Connector";
+    LOG_TRACE << "Connector::~Connector this=" << this;
 
     if (status_ == kDNSResolving) {
         assert(!chan_.get());
@@ -32,7 +32,7 @@ Connector::~Connector() {
     } else if (!IsConnected()) {
         // A connected tcp-connection's sockfd has been transfered to TCPConn.
         // But the sockfd of unconnected tcp-connections need to be closed by myself.
-        LOG_TRACE << "Connector::~Connector close(" << chan_->fd() << ")";
+        LOG_TRACE << "this=" << this << " Connector::~Connector close(" << chan_->fd() << ")";
         assert(own_fd_);
         assert(chan_->fd() == fd_);
         EVUTIL_CLOSESOCKET(fd_);
@@ -44,7 +44,7 @@ Connector::~Connector() {
 }
 
 void Connector::Start() {
-    LOG_INFO << "Try to connect " << remote_addr_ << " status=" << StatusToString();
+    LOG_INFO << "this=" << this << " Try to connect " << remote_addr_ << " status=" << StatusToString();
     assert(loop_->IsInLoopThread());
 
     timer_.reset(new TimerEventWatcher(loop_, std::bind(&Connector::OnConnectTimeout, shared_from_this()), timeout_));
@@ -56,7 +56,7 @@ void Connector::Start() {
         return;
     }
 
-    LOG_INFO << "The remote address " << remote_addr_ << " is a host, try to resolve its IP address.";
+    LOG_INFO << "this=" << this << " The remote address " << remote_addr_ << " is a host, try to resolve its IP address.";
     status_ = kDNSResolving;
     auto index = remote_addr_.rfind(':');
     assert(index != std::string::npos);
@@ -68,7 +68,7 @@ void Connector::Start() {
 
 
 void Connector::Cancel() {
-    LOG_INFO << "Cancel to connect " << remote_addr_ << " status=" << StatusToString();
+    LOG_INFO << "this=" << this << " Cancel to connect " << remote_addr_ << " status=" << StatusToString();
     assert(loop_->IsInLoopThread());
     if (dns_resolver_) {
         dns_resolver_->Cancel();
@@ -80,7 +80,7 @@ void Connector::Cancel() {
     timer_.reset();
 
     if (status_ == kDNSResolving) {
-        assert(chan_.get() == NULL);
+        assert(chan_.get() == nullptr);
         conn_fn_(-1, "");
     }
 
@@ -92,6 +92,7 @@ void Connector::Cancel() {
 }
 
 void Connector::Connect() {
+    LOG_INFO << "this=" << this << " Connector::Connect " << remote_addr_ << " status=" << StatusToString();
     assert(fd_ == INVALID_SOCKET);
     fd_ = sock::CreateNonblockingSocket();
     own_fd_ = true;
@@ -114,6 +115,7 @@ void Connector::Connect() {
 }
 
 void Connector::HandleWrite() {
+    LOG_INFO << "this=" << this << " Connector::HandleWrite " << remote_addr_ << " status=" << StatusToString();
     if (status_ == kDisconnected) {
         // The connecting may be timeout, but the write event handler has been
         // dispatched in the EventLoop pending task queue, and next loop time the handle is invoked.
@@ -150,6 +152,7 @@ void Connector::HandleWrite() {
 }
 
 void Connector::HandleError() {
+    LOG_INFO << "this=" << this << " Connector::HandleError " << remote_addr_ << " status=" << StatusToString();
     assert(loop_->IsInLoopThread());
     int serrno = errno;
 
@@ -158,7 +161,7 @@ void Connector::HandleError() {
     // TCPClient::Disconnect may cause this Connector object desctruct.
     auto self = shared_from_this();
 
-    LOG_ERROR << "status=" << StatusToString() << " fd=" << fd_ << " errno=" << serrno << " " << strerror(serrno) << " this=" << this << " use_count=" << self.use_count();
+    LOG_ERROR << "this=" << this << " status=" << StatusToString() << " fd=" << fd_ << " errno=" << serrno << " " << strerror(serrno) << " this=" << this << " use_count=" << self.use_count();
 
     status_ = kDisconnected;
 
@@ -185,28 +188,28 @@ void Connector::HandleError() {
 
         // We must close(fd) firstly and then we can do the reconnection.
         if (fd_ > 0) {
-            LOG_TRACE << "Connector::HandleError close(" << fd_ << ")";
+            LOG_TRACE << "this=" << this << " Connector::HandleError close(" << fd_ << ")";
             assert(own_fd_);
             EVUTIL_CLOSESOCKET(fd_);
             fd_ = INVALID_SOCKET;
         }
 
-        LOG_INFO << "loop=" << loop_ << " auto reconnect in " << owner_tcp_client_->reconnect_interval().Seconds() << "s thread=" << std::this_thread::get_id();
+        LOG_INFO << "this=" << this << " loop=" << loop_ << " auto reconnect in " << owner_tcp_client_->reconnect_interval().Seconds() << "s thread=" << std::this_thread::get_id();
         loop_->RunAfter(owner_tcp_client_->reconnect_interval(), std::bind(&Connector::Start, shared_from_this()));
     }
 }
 
 void Connector::OnConnectTimeout() {
-    LOG_WARN << "Connector::OnConnectTimeout status=" << StatusToString() << " fd=" << fd_ << " this=" << this;
+    LOG_WARN << "this=" << this << " Connector::OnConnectTimeout status=" << StatusToString() << " fd=" << fd_ << " this=" << this;
     assert(status_ == kConnecting || status_ == kDNSResolving);
     EVUTIL_SET_SOCKET_ERROR(ETIMEDOUT);
     HandleError();
 }
 
 void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
-    LOG_INFO << "Connector::OnDNSResolved addrs.size=" << addrs.size() << " this=" << this;
+    LOG_INFO << "this=" << this << " Connector::OnDNSResolved addrs.size=" << addrs.size() << " this=" << this;
     if (addrs.empty()) {
-        LOG_ERROR << "DNS Resolve failed. host=" << dns_resolver_->host();
+        LOG_ERROR << "this=" << this << " DNS Resolve failed. host=" << dns_resolver_->host();
         HandleError();
         return;
     }

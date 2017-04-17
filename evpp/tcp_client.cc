@@ -13,10 +13,11 @@ TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& 
     , name_(n)
     , conn_fn_(&internal::DefaultConnectionCallback)
     , msg_fn_(&internal::DefaultMessageCallback) {
+    LOG_INFO << "this=" << this << " TCPClient::TCPClient remote addr=" << raddr;
 }
 
 TCPClient::~TCPClient() {
-    LOG_INFO << "TCPClient::~TCPClient";
+    LOG_INFO << "this=" << this << " TCPClient::~TCPClient";
     assert(!connector_.get());
     auto_reconnect_.store(false);
     TCPConnPtr c = conn();
@@ -49,6 +50,7 @@ void TCPClient::Connect() {
 }
 
 void TCPClient::Disconnect() {
+    LOG_INFO << "this=" << this << " TCPClient::Disconnect";
     loop_->RunInLoop(std::bind(&TCPClient::DisconnectInLoop, this));
 }
 

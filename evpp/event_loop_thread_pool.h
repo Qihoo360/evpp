@@ -17,6 +17,10 @@ public:
     void Stop(bool wait_thread_exited = false);
     void Stop(Functor on_stopped_cb);
 
+    // @brief Join all the working thread. If you forget to call this method,
+    // it will be invoked automatically in the destruct method ~EventLoopThreadPool().
+    // @note DO NOT call this method from any of the working thread.
+    void Join();
 public:
     EventLoop* GetNextLoop();
     EventLoop* GetNextLoopWithHash(uint64_t hash);
@@ -37,7 +41,6 @@ private:
     std::atomic<int64_t> next_ = { 0 };
 
     Functor stopped_cb_;
-    std::promise<void> exit_promise_; // wait all threads exited
 
     typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
     std::vector<EventLoopThreadPtr> threads_;
