@@ -1,7 +1,7 @@
 # evpp设计细节系列(1)：实现一个自管理的定时器
 
 
-[https://github.com/Qihoo360/evpp]项目中有一个`InvokeTimer`对象，详细代码请参见[https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h]。它是一个能自我管理定时器类，它可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
+[https://github.com/Qihoo360/evpp]项目中有一个`InvokeTimer`对象，详细代码请参见[https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h]。它是一个能自我管理定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
 
 定时器原型声明可能是下面的样子：
 
@@ -16,9 +16,9 @@ public:
 
 这个是最基本的接口，可以设置一个仿函数，并设置一个过期时间，然后绑定到一个`event_base`对象上，然后就可以期待过了一个预期的时间后，我们设置的仿函数被调用了。
 
-为了便于说明后续的多个版本的实现，我们先将基础的不变的代码先说明一下。
+为了便于说明后续的多个版本的实现，我们先将基础的不变的代码说明一下。
 
-基础代码，我们采用[evpp]项目中的`TimerEventWatcher`，详细实现在这里[event_watcher.h]和[event_watcher.cc]
+基础代码，我们采用[evpp]项目中的`TimerEventWatcher`，详细实现在这里[event_watcher.h]和[event_watcher.cc]。它是一个时间定时器观察者对象，可以观察一个时间事件。
 
 头文件`event_watcher.h`定义如下：
 
@@ -302,7 +302,7 @@ int main() {
 
 我们先创建一个`event_base`对象，随后创建一个`InvokeTimer`对象，随后让timer启动起来，即将timer注册到`event_base`对象中，最后运行`event_base_dispatch(base)`。
 
-下面编译运行，结果是符合预期的：当timer到期后，能顺利触发回调。
+下面编译运行，结果是符合预期的：当timer的时间到期后，能顺利触发回调。
 
 ```shell
 $ ls -l
@@ -438,7 +438,7 @@ int main() {
 
 这个实现，就不需要上层调用者手工`delete`这个`InvokeTimer`对象的实例，从而达到`InvokeTimer`对象自我管理的目的。
 
-下面编译运行，结果是符合预期的：当timer到期后，能顺利触发回调，并且`InvokeTimer`对象也自动析构了。
+下面编译运行，结果是符合预期的：当timer时间到期后，能顺利触发回调，并且`InvokeTimer`对象也自动析构了。
 
 ```shell
 $ ls -l
@@ -463,12 +463,161 @@ InvokeTimer::~InvokeTimer tid=139965845526336 this=0x7ffd2790f780
 
 上面第2种实现方式，实现了定时器的自我管理，调用者不需要关心定时器的生命周期的管理问题。接下来，新的需求又来了，上层调用者说，在对外发起一个请求时，可以设置一个定时器来处理超时问题，但如果请求及时的回来了，我们得及时取消该定时器啊，这又如何处理呢？
 
-这就相当于要把应用层还得一直保留`InvokeTimer`对象的实例，以便在需要的时候，提前取消掉该定时器。
+这就相当于要把上层调用者还得一直保留`InvokeTimer`对象的实例，以便在需要的时候，提前取消掉该定时器。上层调用者保留这个指针，就会带来一定的风险，例如误用，当`InvokeTimer`对象已经自动析构了，该该指针还继续存在于上层调用者那里。
 
-//TODO
+于是乎，智能指针`shared_ptr`出场了，我们希望上层调用者看到的对象是以`shared_ptr<InvokeTimer>`形式存在的，无论上层调用者是否保留这个`shared_ptr<InvokeTimer>`对象，`InvokeTimer`对象都能自我管理，也就是说，当上层调用者不保留`shared_ptr<InvokeTimer>`对象时，`InvokeTimer`对象要能自我管理。
+
+这里就必须让`InvokeTimer`对象本身也要保存一份`shared_ptr<InvokeTimer>`对象。为了实现这一技术，我们需要引入`enable_shared_from_this`。关于`enable_shared_from_this`的介绍，网络上已经有很多资料了，这里不多累述。我们直接上最终的实现代码：
+
+```C++
+
+// 头文件
+
+#include <memory>
+#include <functional>
+
+struct event_base;
+
+namespace recipes {
+
+class TimerEventWatcher;
+class InvokeTimer;
+
+typedef std::shared_ptr<InvokeTimer> InvokeTimerPtr;
+
+class InvokeTimer : public std::enable_shared_from_this<InvokeTimer> {
+public:
+    typedef std::function<void()> Functor;
+
+    static InvokeTimerPtr Create(struct event_base* evloop,
+                                 double timeout_ms,
+                                 const Functor& f);
+
+    ~InvokeTimer();
+
+    void Start();
+
+    void Cancel();
+
+    void set_cancel_callback(const Functor& fn) {
+        cancel_callback_ = fn;
+    }
+private:
+    InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f);
+    void OnTimerTriggered();
+    void OnCanceled();
+
+private:
+    struct event_base* loop_;
+    double timeout_ms_;
+    Functor functor_;
+    Functor cancel_callback_;
+    std::shared_ptr<TimerEventWatcher> timer_;
+    std::shared_ptr<InvokeTimer> self_; // Hold myself
+};
+
+}
 
 
-### 实现一个周期性的定时器
+// 实现文件
+
+#include "invoke_timer.h"
+#include "event_watcher.h"
+
+#include <thread>
+#include <iostream>
+
+namespace recipes {
+
+InvokeTimer::InvokeTimer(struct event_base* evloop, double timeout_ms, const Functor& f)
+    : loop_(evloop), timeout_ms_(timeout_ms), functor_(f) {
+    std::cout << "InvokeTimer::InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+}
+
+InvokeTimerPtr InvokeTimer::Create(struct event_base* evloop, double timeout_ms, const Functor& f) {
+    InvokeTimerPtr it(new InvokeTimer(evloop, timeout_ms, f));
+    it->self_ = it;
+    return it;
+}
+
+InvokeTimer::~InvokeTimer() {
+    std::cout << "InvokeTimer::~InvokeTimer tid=" << std::this_thread::get_id() << " this=" << this << std::endl;
+}
+
+void InvokeTimer::Start() {
+    std::cout << "InvokeTimer::Start tid=" << std::this_thread::get_id() << " this=" << this << " refcount=" << self_.use_count() << std::endl;
+    timer_.reset(new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, shared_from_this()), timeout_ms_));
+    timer_->SetCancelCallback(std::bind(&InvokeTimer::OnCanceled, shared_from_this()));
+    timer_->Init();
+    timer_->AsyncWait();
+    std::cout << "InvokeTimer::Start(AsyncWait) tid=" << std::this_thread::get_id() << " timer=" << timer_.get() << " this=" << this << " refcount=" << self_.use_count() << " periodic=" << periodic_ << " timeout(ms)=" << timeout_ms_ << std::endl;
+}
+
+void InvokeTimer::Cancel() {
+    if (timer_) {
+        timer_->Cancel();
+    }
+}
+
+void InvokeTimer::OnTimerTriggered() {
+    std::cout << "InvokeTimer::OnTimerTriggered tid=" << std::this_thread::get_id() << " this=" << this << " use_count=" << self_.use_count() << std::endl;
+    functor_();
+    functor_ = Functor();
+    cancel_callback_ = Functor();
+    timer_.reset();
+    self_.reset();
+}
+
+void InvokeTimer::OnCanceled() {
+    std::cout << "InvokeTimer::OnCanceled tid=" << std::this_thread::get_id() << " this=" << this << " use_count=" << self_.use_count() << std::endl;
+    if (cancel_callback_) {
+        cancel_callback_();
+        cancel_callback_ = Functor();
+    }
+    functor_ = Functor();
+    timer_.reset();
+    self_.reset();
+}
+
+}
+
+
+```
+
+
+
+相应的，`main.cc`也做了一点点修改代码如下：
+
+
+```C++
+#include "invoke_timer.h"
+#include "event_watcher.h"
+#include "winmain-inl.h"
+
+#include <event2/event.h>
+
+void Print() {
+    std::cout << __FUNCTION__ << " hello world." << std::endl;
+}
+
+int main() {
+    struct event_base* base = event_base_new();
+    auto timer = recipes::InvokeTimer::Create(base, 1000.0, &Print);
+    timer->Start(); // 启动完成后，就不用关注该对象了
+    event_base_dispatch(base);
+    return 0;
+}
+```
+
+这个实现，就不需要上层调用者手工`delete`这个`InvokeTimer`对象的实例，从而达到`InvokeTimer`对象自我管理的目的。
+
+下面编译运行，结果是符合预期的：当timer时间到期后，能顺利触发回调，并且`InvokeTimer`对象也自动析构了。
+
+
+
+
+### 实现一个周期性的定时器：periodic-04
+
 
 
 ### 最终版本
