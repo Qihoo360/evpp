@@ -10,7 +10,7 @@ void Print() {
 
 int main() {
     struct event_base* base = event_base_new();
-    auto timer = recipes::InvokeTimer::Create(base, 1000.0, &Print, false);
+    auto timer = recipes::InvokeTimer::Create(base, 1000.0, &Print, true);
     timer->Start();
     timer.reset();
     event_base_dispatch(base);

@@ -27,7 +27,7 @@ void InvokeTimer::Start() {
     timer_->SetCancelCallback(std::bind(&InvokeTimer::OnCanceled, shared_from_this()));
     timer_->Init();
     timer_->AsyncWait();
-    std::cout << "InvokeTimer::Start(AsyncWait) tid=" << std::this_thread::get_id() << " timer=" << timer_.get() << " this=" << this << " refcount=" << self_.use_count() << " periodic=" << periodic_ << " timeout(ms)=" << timeout_ms_ << std::endl;
+    std::cout << "InvokeTimer::Start(AsyncWait) tid=" << std::this_thread::get_id() << " timer=" << timer_.get() << " this=" << this << " refcount=" << self_.use_count() << " timeout(ms)=" << timeout_ms_ << std::endl;
 }
 
 void InvokeTimer::Cancel() {
