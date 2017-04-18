@@ -186,11 +186,17 @@ void TCPConn::HandleRead() {
         } else {
             // Fix the half-closing problem : https://github.com/chenshuo/muduo/pull/117
 
-            // This is an incoming connection, we need to preserve the connection for a while so that we can reply to it.
-            // And we set a timer to close the connection eventually.
             chan_->DisableReadEvent();
-            LOG_DEBUG << "TCPConn::HandleRead this=" << this << " channel (fd=" << chan_->fd() << ") DisableReadEvent. And set a timer to delay close this TCPConn, delay time " << close_delay_.Seconds() << "s";
-            delay_close_timer_ = loop_->RunAfter(close_delay_, std::bind(&TCPConn::DelayClose, shared_from_this())); // TODO leave it to user layer close.
+            if (close_delay_.IsZero()) {
+                LOG_DEBUG << "TCPConn::HandleRead this=" << this << " channel (fd=" << chan_->fd() << ") DisableReadEvent. delay time " << close_delay_.Seconds() << "s. We close this connection immediately";
+                DelayClose();
+            } else {
+                // This is an incoming connection, we need to preserve the
+                // connection for a while so that we can reply to it.
+                // And we set a timer to close the connection eventually.
+                LOG_DEBUG << "TCPConn::HandleRead this=" << this << " channel (fd=" << chan_->fd() << ") DisableReadEvent. And set a timer to delay close this TCPConn, delay time " << close_delay_.Seconds() << "s";
+                delay_close_timer_ = loop_->RunAfter(close_delay_, std::bind(&TCPConn::DelayClose, shared_from_this())); // TODO leave it to user layer close.
+            }
         }
     } else {
         if (EVUTIL_ERR_RW_RETRIABLE(serrno)) {
@@ -232,7 +238,6 @@ void TCPConn::DelayClose() {
     assert(loop_->IsInLoopThread());
     LOG_INFO << "TCPConn::DelayClose this=" << this << " addr=" << AddrToString() << " fd=" << fd_ << " status_=" << StatusToString();
     status_ = kDisconnecting;
-    assert(delay_close_timer_.get());
     delay_close_timer_.reset();
     HandleClose();
 }

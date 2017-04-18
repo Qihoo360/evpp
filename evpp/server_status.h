@@ -27,6 +27,15 @@ public:
         H_CASE_STRING_END();
     }
 
+
+    bool IsRunning() const {
+        return status_.load() == kRunning;
+    }
+
+    bool IsStopped() const {
+        return status_.load() == kStopped;
+    }
+
 protected:
     std::atomic<Status> status_ = { kNull };
 };
