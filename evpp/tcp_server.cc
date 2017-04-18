@@ -66,36 +66,36 @@ bool TCPServer::Start() {
     }
     return rc;
 }
-
-bool TCPServer::IsRunning() const {
-    if (status_ != kRunning) {
-        return false;
-    }
-
-    if (!loop_->IsRunning()) {
-        return false;
-    }
-
-    if (!tpool_->IsRunning()) {
-        return false;
-    }
-
-    assert(loop_->IsRunning() && tpool_->IsRunning());
-    return true;
-}
-
-bool TCPServer::IsStopped() const {
-    if (!loop_->IsStopped()) {
-        return false;
-    }
-
-    if (!tpool_->IsStopped()) {
-        return false;
-    }
-
-    assert(loop_->IsStopped() && tpool_->IsStopped());
-    return true;
-}
+// 
+// bool TCPServer::IsRunning() const {
+//     if (status_ != kRunning) {
+//         return false;
+//     }
+// 
+//     if (!loop_->IsRunning()) {
+//         return false;
+//     }
+// 
+//     if (!tpool_->IsRunning()) {
+//         return false;
+//     }
+// 
+//     assert(loop_->IsRunning() && tpool_->IsRunning());
+//     return true;
+// }
+// 
+// bool TCPServer::IsStopped() const {
+//     if (!loop_->IsStopped()) {
+//         return false;
+//     }
+// 
+//     if (!tpool_->IsStopped()) {
+//         return false;
+//     }
+// 
+//     assert(loop_->IsStopped() && tpool_->IsStopped());
+//     return true;
+// }
 
 void TCPServer::Stop(Functor on_stopped_cb) {
     LOG_TRACE << "this=" << this << "Entering TCPServer::Stop";
