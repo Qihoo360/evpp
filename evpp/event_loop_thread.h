@@ -1,9 +1,10 @@
 #pragma once
 
-#include "evpp/inner_pre.h"
-
 #include <thread>
 #include <mutex>
+
+#include "evpp/inner_pre.h"
+#include "evpp/server_status.h"
 
 struct event_base;
 struct event;
@@ -12,7 +13,7 @@ namespace evpp {
 
 class EventLoop;
 
-class EVPP_EXPORT EventLoopThread {
+class EVPP_EXPORT EventLoopThread : public ServerStatus {
 public:
     enum { kOK = 0 };
 
@@ -46,7 +47,6 @@ public:
     struct event_base* event_base();
     std::thread::id tid() const;
     bool IsRunning() const;
-    bool IsStopped() const;
 
 private:
     void Run(const Functor& pre, const Functor& post);
@@ -57,13 +57,6 @@ private:
     std::mutex mutex_;
     std::shared_ptr<std::thread> thread_; // Guard by mutex_
 
-    enum Status {
-        kStarting = 0,
-        kRunning = 1,
-        kStopping = 2,
-        kStopped = 3,
-    };
-    Status status_ = kStopped;
     std::string name_;
 };
 }

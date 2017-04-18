@@ -17,14 +17,11 @@ EventLoopThreadPool::~EventLoopThreadPool() {
 }
 
 bool EventLoopThreadPool::Start(bool wait_thread_started) {
+    status_.store(kStarting);
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Start thread_num=" << thread_num() << " base loop=" << base_loop_ << " wait_thread_started=" << wait_thread_started;
-    assert(!started_.load());
-    if (started_.load()) {
-        return true;
-    }
 
     if (thread_num_ == 0) {
-        started_.store(true);
+        status_.store(kRunning);
         return true;
     }
 
@@ -57,12 +54,13 @@ bool EventLoopThreadPool::Start(bool wait_thread_started) {
     }
 
     // when all the working thread have started,
-    // started_ will be stored with true in method OnThreadStarted
+    // status_ will be stored with kRunning in method OnThreadStarted
 
     if (wait_thread_started) {
         while (!IsRunning()) {
             usleep(1);
         }
+        assert(status_.load() == kRunning);
     }
 
     return true;
@@ -79,6 +77,18 @@ void EventLoopThreadPool::Stop(Functor on_stopped_cb) {
 }
 
 void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
+    status_.store(kStopping);
+    
+    if (thread_num_ == 0) {
+        status_.store(kStopped);
+        
+        if (on_stopped_cb) {
+            LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop calling stopped callback";
+            on_stopped_cb();
+        }
+        return;
+    }
+
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop wait_thread_exit=" << wait_thread_exit;
     stopped_cb_ = on_stopped_cb;
 
@@ -86,25 +96,27 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
         t->Stop();
     }
 
-    // We must store started_ to false before 'exit_promise_.get_future().wait()'
-    // When this thread pool really stopped, stopped_cb_ will be
-    // invoked in which the user layer will use
-    // assert(EventLoopThreadPool::IsStopped()) to check the status.
-    started_.store(false);
+    // when all the working thread have stopped
+    // status_ will be stored with kStopped in method OnThreadExited
+
+    auto is_stopped_fn = [this]() {
+        for (auto &t : this->threads_) {
+            if (!t->IsStopped()) {
+                return false;
+            }
+        }
+        return true;
+    };
 
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop before promise wait";
     if (thread_num_ > 0 && wait_thread_exit) {
-        while (!IsStopped()) {
+        while (!is_stopped_fn()) {
             usleep(1);
         }
     }
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop after promise wait";
 
-    if (thread_num_ == 0 && stopped_cb_) {
-        LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop calling stopped callback";
-        stopped_cb_();
-        stopped_cb_ = Functor();
-    }
+    status_.store(kStopped);
 }
 
 void EventLoopThreadPool::Join() {
@@ -115,38 +127,38 @@ void EventLoopThreadPool::Join() {
     threads_.clear();
 }
 
-bool EventLoopThreadPool::IsRunning() const {
-    if (!started_.load()) {
-        return false;
-    }
-
-    for (auto &t : threads_) {
-        if (!t->IsRunning()) {
-            return false;
-        }
-    }
-
-    return started_.load();
-}
-
-bool EventLoopThreadPool::IsStopped() const {
-    if (thread_num_ == 0) {
-        return !started_.load();
-    }
-
-    for (auto &t : threads_) {
-        if (!t->IsStopped()) {
-            return false;
-        }
-    }
-
-    return true;
-}
+// bool EventLoopThreadPool::IsRunning() const {
+//     if (!started_.load()) {
+//         return false;
+//     }
+// 
+//     for (auto &t : threads_) {
+//         if (!t->IsRunning()) {
+//             return false;
+//         }
+//     }
+// 
+//     return started_.load();
+// }
+// 
+// bool EventLoopThreadPool::IsStopped() const {
+//     if (thread_num_ == 0) {
+//         return !started_.load();
+//     }
+// 
+//     for (auto &t : threads_) {
+//         if (!t->IsStopped()) {
+//             return false;
+//         }
+//     }
+// 
+//     return true;
+// }
 
 EventLoop* EventLoopThreadPool::GetNextLoop() {
     EventLoop* loop = base_loop_;
 
-    if (started_.load() && !threads_.empty()) {
+    if (IsRunning() && !threads_.empty()) {
         // No need to lock here
         int64_t next = next_.fetch_add(1);
         next = next % threads_.size();
@@ -159,7 +171,7 @@ EventLoop* EventLoopThreadPool::GetNextLoop() {
 EventLoop* EventLoopThreadPool::GetNextLoopWithHash(uint64_t hash) {
     EventLoop* loop = base_loop_;
 
-    if (started_.load() && !threads_.empty()) {
+    if (IsRunning() && !threads_.empty()) {
         uint64_t next = hash % threads_.size();
         loop = (threads_[next])->loop();
     }
@@ -175,13 +187,14 @@ void EventLoopThreadPool::OnThreadStarted(uint32_t count) {
     LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " count=" << count << " started.";
     if (count == thread_num_) {
         LOG_INFO << "this=" << this << " thread pool totally started.";
-        started_.store(true);
+        status_.store(kRunning);
     }
 }
 
 void EventLoopThreadPool::OnThreadExited(uint32_t count) {
     LOG_INFO << "this=" << this << " tid=" << std::this_thread::get_id() << " count=" << count << " exited.";
     if (count == thread_num_) {
+        status_.store(kStopped);
         LOG_INFO << "this=" << this << " this is the last thread stopped. Thread pool totally exited.";
         if (stopped_cb_) {
             stopped_cb_();

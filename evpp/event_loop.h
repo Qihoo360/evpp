@@ -103,12 +103,6 @@ public:
     const std::thread::id& tid() const {
         return tid_;
     }
-    bool IsRunning() const {
-        return status_.load() == kRunning;
-    }
-    bool IsStopped() const {
-        return status_.load() == kStopped;
-    }
 private:
     void Init();
     void StopInLoop();
