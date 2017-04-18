@@ -1,11 +1,12 @@
 #pragma once
 
-#include "evpp/event_loop_thread.h"
 
 #include <atomic>
 
+#include "evpp/event_loop_thread.h"
+
 namespace evpp {
-class EVPP_EXPORT EventLoopThreadPool {
+class EVPP_EXPORT EventLoopThreadPool : public ServerStatus {
 public:
     typedef std::function<void()> Functor;
 
@@ -25,8 +26,8 @@ public:
     EventLoop* GetNextLoop();
     EventLoop* GetNextLoopWithHash(uint64_t hash);
 
-    bool IsRunning() const;
-    bool IsStopped() const;
+    //bool IsRunning() const;
+    //bool IsStopped() const;
     uint32_t thread_num() const;
 
 private:
@@ -36,7 +37,7 @@ private:
 
 private:
     EventLoop* base_loop_;
-    std::atomic<bool> started_ = { false };
+    //std::atomic<bool> started_ = { false };
     uint32_t thread_num_ = 0;
     std::atomic<int64_t> next_ = { 0 };
 

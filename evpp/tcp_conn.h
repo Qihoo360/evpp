@@ -92,6 +92,11 @@ public:
     Status status() const {
         return status_;
     }
+
+    // @brief When it is an incoming connection, we need to preserve the
+    //  connection for a while so that we can reply to it. And we set a timer
+    //  to close the connection eventually.
+    // @param[in] d - If d.IsZero() == true, we will close the connection immediately.
     void SetCloseDelayTime(Duration d) {
         assert(type_ == kIncoming);
         // This option is only available for the connection type kIncoming
@@ -160,8 +165,8 @@ private:
     size_t high_water_mark_ = 128 * 1024 * 1024; // Default 128MB
 
     // The delay time to close a incoming connection which has been shutdown by peer normally.
-    // Default is 3 second.
-    Duration close_delay_ = Duration(3.0); // TODO When we have a large scale of concurrent connections, this delay close will be a huge burden for the TCPServer
+    // Default is 0 second which means we disable this feature by default.
+    Duration close_delay_ = Duration(0);
     std::shared_ptr<InvokeTimer> delay_close_timer_; // The timer to delay close this TCPConn
 
     ConnectionCallback conn_fn_; // This will be called to the user application layer
