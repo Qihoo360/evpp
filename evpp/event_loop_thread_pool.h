@@ -26,8 +26,6 @@ public:
     EventLoop* GetNextLoop();
     EventLoop* GetNextLoopWithHash(uint64_t hash);
 
-    //bool IsRunning() const;
-    //bool IsStopped() const;
     uint32_t thread_num() const;
 
 private:
