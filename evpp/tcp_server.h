@@ -92,8 +92,6 @@ public:
     }
 
 public:
-//     bool IsRunning() const;
-//     bool IsStopped() const;
     const std::string& listen_addr() const {
         return listen_addr_;
     }
