@@ -127,34 +127,6 @@ void EventLoopThreadPool::Join() {
     threads_.clear();
 }
 
-// bool EventLoopThreadPool::IsRunning() const {
-//     if (!started_.load()) {
-//         return false;
-//     }
-// 
-//     for (auto &t : threads_) {
-//         if (!t->IsRunning()) {
-//             return false;
-//         }
-//     }
-// 
-//     return started_.load();
-// }
-// 
-// bool EventLoopThreadPool::IsStopped() const {
-//     if (thread_num_ == 0) {
-//         return !started_.load();
-//     }
-// 
-//     for (auto &t : threads_) {
-//         if (!t->IsStopped()) {
-//             return false;
-//         }
-//     }
-// 
-//     return true;
-// }
-
 EventLoop* EventLoopThreadPool::GetNextLoop() {
     EventLoop* loop = base_loop_;
 
