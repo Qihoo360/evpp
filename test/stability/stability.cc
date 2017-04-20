@@ -181,7 +181,7 @@ void TestHTTPServer() {
         bool r = ph.Init(g_listening_port) && ph.Start();
         assert(r);
         TestAll();
-        ph.Stop(true);
+        ph.Stop();
         //usleep(1000 * 1000); // sleep a while to release the listening address and port
     }
 }
