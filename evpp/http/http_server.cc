@@ -31,6 +31,7 @@ Server::~Server() {
 }
 
 bool Server::Init(int listen_port) {
+    status_.store(kInitializing);
     ListenThread lt;
     lt.thread = std::make_shared<EventLoopThread>();
     lt.thread->set_name(std::string("StandaloneHTTPServer-Main-") + std::to_string(listen_port));
@@ -43,18 +44,26 @@ bool Server::Init(int listen_port) {
         return false;
     }
     listen_threads_.push_back(lt);
+    status_.store(kInitialized);
     return true;
 }
 
 bool Server::Init(const std::vector<int>& listen_ports) {
+    status_.store(kInitializing);
     bool rc = true;
     for (auto lp : listen_ports) {
         rc = rc && Init(lp);
+    }
+    if (rc) {
+        status_.store(kInitialized);
+    } else {
+        status_.store(kInitializing);
     }
     return rc;
 }
 
 bool Server::Init(const std::string& listen_ports/*"80,8080,443"*/) {
+    status_.store(kInitializing);
     std::vector<std::string> vec;
     StringSplit(listen_ports, ",", 0, vec);
 
@@ -68,7 +77,13 @@ bool Server::Init(const std::string& listen_ports/*"80,8080,443"*/) {
         v.push_back(i);
     }
 
-    return Init(v);
+    auto rc = Init(v);
+    if (rc) {
+        status_.store(kInitialized);
+    } else {
+        status_.store(kInitializing);
+    }
+    return rc;
 }
 
 void Server::AfterFork() {
@@ -78,6 +93,8 @@ void Server::AfterFork() {
 }
 
 bool Server::Start() {
+    assert(status_.load() == kInitialized);
+    status_.store(kStarting);
     std::shared_ptr<std::atomic<int>> exited_listen_thread_count(new std::atomic<int>(0));
     bool rc = tpool_->Start(true);
     if (!rc) {
@@ -90,7 +107,7 @@ bool Server::Start() {
         auto http_close_fn = [hservice, this, exited_listen_thread_count]() {
             hservice->Stop();
             LOG_INFO << "this=" << this << " http service at 0.0.0.0:" << hservice->port() << " has stopped.";
-            this->OnListeningThreadExited(exited_listen_thread_count->fetch_add(1) + 1);
+            //this->OnListeningThreadExited(exited_listen_thread_count->fetch_add(1) + 1);
             return EventLoopThread::kOK;
         };
         rc = lthread->Start(true,
@@ -119,57 +136,58 @@ bool Server::Start() {
     }
 
     assert(rc);
-    while (!IsRunning()) {
+
+
+    auto is_running = [this]() {
+        if (listen_threads_.empty()) {
+            return false;
+        }
+
+        if (!tpool_->IsRunning()) {
+            return false;
+        }
+
+        for (auto& lt : listen_threads_) {
+            if (!lt.thread->IsRunning()) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    while (!is_running()) {
         usleep(1);
     }
     LOG_TRACE << "this=" << this << " http server is running" ;
+    status_.store(kRunning);
     return true;
 }
 
-void Server::Stop(bool wait_thread_exit /*= false*/) {
+void Server::Stop() {
+    assert(IsRunning());
     LOG_INFO << "this=" << this << " http server is stopping";
 
-    // First we stop all the listening threads
-    // And then after all listening threads have been stopped,
-    // Server::OnListenThreadExited will be invoked automatically
-    // in which we will stop the working thread pool
+    status_.store(kStopping);
+
+    // Firstly we pause all the listening threads to accept new requests.
+    substatus_.store(kStoppingListener);
     for (auto& lt : listen_threads_) {
-        // 1. Service::Stop will be called automatically when listen_thread_ is existing
-        // 2. EventLoopThread::Stop will be called to terminate the thread
-        lt.thread->Stop();
+        lt.hservice->Pause();
     }
 
-    if (!wait_thread_exit) {
-        return;
-    }
+    // Secondly we stop thread pool
+    substatus_.store(kStoppingThreadPool);
+    tpool_->Stop(true);
 
-    for (;;) {
-        bool stopped = true;
-        for (auto& lt : listen_threads_) {
-            if (!lt.thread->IsStopped()) {
-                stopped = false;
-                break;
-            }
-        }
-
-        if (!tpool_->IsStopped()) {
-            stopped = false;
-        }
-
-        if (stopped) {
-            break;
-        }
-
-        usleep(1);
-    }
-
-    assert(tpool_->IsStopped());
+    // Thirdly we stop the listening threads
     for (auto& lt : listen_threads_) {
-        (void)lt; // avoid compile warning
-        assert(lt.thread->IsStopped());
+        // Service::Stop will be called automatically when listen_thread_ is existing
+        lt.thread->Stop(true);
     }
-    assert(IsStopped());
 
+    status_.store(kStopped);
+
+    // Lastly
     // Make sure all the working threads totally stopped.
     tpool_->Join();
     tpool_.reset();
@@ -205,38 +223,38 @@ void Server::Continue() {
     }
 }
 
-bool Server::IsRunning() const {
-    if (listen_threads_.empty()) {
-        return false;
-    }
-
-    if (!tpool_->IsRunning()) {
-        return false;
-    }
-
-    for (auto& lt : listen_threads_) {
-        if (!lt.thread->IsRunning()) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool Server::IsStopped() const {
-    assert(!listen_threads_.empty());
-    assert(tpool_);
-
-    if (!tpool_->IsStopped()) {
-        return false;
-    }
-
-    for (auto& lt : listen_threads_) {
-        if (!lt.thread->IsStopped()) {
-            return false;
-        }
-    }
-    return true;
-}
+// bool Server::IsRunning() const {
+//     if (listen_threads_.empty()) {
+//         return false;
+//     }
+// 
+//     if (!tpool_->IsRunning()) {
+//         return false;
+//     }
+// 
+//     for (auto& lt : listen_threads_) {
+//         if (!lt.thread->IsRunning()) {
+//             return false;
+//         }
+//     }
+//     return true;
+// }
+// 
+// bool Server::IsStopped() const {
+//     assert(!listen_threads_.empty());
+//     assert(tpool_);
+// 
+//     if (!tpool_->IsStopped()) {
+//         return false;
+//     }
+// 
+//     for (auto& lt : listen_threads_) {
+//         if (!lt.thread->IsStopped()) {
+//             return false;
+//         }
+//     }
+//     return true;
+// }
 
 void Server::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
     assert(!IsRunning());
@@ -261,7 +279,12 @@ void Server::Dispatch(EventLoop* listening_loop,
     // Forward this HTTP request to a worker thread to process
     auto f = [loop, ctx, response_callback, user_callback, this]() {
         LOG_TRACE << "this=" << this << " process request " << ctx->req()
-                  << " url=" << ctx->original_uri() << " in working thread";
+            << " url=" << ctx->original_uri()
+            << " in working thread. status=" << StatusToString();
+        
+        if (this->IsStopping()) {
+            return;
+        }
 
         // This is in the worker thread.
         // Invoke user layer handler to process this HTTP process.
