@@ -1,9 +1,14 @@
-# evpp设计细节系列(1)：实现一个自管理的定时器
+# evpp设计细节系列(1)：利用 enable_shared_from_this 实现一个自管理的定时器
 
 
-[https://github.com/Qihoo360/evpp] 项目中有一个`InvokeTimer`对象，接口头文件详细代码请参见[https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h]。它是一个能自我管理定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
+
+# 0. 前言
+
+[https://github.com/Qihoo360/evpp](https://github.com/Qihoo360/evpp) 项目中有一个`InvokeTimer`对象，接口头文件详细代码请参见[https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h](https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h)。它是一个能自我管理的定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
 
 现在我们复盘一下这个功能的实现细节和演化过程。
+
+# 1. 基础代码
 
 定时器原型声明可能是下面的样子：
 
@@ -202,7 +207,7 @@ bool TimerEventWatcher::AsyncWait() {
 ```
 
 
-### 1. 一个最基本的实现：basic-01
+# 2. 一个最基本的实现：basic-01
 
 我们先尝试实现一个能满足最基本需求的定时器。
 
@@ -327,7 +332,7 @@ InvokeTimer::~InvokeTimer tid=139965845526336 this=0x7ffd2790f780
 这个实现方式，`InvokeTimer`对象生命周期的管理是一个问题，它需要调用者自己管理。
 
 
-### 2. 能够实现最基本自我管理：basic-02
+# 3. 能够实现最基本自我管理：basic-02
 
 为了实现`InvokeTimer`对象生命周期的自我管理，其实就是调用者不需要关心`InvokeTimer`对象的生命周期问题。可以设想一下，假如`InvokeTimer`对象创建后，当定时时间一到，我们就调用其绑定的毁掉回函，然后`InvokeTimer`对象自我销毁，是不是就可以实现自我管理了呢？嗯，这个可行。请看下面代码。
 
@@ -461,7 +466,7 @@ InvokeTimer::~InvokeTimer tid=139965845526336 this=0x7ffd2790f780
 ```
 
 
-### 3. 如果要取消一个定时器怎么办：cancel-03
+# 4. 如果要取消一个定时器怎么办：cancel-03
 
 上面第2种实现方式，实现了定时器的自我管理，调用者不需要关心定时器的生命周期的管理问题。接下来，新的需求又来了，上层调用者说，在对外发起一个请求时，可以设置一个定时器来处理超时问题，但如果请求及时的回来了，我们得及时取消该定时器啊，这又如何处理呢？
 
@@ -618,7 +623,7 @@ int main() {
 
 
 
-### 实现一个周期性的定时器：periodic-04
+# 5. 实现一个周期性的定时器：periodic-04
 
 上述几个实现中，都是一次性的定时器任务。但是如果我们想实现一个周期性的定时器该如何实现呢？例如，我们有一个任务，需要每分钟做一次。
 
@@ -740,11 +745,17 @@ int main() {
 该版本是最终的实现版本。相关代码都在[https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer]这里，为了便于演示，其不依赖[evpp]。
 
 
-### 最后
+# 6. 最后
 
 [evpp]项目官网地址为：[https://github.com/Qihoo360/evpp]
 本文中的详细代码实现请参考 [https://github.com/Qihoo360/evpp/tree/master/examples/recipes/self_control_timer]
 
+# 7. evpp系列文章列表
+
+[evpp性能测试（3）: 对无锁队列boost::lockfree::queue和moodycamel::ConcurrentQueue做一个性能对比测试](http://blog.csdn.net/zieckey/article/details/69803011)
+[evpp性能测试（2）: 与Boost.Asio进行吞吐量对比测试](http://blog.csdn.net/zieckey/article/details/69170619)
+[evpp性能测试（1）: 与muduo进行吞吐量测试](http://blog.csdn.net/zieckey/article/details/63778715)
+[发布一个高性能的Reactor模式的C++网络库：evpp](http://blog.csdn.net/zieckey/article/details/63760757)
 
 [gtest]:https://github.com/google/googletest
 [glog]:https://github.com/google/glog
