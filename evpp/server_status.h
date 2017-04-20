@@ -17,7 +17,13 @@ public:
         kStopped = 6,
     };
 
-    std::string ToString() const {
+    enum SubStatus {
+        kSubStatusNull = 0,
+        kStoppingListener = 1,
+        kStoppingThreadPool = 2,
+    };
+
+    std::string StatusToString() const {
         H_CASE_STRING_BIGIN(status_);
         H_CASE_STRING(kNull);
         H_CASE_STRING(kInitialized);
@@ -27,7 +33,6 @@ public:
         H_CASE_STRING_END();
     }
 
-
     bool IsRunning() const {
         return status_.load() == kRunning;
     }
@@ -36,7 +41,12 @@ public:
         return status_.load() == kStopped;
     }
 
+    bool IsStopping() const {
+        return status_.load() == kStopping;
+    }
+
 protected:
     std::atomic<Status> status_ = { kNull };
+    std::atomic<SubStatus> substatus_ = { kSubStatusNull };
 };
 }

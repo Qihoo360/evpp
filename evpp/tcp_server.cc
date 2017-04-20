@@ -71,18 +71,23 @@ void TCPServer::Stop(Functor on_stopped_cb) {
     LOG_TRACE << "this=" << this << "Entering TCPServer::Stop";
     assert(status_ == kRunning);
     status_.store(kStopping);
+    substatus_.store(kStoppingListener);
     loop_->RunInLoop(std::bind(&TCPServer::StopInLoop, this, on_stopped_cb));
 }
 
 void TCPServer::StopThreadPool() {
     LOG_INFO << "this=" << this << " StopThreadPool pool=" << tpool_.get();
     assert(loop_->IsInLoopThread());
+    assert(IsStopping());
+    substatus_.store(kStoppingThreadPool);
     tpool_->Stop(true);
     assert(tpool_->IsStopped());
 
     // Make sure all the working threads totally stopped.
     tpool_->Join();
     tpool_.reset();
+
+    substatus_.store(kSubStatusNull);
 }
 
 void TCPServer::StopInLoop(Functor on_stopped_cb) {
@@ -110,14 +115,14 @@ void TCPServer::StopInLoop(Functor on_stopped_cb) {
         // The working threads will be stopped after all the connections closed.
     }
 
-    LOG_TRACE << "TCPServer::StopInLoop exited, status=" << ToString();
+    LOG_TRACE << "TCPServer::StopInLoop exited, status=" << StatusToString();
 }
 
 void TCPServer::HandleNewConn(int sockfd,
                               const std::string& remote_addr/*ip:port*/,
                               const struct sockaddr_in* raddr) {
     assert(loop_->IsInLoopThread());
-    if (status_.load() == kStopping) {
+    if (IsStopping()) {
         LOG_WARN << "The server is at stopping status. Discard this socket fd=" << sockfd << " remote_addr=" << remote_addr;
         EVUTIL_CLOSESOCKET(sockfd);
         return;
@@ -150,9 +155,10 @@ void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
         LOG_INFO << "this=" << this << " TCPServer::RemoveConnection conn=" << conn.get() << " fd="<< conn->fd();
         assert(this->loop_->IsInLoopThread());
         this->connections_.erase(conn->name());
-        if (status_ == kStopping && this->connections_.empty()) {
+        if (IsStopping() && this->connections_.empty()) {
             // At last, we stop all the working threads
             LOG_INFO << "this=" << this << " TCPServer::RemoveConnection stop thread pool";
+            assert(substatus_.load() == kStoppingListener);
             StopThreadPool();
             status_.store(kStopped);
             if (stopped_cb_) {

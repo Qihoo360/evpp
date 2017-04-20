@@ -4,6 +4,7 @@
 
 #include "service.h"
 #include "evpp/thread_dispatch_policy.h"
+#include "evpp/server_status.h"
 
 namespace evpp {
 class EventLoop;
@@ -29,7 +30,7 @@ class Service;
 //      4. Call Server::Start()
 //      5. Process HTTP request in callbacks
 //      6. At last call Server::Stop() to stop the whole server
-class EVPP_EXPORT Server : public ThreadDispatchPolicy {
+class EVPP_EXPORT Server : public ThreadDispatchPolicy, public ServerStatus {
 public:
     Server(uint32_t thread_num = 0);
 
@@ -41,7 +42,7 @@ public:
 
     bool Start();
 
-    void Stop(bool wait_thread_exit = false);
+    void Stop();
 
     void Pause();
     void Continue();
@@ -57,8 +58,8 @@ public:
 
     void RegisterDefaultHandler(HTTPRequestCallback callback);
 public:
-    bool IsRunning() const;
-    bool IsStopped() const;
+//     bool IsRunning() const;
+//     bool IsStopped() const;
 
     std::shared_ptr<EventLoopThreadPool> pool() const {
         return tpool_;
