@@ -214,7 +214,7 @@ void EventLoop::QueueInLoop(const Functor& cb) {
         if (watcher_) {
             watcher_->Notify();
         } else {
-            LOG_WARN << "this=" << this << " status=" << ToString();
+            LOG_WARN << "this=" << this << " status=" << StatusToString();
             assert(!IsRunning());
         }
     } else {
@@ -245,7 +245,7 @@ void EventLoop::QueueInLoop(Functor&& cb) {
         if (watcher_) {
             watcher_->Notify();
         } else {
-            LOG_WARN << "this=" << this << " status=" << ToString();
+            LOG_WARN << "this=" << this << " status=" << StatusToString();
             assert(!IsRunning());
         }
     } else {
