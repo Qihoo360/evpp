@@ -14,5 +14,6 @@ int main() {
     timer->Start();
     timer.reset();
     event_base_dispatch(base);
+    event_base_free(base);
     return 0;
 }
