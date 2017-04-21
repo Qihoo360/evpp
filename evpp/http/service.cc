@@ -56,6 +56,7 @@ void Service::Stop() {
 
 
 void Service::Pause() {
+    assert(listen_loop_->IsInLoopThread());
     LOG_TRACE << "this=" << this << " http service pause";
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     if (evhttp_bound_socket_) {
@@ -67,7 +68,13 @@ void Service::Pause() {
 #endif
 }
 
+void Service::AsyncPause(DoneCallback cb) {
+    Pause();
+    cb();
+}
+
 void Service::Continue() {
+    assert(listen_loop_->IsInLoopThread());
     LOG_TRACE << "this=" << this << " http service continue";
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     if (evhttp_bound_socket_) {
