@@ -70,6 +70,8 @@ class EVPP_EXPORT TimerEventWatcher : public EventWatcher {
 public:
     TimerEventWatcher(EventLoop* loop, const Handler& handler, Duration timeout);
     TimerEventWatcher(EventLoop* loop, Handler&& handler, Duration timeout);
+    TimerEventWatcher(struct event_base* loop, const Handler& handler, Duration timeout);
+    TimerEventWatcher(struct event_base* loop, Handler&& handler, Duration timeout);
 
     bool AsyncWait();
 
