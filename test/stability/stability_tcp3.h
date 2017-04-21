@@ -40,8 +40,10 @@ void TestTCPServer1() {
     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
     tcp_client_thread->set_name("TCPClientThread");
     tcp_client_thread->Start(true);
-    std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
-    std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), GetListenAddr(), "tcp_server", 2));
+    std::unique_ptr<evpp::EventLoopThread> tcp_server_thread(new evpp::EventLoopThread);
+    tcp_server_thread->Start(true);
+    auto loop = tcp_server_thread->loop();
+    std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop, GetListenAddr(), "tcp_server", 2));
     tsrv->SetMessageCallback([](const evpp::TCPConnPtr& conn,
                                 evpp::Buffer* msg) {
         message_recved = true;
@@ -51,16 +53,17 @@ void TestTCPServer1() {
     rc = tsrv->Start();
     assert(rc);
     loop->RunAfter(evpp::Duration(1.4), [&tsrv]() { tsrv->Stop(); });
-    loop->RunAfter(evpp::Duration(1.6), [&loop]() { loop->Stop(); });
     std::shared_ptr<evpp::TCPClient> client = StartTCPClient(tcp_client_thread->loop());
-    loop->Run();
+    while (!tsrv->IsStopped()) {
+        usleep(1);
+    }
+    tcp_server_thread->Stop(true);
     tcp_client_thread->Stop(true);
-    assert(!loop->IsRunning());
     assert(tcp_client_thread->IsStopped());
     assert(connected);
     assert(message_recved);
     tcp_client_thread.reset();
-    loop.reset();
+    tcp_server_thread.reset();
     tsrv.reset();
     assert(evpp::GetActiveEventCount() == 0);
 }
