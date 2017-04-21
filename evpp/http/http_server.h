@@ -72,7 +72,6 @@ private:
                   const HTTPRequestCallback& user_callback);
 
     EventLoop* GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx);
-    void OnListeningThreadExited(int exited_listen_thread_count);
 private:
     struct ListenThread {
         // The listening main thread
