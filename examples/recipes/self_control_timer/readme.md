@@ -4,7 +4,7 @@
 
 # 0. 前言
 
-[https://github.com/Qihoo360/evpp](https://github.com/Qihoo360/evpp) 项目中有一个`InvokeTimer`对象，接口头文件详细代码请参见[https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h](https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h)。它是一个能自我管理的定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
+[https://github.com/Qihoo360/evpp](https://github.com/Qihoo360/evpp)是一个高性能的Reactor模式的现代化的C++11版本的高性能网络库。该项目中有一个`InvokeTimer`对象，接口头文件详细代码请参见[https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h](https://github.com/Qihoo360/evpp/blob/master/evpp/invoke_timer.h)。它是一个能自我管理的定时器类，可以将一个仿函数绑定到该定时器上，然后让该定时器自己管理并在预期的一段时间后执行该仿函数。
 
 现在我们复盘一下这个功能的实现细节和演化过程。
 
@@ -302,6 +302,7 @@ int main() {
     auto timer = new recipes::InvokeTimer(base, 1000.0, &Print);
     timer->Start();
     event_base_dispatch(base);
+    event_base_free(base);
     delete timer;
     return 0;
 }
@@ -439,6 +440,7 @@ int main() {
     auto timer = recipes::InvokeTimer::Create(base, 1000.0, &Print);
     timer->Start(); // 启动完成后，就不用关注该对象了
     event_base_dispatch(base);
+    event_base_free(base);
     return 0;
 }
 ```
@@ -612,6 +614,7 @@ int main() {
     auto timer = recipes::InvokeTimer::Create(base, 1000.0, &Print);
     timer->Start(); // 启动完成后，就不用关注该对象了
     event_base_dispatch(base);
+    event_base_free(base);
     return 0;
 }
 ```
@@ -738,6 +741,7 @@ int main() {
     timer->Start();
     timer.reset();
     event_base_dispatch(base);
+    event_base_free(base);
     return 0;
 }
 ```
