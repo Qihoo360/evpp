@@ -88,6 +88,40 @@ TEST_UNIT(testEventLoop3) {
 
 
 
+namespace {
+evpp::EventLoop* loop = nullptr;
+evpp::InvokeTimerPtr invoke_timer;
+int count = 0;
+
+void Run() {
+    LOG_INFO << "Running count=" << count << " ...";
+    if (count++ == 5) {
+        invoke_timer->Cancel();
+        loop->Stop();
+    }
+}
+
+void NewEventLoop(struct event_base* base) {
+    loop = new evpp::EventLoop(base);
+    invoke_timer = loop->RunEvery(evpp::Duration(0.1), &Run);
+}
+}
+
+// Test creating EventLoop from a exist event_base
+TEST_UNIT(testEventLoop4) {
+    struct event_base* base = event_base_new();
+    auto timer = std::make_shared<evpp::TimerEventWatcher>(base, std::bind(&NewEventLoop, base), evpp::Duration(1.0));
+    timer->Init();
+    timer->AsyncWait();
+    event_base_dispatch(base);
+    event_base_free(base);
+    delete loop;
+    invoke_timer.reset();
+    timer.reset();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+}
+
+
 
 
 

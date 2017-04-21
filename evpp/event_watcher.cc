@@ -196,6 +196,18 @@ TimerEventWatcher::TimerEventWatcher(EventLoop* loop,
     : EventWatcher(loop->event_base(), std::move(h))
     , timeout_(timeout) {}
 
+TimerEventWatcher::TimerEventWatcher(struct event_base* loop,
+                                     const Handler& handler,
+                                     Duration timeout)
+    : EventWatcher(loop, handler)
+    , timeout_(timeout) {}
+
+TimerEventWatcher::TimerEventWatcher(struct event_base* loop,
+                                     Handler&& h,
+                                     Duration timeout)
+    : EventWatcher(loop, std::move(h))
+    , timeout_(timeout) {}
+
 bool TimerEventWatcher::DoInit() {
     ::event_set(event_, -1, 0, TimerEventWatcher::HandlerFn, this);
     return true;
