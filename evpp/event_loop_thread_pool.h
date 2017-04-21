@@ -8,7 +8,7 @@
 namespace evpp {
 class EVPP_EXPORT EventLoopThreadPool : public ServerStatus {
 public:
-    typedef std::function<void()> Functor;
+    typedef std::function<void()> DoneCallback;
 
     EventLoopThreadPool(EventLoop* base_loop, uint32_t thread_num);
     ~EventLoopThreadPool();
@@ -16,7 +16,7 @@ public:
     bool Start(bool wait_thread_started = false);
 
     void Stop(bool wait_thread_exited = false);
-    void Stop(Functor on_stopped_cb);
+    void Stop(DoneCallback fn);
 
     // @brief Join all the working thread. If you forget to call this method,
     // it will be invoked automatically in the destruct method ~EventLoopThreadPool().
@@ -29,7 +29,7 @@ public:
     uint32_t thread_num() const;
 
 private:
-    void Stop(bool wait_thread_exit, Functor on_stopped_cb);
+    void Stop(bool wait_thread_exit, DoneCallback fn);
     void OnThreadStarted(uint32_t count);
     void OnThreadExited(uint32_t count);
 
@@ -39,7 +39,7 @@ private:
     uint32_t thread_num_ = 0;
     std::atomic<int64_t> next_ = { 0 };
 
-    Functor stopped_cb_;
+    DoneCallback stopped_cb_;
 
     typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
     std::vector<EventLoopThreadPtr> threads_;
