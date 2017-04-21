@@ -58,8 +58,6 @@ public:
 
     void RegisterDefaultHandler(HTTPRequestCallback callback);
 public:
-//     bool IsRunning() const;
-//     bool IsStopped() const;
 
     std::shared_ptr<EventLoopThreadPool> pool() const {
         return tpool_;
