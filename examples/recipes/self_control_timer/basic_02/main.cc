@@ -13,5 +13,6 @@ int main() {
     auto timer = recipes::InvokeTimer::Create(base, 1000.0, &Print);
     timer->Start();
     event_base_dispatch(base);
+    event_base_free(base);
     return 0;
 }
