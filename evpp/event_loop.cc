@@ -246,7 +246,7 @@ void EventLoop::QueueInLoop(Functor&& cb) {
         if (watcher_) {
             watcher_->Notify();
         } else {
-            LOG_WARN << "this=" << this << " status=" << StatusToString();
+            LOG_ERROR << "this=" << this << " watcher_ is empty, maybe we call EventLoop::QueueInLoop on a stopped EventLoop. status=" << StatusToString();
             assert(!IsRunning());
         }
     } else {
