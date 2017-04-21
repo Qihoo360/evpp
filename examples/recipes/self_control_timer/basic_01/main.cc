@@ -14,5 +14,6 @@ int main() {
     timer->Start();
     event_base_dispatch(base);
     delete timer;
+    event_base_free(base);
     return 0;
 }
