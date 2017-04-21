@@ -8,6 +8,8 @@
 #include "evpp/event_loop_thread_pool.h"
 #include "evpp/utility.h"
 
+#include <future>
+
 namespace evpp {
 namespace http {
 
@@ -169,11 +171,20 @@ void Server::Stop() {
 
     status_.store(kStopping);
 
+    std::promise<int> promise;
+    std::atomic<int> count(0);
+
     // Firstly we pause all the listening threads to accept new requests.
     substatus_.store(kStoppingListener);
+    auto fn = [&count, &promise, this]() {
+        if (count.fetch_add(1) + 1 == static_cast<int>(listen_threads_.size())) {
+            promise.set_value(1);
+        }
+    };
     for (auto& lt : listen_threads_) {
-        lt.hservice->Pause();
+        lt.thread->loop()->RunInLoop(std::bind(&Service::AsyncPause, lt.hservice.get(), fn));
     }
+    promise.get_future().wait();
 
     // Secondly we stop thread pool
     substatus_.store(kStoppingThreadPool);
@@ -223,39 +234,6 @@ void Server::Continue() {
     }
 }
 
-// bool Server::IsRunning() const {
-//     if (listen_threads_.empty()) {
-//         return false;
-//     }
-// 
-//     if (!tpool_->IsRunning()) {
-//         return false;
-//     }
-// 
-//     for (auto& lt : listen_threads_) {
-//         if (!lt.thread->IsRunning()) {
-//             return false;
-//         }
-//     }
-//     return true;
-// }
-// 
-// bool Server::IsStopped() const {
-//     assert(!listen_threads_.empty());
-//     assert(tpool_);
-// 
-//     if (!tpool_->IsStopped()) {
-//         return false;
-//     }
-// 
-//     for (auto& lt : listen_threads_) {
-//         if (!lt.thread->IsStopped()) {
-//             return false;
-//         }
-//     }
-//     return true;
-// }
-
 void Server::RegisterHandler(const std::string& uri, HTTPRequestCallback callback) {
     assert(!IsRunning());
     callbacks_[uri] = callback;
@@ -272,7 +250,13 @@ void Server::Dispatch(EventLoop* listening_loop,
                       const HTTPRequestCallback& user_callback) {
     // Make sure it is running in the HTTP listening thread
     assert(listening_loop->IsInLoopThread());
-    LOG_TRACE << "this=" << this << " dispatch request " << ctx->req() << " url=" << ctx->original_uri() << " in main thread";
+    LOG_TRACE << "this=" << this << " dispatch request " << ctx->req() << " url=" << ctx->original_uri() << " in main thread. status=" << StatusToString();
+    if (!IsRunning()) {
+        LOG_WARN << "The listening thread is not running, may be it is stopping now.";
+        //TODO gracefully shutdown.
+        return;
+    }
+
     EventLoop* loop = nullptr;
     loop = GetNextLoop(listening_loop, ctx);
 
@@ -282,7 +266,9 @@ void Server::Dispatch(EventLoop* listening_loop,
             << " url=" << ctx->original_uri()
             << " in working thread. status=" << StatusToString();
         
-        if (this->IsStopping()) {
+        if (!IsRunning()) {
+            LOG_WARN << "The listening thread is not running, may be it is stopping now.";
+            //TODO gracefully shutdown.
             return;
         }
 
