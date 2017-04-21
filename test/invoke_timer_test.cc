@@ -39,6 +39,7 @@ TEST_UNIT(testInvokerTimerCancel) {
     timer->Cancel();
     th.join();
     timer.reset();
+    loop.reset();
     evpp::Duration cost = evpp::Timestamp::Now() - start;
     H_TEST_ASSERT(delay <= cost);
     H_TEST_ASSERT(!event_handler_called);

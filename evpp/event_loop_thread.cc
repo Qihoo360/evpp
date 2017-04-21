@@ -7,11 +7,11 @@ namespace evpp {
 
 EventLoopThread::EventLoopThread()
     : event_loop_(new EventLoop) {
-    LOG_INFO << "this=" << this << " EventLoopThread::EventLoopThread loop=" << event_loop_;
+    LOG_INFO << "this=" << this << " loop=" << event_loop_ << " EventLoopThread::EventLoopThread";
 }
 
 EventLoopThread::~EventLoopThread() {
-    LOG_INFO << "this=" << this << " EventLoopThread::~EventLoopThread";
+    LOG_INFO << "this=" << this << " loop=" << event_loop_ << " EventLoopThread::~EventLoopThread";
     assert(IsStopped());
     Join();
 }
@@ -31,7 +31,7 @@ bool EventLoopThread::Start(bool wait_thread_started, Functor pre, Functor post)
 }
 
 void EventLoopThread::Run(const Functor& pre, const Functor& post) {
-    LOG_INFO << "this=" << this << " EventLoopThread::Run loop=" << event_loop_;
+    LOG_INFO << "this=" << this << " loop=" << event_loop_ << " EventLoopThread::Run";
     if (name_.empty()) {
         std::ostringstream os;
         os << "thread-" << std::this_thread::get_id();
@@ -39,7 +39,7 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
     }
 
 
-    LOG_INFO << "this=" << this << " execute pre functor.";
+    LOG_INFO << "this=" << this << " loop=" << event_loop_ << " execute pre functor.";
     auto fn = [this, pre]() {
         status_ = kRunning;
         if (pre) {
@@ -52,13 +52,13 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
     event_loop_->QueueInLoop(std::move(fn));
     event_loop_->Run();
 
-    LOG_INFO << "this=" << this << " execute post functor.";
+    LOG_INFO << "this=" << this << " loop=" << event_loop_ << " execute post functor.";
     if (post) {
         post();
     }
 
     assert(event_loop_->IsStopped());
-    LOG_INFO << "this=" << this << " EventLoopThread stopped";
+    LOG_INFO << "this=" << this << " loop=" << event_loop_ << " EventLoopThread stopped";
     status_ = kStopped;
 }
 
@@ -73,9 +73,9 @@ void EventLoopThread::Stop(bool wait_thread_exit) {
             usleep(1);
         }
 
-        LOG_INFO << "this=" << this << " thread stopped.";
+        LOG_INFO << "this=" << this << " loop=" << event_loop_ << " thread stopped.";
         Join();
-        LOG_INFO << "this=" << this << " thread totally stopped.";
+        LOG_INFO << "this=" << this << " loop=" << event_loop_ << " thread totally stopped.";
     }
     LOG_INFO << "this=" << this << " loop=" << event_loop_ << " EventLoopThread::Stop";
 }
@@ -84,7 +84,7 @@ void EventLoopThread::Join() {
     // To avoid multi other threads call Join simultaneously
     std::lock_guard<std::mutex> guard(mutex_);
     if (thread_ && thread_->joinable()) {
-        LOG_INFO << "this=" << this << " thread=" << thread_ << " joinable";
+        LOG_INFO << "this=" << this << " loop=" << event_loop_ << " thread=" << thread_ << " joinable";
         try {
             thread_->join();
         } catch (const std::system_error& e) {
