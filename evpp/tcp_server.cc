@@ -107,7 +107,11 @@ void TCPServer::StopInLoop(Functor on_stopped_cb) {
         }
     } else {
         for (auto& c : connections_) {
-            c.second->Close();
+            if (c.second->IsConnected()) {
+                c.second->Close();
+            } else {
+                LOG_INFO << "this=" << this << " Do not need to call Close for this TCPConn it may be doing disconnecting. TCPConn=" << c.second.get() << " fd=" << c.second->fd() << " status=" << StatusToString();
+            }
         }
 
         stopped_cb_ = on_stopped_cb;

@@ -38,6 +38,7 @@ EventLoop::EventLoop(struct event_base* base)
 }
 
 EventLoop::~EventLoop() {
+    LOG_INFO << "this=" << this << " EventLoop::~EventLoop";
     watcher_.reset();
 
     if (evbase_ != nullptr && create_evbase_myself_) {

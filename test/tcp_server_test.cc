@@ -39,32 +39,64 @@ std::shared_ptr<evpp::TCPClient> StartTCPClient(evpp::EventLoop* loop) {
 
 
 TEST_UNIT(testTCPServer1) {
+//     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
+//     tcp_client_thread->set_name("TCPClientThread");
+//     tcp_client_thread->Start(true);
+//     std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
+//     std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), addr, "tcp_server", 2));
+//     tsrv->SetMessageCallback([](const evpp::TCPConnPtr& conn,
+//                                 evpp::Buffer* msg) {
+//         message_recved = true;
+//     });
+//     bool rc = tsrv->Init();
+//     H_TEST_ASSERT(rc);
+//     rc = tsrv->Start();
+//     H_TEST_ASSERT(rc);
+//     loop->RunAfter(evpp::Duration(1.4), [&tsrv]() { tsrv->Stop(); });
+//     loop->RunAfter(evpp::Duration(1.6), [&loop]() { loop->Stop(); });
+//     std::shared_ptr<evpp::TCPClient> client = StartTCPClient(tcp_client_thread->loop());
+//     loop->Run();
+//     tcp_client_thread->Stop(true);
+//     H_TEST_ASSERT(!loop->IsRunning());
+//     H_TEST_ASSERT(tcp_client_thread->IsStopped());
+//     H_TEST_ASSERT(connected);
+//     H_TEST_ASSERT(message_recved);
+//     tcp_client_thread.reset();
+//     loop.reset();
+//     tsrv.reset();
+//     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+
+    connected = false;
+    message_recved = false;
     std::unique_ptr<evpp::EventLoopThread> tcp_client_thread(new evpp::EventLoopThread);
     tcp_client_thread->set_name("TCPClientThread");
     tcp_client_thread->Start(true);
-    std::unique_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
-    std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop.get(), addr, "tcp_server", 2));
+    std::unique_ptr<evpp::EventLoopThread> tcp_server_thread(new evpp::EventLoopThread);
+    tcp_server_thread->Start(true);
+    auto loop = tcp_server_thread->loop();
+    std::unique_ptr<evpp::TCPServer> tsrv(new evpp::TCPServer(loop, addr, "tcp_server", 2));
     tsrv->SetMessageCallback([](const evpp::TCPConnPtr& conn,
                                 evpp::Buffer* msg) {
         message_recved = true;
     });
     bool rc = tsrv->Init();
-    H_TEST_ASSERT(rc);
+    assert(rc);
     rc = tsrv->Start();
-    H_TEST_ASSERT(rc);
+    assert(rc);
     loop->RunAfter(evpp::Duration(1.4), [&tsrv]() { tsrv->Stop(); });
-    loop->RunAfter(evpp::Duration(1.6), [&loop]() { loop->Stop(); });
     std::shared_ptr<evpp::TCPClient> client = StartTCPClient(tcp_client_thread->loop());
-    loop->Run();
+    while (!tsrv->IsStopped()) {
+        usleep(1);
+    }
+    tcp_server_thread->Stop(true);
     tcp_client_thread->Stop(true);
-    H_TEST_ASSERT(!loop->IsRunning());
-    H_TEST_ASSERT(tcp_client_thread->IsStopped());
-    H_TEST_ASSERT(connected);
-    H_TEST_ASSERT(message_recved);
+    assert(tcp_client_thread->IsStopped());
+    assert(connected);
+    assert(message_recved);
     tcp_client_thread.reset();
-    loop.reset();
+    tcp_server_thread.reset();
     tsrv.reset();
-    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+    assert(evpp::GetActiveEventCount() == 0);
 }
 
 TEST_UNIT(testTCPServerSilenceShutdown1) {

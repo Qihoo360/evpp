@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include "evpp/inner_pre.h"
 #include "evpp/buffer.h"
 #include "evpp/tcp_callbacks.h"
@@ -161,7 +163,7 @@ private:
     enum { kContextCount = 16, };
     Any context_[kContextCount];
     Type type_;
-    Status status_;
+    std::atomic<Status> status_;
     size_t high_water_mark_ = 128 * 1024 * 1024; // Default 128MB
 
     // The delay time to close a incoming connection which has been shutdown by peer normally.
