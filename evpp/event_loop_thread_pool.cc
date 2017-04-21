@@ -68,29 +68,29 @@ bool EventLoopThreadPool::Start(bool wait_thread_started) {
 
 void EventLoopThreadPool::Stop(bool wait_thread_exit) {
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop wait_thread_exit=" << wait_thread_exit;
-    Stop(wait_thread_exit, Functor());
+    Stop(wait_thread_exit, DoneCallback());
 }
 
-void EventLoopThreadPool::Stop(Functor on_stopped_cb) {
+void EventLoopThreadPool::Stop(DoneCallback fn) {
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop";
-    Stop(false, on_stopped_cb);
+    Stop(false, fn);
 }
 
-void EventLoopThreadPool::Stop(bool wait_thread_exit, Functor on_stopped_cb) {
+void EventLoopThreadPool::Stop(bool wait_thread_exit, DoneCallback fn) {
     status_.store(kStopping);
     
     if (thread_num_ == 0) {
         status_.store(kStopped);
         
-        if (on_stopped_cb) {
+        if (fn) {
             LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop calling stopped callback";
-            on_stopped_cb();
+            fn();
         }
         return;
     }
 
     LOG_INFO << "this=" << this << " EventLoopThreadPool::Stop wait_thread_exit=" << wait_thread_exit;
-    stopped_cb_ = on_stopped_cb;
+    stopped_cb_ = fn;
 
     for (auto &t : threads_) {
         t->Stop();
@@ -170,7 +170,7 @@ void EventLoopThreadPool::OnThreadExited(uint32_t count) {
         LOG_INFO << "this=" << this << " this is the last thread stopped. Thread pool totally exited.";
         if (stopped_cb_) {
             stopped_cb_();
-            stopped_cb_ = Functor();
+            stopped_cb_ = DoneCallback();
         }
     }
 }
