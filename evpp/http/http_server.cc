@@ -97,19 +97,18 @@ void Server::AfterFork() {
 bool Server::Start() {
     assert(status_.load() == kInitialized);
     status_.store(kStarting);
-    std::shared_ptr<std::atomic<int>> exited_listen_thread_count(new std::atomic<int>(0));
     bool rc = tpool_->Start(true);
     if (!rc) {
         LOG_ERROR << "this=" << this << " start thread pool failed.";
         return false;
     }
+
     for (auto& lt : listen_threads_) {
         auto& hservice = lt.hservice;
         auto& lthread = lt.thread;
-        auto http_close_fn = [hservice, this, exited_listen_thread_count]() {
+        auto http_close_fn = [hservice, this]() {
             hservice->Stop();
             LOG_INFO << "this=" << this << " http service at 0.0.0.0:" << hservice->port() << " has stopped.";
-            //this->OnListeningThreadExited(exited_listen_thread_count->fetch_add(1) + 1);
             return EventLoopThread::kOK;
         };
         rc = lthread->Start(true,
@@ -120,20 +119,13 @@ bool Server::Start() {
             return false;
         }
 
+        using namespace std::placeholders;
         assert(lthread->IsRunning());
         for (auto& c : callbacks_) {
-            auto cb = std::bind(&Server::Dispatch, this,
-                                std::placeholders::_1,
-                                std::placeholders::_2,
-                                std::placeholders::_3,
-                                c.second);
+            auto cb = std::bind(&Server::Dispatch, this, _1, _2, _3, c.second);
             hservice->RegisterHandler(c.first, cb);
         }
-        HTTPRequestCallback cb = std::bind(&Server::Dispatch, this,
-                                           std::placeholders::_1,
-                                           std::placeholders::_2,
-                                           std::placeholders::_3,
-                                           default_callback_);
+        auto cb = std::bind(&Server::Dispatch, this, _1, _2, _3, default_callback_);
         hservice->RegisterDefaultHandler(cb);
     }
 
@@ -171,14 +163,14 @@ void Server::Stop() {
 
     status_.store(kStopping);
 
-    std::promise<int> promise;
+    std::promise<void> promise;
     std::atomic<int> count(0);
 
     // Firstly we pause all the listening threads to accept new requests.
     substatus_.store(kStoppingListener);
     auto fn = [&count, &promise, this]() {
         if (count.fetch_add(1) + 1 == static_cast<int>(listen_threads_.size())) {
-            promise.set_value(1);
+            promise.set_value();
         }
     };
     for (auto& lt : listen_threads_) {
@@ -216,8 +208,8 @@ void Server::Pause() {
     LOG_INFO << "this=" << this << " http server pause";
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->loop();
-        auto f = [&lt]() {
-            lt.hservice->Pause();
+        auto f = [hs = lt.hservice]() {
+            hs->Pause();
         };
         loop->RunInLoop(f);
     }
@@ -227,8 +219,8 @@ void Server::Continue() {
     LOG_INFO << "this=" << this << " http server continue";
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->loop();
-        auto f = [&lt]() {
-            lt.hservice->Continue();
+        auto f = [hs = lt.hservice]() {
+            hs->Continue();
         };
         loop->RunInLoop(f);
     }
@@ -309,14 +301,6 @@ EventLoop* Server::GetNextLoop(EventLoop* default_loop, const ContextPtr& ctx) {
     uint64_t hash = std::hash<std::string>()(ctx->remote_ip());
     return tpool_->GetNextLoopWithHash(hash);
 #endif
-}
-
-void Server::OnListeningThreadExited(int exited_listen_thread_count) {
-    LOG_INFO << "this=" << this << " OnListenThreadExited exited_listen_thread_count=" << exited_listen_thread_count << " listen_threads_.size=" << listen_threads_.size();
-    if (exited_listen_thread_count == int(listen_threads_.size())) {
-        LOG_INFO << "this=" << this << " stop the working thread pool.";
-        tpool_->Stop();
-    }
 }
 
 Service* Server::service(int index) const {
