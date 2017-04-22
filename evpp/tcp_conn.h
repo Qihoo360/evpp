@@ -33,7 +33,8 @@ public:
             const std::string& name,
             int sockfd,
             const std::string& laddr,
-            const std::string& raddr);
+            const std::string& raddr,
+            uint64_t id);
     ~TCPConn();
 
     void Close();
@@ -51,6 +52,9 @@ public:
     }
     int fd() const {
         return fd_;
+    }
+    uint64_t id() const {
+        return id_;
     }
     void set_context(const Any& c) {
         context_[0] = c;
@@ -153,6 +157,7 @@ private:
 private:
     EventLoop* loop_;
     int fd_;
+    uint64_t id_ = 0;
     std::string name_;
     std::string local_addr_; // the local address with form : "ip:port"
     std::string remote_addr_; // the remote address with form : "ip:port"
