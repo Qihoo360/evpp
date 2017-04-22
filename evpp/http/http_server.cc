@@ -14,10 +14,12 @@ namespace evpp {
 namespace http {
 
 Server::Server(uint32_t thread_num) {
+    DLOG_TRACE;
     tpool_.reset(new EventLoopThreadPool(nullptr, thread_num));
 }
 
 Server::~Server() {
+    DLOG_TRACE;
     if (!listen_threads_.empty()) {
         for (auto& lt : listen_threads_) {
             lt.thread->Join();
@@ -108,7 +110,7 @@ bool Server::Start() {
         auto& lthread = lt.thread;
         auto http_close_fn = [hservice, this]() {
             hservice->Stop();
-            LOG_INFO << "this=" << this << " http service at 0.0.0.0:" << hservice->port() << " has stopped.";
+            DLOG_TRACE << "http service at 0.0.0.0:" << hservice->port() << " has stopped.";
             return EventLoopThread::kOK;
         };
         rc = lthread->Start(true,
@@ -152,14 +154,14 @@ bool Server::Start() {
     while (!is_running()) {
         usleep(1);
     }
-    LOG_TRACE << "this=" << this << " http server is running" ;
+    DLOG_TRACE << "http server is running" ;
     status_.store(kRunning);
     return true;
 }
 
 void Server::Stop() {
     assert(IsRunning());
-    LOG_INFO << "this=" << this << " http server is stopping";
+    DLOG_TRACE << "http server is stopping";
 
     status_.store(kStopping);
 
@@ -201,11 +203,11 @@ void Server::Stop() {
     }
     listen_threads_.clear();
 
-    LOG_INFO << "this=" << this << " http server stopped";
+    DLOG_TRACE << "http server stopped";
 }
 
 void Server::Pause() {
-    LOG_INFO << "this=" << this << " http server pause";
+    DLOG_TRACE << "http server pause";
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->loop();
         auto f = [hs = lt.hservice]() {
@@ -216,7 +218,7 @@ void Server::Pause() {
 }
 
 void Server::Continue() {
-    LOG_INFO << "this=" << this << " http server continue";
+    DLOG_TRACE << "http server continue";
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->loop();
         auto f = [hs = lt.hservice]() {
@@ -242,7 +244,7 @@ void Server::Dispatch(EventLoop* listening_loop,
                       const HTTPRequestCallback& user_callback) {
     // Make sure it is running in the HTTP listening thread
     assert(listening_loop->IsInLoopThread());
-    LOG_TRACE << "this=" << this << " dispatch request " << ctx->req() << " url=" << ctx->original_uri() << " in main thread. status=" << StatusToString();
+    DLOG_TRACE << "dispatch request " << ctx->req() << " url=" << ctx->original_uri() << " in main thread. status=" << StatusToString();
     if (!IsRunning()) {
         LOG_WARN << "The listening thread is not running, may be it is stopping now.";
         //TODO gracefully shutdown.
@@ -254,7 +256,7 @@ void Server::Dispatch(EventLoop* listening_loop,
 
     // Forward this HTTP request to a worker thread to process
     auto f = [loop, ctx, response_callback, user_callback, this]() {
-        LOG_TRACE << "this=" << this << " process request " << ctx->req()
+        DLOG_TRACE << "process request " << ctx->req()
             << " url=" << ctx->original_uri()
             << " in working thread. status=" << StatusToString();
         
