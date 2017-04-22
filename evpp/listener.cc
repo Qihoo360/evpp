@@ -9,18 +9,18 @@
 namespace evpp {
 Listener::Listener(EventLoop* l, const std::string& addr)
     : loop_(l), addr_(addr) {
-    LOG_TRACE << "this=" << this << " Listener::Listener addr=" << addr;
+    DLOG_TRACE << "addr=" << addr;
 }
 
 Listener::~Listener() {
-    LOG_TRACE << "this=" << this << " Listener::~Listener fd=" << chan_->fd();
+    DLOG_TRACE << "fd=" << chan_->fd();
     chan_.reset();
     EVUTIL_CLOSESOCKET(fd_);
     fd_ = INVALID_SOCKET;
 }
 
 void Listener::Listen() {
-    LOG_TRACE << "this=" << this << " Listener::Listen";
+    DLOG_TRACE;
     fd_ = sock::CreateNonblockingSocket();
     if (fd_ < 0) {
         int serrno = errno;
@@ -44,7 +44,7 @@ void Listener::Listen() {
 }
 
 void Listener::Accept() {
-    LOG_TRACE << "this=" << this << " Listener::Accept";
+    DLOG_TRACE;
     chan_.reset(new FdChannel(loop_, fd_, true, false));
     chan_->SetReadCallback(std::bind(&Listener::HandleAccept, this));
     loop_->RunInLoop(std::bind(&FdChannel::AttachToLoop, chan_.get()));
@@ -52,7 +52,7 @@ void Listener::Accept() {
 }
 
 void Listener::HandleAccept() {
-    LOG_INFO << "this=" << this << " Listener::HandleAccept. A new connection is comming in";
+    DLOG_TRACE << "A new connection is comming in";
     assert(loop_->IsInLoopThread());
     struct sockaddr_storage ss;
     socklen_t addrlen = sizeof(ss);
@@ -80,9 +80,9 @@ void Listener::HandleAccept() {
         return;
     }
 
-    LOG_INFO << "accepted a connection from " << raddr
-             << ", listen fd=" << fd_
-             << ", client fd=" << nfd;
+    DLOG_TRACE << "accepted a connection from " << raddr
+        << ", listen fd=" << fd_
+        << ", client fd=" << nfd;
 
     if (new_conn_fn_) {
         new_conn_fn_(nfd, raddr, sock::sockaddr_in_cast(&ss));

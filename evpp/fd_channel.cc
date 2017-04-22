@@ -12,6 +12,7 @@ static_assert(FdChannel::kWritable == EV_WRITE, "");
 
 FdChannel::FdChannel(EventLoop* l, int f, bool r, bool w)
     : loop_(l), attached_(false), event_(nullptr), fd_(f) {
+    DLOG_TRACE << "fd=" << fd_;
     assert(fd_ > 0);
     events_ = (r ? kReadable : 0) | (w ? kWritable : 0);
     event_ = new event;
@@ -19,12 +20,12 @@ FdChannel::FdChannel(EventLoop* l, int f, bool r, bool w)
 }
 
 FdChannel::~FdChannel() {
-    LOG_INFO << "FdChannel::~FdChannel() this=" << this << " fd=" << fd_;
+    DLOG_TRACE << "fd=" << fd_;
     assert(event_ == nullptr);
 }
 
 void FdChannel::Close() {
-    LOG_INFO << "FdChannel::Close() this=" << this << " fd=" << fd_;
+    DLOG_TRACE << "fd=" << fd_;
     assert(event_);
     if (event_) {
         assert(!attached_);
@@ -55,7 +56,7 @@ void FdChannel::AttachToLoop() {
     ::event_base_set(loop_->event_base(), event_);
 
     if (EventAdd(event_, nullptr) == 0) {
-        LOG_TRACE << "this=" << this << " fd=" << fd_ << " watching event " << EventsToString();
+        DLOG_TRACE << "fd=" << fd_ << " watching event " << EventsToString();
         attached_ = true;
     } else {
         LOG_ERROR << "this=" << this << " fd=" << fd_ << " with event " << EventsToString() << " attach to event loop failed";
@@ -112,7 +113,7 @@ void FdChannel::DetachFromLoop() {
 
     if (EventDel(event_) == 0) {
         attached_ = false;
-        LOG_TRACE << "DetachFromLoop this=" << this << " fd=" << fd_ << " detach from event loop";
+        DLOG_TRACE << "fd=" << fd_ << " detach from event loop";
     } else {
         LOG_ERROR << "DetachFromLoop this=" << this << "fd=" << fd_ << " with event " << EventsToString() << " detach from event loop failed";
     }
@@ -153,7 +154,7 @@ void FdChannel::HandleEvent(int sockfd, short which, void* v) {
 
 void FdChannel::HandleEvent(int sockfd, short which) {
     assert(sockfd == fd_);
-    LOG_TRACE << "HandleEvent fd=" << sockfd << " " << EventsToString();
+    DLOG_TRACE << "fd=" << sockfd << " " << EventsToString();
 
     if ((which & kReadable) && read_fn_) {
         read_fn_();
