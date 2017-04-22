@@ -29,7 +29,7 @@ void Listener::Listen() {
     }
 
     struct sockaddr_in addr = sock::ParseFromIPPort(addr_.data());
-    // TODO Add retry
+    // TODO Add retry when failed
     int ret = ::bind(fd_, sock::sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
     if (ret < 0) {
         int serrno = errno;
@@ -66,7 +66,7 @@ void Listener::HandleAccept() {
     }
 
     if (evutil_make_socket_nonblocking(nfd) < 0) {
-        LOG_ERROR << "set nfd=" << nfd << " nonblocking failed.";
+        LOG_ERROR << "set fd=" << nfd << " nonblocking failed.";
         EVUTIL_CLOSESOCKET(nfd);
         return;
     }
@@ -75,6 +75,7 @@ void Listener::HandleAccept() {
 
     std::string raddr = sock::ToIPPort(&ss);
     if (raddr.empty()) {
+        LOG_ERROR << "sock::ToIPPort(&ss) failed.";
         EVUTIL_CLOSESOCKET(nfd);
         return;
     }

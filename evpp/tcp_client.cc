@@ -1,3 +1,5 @@
+#include <atomic>
+
 #include "evpp/inner_pre.h"
 
 #include "evpp/tcp_client.h"
@@ -7,6 +9,7 @@
 #include "evpp/connector.h"
 
 namespace evpp {
+std::atomic<uint64_t> id;
 TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& n)
     : loop_(l)
     , remote_addr_(raddr)
@@ -98,13 +101,13 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
         // Note: When we could not connect to a server,
         //       the user layer will receive this notification constantly
         //       because the connector_ will retry to do reconnection all the time.
-        conn_fn_(TCPConnPtr(new TCPConn(loop_, "", sockfd, "", "")));
+        conn_fn_(TCPConnPtr(new TCPConn(loop_, "", sockfd, "", "", 0)));
         return;
     }
 
     LOG_INFO << "Successfully connected to " << remote_addr_;
     assert(loop_->IsInLoopThread());
-    TCPConnPtr c = TCPConnPtr(new TCPConn(loop_, name_, sockfd, laddr, remote_addr_));
+    TCPConnPtr c = TCPConnPtr(new TCPConn(loop_, name_, sockfd, laddr, remote_addr_, id++));
     c->set_type(TCPConn::kOutgoing);
     c->SetMessageCallback(msg_fn_);
     c->SetConnectionCallback(conn_fn_);
