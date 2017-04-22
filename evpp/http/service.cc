@@ -40,7 +40,7 @@ bool Service::Listen(int listen_port) {
 }
 
 void Service::Stop() {
-    LOG_TRACE << "this=" << this << " http service is stopping";
+    DLOG_TRACE << "http service is stopping";
     assert(listen_loop_->IsInLoopThread());
 
     if (evhttp_) {
@@ -51,13 +51,13 @@ void Service::Stop() {
 
     callbacks_.clear();
     default_callback_ = HTTPRequestCallback();
-    LOG_TRACE << "this=" << this << " http service stopped";
+    DLOG_TRACE << "http service stopped";
 }
 
 
 void Service::Pause() {
     assert(listen_loop_->IsInLoopThread());
-    LOG_TRACE << "this=" << this << " http service pause";
+    DLOG_TRACE << "http service pause";
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     if (evhttp_bound_socket_) {
         evconnlistener_disable(evhttp_bound_socket_get_listener(evhttp_bound_socket_));
@@ -75,7 +75,7 @@ void Service::AsyncPause(DoneCallback cb) {
 
 void Service::Continue() {
     assert(listen_loop_->IsInLoopThread());
-    LOG_TRACE << "this=" << this << " http service continue";
+    DLOG_TRACE << "http service continue";
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     if (evhttp_bound_socket_) {
         evconnlistener_enable(evhttp_bound_socket_get_listener(evhttp_bound_socket_));
@@ -103,7 +103,7 @@ void Service::HandleRequest(struct evhttp_request* req) {
     // In the main HTTP listening thread,
     // this is the main entrance of the HTTP request processing.
     assert(listen_loop_->IsInLoopThread());
-    LOG_TRACE << "handle request " << req << " url=" << req->uri;
+    DLOG_TRACE << "handle request " << req << " url=" << req->uri;
 
     ContextPtr ctx(new Context(req));
     ctx->Init();
@@ -125,7 +125,7 @@ void Service::HandleRequest(struct evhttp_request* req) {
 }
 
 void Service::DefaultHandleRequest(const ContextPtr& ctx) {
-    LOG_TRACE << "this=" << this << " DefaultHandleRequest url=" << ctx->original_uri();
+    DLOG_TRACE << "url=" << ctx->original_uri();
     if (default_callback_) {
         auto f = std::bind(&Service::SendReply, this, ctx->req(), std::placeholders::_1);
         default_callback_(listen_loop_, ctx, f);
@@ -160,7 +160,7 @@ struct Response {
 
 void Service::SendReply(struct evhttp_request* req, const std::string& response_data) {
     // In the worker thread
-    LOG_TRACE << "this=" << this << " send reply in working thread";
+    DLOG_TRACE << "send reply in working thread";
 
     // Build the response package in the worker thread
     std::shared_ptr<Response> response(new Response(req, response_data));
@@ -168,7 +168,7 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
     auto f = [this, response]() {
         // In the main HTTP listening thread
         assert(listen_loop_->IsInLoopThread());
-        LOG_TRACE << "this=" << this << " send reply in listening thread. evhttp_=" << evhttp_;
+        DLOG_TRACE << "send reply in listening thread. evhttp_=" << evhttp_;
 
         // At this moment, this Service maybe already stopped.
         if (!evhttp_) {
@@ -186,7 +186,7 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
 
     // Forward this response sending task to HTTP listening thread
     if (listen_loop_->IsRunning()) {
-        LOG_INFO << "this=" << this << " dispatch this SendReply to listening thread";
+        DLOG_TRACE << "dispatch this SendReply to listening thread";
         listen_loop_->RunInLoop(f);
     } else {
         LOG_WARN << "this=" << this << " listening thread is going to stop. we discards this request.";
