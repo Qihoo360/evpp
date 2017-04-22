@@ -47,6 +47,7 @@ void TestTCPClientReconnect() {
 
     int test_count = 3;
     for (int i = 0; i < test_count; i++) {
+        LOG_INFO << "NNNNNNNNNNNNNNNN TestTCPClientReconnect i=" << i;
         tsrv.reset(new evpp::TCPServer(tcp_server_thread->loop(), GetListenAddr(), "tcp_server", i));
         tsrv->SetMessageCallback([](const evpp::TCPConnPtr& conn,
                                     evpp::Buffer* msg) {
@@ -56,9 +57,11 @@ void TestTCPClientReconnect() {
         assert(rc);
         rc = tsrv->Start();
         assert(rc);
-        usleep(evpp::Duration(2.0).Microseconds());
+        usleep(evpp::Duration(2.0).Microseconds()); // sleep 2 seconds to let the TCP client connected.
         tsrv->Stop();
-        usleep(evpp::Duration(2.0).Microseconds());
+        while (!tsrv->IsStopped()) {
+            usleep(1);
+        }
         tsrv.reset();
     }
     LOG_INFO << "XXXXXXXXXX connected_count=" << connected_count << " message_recved_count=" << message_recved_count;
