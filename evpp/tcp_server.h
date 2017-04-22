@@ -114,7 +114,7 @@ private:
 
     // always in the listening loop thread
     uint64_t next_conn_id_ = 0;
-    typedef std::map<std::string/*the name of the connection*/, TCPConnPtr> ConnectionMap;
+    typedef std::map<uint64_t/*the id of the connection*/, TCPConnPtr> ConnectionMap;
     ConnectionMap connections_;
 };
 }

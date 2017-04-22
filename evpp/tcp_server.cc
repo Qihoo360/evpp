@@ -134,14 +134,19 @@ void TCPServer::HandleNewConn(int sockfd,
 
     assert(IsRunning());
     EventLoop* io_loop = GetNextLoop(raddr);
-    std::string n = name_ + "-" + remote_addr + "#" + std::to_string(next_conn_id_++); // TODO use string buffer
-    TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr));
+#ifdef H_DEBUG_MODE
+    std::string n = name_ + "-" + remote_addr + "#" + std::to_string(next_conn_id_);
+#else
+    std::string n = remote_addr;
+#endif
+    ++next_conn_id_;
+    TCPConnPtr conn(new TCPConn(io_loop, n, sockfd, listen_addr_, remote_addr, next_conn_id_));
     assert(conn->type() == TCPConn::kIncoming);
     conn->SetMessageCallback(msg_fn_);
     conn->SetConnectionCallback(conn_fn_);
     conn->SetCloseCallback(std::bind(&TCPServer::RemoveConnection, this, std::placeholders::_1));
     io_loop->RunInLoop(std::bind(&TCPConn::OnAttachedToLoop, conn));
-    connections_[n] = conn;
+    connections_[conn->id()] = conn;
 }
 
 EventLoop* TCPServer::GetNextLoop(const struct sockaddr_in* raddr) {
@@ -158,7 +163,7 @@ void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
         // Remove the connection in the listening EventLoop
         LOG_INFO << "this=" << this << " TCPServer::RemoveConnection conn=" << conn.get() << " fd="<< conn->fd() << " connections_.size()=" << connections_.size();
         assert(this->loop_->IsInLoopThread());
-        this->connections_.erase(conn->name());
+        this->connections_.erase(conn->id());
         if (IsStopping() && this->connections_.empty()) {
             // At last, we stop all the working threads
             LOG_INFO << "this=" << this << " TCPServer::RemoveConnection stop thread pool";

@@ -13,9 +13,11 @@ TCPConn::TCPConn(EventLoop* l,
                  const std::string& n,
                  int sockfd,
                  const std::string& laddr,
-                 const std::string& raddr)
+                 const std::string& raddr,
+                 uint64_t conn_id)
     : loop_(l)
     , fd_(sockfd)
+    , id_(conn_id)
     , name_(n)
     , local_addr_(laddr)
     , remote_addr_(raddr)
