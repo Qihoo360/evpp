@@ -97,7 +97,7 @@ void TCPServer::StopInLoop(DoneCallback on_stopped_cb) {
                 DLOG_TRACE << "close connection id=" << c.second->id() << " fd=" << c.second->fd();
                 c.second->Close();
             } else {
-                LOG_INFO << "this=" << this << " Do not need to call Close for this TCPConn it may be doing disconnecting. TCPConn=" << c.second.get() << " fd=" << c.second->fd() << " status=" << StatusToString();
+                DLOG_TRACE << "Do not need to call Close for this TCPConn it may be doing disconnecting. TCPConn=" << c.second.get() << " fd=" << c.second->fd() << " status=" << StatusToString();
             }
         }
 

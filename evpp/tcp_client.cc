@@ -16,11 +16,11 @@ TCPClient::TCPClient(EventLoop* l, const std::string& raddr, const std::string& 
     , name_(n)
     , conn_fn_(&internal::DefaultConnectionCallback)
     , msg_fn_(&internal::DefaultMessageCallback) {
-    LOG_INFO << "this=" << this << " TCPClient::TCPClient remote addr=" << raddr;
+    DLOG_TRACE << "remote addr=" << raddr;
 }
 
 TCPClient::~TCPClient() {
-    LOG_INFO << "this=" << this << " TCPClient::~TCPClient";
+    DLOG_TRACE;
     assert(!connector_.get());
     auto_reconnect_.store(false);
     TCPConnPtr c = conn();
@@ -42,7 +42,7 @@ TCPClient::~TCPClient() {
 }
 
 void TCPClient::Connect() {
-    LOG_INFO << "TCPClient::Connect remote_addr=" << remote_addr();
+    LOG_INFO << "remote_addr=" << remote_addr();
     auto f = [this]() {
         assert(loop_->IsInLoopThread());
         connector_.reset(new Connector(loop_, this));
@@ -53,7 +53,7 @@ void TCPClient::Connect() {
 }
 
 void TCPClient::Disconnect() {
-    LOG_INFO << "this=" << this << " TCPClient::Disconnect";
+    DLOG_TRACE;
     loop_->RunInLoop(std::bind(&TCPClient::DisconnectInLoop, this));
 }
 
@@ -63,7 +63,7 @@ void TCPClient::DisconnectInLoop() {
     auto_reconnect_.store(false);
 
     if (conn_) {
-        LOG_TRACE << "Close the TCPConn " << conn_.get() << " status=" << conn_->StatusToString();
+        DLOG_TRACE << "Close the TCPConn " << conn_.get() << " status=" << conn_->StatusToString();
         assert(!conn_->IsDisconnected() && !conn_->IsDisconnecting());
         conn_->Close();
     } else {
@@ -72,7 +72,7 @@ void TCPClient::DisconnectInLoop() {
     }
 
     if (connector_->IsConnected() || connector_->IsDisconnected()) {
-        LOG_TRACE << "Nothing to do with connector_, Connector::status=" << connector_->status();
+        DLOG_TRACE << "Nothing to do with connector_, Connector::status=" << connector_->status();
     } else {
         // When connector_ is trying to connect to the remote server we should cancel it to release the resources.
         connector_->Cancel();
@@ -82,7 +82,7 @@ void TCPClient::DisconnectInLoop() {
 }
 
 void TCPClient::Reconnect() {
-    LOG_INFO << "Try to reconnect to " << remote_addr_ << " in " << reconnect_interval_.Seconds() << "s again";
+    DLOG_TRACE << "Try to reconnect to " << remote_addr_ << " in " << reconnect_interval_.Seconds() << "s again";
     Connect();
 }
 
@@ -96,7 +96,7 @@ void TCPClient::SetConnectionCallback(const ConnectionCallback& cb) {
 
 void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
     if (sockfd < 0) {
-        LOG_INFO << "Failed to connect to " << remote_addr_ << ". errno=" << errno << " " << strerror(errno);
+        DLOG_TRACE << "Failed to connect to " << remote_addr_ << ". errno=" << errno << " " << strerror(errno);
         // We need to notify this failure event to the user layer
         // Note: When we could not connect to a server,
         //       the user layer will receive this notification constantly
@@ -105,7 +105,7 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
         return;
     }
 
-    LOG_INFO << "Successfully connected to " << remote_addr_;
+    DLOG_TRACE << "Successfully connected to " << remote_addr_;
     assert(loop_->IsInLoopThread());
     TCPConnPtr c = TCPConnPtr(new TCPConn(loop_, name_, sockfd, laddr, remote_addr_, id++));
     c->set_type(TCPConn::kOutgoing);
