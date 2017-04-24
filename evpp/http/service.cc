@@ -68,11 +68,6 @@ void Service::Pause() {
 #endif
 }
 
-void Service::AsyncPause(DoneCallback cb) {
-    Pause();
-    cb();
-}
-
 void Service::Continue() {
     assert(listen_loop_->IsInLoopThread());
     DLOG_TRACE << "http service continue";

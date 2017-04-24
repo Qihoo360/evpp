@@ -170,13 +170,14 @@ void Server::Stop() {
 
     // Firstly we pause all the listening threads to accept new requests.
     substatus_.store(kStoppingListener);
-    auto fn = [&count, &promise, this]() {
-        if (count.fetch_add(1) + 1 == static_cast<int>(listen_threads_.size())) {
-            promise.set_value();
-        }
-    };
     for (auto& lt : listen_threads_) {
-        lt.thread->loop()->RunInLoop(std::bind(&Service::AsyncPause, lt.hservice.get(), fn));
+        auto fn = [&count, &promise, this, hs = lt.hservice]() {
+            hs->Pause();
+            if (count.fetch_add(1) + 1 == static_cast<int>(listen_threads_.size())) {
+                promise.set_value();
+            }
+        };
+        lt.thread->loop()->RunInLoop(fn);
     }
     promise.get_future().wait();
 
