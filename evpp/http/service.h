@@ -14,14 +14,12 @@ namespace http {
 // So we can embed this Service to the existing EventLoop
 class EVPP_EXPORT Service {
 public:
-    typedef std::function<void()> DoneCallback;
     Service(EventLoop* loop);
     ~Service();
 
     bool Listen(int port);
     void Stop();
     void Pause();
-    void AsyncPause(DoneCallback cb);
     void Continue();
 
     // @Note The URI must not hold any parameters
