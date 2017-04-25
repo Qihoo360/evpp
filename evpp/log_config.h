@@ -23,7 +23,7 @@
 #define LOG_TRACE if (false) LOG(INFO)
 #define LOG_DEBUG if (false) LOG(INFO)
 #define LOG_INFO  if (false) LOG(INFO)
-#define DLOG_TRACE LOG_INFO
+#define DLOG_TRACE if (false) LOG(INFO) << ""
 #endif
 
 #if GOOGLE_STRIP_LOG <= 1

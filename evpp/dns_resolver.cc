@@ -190,6 +190,7 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr, void* arg) {
     (*pp)->OnResolved(errcode, addr);
     delete pp;
 }
+#endif
 
 void DNSResolver::OnResolved() {
     if (functor_) {
@@ -208,7 +209,5 @@ void DNSResolver::ClearTimer() {
     timer_->Cancel();
     timer_.reset();
 }
-
-#endif
 
 }
