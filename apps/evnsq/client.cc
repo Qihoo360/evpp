@@ -73,14 +73,14 @@ void Client::Close() {
 
     auto f = [this]() {
         ready_to_publish_fn_ = ReadyToPublishCallback();
-        for (auto it = this->conns_.begin(), ite = this->conns_.end(); it != ite; ++it) {
-            DLOG_TRACE << "Close connected NSQConn " << (*it).get() << (*it)->remote_addr();
-            (*it)->Close();
+        for (auto& it : conns_) {
+            DLOG_TRACE << "Close connected NSQConn " << it.get() << it->remote_addr();
+            it->Close();
         }
 
-        for (auto it = this->connecting_conns_.begin(), ite = this->connecting_conns_.end(); it != ite; ++it) {
-            DLOG_TRACE << "Close connecting NSQConn " << it->second.get() << it->second->remote_addr();
-            it->second->Close();
+        for (auto& it : connecting_conns_) {
+            DLOG_TRACE << "Close connecting NSQConn " << it.second.get() << it.second->remote_addr();
+            it.second->Close();
         }
 
         for (auto& timer : lookupd_timers_) {
@@ -101,7 +101,12 @@ bool Client::IsReady() const {
         return false;
     }
 
-    return conns_[0]->IsReady();
+    for (auto& it : conns_) {
+        if (it->IsReady()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Client::HandleLoopkupdHTTPResponse(
@@ -149,30 +154,31 @@ void Client::HandleLoopkupdHTTPResponse(
 
 void Client::OnConnection(const NSQConnPtr& conn) {
     DLOG_TRACE << " NSQConn remote_addr=" << conn->remote_addr() << " status=" << conn->StatusToString();
-    if (conn->IsConnected() || conn->IsReady()) {
+    assert(loop_->IsInLoopThread());
+
+    switch (conn->status()) {
+    case NSQConn::kConnecting:
+        MoveToConnectingList(conn);
+        break;
+    case NSQConn::kConnected:
+        if (type_ == kConsumer) {
+            conn->Subscribe(topic_, channel_);
+        } else {
+            assert(type_ == kProducer);
+            conn->set_status(NSQConn::kReady);
+            conns_.push_back(conn);
+            connecting_conns_.erase(conn->remote_addr());
+            if (ready_to_publish_fn_) {
+                ready_to_publish_fn_(conn.get());
+            }
+        }
+        break;
+    case NSQConn::kReady:
+        assert(type_ == kConsumer);
         conns_.push_back(conn);
         connecting_conns_.erase(conn->remote_addr());
-        switch (conn->status()) {
-        case NSQConn::kConnected:
-            if (type_ == kConsumer) {
-                conn->Subscribe(topic_, channel_);
-            } else {
-                assert(type_ == kProducer);
-                conn->set_status(NSQConn::kReady);
-                if (ready_to_publish_fn_) {
-                    ready_to_publish_fn_(conn.get());
-                }
-            }
-            break;
-        case NSQConn::kReady:
-            assert(type_ == kConsumer);
-            break;
-        default:
-            break;
-        }
-    } else if (conn->IsConnecting()) {
-        MoveToConnectingList(conn);
-    } else {
+        break;
+    default:
         // The application layer calls Close()
         assert(conn->IsDisconnected());
 
@@ -199,6 +205,7 @@ void Client::OnConnection(const NSQConnPtr& conn) {
             }
         };
         loop_->QueueInLoop(f);
+        break;
     }
 }
 
