@@ -48,7 +48,6 @@ int main(int argc, char* argv[]) {
     FLAGS_stderrthreshold = 0;
 
     int opt = 0;
-    //int digit_optind = 0;
     int option_index = 0;
     const char* optstring = "t:h:s:";
     static struct option long_options[] = {

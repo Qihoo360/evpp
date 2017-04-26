@@ -160,7 +160,7 @@ void Connector::HandleError() {
     // TCPClient::Disconnect may cause this Connector object desctruct.
     auto self = shared_from_this();
 
-    LOG_ERROR << "this=" << this << " status=" << StatusToString() << " fd=" << fd_ << " errno=" << serrno << " " << strerror(serrno) << " this=" << this << " use_count=" << self.use_count();
+    LOG_ERROR << "this=" << this << " status=" << StatusToString() << " fd=" << fd_  << " use_count=" << self.use_count() << " errno=" << serrno << " " << strerror(serrno);
 
     status_ = kDisconnected;
 
