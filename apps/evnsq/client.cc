@@ -16,12 +16,16 @@ static const std::string kNSQMagic = "  V2";
 static const std::string kOK = "OK";
 
 Client::Client(evpp::EventLoop* l, Type t, const Option& ops)
-    : loop_(l), type_(t), option_(ops), closing_(false) {}
+    : loop_(l), type_(t), option_(ops), closing_(false) {
+    DLOG_TRACE;
+}
 
-Client::~Client() {}
+Client::~Client() {
+    DLOG_TRACE;
+}
 
 void Client::ConnectToNSQD(const std::string& addr) {
-    auto c = ConnPtr(new NSQConn(this, option_));
+    auto c = NSQConnPtr(new NSQConn(this, option_));
     connecting_conns_[addr] = c;
     c->SetMessageCallback(msg_fn_);
     c->SetConnectionCallback(std::bind(&Client::OnConnection, this, std::placeholders::_1));
@@ -64,18 +68,18 @@ void Client::ConnectToLookupds(const std::string& lookupd_urls/*http://192.168.0
 }
 
 void Client::Close() {
-    LOG_INFO << "Client::Close this=" << this << " conns_.size=" << conns_.size() << " connecting_conns_.size=" << connecting_conns_.size();
+    DLOG_TRACE << "conns_.size=" << conns_.size() << " connecting_conns_.size=" << connecting_conns_.size();
     closing_ = true;
 
     auto f = [this]() {
         ready_to_publish_fn_ = ReadyToPublishCallback();
         for (auto it = this->conns_.begin(), ite = this->conns_.end(); it != ite; ++it) {
-            LOG_INFO << "Close connected NSQConn " << (*it).get() << (*it)->remote_addr();
+            DLOG_TRACE << "Close connected NSQConn " << (*it).get() << (*it)->remote_addr();
             (*it)->Close();
         }
 
         for (auto it = this->connecting_conns_.begin(), ite = this->connecting_conns_.end(); it != ite; ++it) {
-            LOG_INFO << "Close connecting NSQConn " << it->second.get() << it->second->remote_addr();
+            DLOG_TRACE << "Close connecting NSQConn " << it->second.get() << it->second->remote_addr();
             it->second->Close();
         }
 
@@ -103,6 +107,7 @@ bool Client::IsReady() const {
 void Client::HandleLoopkupdHTTPResponse(
     const std::shared_ptr<evpp::httpc::Response>& response,
     const std::shared_ptr<evpp::httpc::Request>& request) {
+    DLOG_TRACE;
 
     std::string body = response->body().ToString();
     if (response->http_code() != 200) {
@@ -142,7 +147,8 @@ void Client::HandleLoopkupdHTTPResponse(
     }
 }
 
-void Client::OnConnection(const ConnPtr& conn) {
+void Client::OnConnection(const NSQConnPtr& conn) {
+    DLOG_TRACE << " NSQConn remote_addr=" << conn->remote_addr() << " status=" << conn->StatusToString();
     if (conn->IsConnected() || conn->IsReady()) {
         conns_.push_back(conn);
         connecting_conns_.erase(conn->remote_addr());
@@ -210,8 +216,8 @@ bool Client::IsKnownNSQDAddress(const std::string& addr) const {
     return false;
 }
 
-void Client::MoveToConnectingList(const ConnPtr& conn) {
-    ConnPtr& connecting_conn = connecting_conns_[conn->remote_addr()];
+void Client::MoveToConnectingList(const NSQConnPtr& conn) {
+    NSQConnPtr& connecting_conn = connecting_conns_[conn->remote_addr()];
     if (connecting_conn.get()) {
         // This connection is already in the connecting list
         // so do not need to remove it from conns_
