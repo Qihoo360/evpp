@@ -66,7 +66,7 @@ const std::string& NSQConn::remote_addr() const {
 }
 
 void NSQConn::OnTCPConnectionEvent(const evpp::TCPConnPtr& conn) {
-    LOG_INFO << "NSQConn::OnTCPConnectionEvent status=" << StatusToString() << " TCPConn=" << conn.get() << " remote_addr=" << conn->remote_addr();
+    DLOG_TRACE << "status=" << StatusToString() << " TCPConn=" << conn.get() << " remote_addr=" << conn->remote_addr();
     if (conn->IsConnected()) {
         assert(tcp_client_->conn() == conn);
         if (status_ == kConnecting) {

@@ -48,7 +48,7 @@ private:
     bool PublishInLoop(const CommandPtr& cmd);
     void OnPublishResponse(NSQConn* conn, const CommandPtr& cmd, bool successfull);
     void OnReady(NSQConn* conn);
-    ConnPtr GetNextConn();
+    NSQConnPtr GetNextConn();
     void PrintStats();
 private:
     size_t current_conn_index_; // current Conn position at Client::conns_

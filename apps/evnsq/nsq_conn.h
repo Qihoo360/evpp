@@ -36,7 +36,7 @@ public:
         kConnecting = 1,
         kIdentifying = 2,
         kAuthenticating = 3,
-        kConnected = 4, // Successfully connected to NSQD
+        kConnected = 4, // After identifying and authenticating, we successfully connected to NSQD
         kSubscribing = 5,
         kReady = 6, // Ready to produce messages to NSQD or consume messages from NSQD
         kDisconnecting = 7,
@@ -85,6 +85,7 @@ public:
         return status_ == kAuthenticating;
     }
     const std::string& remote_addr() const;
+    const char* StatusToString() const;
 private:
     void WriteCommand(const Command& cmd);
     void Reconnect();
@@ -101,7 +102,6 @@ private:
     void OnPublishResponse(const char* d, size_t len);
     void PushWaitACKCommand(const CommandPtr& cmd);
     CommandPtr PopWaitACKCommand();
-    const char* StatusToString() const;
 private:
     Client* nsq_client_;
     evpp::EventLoop* loop_;
@@ -116,7 +116,9 @@ private:
     int64_t published_count_;
     int64_t published_ok_count_;
     int64_t published_failed_count_;
-
 };
+
+typedef std::shared_ptr<NSQConn> NSQConnPtr;
+
 }
 

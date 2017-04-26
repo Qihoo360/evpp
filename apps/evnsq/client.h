@@ -23,8 +23,6 @@ class Response;
 
 namespace evnsq {
 
-typedef std::shared_ptr<NSQConn> ConnPtr;
-
 // A Client represents a producer or consumer who holds several NSQConns with a cluster of NSQDs
 class EVNSQ_EXPORT Client {
 public:
@@ -68,7 +66,7 @@ protected:
     void HandleLoopkupdHTTPResponse(
         const std::shared_ptr<evpp::httpc::Response>& response,
         const std::shared_ptr<evpp::httpc::Request>& request);
-    void OnConnection(const ConnPtr& conn);
+    void OnConnection(const NSQConnPtr& conn);
     void set_topic(const std::string& t) {
         topic_ = t;
     }
@@ -80,15 +78,15 @@ protected:
     }
 private:
     bool IsKnownNSQDAddress(const std::string& addr) const;
-    void MoveToConnectingList(const ConnPtr& conn);
+    void MoveToConnectingList(const NSQConnPtr& conn);
 protected:
     evpp::EventLoop* loop_;
     Type type_;
     Option option_;
     std::string topic_;
     std::string channel_;
-    std::map<std::string/*NSQD address "host:port"*/, ConnPtr> connecting_conns_; // The TCP connections which are connecting to NSQDs
-    std::vector<ConnPtr> conns_; // The TCP connections which has established the connection with NSQDs
+    std::map<std::string/*NSQD address "host:port"*/, NSQConnPtr> connecting_conns_; // The TCP connections which are connecting to NSQDs
+    std::vector<NSQConnPtr> conns_; // The TCP connections which has established the connection with NSQDs
     MessageCallback msg_fn_;
     CloseCallback close_fn_;
     std::vector<evpp::InvokeTimerPtr> lookupd_timers_;

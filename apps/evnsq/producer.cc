@@ -120,9 +120,9 @@ void Producer::OnPublishResponse(NSQConn* conn, const CommandPtr& cmd, bool succ
     }
 }
 
-ConnPtr Producer::GetNextConn() {
+NSQConnPtr Producer::GetNextConn() {
     if (conns_.empty()) {
-        return ConnPtr();
+        return NSQConnPtr();
     }
 
     if (current_conn_index_ >= conns_.size()) {
