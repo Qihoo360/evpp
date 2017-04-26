@@ -31,6 +31,8 @@ vsprojects/enc_temp_folder/
 vsprojects/evnsq-test.vcxproj.user
 vsprojects/libevpp-test.vcxproj.user
 
+*.vcxproj.user
+
 test/evpp-test
 examples/echo/*/simple_echo
 examples/pingpong/client/pingpong_client

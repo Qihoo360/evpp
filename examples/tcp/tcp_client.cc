@@ -15,7 +15,6 @@ int main(int argc, char* argv[]) {
                                evpp::Buffer* msg) {
         LOG_TRACE << "Receive a message [" << msg->ToString() << "]";
         client.Disconnect();
-        loop.RunAfter(500.0, [&loop]() { loop.Stop(); });
     });
 
     client.SetConnectionCallback([](const evpp::TCPConnPtr& conn) {
@@ -23,7 +22,7 @@ int main(int argc, char* argv[]) {
             LOG_INFO << "Connected to " << conn->remote_addr();
             conn->Send("hello");
         } else {
-            LOG_INFO << "Disconnected from " << conn->remote_addr();
+            conn->loop()->Stop();
         }
     });
     client.Connect();
