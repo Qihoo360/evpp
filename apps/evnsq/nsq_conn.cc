@@ -26,12 +26,16 @@ NSQConn::NSQConn(Client* c, const Option& ops)
       //, wait_ack_count_(0)
     , published_count_(0)
     , published_ok_count_(0)
-    , published_failed_count_(0) {}
+    , published_failed_count_(0) {
+    DLOG_TRACE;
+}
 
 NSQConn::~NSQConn() {
+    DLOG_TRACE;
 }
 
 void NSQConn::Connect(const std::string& addr) {
+    DLOG_TRACE << " remote_addr=" << addr;
     tcp_client_ = evpp::TCPClientPtr(new evpp::TCPClient(loop_, addr, std::string("NSQClient-") + addr));
     status_ = kConnecting;
     tcp_client_->SetConnectionCallback(std::bind(&NSQConn::OnTCPConnectionEvent, this, std::placeholders::_1));

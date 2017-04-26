@@ -101,7 +101,7 @@ void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
         // Note: When we could not connect to a server,
         //       the user layer will receive this notification constantly
         //       because the connector_ will retry to do reconnection all the time.
-        conn_fn_(TCPConnPtr(new TCPConn(loop_, "", sockfd, "", "", 0)));
+        conn_fn_(TCPConnPtr(new TCPConn(loop_, "", sockfd, laddr, remote_addr_, 0)));
         return;
     }
 

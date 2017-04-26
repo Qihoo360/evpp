@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     }
 
     evpp::EventLoop loop;
-    evnsq::Consumer client(&loop, "test", "ch1", evnsq::Option());
+    evnsq::Consumer client(&loop, "test1", "ch1", evnsq::Option());
     client.SetMessageCallback(&OnMessage);
 
     if (!lookupd_http_url.empty()) {
