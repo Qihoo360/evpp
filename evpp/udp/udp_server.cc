@@ -114,8 +114,8 @@ bool Server::Init(int port) {
 }
 
 bool Server::Init(const std::vector<int>& ports) {
-    for (auto it = ports.begin(); it != ports.end(); ++it) {
-        if (!Init(*it)) {
+    for (auto it : ports) {
+        if (!Init(it)) {
             return false;
         }
     }
@@ -159,8 +159,8 @@ bool Server::Start() {
 }
 
 void Server::Stop(bool wait_thread_exit) {
-    for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
-        (*it)->Stop();
+    for (auto& it : recv_threads_) {
+        it->Stop();
     }
 
     if (wait_thread_exit) {
@@ -171,21 +171,21 @@ void Server::Stop(bool wait_thread_exit) {
 }
 
 void Server::Pause() {
-    for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
-        (*it)->Pause();
+    for (auto& it : recv_threads_) {
+        it->Pause();
     }
 }
 
 void Server::Continue() {
-    for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
-        (*it)->Continue();
+    for (auto& it : recv_threads_) {
+        it->Continue();
     }
 }
 
 bool Server::IsRunning() const {
     bool rc = true;
-    for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
-        rc = rc && (*it)->IsRunning();
+    for (auto& it : recv_threads_) {
+        rc = rc && it->IsRunning();
     }
 
     return rc;
@@ -193,8 +193,8 @@ bool Server::IsRunning() const {
 
 bool Server::IsStopped() const {
     bool rc = true;
-    for (auto it = recv_threads_.begin(); it != recv_threads_.end(); it++) {
-        rc = rc && (*it)->IsStopped();
+    for (auto& it : recv_threads_) {
+        rc = rc && it->IsStopped();
     }
 
     return rc;
@@ -212,6 +212,8 @@ void Server::RecvingLoop(RecvThread* thread) {
         if (!thread->IsRunning()) {
             break;
         }
+
+        // TODO use recvmmsg to improve performance
 
         MessagePtr recv_msg(new Message(thread->fd(), recv_buf_size_));
         socklen_t addr_len = sizeof(struct sockaddr);
@@ -253,13 +255,14 @@ void Server::RecvingLoop(RecvThread* thread) {
 
 
 /*
-Benchmark data£ºIntel(R) Xeon(R) CPU E5-2630 0 @ 2.30GHz 24ºË
+Benchmark data£ºIntel(R) Xeon(R) CPU E5-2630 0 @ 2.30GHz 24 core
 
 The recvfrom thread is the bottleneck, other 23 working threads' load is very very low.
 
 If we need to improve the performance, there two ways to achieve it:
 1. Using Linux kernel 3.9+ SO_REUSEPORT
 2. Using RAW SOCKET
+3. Using recvmmsg/sendmmsg which can achieve 40w QPS on single thread
 
 udp message length QPS£º
 0.1k    9w+
