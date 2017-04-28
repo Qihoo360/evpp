@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>libglog_static</ProjectName>
+    <ProjectName>glog</ProjectName>
     <ProjectGuid>{772C2111-BBBF-49E6-B912-198A7F7A88E5}</ProjectGuid>
     <RootNamespace>libglog_static</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>

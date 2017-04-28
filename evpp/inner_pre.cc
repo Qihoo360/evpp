@@ -9,7 +9,7 @@
 #pragma comment(lib, "event_extra.lib")
 #endif
 #pragma comment(lib,"Ws2_32.lib")
-#pragma comment(lib,"libglog_static.lib")
+#pragma comment(lib,"glog.lib")
 #endif
 
 

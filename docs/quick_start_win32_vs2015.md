@@ -32,6 +32,10 @@ Go to `3rdparty/libevent-release-2.1.8-stable`
 	$ cp lib/Release/*.* ../../../vsprojects/bin/Release/
 	$ cp -rf ../include/event2 ../../wininclude/
 	$ cp -rf ../build/include/event2/event-config.h ../../wininclude/event2
+    $ cd ../../../vsprojects/bin/Debug/
+    $ mv libglog_static.lib glog.lib
+    $ cd ../Release 
+    $ mv libglog_static.lib glog.lib
 
 Note 1: We have modified the source code of libevent-release-2.1.8-stable as bellow:
 

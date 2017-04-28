@@ -2,10 +2,10 @@
 include_directories(${PROJECT_SOURCE_DIR}/apps ${PROJECT_SOURCE_DIR}/3rdparty)
 
 if (UNIX)
-set(LIBRARIES evpp_concurrentqueue event glog pthread)
+set(LIBRARIES evpp_concurrentqueue event glog)
 link_directories("/home/s/safe/lib" ${PROJECT_BUILD_DIR}/lib)
 else(UNIX)
-set(LIBRARIES evpp_static event libglog_static)
+set(LIBRARIES evpp_static event glog)
 link_directories(${PROJECT_SOURCE_DIR}/vsprojects/bin/${CMAKE_BUILD_TYPE}/
 				 ${LIBRARY_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/
 				 ${PROJECT_SOURCE_DIR}/3rdparty/glog-0.3.4/${CMAKE_BUILD_TYPE})

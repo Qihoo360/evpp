@@ -11,27 +11,27 @@ set (MACOSX_RPATH ${LIBRARY_OUTPUT_PATH})
 include_directories(${PROJECT_SOURCE_DIR})
 
 add_library(evpp_static STATIC ${evpp_SRCS})
+target_link_libraries(evpp_static event glog)
 
 if (UNIX)
     add_library(evpp SHARED ${evpp_SRCS})
-    target_link_libraries(evpp        event glog pthread)
-    target_link_libraries(evpp_static event glog pthread)
+    target_link_libraries(evpp event glog)
 
     # boost lockfree queue
     add_library(evpp_boost SHARED ${evpp_SRCS})
     add_library(evpp_boost_static STATIC ${evpp_SRCS})
     target_compile_definitions(evpp_boost PRIVATE -DH_HAVE_BOOST=1)
     target_compile_definitions(evpp_boost_static PRIVATE -DH_HAVE_BOOST=1)
-    target_link_libraries(evpp_boost        event glog pthread)
-    target_link_libraries(evpp_boost_static event glog pthread)
+    target_link_libraries(evpp_boost        event glog)
+    target_link_libraries(evpp_boost_static event glog)
 
     # https://github.com/cameron314/concurrentqueue
     add_library(evpp_concurrentqueue SHARED ${evpp_SRCS})
     add_library(evpp_concurrentqueue_static STATIC ${evpp_SRCS})
     target_compile_definitions(evpp_concurrentqueue PRIVATE -DH_HAVE_CAMERON314_CONCURRENTQUEUE=1)
     target_compile_definitions(evpp_concurrentqueue_static PRIVATE -DH_HAVE_CAMERON314_CONCURRENTQUEUE=1)
-    target_link_libraries(evpp_concurrentqueue        event glog pthread)
-    target_link_libraries(evpp_concurrentqueue_static event glog pthread)
+    target_link_libraries(evpp_concurrentqueue        event glog)
+    target_link_libraries(evpp_concurrentqueue_static event glog)
 
     set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
     include (utils)
@@ -55,6 +55,5 @@ if (UNIX)
 
 else (UNIX)
 	link_directories(${PROJECT_SOURCE_DIR}/vsprojects/bin/${CMAKE_BUILD_TYPE})
-    target_link_libraries(evpp_static event libglog_static)
 endif (UNIX)
 
