@@ -12,14 +12,14 @@ link_directories(${PROJECT_SOURCE_DIR}/vsprojects/bin/${CMAKE_BUILD_TYPE}/
 endif (MSVC)
 
 add_executable(evpp_unittest ${evpp_unittest_SRCS})
-target_link_libraries(evpp_unittest evpp_static event glog)
+target_link_libraries(evpp_unittest evpp_static ${DEPENDENT_LIBRARIES})
 
 if (UNIX)
     add_executable(evpp_unittest_boost_lockfree ${evpp_unittest_SRCS})
-    target_link_libraries(evpp_unittest_boost_lockfree evpp_boost event glog)
+    target_link_libraries(evpp_unittest_boost_lockfree evpp_boost ${DEPENDENT_LIBRARIES})
 
     add_executable(evpp_unittest_concurrentqueue ${evpp_unittest_SRCS})
-    target_link_libraries(evpp_unittest_concurrentqueue evpp_concurrentqueue event glog)
+    target_link_libraries(evpp_unittest_concurrentqueue evpp_concurrentqueue ${DEPENDENT_LIBRARIES})
 endif (UNIX)
 
 include (CTest)

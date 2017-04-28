@@ -1,9 +1,9 @@
 include_directories(${PROJECT_SOURCE_DIR}/apps ${PROJECT_SOURCE_DIR}/3rdparty)
 
 if (UNIX)
-set(LIBRARIES evpp event glog)
+set(LIBRARIES evpp ${DEPENDENT_LIBRARIES})
 else(UNIX)
-set(LIBRARIES evpp_static event glog)
+set(LIBRARIES evpp_static ${DEPENDENT_LIBRARIES})
 endif(UNIX)
 
 add_executable(example_evnsq_tail evnsq_tail/main.cc)

@@ -7,6 +7,6 @@ link_directories(${PROJECT_SOURCE_DIR}/3rdparty/libevent-release-2.1.7-rc/build/
 				${PROJECT_SOURCE_DIR}/build/lib/Debug/)
 				 
 add_executable(example_httpecho ${example_SRCS})
-target_link_libraries(example_httpecho evpp event glog)
+target_link_libraries(example_httpecho evpp ${DEPENDENT_LIBRARIES})
 
 
