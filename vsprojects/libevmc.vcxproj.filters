@@ -66,6 +66,15 @@
     <ClCompile Include="..\apps\evmc\vbucket_config.cc">
       <Filter>evmc</Filter>
     </ClCompile>
+    <ClCompile Include="..\apps\evmc\extract_vbucket_conf.cc">
+      <Filter>evmc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\apps\evmc\memcache_client_base.cc">
+      <Filter>evmc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\apps\evmc\memcache_client_serial.cc">
+      <Filter>evmc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\3rdparty\libhashkit\algorithm.h">
@@ -122,6 +131,21 @@
     <ClInclude Include="..\apps\evmc\random.h">
       <Filter>evmc</Filter>
     </ClInclude>
+    <ClInclude Include="..\apps\evmc\extract_vbucket_conf.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\likely.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\memcache_client_base.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\memcache_client_serial.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\memcached.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\3rdparty\libhashkit\include.am">
@@ -129,6 +153,9 @@
     </None>
     <None Include="..\3rdparty\libhashkit\Makefile">
       <Filter>libhashkit</Filter>
+    </None>
+    <None Include="..\apps\evmc\readme.md">
+      <Filter>evmc</Filter>
     </None>
   </ItemGroup>
 </Project>

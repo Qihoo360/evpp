@@ -35,8 +35,11 @@
     <ClCompile Include="..\3rdparty\libhashkit\strerror.c" />
     <ClCompile Include="..\apps\evmc\binary_codec.cc" />
     <ClCompile Include="..\apps\evmc\command.cc" />
+    <ClCompile Include="..\apps\evmc\extract_vbucket_conf.cc" />
     <ClCompile Include="..\apps\evmc\memcache_client.cc" />
+    <ClCompile Include="..\apps\evmc\memcache_client_base.cc" />
     <ClCompile Include="..\apps\evmc\memcache_client_pool.cc" />
+    <ClCompile Include="..\apps\evmc\memcache_client_serial.cc" />
     <ClCompile Include="..\apps\evmc\vbucket_config.cc" />
   </ItemGroup>
   <ItemGroup>
@@ -53,15 +56,21 @@
     <ClInclude Include="..\apps\evmc\binary_codec.h" />
     <ClInclude Include="..\apps\evmc\command.h" />
     <ClInclude Include="..\apps\evmc\exp.h" />
+    <ClInclude Include="..\apps\evmc\extract_vbucket_conf.h" />
+    <ClInclude Include="..\apps\evmc\likely.h" />
     <ClInclude Include="..\apps\evmc\mctypes.h" />
+    <ClInclude Include="..\apps\evmc\memcached.h" />
     <ClInclude Include="..\apps\evmc\memcache_client.h" />
+    <ClInclude Include="..\apps\evmc\memcache_client_base.h" />
     <ClInclude Include="..\apps\evmc\memcache_client_pool.h" />
+    <ClInclude Include="..\apps\evmc\memcache_client_serial.h" />
     <ClInclude Include="..\apps\evmc\random.h" />
     <ClInclude Include="..\apps\evmc\vbucket_config.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\3rdparty\libhashkit\include.am" />
     <None Include="..\3rdparty\libhashkit\Makefile" />
+    <None Include="..\apps\evmc\readme.md" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{26937AEE-20B3-407B-890F-43008EDA7F2D}</ProjectGuid>
@@ -138,7 +147,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32; BUILDING_HASHKIT;_DEBUG;_WINDOWS;_USRDLL;EVMC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../;../3rdparty/;../3rdparty/glog-0.3.4/src/windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../3rdparty/wininclude;../3rdparty/glog-0.3.4/src/windows;../3rdparty</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -168,7 +177,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32; BUILDING_HASHKIT;NDEBUG;_WINDOWS;_USRDLL;EVMC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../;../3rdparty/;../3rdparty/glog-0.3.4/src/windows</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../3rdparty/wininclude;../3rdparty/glog-0.3.4/src/windows;../3rdparty</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
