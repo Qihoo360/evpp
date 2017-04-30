@@ -11,7 +11,9 @@ class EventLoop;
 class TimerEventWatcher;
 class EVPP_EXPORT DNSResolver : public std::enable_shared_from_this<DNSResolver> {
 public:
+    //TODO IPv6 DNS resolver
     typedef std::function<void(const std::vector<struct in_addr>& addrs)> Functor;
+
     DNSResolver(EventLoop* evloop, const std::string& host, Duration timeout, const Functor& f);
     ~DNSResolver();
     void Start();

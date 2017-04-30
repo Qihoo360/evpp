@@ -48,15 +48,17 @@ private:
     TCPClient* owner_tcp_client_;
 
     std::string remote_addr_; // host:port
-    struct sockaddr_in raddr_;
+    std::string remote_host_; // host
+    int remote_port_ = 0; // port
+    struct sockaddr_storage raddr_;
 
     Duration timeout_;
 
-    int fd_;
+    int fd_ = -1;
 
     // A flag indicate whether the Connector owns this fd.
     // If the Connector owns this fd, the Connector has responsibility to close this fd.
-    bool own_fd_;
+    bool own_fd_ = false;
 
     std::unique_ptr<FdChannel> chan_;
     std::unique_ptr<TimerEventWatcher> timer_;
