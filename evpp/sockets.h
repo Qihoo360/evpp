@@ -1,6 +1,9 @@
 #pragma once
 
 #include "evpp/evpp_export.h"
+#include "evpp/sys_addrinfo.h"
+
+#include <string.h>
 
 namespace evpp {
 
@@ -18,12 +21,44 @@ EVPP_EXPORT void SetReusePort(int fd);
 EVPP_EXPORT void SetTCPNoDelay(int fd, bool on);
 EVPP_EXPORT void SetTimeout(int fd, uint32_t timeout_ms);
 EVPP_EXPORT void SetTimeout(int fd, const Duration& timeout);
-EVPP_EXPORT struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/);
-EVPP_EXPORT struct sockaddr_in GetLocalAddr(int sockfd);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr_storage* ss);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr* ss);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr_in* ss);
 EVPP_EXPORT std::string ToIP(const struct sockaddr* ss);
+
+
+// @brief Parse a literal network address and return an internet protocol family address
+// @param[in] address - A network address of the form "host:port" or "[host]:port"
+// @return bool - false if parse failed.
+EVPP_EXPORT bool ParseFromIPPort(const char* address, struct sockaddr_storage& ss);
+
+inline struct sockaddr_storage ParseFromIPPort(const char* address) {
+    struct sockaddr_storage ss;
+    memset(&ss, 0, sizeof(ss));
+    ParseFromIPPort(address, ss);
+    return ss;
+}
+
+// @brief Splits a network address of the form "host:port" or "[host]:port"
+//  into host and port. A literal address or host name for IPv6
+// must be enclosed in square brackets, as in "[::1]:80" or "[ipv6-host]:80"
+// @param[in] address - A network address of the form "host:port" or "[ipv6-host]:port"
+// @param[out] host -
+// @param[out] port - the port in local machine byte order
+// @return bool - false if the network address is invalid format
+EVPP_EXPORT bool SplitHostPort(const char* address, std::string& host, int& port);
+
+EVPP_EXPORT struct sockaddr_storage GetLocalAddr(int sockfd);
+
+inline bool IsZeroAddress(const struct sockaddr_storage* ss) {
+    const char* p = reinterpret_cast<const char*>(ss);
+    for (size_t i = 0; i < sizeof(*ss); ++i) {
+        if (p[i] != 0) {
+            return false;
+        }
+    }
+    return true;
+}
 
 template<typename To, typename From>
 inline To implicit_cast(From const& f) {

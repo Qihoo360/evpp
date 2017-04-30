@@ -75,7 +75,7 @@ int CreateUDPServer(int port) {
     SetReuseAddr(fd);
 
     std::string addr = std::string("0.0.0.0:") + std::to_string(port);
-    struct sockaddr_in local = ParseFromIPPort(addr.c_str());
+    struct sockaddr_storage local = ParseFromIPPort(addr.c_str());
     if (::bind(fd, (struct sockaddr*)&local, sizeof(local))) {
         int serrno = errno;
         LOG_ERROR << "socket bind error=" << serrno << " " << strerror(serrno);
@@ -85,41 +85,83 @@ int CreateUDPServer(int port) {
     return fd;
 }
 
-struct sockaddr_in ParseFromIPPort(const char* address/*ip:port*/) {
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    std::string a = address;
-    size_t index = a.rfind(':');
-    if (index == std::string::npos) {
-        LOG_FATAL << "Address specified error [" << address << "]";
+bool ParseFromIPPort(const char* address, struct sockaddr_storage& ss) {
+    memset(&ss, 0, sizeof(ss));
+    std::string host;
+    int port;
+    if (!SplitHostPort(address, host, port)) {
+        return false;
     }
 
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(::atoi(&a[index + 1]));
-    a[index] = '\0';
+    short family = AF_INET;
+    auto index = host.find(':');
+    if (index != std::string::npos) {
+        family = AF_INET6;
+    }
 
-    int rc = ::inet_pton(AF_INET, a.data(), &addr.sin_addr);
+    struct sockaddr_in* addr = sockaddr_in_cast(&ss);
+    int rc = ::inet_pton(family, host.data(), &addr->sin_addr);
     if (rc == 0) {
-        LOG_INFO << "ParseFromIPPort inet_pton(AF_INET '" << a.data() << "', ...) rc=0. " << a.data() << " is not a valid IP address. Maybe it is a hostname.";
+        LOG_INFO << "ParseFromIPPort inet_pton(AF_INET '" << host.data() << "', ...) rc=0. " << host.data() << " is not a valid IP address. Maybe it is a hostname.";
+        return false;
     } else if (rc < 0) {
         int serrno = errno;
         if (serrno == 0) {
-            LOG_INFO << "[" << a.data() << "] is not a IP address. Maybe it is a hostname.";
+            LOG_INFO << "[" << host.data() << "] is not a IP address. Maybe it is a hostname.";
         } else {
-            LOG_WARN << "ParseFromIPPort inet_pton(AF_INET, '" << a.data() << "', ...) failed : " << strerror(serrno);
+            LOG_WARN << "ParseFromIPPort inet_pton(AF_INET, '" << host.data() << "', ...) failed : " << strerror(serrno);
         }
+        return false;
     }
 
-    //TODO add ipv6 support
+    addr->sin_family = family;
+    addr->sin_port = htons(port);
 
-    return addr;
+    return true;
 }
 
-struct sockaddr_in GetLocalAddr(int sockfd) {
-    struct sockaddr_in laddr;
+bool SplitHostPort(const char* address, std::string& host, int& port) {
+    std::string a = address;
+    if (a.empty()) {
+        return false;
+    }
+
+    size_t index = a.rfind(':');
+    if (index == std::string::npos) {
+        LOG_ERROR << "Address specified error <" << address << ">. Cannot find ':'";
+        return false;
+    }
+
+    if (index == a.size() - 1) {
+        return false;
+    }
+
+    port = std::atoi(&a[index + 1]);
+
+    host = std::string(address, index);
+    if (host[0] == '[') {
+        if (*host.rbegin() != ']') {
+            LOG_ERROR << "Address specified error <" << address << ">. '[' ']' is not pair.";
+            return false;
+        }
+
+        // trim the leading '[' and trail ']'
+        host = std::string(host.data() + 1, host.size() - 2);
+    }
+
+    // Compatible with "fe80::886a:49f3:20f3:add2]:80"
+    if (*host.rbegin() == ']') {
+        // trim the trail ']'
+        host = std::string(host.data(), host.size() - 1);
+    }
+
+    return true;
+}
+
+struct sockaddr_storage GetLocalAddr(int sockfd) {
+    struct sockaddr_storage laddr;
     memset(&laddr, 0, sizeof laddr);
     socklen_t addrlen = static_cast<socklen_t>(sizeof laddr);
-
     if (::getsockname(sockfd, sockaddr_cast(&laddr), &addrlen) < 0) {
         LOG_ERROR << "GetLocalAddr:" << strerror(errno);
         memset(&laddr, 0, sizeof laddr);
@@ -148,7 +190,7 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
         const char* addr = ::inet_ntop(ss->ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
 
         if (addr) {
-            saddr = addr;
+            saddr = std::string("[") + addr + "]";
         }
 
         port = ntohs(addr6->sin6_port);

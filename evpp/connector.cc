@@ -14,11 +14,11 @@ Connector::Connector(EventLoop* l, TCPClient* client)
     , loop_(l)
     , owner_tcp_client_(client)
     , remote_addr_(client->remote_addr())
-    , timeout_(client->connecting_timeout())
-    , fd_(-1)
-    , own_fd_(false) {
+    , timeout_(client->connecting_timeout()) {
     DLOG_TRACE << "raddr=" << remote_addr_;
-    raddr_ = sock::ParseFromIPPort(remote_addr_.data());
+    if (sock::SplitHostPort(remote_addr_.data(), remote_host_, remote_port_)) {
+        raddr_ = sock::ParseFromIPPort(remote_addr_.data());
+    }
 }
 
 Connector::~Connector() {
@@ -50,18 +50,15 @@ void Connector::Start() {
     timer_->Init();
     timer_->AsyncWait();
 
-    if (raddr_.sin_addr.s_addr != 0) {
+    if (!sock::IsZeroAddress(&raddr_)) {
         Connect();
         return;
     }
 
     DLOG_TRACE << "The remote address " << remote_addr_ << " is a host, try to resolve its IP address.";
     status_ = kDNSResolving;
-    auto index = remote_addr_.rfind(':');
-    assert(index != std::string::npos);
-    auto host = std::string(remote_addr_.data(), index);
     auto f = std::bind(&Connector::OnDNSResolved, shared_from_this(), std::placeholders::_1);
-    dns_resolver_ = std::make_shared<DNSResolver>(loop_, host, timeout_, f);
+    dns_resolver_ = std::make_shared<DNSResolver>(loop_, remote_host_, timeout_, f);
     dns_resolver_->Start();
 }
 
@@ -138,7 +135,7 @@ void Connector::HandleWrite() {
     }
 
     assert(fd_ == chan_->fd());
-    struct sockaddr_in addr = sock::GetLocalAddr(chan_->fd());
+    struct sockaddr_storage addr = sock::GetLocalAddr(chan_->fd());
     std::string laddr = sock::ToIPPort(&addr);
     conn_fn_(chan_->fd(), laddr);
     timer_->Cancel();
@@ -213,8 +210,12 @@ void Connector::OnDNSResolved(const std::vector <struct in_addr>& addrs) {
         return;
     }
 
-    raddr_.sin_addr = addrs[0]; // TODO random index ?
+    struct sockaddr_in* addr = sock::sockaddr_in_cast(&raddr_);
+    addr->sin_family = AF_INET;
+    addr->sin_port = htons(remote_port_);
+    addr->sin_addr = addrs[0];
     status_ = kDNSResolved;
+
     Connect();
 }
 

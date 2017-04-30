@@ -15,6 +15,7 @@ public:
 
     bool Connect(const char* host, int port);
     bool Connect(const char* addr/*host:port*/);
+    bool Connect(const struct sockaddr_storage& addr);
     bool Connect(const struct sockaddr& addr);
     bool Connect(const struct sockaddr_in& addr);
 
@@ -41,7 +42,7 @@ public:
 private:
     bool Connect();
     int sockfd_;
-    struct sockaddr remote_addr_;
+    struct sockaddr_storage remote_addr_;
 };
 }
 }

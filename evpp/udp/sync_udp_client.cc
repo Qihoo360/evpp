@@ -27,9 +27,14 @@ bool Client::Connect(const char* host, int port) {
     return Connect(buf);
 }
 
+bool Client::Connect(const struct sockaddr_storage& addr) {
+    memcpy(&remote_addr_, &addr, sizeof(remote_addr_));
+    return Connect();
+}
+
 bool Client::Connect(const char* addr/*host:port*/) {
-    struct sockaddr_in raddr = sock::ParseFromIPPort(addr);
-    return Connect(raddr);
+    remote_addr_ = sock::ParseFromIPPort(addr);
+    return Connect();
 }
 
 bool Client::Connect(const struct sockaddr& addr) {
@@ -47,16 +52,14 @@ bool Client::Connect() {
     if (ret != 0) {
         Close();
         struct sockaddr_in* paddr = reinterpret_cast<struct sockaddr_in*>(&remote_addr_);
-        LOG_ERROR << "Failed to connect to remote IP="
-                  << inet_ntoa(paddr->sin_addr)
-                  << ", port=" << ntohs(paddr->sin_port)
+        LOG_ERROR << "Failed to connect to remote "
+                  << sock::ToIPPort(&remote_addr_)
                   << ", errno=" << errno << " " << strerror(errno);
         return false;
     }
 
     return true;
 }
-
 
 void Client::Close() {
     EVUTIL_CLOSESOCKET(sockfd_);
@@ -99,8 +102,9 @@ std::string Client::DoRequest(const std::string& remote_ip, int port, const std:
 bool Client::Send(const char* msg, size_t len) {
     // TODO use 'send' to improve performance??
     int sentn = ::sendto(sockfd(),
-                         msg,
-                         len, 0, &remote_addr_, sizeof(remote_addr_));
+                         msg, len, 0,
+                         sock::sockaddr_cast(&remote_addr_),
+                         sizeof(remote_addr_));
     return sentn > 0;
 }
 

@@ -93,6 +93,9 @@
     <ClCompile Include="..\test\tcp_client_test.cc">
       <Filter>tcp</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\sockets_test.cc">
+      <Filter>common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\test\test_common.h">

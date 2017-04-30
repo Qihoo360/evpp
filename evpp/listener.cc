@@ -28,7 +28,7 @@ void Listener::Listen() {
         return;
     }
 
-    struct sockaddr_in addr = sock::ParseFromIPPort(addr_.data());
+    struct sockaddr_storage addr = sock::ParseFromIPPort(addr_.data());
     // TODO Add retry when failed
     int ret = ::bind(fd_, sock::sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
     if (ret < 0) {
