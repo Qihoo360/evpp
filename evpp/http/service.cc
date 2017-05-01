@@ -111,7 +111,7 @@ void Service::HandleRequest(struct evhttp_request* req) {
     auto it = callbacks_.find(ctx->uri());
     if (it != callbacks_.end()) {
         // This will forward to HTTPServer::Dispatch method to process this request.
-        auto f = std::bind(&Service::SendReply, this, req, std::placeholders::_1);
+        auto f = std::bind(&Service::SendReply, this, ctx, std::placeholders::_1);
         it->second(listen_loop_, ctx, f);
         return;
     } else {
@@ -122,7 +122,7 @@ void Service::HandleRequest(struct evhttp_request* req) {
 void Service::DefaultHandleRequest(const ContextPtr& ctx) {
     DLOG_TRACE << "url=" << ctx->original_uri();
     if (default_callback_) {
-        auto f = std::bind(&Service::SendReply, this, ctx->req(), std::placeholders::_1);
+        auto f = std::bind(&Service::SendReply, this, ctx, std::placeholders::_1);
         default_callback_(listen_loop_, ctx, f);
     } else {
         evhttp_send_reply(ctx->req(), HTTP_BADREQUEST, "Bad Request", nullptr);
@@ -130,8 +130,8 @@ void Service::DefaultHandleRequest(const ContextPtr& ctx) {
 }
 
 struct Response {
-    Response(struct evhttp_request* r, const std::string& m)
-        : req(r), buffer(nullptr) {
+    Response(const ContextPtr& c, const std::string& m)
+        : ctx(c), buffer(nullptr) {
         if (m.size() > 0) {
             buffer = evbuffer_new();
             evbuffer_add(buffer, m.c_str(), m.size());
@@ -144,26 +144,28 @@ struct Response {
             buffer = nullptr;
         }
 
-        // At this time, req is freed by evhttp framework probably.
+        // At this time, req is probably freed by evhttp framework.
         // So don't use req any more.
         // LOG_TRACE << "free request " << req->uri;
     }
 
-    struct evhttp_request* req;
+    ContextPtr ctx;
     struct evbuffer* buffer;
 };
 
-void Service::SendReply(struct evhttp_request* req, const std::string& response_data) {
+void Service::SendReply(const ContextPtr& ctx, const std::string& response_data) {
     // In the worker thread
     DLOG_TRACE << "send reply in working thread";
 
     // Build the response package in the worker thread
-    std::shared_ptr<Response> response(new Response(req, response_data));
+    std::shared_ptr<Response> response(new Response(ctx, response_data));
 
     auto f = [this, response]() {
         // In the main HTTP listening thread
         assert(listen_loop_->IsInLoopThread());
         DLOG_TRACE << "send reply in listening thread. evhttp_=" << evhttp_;
+
+        auto ctx = response->ctx.get();
 
         // At this moment, this Service maybe already stopped.
         if (!evhttp_) {
@@ -172,11 +174,11 @@ void Service::SendReply(struct evhttp_request* req, const std::string& response_
         }
 
         if (!response->buffer) {
-            evhttp_send_reply(response->req, HTTP_NOTFOUND, "Not Found", nullptr);
+            evhttp_send_reply(ctx->req(), HTTP_NOTFOUND, "Not Found", nullptr);
             return;
         }
 
-        evhttp_send_reply(response->req, HTTP_OK, "OK", response->buffer);
+        evhttp_send_reply(ctx->req(), ctx->response_http_code(), "OK", response->buffer);
     };
 
     // Forward this response sending task to HTTP listening thread

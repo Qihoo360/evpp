@@ -53,6 +53,14 @@ public:
         return req_;
     }
 
+    void set_response_http_code(int code) {
+        response_http_code_ = code;
+    }
+
+    int response_http_code() const {
+        return response_http_code_;
+    }
+
 public:
     static std::string FindClientIP(const char* uri);
 
@@ -65,6 +73,8 @@ private:
     // we will prefer to use the value of 'clientip' parameter in URL
     // @see The reverse proxy Nginx configuration : proxy_pass http://127.0.0.1:8080/get/?clientip=$remote_addr;
     std::string remote_ip_;
+
+    int response_http_code_ = 200;
 
     // The HTTP request body data
     Slice body_;
