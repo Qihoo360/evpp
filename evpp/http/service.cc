@@ -165,7 +165,7 @@ void Service::SendReply(const ContextPtr& ctx, const std::string& response_data)
         assert(listen_loop_->IsInLoopThread());
         DLOG_TRACE << "send reply in listening thread. evhttp_=" << evhttp_;
 
-        auto ctx = response->ctx.get();
+        auto x = response->ctx.get();
 
         // At this moment, this Service maybe already stopped.
         if (!evhttp_) {
@@ -174,11 +174,11 @@ void Service::SendReply(const ContextPtr& ctx, const std::string& response_data)
         }
 
         if (!response->buffer) {
-            evhttp_send_reply(ctx->req(), HTTP_NOTFOUND, "Not Found", nullptr);
+            evhttp_send_reply(x->req(), HTTP_NOTFOUND, "Not Found", nullptr);
             return;
         }
 
-        evhttp_send_reply(ctx->req(), ctx->response_http_code(), "OK", response->buffer);
+        evhttp_send_reply(x->req(), x->response_http_code(), "OK", response->buffer);
     };
 
     // Forward this response sending task to HTTP listening thread
