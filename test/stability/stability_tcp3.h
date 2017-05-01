@@ -52,6 +52,7 @@ void TestTCPServer1() {
     assert(rc);
     rc = tsrv->Start();
     assert(rc);
+    (void)rc;
     loop->RunAfter(evpp::Duration(1.4), [&tsrv]() { tsrv->Stop(); });
     std::shared_ptr<evpp::TCPClient> client = StartTCPClient(tcp_client_thread->loop());
     while (!tsrv->IsStopped()) {
@@ -75,6 +76,7 @@ void TestTCPServerSilenceShutdown1() {
     assert(rc);
     rc = tsrv->Start();
     assert(rc);
+    (void)rc;
     loop->RunAfter(evpp::Duration(1.2), [&tsrv]() { tsrv->Stop(); });
     loop->RunAfter(evpp::Duration(1.3), [&loop]() { loop->Stop(); });
     loop->Run();
@@ -90,6 +92,7 @@ void TestTCPServerSilenceShutdown2() {
     assert(rc);
     rc = tsrv->Start();
     assert(rc);
+    (void)rc;
     loop->RunAfter(evpp::Duration(1.0), [&tsrv, &loop]() { tsrv->Stop(); loop->Stop(); });
     loop->Run();
     loop.reset();

@@ -57,6 +57,7 @@ void TestTCPClientReconnect() {
         assert(rc);
         rc = tsrv->Start();
         assert(rc);
+        (void)rc;
         usleep(evpp::Duration(2.0).Microseconds()); // sleep 2 seconds to let the TCP client connected.
         tsrv->Stop();
         while (!tsrv->IsStopped()) {

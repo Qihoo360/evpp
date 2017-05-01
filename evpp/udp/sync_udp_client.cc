@@ -51,7 +51,6 @@ bool Client::Connect() {
 
     if (ret != 0) {
         Close();
-        struct sockaddr_in* paddr = reinterpret_cast<struct sockaddr_in*>(&remote_addr_);
         LOG_ERROR << "Failed to connect to remote "
                   << sock::ToIPPort(&remote_addr_)
                   << ", errno=" << errno << " " << strerror(errno);
