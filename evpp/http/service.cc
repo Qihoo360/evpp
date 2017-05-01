@@ -6,12 +6,36 @@
 
 namespace evpp {
 namespace http {
+
+#undef H_ARRAYSIZE
+#define H_ARRAYSIZE(a) \
+    ((sizeof(a) / sizeof(*(a))) / \
+     static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
+
+static const char* g_http_code_string[1000];
+static void InitHTTPCodeString() {
+    for (size_t i = 0; i < H_ARRAYSIZE(g_http_code_string); i++) {
+        g_http_code_string[i] = "XX";
+    }
+
+    g_http_code_string[200] = "OK";
+    g_http_code_string[302] = "Found";
+
+    g_http_code_string[400] = "Bad Request";
+    g_http_code_string[404] = "Not Found";
+
+    //TODO Add more http code string
+}
+
 Service::Service(EventLoop* l)
     : evhttp_(nullptr), evhttp_bound_socket_(nullptr), listen_loop_(l) {
     evhttp_ = evhttp_new(listen_loop_->event_base());
     if (!evhttp_) {
         return;
     }
+
+    std::once_flag flag;
+    std::call_once(flag, &InitHTTPCodeString);
 }
 
 Service::~Service() {
@@ -125,13 +149,13 @@ void Service::DefaultHandleRequest(const ContextPtr& ctx) {
         auto f = std::bind(&Service::SendReply, this, ctx, std::placeholders::_1);
         default_callback_(listen_loop_, ctx, f);
     } else {
-        evhttp_send_reply(ctx->req(), HTTP_BADREQUEST, "Bad Request", nullptr);
+        evhttp_send_reply(ctx->req(), HTTP_BADREQUEST, g_http_code_string[HTTP_BADREQUEST], nullptr);
     }
 }
 
 struct Response {
     Response(const ContextPtr& c, const std::string& m)
-        : ctx(c), buffer(nullptr) {
+        : ctx(c) {
         if (m.size() > 0) {
             buffer = evbuffer_new();
             evbuffer_add(buffer, m.c_str(), m.size());
@@ -150,7 +174,7 @@ struct Response {
     }
 
     ContextPtr ctx;
-    struct evbuffer* buffer;
+    struct evbuffer* buffer = nullptr;
 };
 
 void Service::SendReply(const ContextPtr& ctx, const std::string& response_data) {
@@ -174,11 +198,14 @@ void Service::SendReply(const ContextPtr& ctx, const std::string& response_data)
         }
 
         if (!response->buffer) {
-            evhttp_send_reply(x->req(), HTTP_NOTFOUND, "Not Found", nullptr);
+            evhttp_send_reply(x->req(), HTTP_NOTFOUND,
+                              g_http_code_string[HTTP_NOTFOUND], nullptr);
             return;
         }
 
-        evhttp_send_reply(x->req(), x->response_http_code(), "OK", response->buffer);
+        evhttp_send_reply(x->req(), x->response_http_code(),
+                          g_http_code_string[x->response_http_code()],
+                          response->buffer);
     };
 
     // Forward this response sending task to HTTP listening thread
