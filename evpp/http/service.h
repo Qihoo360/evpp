@@ -39,7 +39,7 @@ private:
     static void GenericCallback(struct evhttp_request* req, void* arg);
     void HandleRequest(struct evhttp_request* req);
     void DefaultHandleRequest(const ContextPtr& ctx);
-    void SendReply(struct evhttp_request* req, const std::string& response);
+    void SendReply(const ContextPtr& ctx, const std::string& response);
 private:
     int port_ = 0;
     struct evhttp* evhttp_;

@@ -27,6 +27,26 @@ static void RequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& 
     cb(oss.str());
 }
 
+static void RequestHandler201(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+    std::stringstream oss;
+    oss << "func=" << __FUNCTION__ << " OK"
+        << " ip=" << ctx->remote_ip() << "\n"
+        << " uri=" << ctx->uri() << "\n"
+        << " body=" << ctx->body().ToString() << "\n";
+    ctx->set_response_http_code(201);
+    cb(oss.str());
+}
+
+static void RequestHandler909(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+    std::stringstream oss;
+    oss << "func=" << __FUNCTION__ << " OK"
+        << " ip=" << ctx->remote_ip() << "\n"
+        << " uri=" << ctx->uri() << "\n"
+        << " body=" << ctx->body().ToString() << "\n";
+    ctx->set_response_http_code(909);
+    cb(oss.str());
+}
+
 static void DefaultRequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     //std::cout << __func__ << " called ...\n";
     std::stringstream oss;
@@ -120,6 +140,40 @@ void testPushBootHandler(evpp::EventLoop* loop, int* finished) {
     r->Execute(f);
 }
 
+void testRequestHandler201(evpp::EventLoop* loop, int* finished) {
+    std::string uri = "/201";
+    std::string url = GetHttpServerURL() + uri;
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
+        std::string result = response->body().ToString();
+        H_TEST_ASSERT(!result.empty());
+        H_TEST_ASSERT(response->http_code() == 201);
+        H_TEST_ASSERT(result.find("uri=/201") != std::string::npos);
+        H_TEST_ASSERT(result.find("func=RequestHandler201") != std::string::npos);
+        *finished += 1;
+        delete r;
+    };
+
+    r->Execute(f);
+}
+
+void testRequestHandler909(evpp::EventLoop* loop, int* finished) {
+    std::string uri = "/909";
+    std::string url = GetHttpServerURL() + uri;
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
+        std::string result = response->body().ToString();
+        H_TEST_ASSERT(!result.empty());
+        H_TEST_ASSERT(response->http_code() == 909);
+        H_TEST_ASSERT(result.find("uri=/909") != std::string::npos);
+        H_TEST_ASSERT(result.find("func=RequestHandler909") != std::string::npos);
+        *finished += 1;
+        delete r;
+    };
+
+    r->Execute(f);
+}
+
 void testStop(evpp::EventLoop* loop, int* finished) {
     std::string uri = "/mod/stop";
     std::string url = GetHttpServerURL() + uri;
@@ -144,12 +198,14 @@ static void TestAll() {
     testDefaultHandler2(t.loop(), &finished);
     testDefaultHandler3(t.loop(), &finished);
     testPushBootHandler(t.loop(), &finished);
+    testRequestHandler201(t.loop(), &finished);
+    testRequestHandler909(t.loop(), &finished);
     testStop(t.loop(), &finished);
 
     while (true) {
         usleep(10);
 
-        if (finished == 5) {
+        if (finished == 7) {
             break;
         }
     }
@@ -165,6 +221,8 @@ TEST_UNIT(testHTTPServer) {
         evpp::http::Server ph(i);
         ph.RegisterDefaultHandler(&DefaultRequestHandler);
         ph.RegisterHandler("/push/boot", &RequestHandler);
+        ph.RegisterHandler("/201", &RequestHandler201);
+        ph.RegisterHandler("/909", &RequestHandler909);
         bool r = ph.Init(g_listening_port) && ph.Start();
         H_TEST_ASSERT(r);
         TestAll();
