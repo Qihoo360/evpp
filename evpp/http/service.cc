@@ -12,19 +12,21 @@ namespace http {
     ((sizeof(a) / sizeof(*(a))) / \
      static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
 
-static const char* g_http_code_string[1000];
+static const int kMaxHTTPCode = 1000;
+static const char* g_http_code_string[kMaxHTTPCode + 1];
 static void InitHTTPCodeString() {
     for (size_t i = 0; i < H_ARRAYSIZE(g_http_code_string); i++) {
         g_http_code_string[i] = "XX";
     }
 
     g_http_code_string[200] = "OK";
+
     g_http_code_string[302] = "Found";
 
     g_http_code_string[400] = "Bad Request";
     g_http_code_string[404] = "Not Found";
 
-    //TODO Add more http code string
+    //TODO Add more http code string : https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
 }
 
 Service::Service(EventLoop* l)
@@ -203,6 +205,8 @@ void Service::SendReply(const ContextPtr& ctx, const std::string& response_data)
             return;
         }
 
+        assert(x->response_http_code() <= kMaxHTTPCode);
+        assert(x->response_http_code() >= 100);
         evhttp_send_reply(x->req(), x->response_http_code(),
                           g_http_code_string[x->response_http_code()],
                           response->buffer);
