@@ -1,5 +1,6 @@
 
 file(GLOB evpp_SRCS *.cc */*.cc *.h */*.h)
+file(GLOB evpp_lite_SRCS *.cc *.h)
 file(GLOB evpp_PUBLIC_HEADERS *.h)
 file(GLOB evpp_HTTP_PUBLIC_HEADERS http/*.h)
 file(GLOB evpp_UDP_PUBLIC_HEADERS udp/*.h)
@@ -12,6 +13,9 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 add_library(evpp_static STATIC ${evpp_SRCS})
 target_link_libraries(evpp_static ${DEPENDENT_LIBRARIES})
+
+add_library(evpp_lite_static STATIC ${evpp_lite_SRCS})
+target_link_libraries(evpp_lite_static ${DEPENDENT_LIBRARIES})
 
 if (UNIX)
     add_library(evpp SHARED ${evpp_SRCS})
@@ -43,7 +47,7 @@ if (UNIX)
     )
 
     install (
-      TARGETS evpp evpp_static evpp_boost evpp_boost_static evpp_concurrentqueue evpp_concurrentqueue_static
+      TARGETS evpp evpp_static evpp_lite_static evpp_boost evpp_boost_static evpp_concurrentqueue evpp_concurrentqueue_static
       EXPORT ${PACKAGE_NAME}
       RUNTIME DESTINATION bin
       LIBRARY DESTINATION lib
@@ -55,5 +59,16 @@ if (UNIX)
 
 else (UNIX)
 	link_directories(${PROJECT_SOURCE_DIR}/vsprojects/bin/${CMAKE_BUILD_TYPE})
+    
+    install (
+      TARGETS evpp_static evpp_lite_static
+      EXPORT ${PACKAGE_NAME}
+      RUNTIME DESTINATION bin
+      LIBRARY DESTINATION lib
+      ARCHIVE DESTINATION lib)
+
+    install (FILES ${evpp_PUBLIC_HEADERS} DESTINATION "include/evpp")
+    install (FILES ${evpp_HTTP_PUBLIC_HEADERS} DESTINATION "include/evpp/http")
+    install (FILES ${evpp_UDP_PUBLIC_HEADERS} DESTINATION "include/evpp/udp")
 endif (UNIX)
 

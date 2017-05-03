@@ -2,7 +2,6 @@
 
 #include "evpp/inner_pre.h"
 #include "evpp/event_loop.h"
-#include "evpp/event_loop_thread_pool.h"
 #include "evpp/tcp_callbacks.h"
 #include "evpp/any.h"
 
