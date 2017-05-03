@@ -1,6 +1,7 @@
 // Modified from https://github.com/huyuguang/asio_benchmark/blob/master/client3.cpp
 
 #include <evpp/tcp_client.h>
+#include <evpp/event_loop_thread_pool.h>
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>
 #include <evpp/timestamp.h>
