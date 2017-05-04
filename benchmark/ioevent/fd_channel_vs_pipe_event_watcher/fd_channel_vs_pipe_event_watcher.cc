@@ -2,6 +2,7 @@
 
 #include <evpp/event_loop.h>
 #include <evpp/fd_channel.h>
+#include <evpp/timestamp.h>
 #include <evpp/libevent_headers.h>
 #include <evpp/event_watcher.h>
 

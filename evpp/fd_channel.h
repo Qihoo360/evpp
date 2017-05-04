@@ -2,8 +2,6 @@
 
 #include "event_watcher.h"
 
-#include "evpp/timestamp.h"
-
 struct event;
 struct event_base;
 
