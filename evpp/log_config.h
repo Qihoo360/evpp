@@ -1,6 +1,6 @@
 #pragma once
 
-#include "evpp/platform_config.h"
+#include "evpp/evpp_config.h"
 
 #ifdef __cplusplus
 #define GOOGLE_GLOG_DLL_DECL           // 使用静态glog库时，必须定义这个

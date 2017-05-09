@@ -1,6 +1,6 @@
 #pragma once
 
-#include "evpp/evpp_export.h"
+#include "evpp/evpp_config.h"
 
 namespace evpp {
 

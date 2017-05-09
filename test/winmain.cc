@@ -1,6 +1,6 @@
 #include "test_common.h"
 
-#include "evpp/exp.h"
+#include "evpp/evpp_config.h"
 #include "evpp/libevent_headers.h"
 
 namespace {

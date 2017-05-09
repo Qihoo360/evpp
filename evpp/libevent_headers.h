@@ -8,7 +8,7 @@
  ********************************************************************/
 #pragma once
 
-#include "evpp_export.h"
+#include "evpp_config.h"
 
 #ifdef WIN32
 #include <WinSock2.h>

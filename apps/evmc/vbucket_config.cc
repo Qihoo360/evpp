@@ -11,7 +11,7 @@
 #include <libhashkit/hashkit.h>
 
 #include "random.h"
-#include "evpp/exp.h"
+#include "evpp/evpp_config.h"
 #include "extract_vbucket_conf.h"
 #include "likely.h"
 
