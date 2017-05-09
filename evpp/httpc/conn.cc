@@ -36,7 +36,7 @@ bool Conn::Init() {
         return false;
     }
 
-    if (timeout_.IsZero()) {
+    if (!timeout_.IsZero()) {
 #if LIBEVENT_VERSION_NUMBER >= 0x02010500
         struct timeval tv = timeout_.TimeVal();
         evhttp_connection_set_timeout_tv(evhttp_conn_, &tv);
