@@ -1,7 +1,7 @@
 #pragma once
 
 #include "evnsq_export.h"
-#include <evpp/exp.h>
+#include <evpp/evpp_config.h>
 #include <evpp/buffer.h>
 #include <evpp/slice.h>
 

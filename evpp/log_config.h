@@ -1,6 +1,6 @@
 #pragma once
 
-#include "evpp/platform_config.h"
+#include "evpp/evpp_config.h"
 
 #ifdef H_OS_WINDOWS
 #define __PRETTY_FUNCTION__ __FUNCTION__
