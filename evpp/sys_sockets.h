@@ -36,9 +36,9 @@ typedef int ssize_t;
 #ifdef H_OS_WINDOWS
 
 /*
-* Windows Sockets errors redefined as regular Berkeley error constants.
-* Copied from winsock.h
-*/
+ * Windows Sockets errors redefined as regular Berkeley error constants.
+ * Copied from winsock.h
+ */
 #define EWOULDBLOCK             WSAEWOULDBLOCK
 #define EINPROGRESS             WSAEINPROGRESS
 #define EALREADY                WSAEALREADY
@@ -81,7 +81,7 @@ typedef int ssize_t;
 
 #define gai_strerror gai_strerrorA
 
-#endif // endof H_OS_WINDOWS
+#endif // end of H_OS_WINDOWS
 
 #if (defined(H_OS_WINDOWS) || defined(H_OS_MACOSX))
 
