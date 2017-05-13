@@ -3,15 +3,14 @@
 
 #include <evpp/event_loop_thread.h>
 
-#include <evpp/httpc/conn_pool.h>
 #include <evpp/httpc/request.h>
 #include <evpp/httpc/conn.h>
 #include <evpp/httpc/response.h>
 
-#include "../echo/tcpecho/winmain-inl.h"
+#include "../../../examples/winmain-inl.h"
 
 static bool responsed = false;
-static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::Request* request) {
+static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& response, evpp::httpc::GetRequest* request) {
     LOG_INFO << "http_code=" << response->http_code() << " [" << response->body().ToString() << "]";
     std::string header = response->FindHeader("Connection");
     LOG_INFO << "HTTP HEADER Connection=" << header;
@@ -20,11 +19,14 @@ static void HandleHTTPResponse(const std::shared_ptr<evpp::httpc::Response>& res
     delete request; // The request MUST BE deleted in EventLoop thread.
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    google::InitGoogleLogging(argv[0]);
+    FLAGS_stderrthreshold = 0;
+    FLAGS_minloglevel=0;
+
     evpp::EventLoopThread t;
     t.Start(true);
-    std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("www.360.cn", 80, evpp::Duration(2.0)));
-    evpp::httpc::Request* r = new evpp::httpc::Request(pool.get(), t.loop(), "/robots.txt", "");
+    evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(t.loop(), "http://www.so.com/status.html", evpp::Duration(2.0));
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, r));
 
@@ -32,8 +34,6 @@ int main() {
         usleep(1);
     }
 
-    pool->Clear();
-    pool.reset();
     t.Stop(true);
     LOG_INFO << "EventLoopThread stopped.";
     return 0;
