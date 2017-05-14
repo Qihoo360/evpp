@@ -76,7 +76,7 @@ static std::string GetHttpServerURL() {
 void testDefaultHandler1(evpp::EventLoop* loop, int* finished) {
     std::string uri = "/status?a=1";
     std::string url = GetHttpServerURL() + uri;
-    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
     auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
         std::string result = response->body().ToString();
         H_TEST_ASSERT(!result.empty());
@@ -94,7 +94,7 @@ void testDefaultHandler2(evpp::EventLoop* loop, int* finished) {
     std::string uri = "/status";
     std::string body = "The http request body.";
     std::string url = GetHttpServerURL() + uri;
-    auto r = new evpp::httpc::Request(loop, url, body, evpp::Duration(1.0));
+    auto r = new evpp::httpc::Request(loop, url, body, evpp::Duration(10.0));
     auto f = [body, r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
         std::string result = response->body().ToString();
         H_TEST_ASSERT(!result.empty());
@@ -111,7 +111,7 @@ void testDefaultHandler2(evpp::EventLoop* loop, int* finished) {
 void testDefaultHandler3(evpp::EventLoop* loop, int* finished) {
     std::string uri = "/status/method/method2/xx";
     std::string url = GetHttpServerURL() + uri;
-    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
     auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
         std::string result = response->body().ToString();
         H_TEST_ASSERT(!result.empty());
@@ -127,7 +127,7 @@ void testDefaultHandler3(evpp::EventLoop* loop, int* finished) {
 void testPushBootHandler(evpp::EventLoop* loop, int* finished) {
     std::string uri = "/push/boot";
     std::string url = GetHttpServerURL() + uri;
-    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
     auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
         std::string result = response->body().ToString();
         H_TEST_ASSERT(!result.empty());
@@ -143,7 +143,7 @@ void testPushBootHandler(evpp::EventLoop* loop, int* finished) {
 void testRequestHandler201(evpp::EventLoop* loop, int* finished) {
     std::string uri = "/201";
     std::string url = GetHttpServerURL() + uri;
-    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
     auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
         std::string result = response->body().ToString();
         H_TEST_ASSERT(!result.empty());
@@ -160,7 +160,7 @@ void testRequestHandler201(evpp::EventLoop* loop, int* finished) {
 void testRequestHandler909(evpp::EventLoop* loop, int* finished) {
     std::string uri = "/909";
     std::string url = GetHttpServerURL() + uri;
-    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
     auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
         std::string result = response->body().ToString();
         H_TEST_ASSERT(!result.empty());
@@ -177,7 +177,7 @@ void testRequestHandler909(evpp::EventLoop* loop, int* finished) {
 void testStop(evpp::EventLoop* loop, int* finished) {
     std::string uri = "/mod/stop";
     std::string url = GetHttpServerURL() + uri;
-    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
     auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
         std::string result = response->body().ToString();
         H_TEST_ASSERT(!result.empty());

@@ -63,7 +63,7 @@ namespace {
     void testDefaultHandler1(evpp::EventLoop* loop, std::atomic<int>* finished) {
         std::string uri = "/status?a=1";
         std::string url = GetHttpServerURL() + uri;
-        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
         auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
             LOG_INFO << "request=" << r << " response=" << response.get() << " tid=" << std::this_thread::get_id();
             std::string result = response->body().ToString();
@@ -82,7 +82,7 @@ namespace {
         std::string uri = "/status";
         std::string body = "The http request body.";
         std::string url = GetHttpServerURL() + uri;
-        auto r = new evpp::httpc::Request(loop, url, body, evpp::Duration(1.0));
+        auto r = new evpp::httpc::Request(loop, url, body, evpp::Duration(10.0));
         auto f = [body, r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
             LOG_INFO << "request=" << r << " response=" << response.get() << " tid=" << std::this_thread::get_id();
             std::string result = response->body().ToString();
@@ -100,7 +100,7 @@ namespace {
     void testDefaultHandler3(evpp::EventLoop* loop, std::atomic<int>* finished) {
         std::string uri = "/status/method/method2/xx";
         std::string url = GetHttpServerURL() + uri;
-        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
         auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
             LOG_INFO << "request=" << r << " response=" << response.get() << " tid=" << std::this_thread::get_id();
             std::string result = response->body().ToString();
@@ -117,7 +117,7 @@ namespace {
     void testPushBootHandler(evpp::EventLoop* loop, std::atomic<int>* finished) {
         std::string uri = "/push/boot";
         std::string url = GetHttpServerURL() + uri;
-        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
         auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
             LOG_INFO << "request=" << r << " response=" << response.get() << " tid=" << std::this_thread::get_id();
             std::string result = response->body().ToString();
@@ -134,7 +134,7 @@ namespace {
     void testStop(evpp::EventLoop* loop, std::atomic<int>* finished) {
         std::string uri = "/mod/stop";
         std::string url = GetHttpServerURL() + uri;
-        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(1.0));
+        auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
         auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
             LOG_INFO << "request=" << r << " response=" << response.get() << " tid=" << std::this_thread::get_id();
             std::string result = response->body().ToString();
