@@ -49,19 +49,30 @@ public:
     const std::string& host() const {
         return host_;
     }
+    void set_retry_number(int v) {
+        retry_number_ = v;
+    }
 private:
     static void HandleResponse(struct evhttp_request* r, void* v);
-    void ExecuteInLoop(const Handler& h);
+    void HandleResponse(struct evhttp_request* r);
+    void ExecuteInLoop();
 protected:
     static const std::string empty_;
 private:
-    ConnPool* pool_;
+    ConnPool* pool_ = nullptr;
     EventLoop* loop_;
     std::string host_;
     std::string uri_; // The URI of the HTTP request with parameters
     std::string body_;
     std::shared_ptr<Conn> conn_;
     Handler handler_;
+
+    // The retried times
+    int retried_ = 0;
+    
+    // The max retry times. Set to 0 if you don't want to retry when failed.
+    // The total execution times is retry_number_+1
+    int retry_number_ = 2;
 };
 typedef std::shared_ptr<Request> RequestPtr;
 
