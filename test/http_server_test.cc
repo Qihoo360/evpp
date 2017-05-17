@@ -38,6 +38,7 @@ static void RequestHandler201(evpp::EventLoop* loop, const evpp::http::ContextPt
 }
 
 static void RequestHandler909(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+    LOG_INFO << "RequestHandler909";
     std::stringstream oss;
     oss << "func=" << __FUNCTION__ << " OK"
         << " ip=" << ctx->remote_ip() << "\n"
@@ -212,6 +213,24 @@ static void TestAll() {
 
     t.Stop(true);
 }
+
+static void Test909() {
+    evpp::EventLoopThread t;
+    t.Start(true);
+    int finished = 0;
+    testRequestHandler909(t.loop(), &finished);
+    testStop(t.loop(), &finished);
+
+    while (true) {
+        usleep(10);
+
+        if (finished == 2) {
+            break;
+        }
+    }
+
+    t.Stop(true);
+}
 }
 
 
@@ -226,6 +245,20 @@ TEST_UNIT(testHTTPServer) {
         bool r = ph.Init(g_listening_port) && ph.Start();
         H_TEST_ASSERT(r);
         TestAll();
+        ph.Stop();
+        usleep(1000 * 1000); // sleep a while to release the listening address and port
+    }
+}
+
+TEST_UNIT(testHTTPServer909) {
+    for (int i = 0; i < 10; ++i) {
+        LOG_INFO << "Running testHTTPServer i=" << i;
+        evpp::http::Server ph(i);
+        ph.RegisterDefaultHandler(&DefaultRequestHandler);
+        ph.RegisterHandler("/909", &RequestHandler909);
+        bool r = ph.Init(g_listening_port) && ph.Start();
+        H_TEST_ASSERT(r);
+        Test909();
         ph.Stop();
         usleep(1000 * 1000); // sleep a while to release the listening address and port
     }

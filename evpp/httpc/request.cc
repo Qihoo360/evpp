@@ -51,16 +51,13 @@ Request::~Request() {
 }
 
 void Request::Execute(const Handler& h) {
-    if (loop_->IsInLoopThread()) {
-        ExecuteInLoop(h);
-    } else {
-        loop_->RunInLoop(std::bind(&Request::ExecuteInLoop, this, h));
-    }
+    handler_ = h;
+    loop_->RunInLoop(std::bind(&Request::ExecuteInLoop, this));
 }
 
-void Request::ExecuteInLoop(const Handler& h) {
-    handler_ = h;
-
+void Request::ExecuteInLoop() {
+    DLOG_TRACE;
+    assert(loop_->IsInLoopThread());
     evhttp_cmd_type req_type = EVHTTP_REQ_GET;
 
     std::string errmsg;
@@ -103,7 +100,7 @@ void Request::ExecuteInLoop(const Handler& h) {
     }
 
     if (evhttp_make_request(conn_->evhttp_conn(), req, req_type, uri_.c_str())) {
-        // here the conn has own the req, so don't free it twice.
+        // At here conn_ has owned this req, so don't need to free it.
         errmsg = "evhttp_make_request fail";
         goto failed;
     }
@@ -116,22 +113,50 @@ failed:
     handler_(response);
 }
 
-void Request::HandleResponse(struct evhttp_request* rsp, void* v) {
+void Request::HandleResponse(struct evhttp_request* r, void* v) {
     Request* thiz = (Request*)v;
     assert(thiz);
+    thiz->HandleResponse(r);
+}
 
-    std::shared_ptr<Response> response;
-    if (rsp) {
-        response.reset(new Response(thiz, rsp));
-        if (thiz->pool_) {
-            thiz->pool_->Put(thiz->conn_);
+void Request::HandleResponse(struct evhttp_request* r) {
+    assert(loop_->IsInLoopThread());
+
+    if (r) {
+        if (r->response_code == HTTP_OK || retried_ >= retry_number_) {
+            LOG_WARN << "this=" << this << " response_code=" << r->response_code << " retried=" << retried_ << " max retry_time=" << retry_number_;
+            std::shared_ptr<Response> response(new Response(this, r));
+
+            //Recycling the http Connection object
+            if (pool_) {
+                pool_->Put(conn_);
+            }
+
+            handler_(response);
+            return;
         }
-    } else {
-        response.reset(new Response(thiz));
     }
 
-    thiz->handler_(response);
+    // Retry
+    if (retried_ < retry_number_) {
+        LOG_WARN << "this=" << this << " response_code=" << (r ? r->response_code : 0) << " retried=" << retried_ << " max retry_time=" << retry_number_ << ". Try again";
+        retried_ += 1;
+        ExecuteInLoop();
+        return;
+    }
+
+ 
+     // Eventually this Request failed
+     std::shared_ptr<Response> response(new Response(this, r));
+ 
+     // Recycling the http Connection object
+     if (pool_) {
+         pool_->Put(conn_);
+     }
+
+     handler_(response);
 }
+
 } // httpc
 } // evpp
 
