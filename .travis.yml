@@ -41,8 +41,8 @@ after_success:
   - curl -L https://github.com/nsqio/nsq/releases/download/v0.3.8/nsq-0.3.8.linux-amd64.go1.6.2.tar.gz -o nsq-0.3.8.linux-amd64.go1.6.2.tar.gz
   - tar zxvf nsq-0.3.8.linux-amd64.go1.6.2.tar.gz
   - pwd
-  - build/bin/evpp_unittest
-  - build-release/bin/evpp_unittest
+  - GLOG_minloglevel=1 build/bin/evpp_unittest
+  - GLOG_minloglevel=1 build-release/bin/evpp_unittest
   - cd $CI_HOME
   - pwd
   - cd tools/test_scripts
