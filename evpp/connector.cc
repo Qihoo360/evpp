@@ -167,10 +167,19 @@ void Connector::HandleError() {
         chan_->Close();
     }
 
+    // Avoid DNSResolver callback again when timeout
+    if (dns_resolver_) {
+        dns_resolver_->Cancel();
+        dns_resolver_.reset();
+    }
+
     timer_->Cancel();
     timer_.reset();
 
-    if (EVUTIL_ERR_CONNECT_REFUSED(serrno)) {
+    // If the connection is refused or it will not try again,
+    // We need to notify the user layer that the connection established failed.
+    // Otherwise we will try to do reconnection silently.
+    if (EVUTIL_ERR_CONNECT_REFUSED(serrno) || !owner_tcp_client_->auto_reconnect()) {
         conn_fn_(-1, "");
     }
 
