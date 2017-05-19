@@ -42,7 +42,20 @@ TEST_UNIT(testTCPClientDisconnectImmediately) {
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
-
+TEST_UNIT(testTCPClientConnectionTimeout) {
+    std::shared_ptr<evpp::EventLoop> loop(new evpp::EventLoop);
+    std::shared_ptr<evpp::TCPClient> client(new evpp::TCPClient(loop.get(), "cmake.org:80", "TCPPingPongClient"));
+    client->SetConnectionCallback([loop, client](const evpp::TCPConnPtr& conn) {
+        loop->Stop();
+    });
+    client->set_auto_reconnect(false);
+    client->set_connecting_timeout(evpp::Duration(0.0001));
+    client->Connect();
+    loop->Run();
+    client.reset();
+    loop.reset();
+    H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
+}
 
 namespace {
 struct NSQConn {
