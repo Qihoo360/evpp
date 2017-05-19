@@ -1,6 +1,5 @@
 #pragma once
 
-#include "evpp/evpp_export.h"
 #include "evpp/sys_addrinfo.h"
 
 #include <string.h>

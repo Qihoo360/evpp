@@ -1,7 +1,6 @@
 #include <string>
 #include <sstream>
 
-#include "evpp_export.h"
 
 namespace evpp {
 
