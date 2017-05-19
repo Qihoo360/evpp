@@ -5,9 +5,22 @@ Quick Start using VS2015
 
 ### Install compiling tool chain
 
-1. `CMake` for windows. You can download it from [https://cmake.org/download/](https://cmake.org/download/)
-2. Microsoft `Visual Studio 2015` or higher version. You can download it from [https://www.visualstudio.com/](https://www.visualstudio.com/)
-3. Git Bash for windows. You can download it from [https://git-for-windows.github.io/](https://git-for-windows.github.io/)
+Prerequisites:
+
+- Visual Studio 2015 Update 3 or
+- Visual Studio 2017
+- CMake 3.8.0 or higher (note: downloaded automatically if not found)
+- git.exe available in your path. You can download and install it from [https://git-for-windows.github.io/](https://git-for-windows.github.io/)
+- vcpkg. You can download and install it from [https://github.com/Microsoft/vcpkg](https://github.com/Microsoft/vcpkg). Commits c5daa93506b616d253e257488ecc385271238e2a tests OK. Following [https://github.com/Microsoft/vcpkg#quick-start](https://github.com/Microsoft/vcpkg#quick-start) to install [vcpkg](https://github.com/Microsoft/vcpkg). This document assumes that [vcpkg](https://github.com/Microsoft/vcpkg) is installed at `d:\git\vcpkg`. 
+
+### Install dependent libraries by using vcpkg
+
+Use [vcpkg](https://github.com/Microsoft/vcpkg) to install libevent,glog,gtest,gflags.
+
+	D:\git\vcpkg>vcpkg install gflags
+	D:\git\vcpkg>vcpkg install glog
+	D:\git\vcpkg>vcpkg install gtest
+	D:\git\vcpkg>vcpkg install libevent
 
 ### Download the source code of evpp
 
@@ -15,38 +28,19 @@ Quick Start using VS2015
 	$ cd evpp
 	$ git submodule update --init --recursive
 
-### Compile third-party dependent open source code
-
-The `evpp` source is dependent with `libevent`, we suggest you choose the lastest version of libevent. 
-Right now, Feb 2017, the latest version of libevent is `2.1.8`.
-
-Go to `3rdparty/libevent-release-2.1.8-stable`
-
-	$ cd 3rdparty/libevent-release-2.1.8-stable
-	$ mkdir build && cd build
-	$ cmake -G "Visual Studio 14" ..
-	$ start libevent.sln
-	... # here you can use Visual Studio 2015 to compile the three libevent project event,event_core,event_extra in debug and release mode.
-	$
-	$ cp lib/Debug/*.* ../../../vsprojects/bin/Debug/
-	$ cp lib/Release/*.* ../../../vsprojects/bin/Release/
-	$ cp -rf ../include/event2 ../../wininclude/
-	$ cp -rf ../build/include/event2/event-config.h ../../wininclude/event2
-    $ cd ../../../vsprojects/bin/Debug/
-    $ mv libglog_static.lib glog.lib
-    $ cd ../Release 
-    $ mv libglog_static.lib glog.lib
-
-Note 1: We have modified the source code of libevent-release-2.1.8-stable as bellow:
-
-1. libevent-release-2.1.8-stable/CMakeList.txt : Add 'set(EVENT__DISABLE_OPENSSL ON)' to disable OPENSSL support
-2. libevent-release-2.1.8-stable/cmake/VersionViaGit.cmake : Delete or comment the two lines: 'find_package(Git)' and 'include(FindGit)'
-
 ### Compile evpp
 
-	$ cd ../../../
+Using the default vs solution file:
+
 	$ start vsprojects/libevpp.sln
 	... # here yo can use Visual Studio 2015 to compile the whole evpp project
+
+Or, we can use CMake to compile the whole projects (TODO: This does not work).
+
+	$ mkdir build
+	$ cd build
+	$ cmake -DCMAKE_TOOLCHAIN_FILE=D:/git/vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 14" ..
+
 
 ### Run the unit tests
 
