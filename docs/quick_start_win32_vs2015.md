@@ -35,12 +35,12 @@ Using the default vs solution file:
 	$ start vsprojects/libevpp.sln
 	... # here yo can use Visual Studio 2015 to compile the whole evpp project
 
-Or, we can use CMake to compile the whole projects (TODO: This does not work).
+Or, we can use CMake to compile the whole projects on WIDNOWS command line console (This is does not work on mingw-shell):
 
-	$ mkdir build
-	$ cd build
-	$ cmake -DCMAKE_TOOLCHAIN_FILE=D:/git/vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 14" ..
-
+	D:\360.git\evpp>md build
+	D:\360.git\evpp>cd build
+	D:\360.git\evpp\build>cmake -DCMAKE_TOOLCHAIN_FILE=D:/git/vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 14 2015" ..
+	D:\360.git\evpp\build>start safe-evpp.sln
 
 ### Run the unit tests
 
