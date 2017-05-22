@@ -14,6 +14,7 @@ evpp
 
 1. Modern C++11 interface
 1. Modern functional/bind style callback instead of C-style function pointer.
+1. Multi-core friendly and thread-safe
 1. A nonblocking multi-threaded TCP server
 1. A nonblocking TCP client
 1. A nonblocking multi-threaded HTTP server based on the buildin http server of libevent
@@ -24,8 +25,8 @@ evpp
 
 And also provides some libraries based on [evpp]:
 
-1. [evmc] a nonblocking async C++ memcached (or membase cluster) client library. This library is currently used in production which sends more than 100 billion requests every day. See [evmc readme](/apps/evmc/readme.md) for more details.
-2. [evnsq] a nonblocking async C++ NSQ client library. This library is currently used in production which processes more than 20 billion messages every day. See [evnsq readme](/apps/evnsq/readme.md) for more details.
+1. [evmc] a nonblocking async C++ memcached (or membase cluster) client library. This library is currently used in production which sends more than 300 billion requests every day. See [evmc readme](/apps/evmc/readme.md) for more details.
+2. [evnsq] a nonblocking async C++ NSQ client library. This library is currently used in production which processes more than 130 billion messages every day. See [evnsq readme](/apps/evnsq/readme.md) for more details.
 
 
 NOTE: master is our development branch and may not be stable at all times.
