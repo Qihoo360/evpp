@@ -27,8 +27,8 @@ evpp
 
 And also provides some libraries based on [evpp]:
 
-1. [evmc] a nonblocking async C++ memcached (or membase cluster) client library. This library is currently used in production which sends more than 300 billion requests every day. See [evmc readme](/apps/evmc/readme.md) for more details.
-2. [evnsq] a nonblocking async C++ NSQ client library. This library is currently used in production which processes more than 130 billion messages every day. See [evnsq readme](/apps/evnsq/readme.md) for more details.
+1. [evmc] a nonblocking async C++ memcached (or membase cluster) client library. This library is currently used in production which sends more than 300 billions requests every day. See [evmc readme](/apps/evmc/readme.md) for more details.
+2. [evnsq] a nonblocking async C++ NSQ client library. This library is currently used in production which processes more than 130 billions messages every day. See [evnsq readme](/apps/evnsq/readme.md) for more details.
 
 NOTE: master is our development branch and may not be stable at all times.
 
