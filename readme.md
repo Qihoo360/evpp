@@ -22,12 +22,13 @@ evpp
 1. A nonblocking multi-threaded UDP server
 1. Async DNS resolving
 1. EventLoop/ThreadPool/Timer
+2. Well tested — [evpp] is well tested with unit tests and stress tested daily in production. It has been used in production and processes 1000+ billions networking communications every day in our production
+3. Easy install — [evpp] can be packaged as a deb, rpm, tar.gz with a single command for straight forward distribution and integration
 
 And also provides some libraries based on [evpp]:
 
 1. [evmc] a nonblocking async C++ memcached (or membase cluster) client library. This library is currently used in production which sends more than 300 billion requests every day. See [evmc readme](/apps/evmc/readme.md) for more details.
 2. [evnsq] a nonblocking async C++ NSQ client library. This library is currently used in production which processes more than 130 billion messages every day. See [evnsq readme](/apps/evnsq/readme.md) for more details.
-
 
 NOTE: master is our development branch and may not be stable at all times.
 
