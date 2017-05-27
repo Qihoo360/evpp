@@ -1,9 +1,5 @@
 #pragma once
 
-#ifndef _WIN32
-#error "It can ONLY be included in windows platform."
-#endif
-
 // Fix VS compile warning
 // 1>c:\program files (x86)\microsoft visual studio 14.0\vc\include\xkeycheck.h(250): fatal error C1189: #error:  The C++ Standard Library forbids macroizing keywords. Enable warning C4005 to find the forbidden macro.
 #ifdef __cplusplus

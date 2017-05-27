@@ -10,6 +10,4 @@
 #endif
 #endif
 
-#ifdef _WIN32
 #include "windows_port.h"
-#endif
