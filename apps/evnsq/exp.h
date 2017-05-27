@@ -1,6 +1,5 @@
 #pragma once
 
-#include <evpp/exp.h>
 #include "evnsq_export.h"
 #include "consumer.h"
 

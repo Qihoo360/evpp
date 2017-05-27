@@ -29,7 +29,7 @@
     <ClCompile Include="..\evpp\http\http_server.cc" />
     <ClCompile Include="..\evpp\inner_pre.cc" />
     <ClCompile Include="..\evpp\invoke_timer.cc" />
-    <ClCompile Include="..\evpp\libevent_compact.cc" />
+    <ClCompile Include="..\evpp\libevent.cc" />
     <ClCompile Include="..\evpp\event_watcher.cc" />
     <ClCompile Include="..\evpp\listener.cc" />
     <ClCompile Include="..\evpp\sockets.cc" />
@@ -49,8 +49,6 @@
     <ClInclude Include="..\evpp\event_loop.h" />
     <ClInclude Include="..\evpp\event_loop_thread.h" />
     <ClInclude Include="..\evpp\event_loop_thread_pool.h" />
-    <ClInclude Include="..\evpp\evpp_export.h" />
-    <ClInclude Include="..\evpp\exp.h" />
     <ClInclude Include="..\evpp\fd_channel.h" />
     <ClInclude Include="..\evpp\httpc\conn.h" />
     <ClInclude Include="..\evpp\httpc\request.h" />
@@ -62,7 +60,7 @@
     <ClInclude Include="..\evpp\http\http_server.h" />
     <ClInclude Include="..\evpp\inner_pre.h" />
     <ClInclude Include="..\evpp\invoke_timer.h" />
-    <ClInclude Include="..\evpp\libevent_headers.h" />
+    <ClInclude Include="..\evpp\libevent.h" />
     <ClInclude Include="..\evpp\event_watcher.h" />
     <ClInclude Include="..\evpp\listener.h" />
     <ClInclude Include="..\evpp\log_config.h" />
@@ -84,6 +82,7 @@
     <ClInclude Include="..\evpp\udp\udp_message.h" />
     <ClInclude Include="..\evpp\udp\udp_server.h" />
     <ClInclude Include="..\evpp\utility.h" />
+    <ClInclude Include="..\evpp\windows_port.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4877AA94-AD55-407F-9ED3-D4503FAB2A7F}</ProjectGuid>

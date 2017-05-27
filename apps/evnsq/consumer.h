@@ -5,7 +5,6 @@
 #include <atomic>
 #include <map>
 
-#include <evpp/exp.h>
 #include <evpp/tcp_callbacks.h>
 
 #include "evnsq_export.h"

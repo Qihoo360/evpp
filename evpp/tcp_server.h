@@ -30,9 +30,9 @@ class Listener;
 //     evpp::EventLoop loop;
 //     evpp::TCPServer server(&loop, addr, "TCPEchoServer", thread_num);
 //     server.SetMessageCallback([](const evpp::TCPConnPtr& conn,
-//                                  evpp::Buffer* msg,
-//                                  evpp::Timestamp ts) {
-//         conn->Send(msg);
+//                                  evpp::Buffer* msg) {
+//         // Do something with the received message
+//         conn->Send(msg); // At here, we just send the received message back.
 //     });
 //     server.SetConnectionCallback([](const evpp::TCPConnPtr& conn) {
 //         if (conn->IsConnected()) {

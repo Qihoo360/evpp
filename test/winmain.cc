@@ -1,6 +1,6 @@
 #include "test_common.h"
 
-#include "evpp/libevent_headers.h"
+#include "evpp/libevent.h"
 
 namespace {
 #ifdef WIN32
@@ -23,13 +23,6 @@ struct OnApp {
 #endif
 }
 
-#ifdef _WIN32
-#pragma comment(lib, "evpp_static.lib")
-#pragma comment(lib, "glog.lib")
-#pragma comment(lib, "Ws2_32.lib")
-#pragma comment(lib, "event.lib")
-#pragma comment(lib, "event_core.lib") // libevent2.0
-#pragma comment(lib, "event_extra.lib") // libevent2.0
-#endif
+
 
 // main function is defined on gtest_main.cc

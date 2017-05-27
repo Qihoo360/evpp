@@ -37,9 +37,6 @@
     <ClCompile Include="..\evpp\inner_pre.cc">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\evpp\libevent_compact.cc">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\evpp\fd_channel.cc">
       <Filter>tcp</Filter>
     </ClCompile>
@@ -115,15 +112,12 @@
     <ClCompile Include="..\evpp\event_watcher.cc">
       <Filter>evloop</Filter>
     </ClCompile>
+    <ClCompile Include="..\evpp\libevent.cc">
+      <Filter>common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\evpp\exp.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\evpp\inner_pre.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\evpp\libevent_headers.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\fd_channel.h">
@@ -140,9 +134,6 @@
     </ClInclude>
     <ClInclude Include="..\evpp\sockets.h">
       <Filter>tcp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\evpp\evpp_export.h">
-      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\log_config.h">
       <Filter>common</Filter>
@@ -248,6 +239,12 @@
     </ClInclude>
     <ClInclude Include="..\evpp\event_watcher.h">
       <Filter>evloop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\windows_port.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\libevent.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

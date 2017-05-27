@@ -3,6 +3,7 @@
 #include <atomic>
 
 #include "evpp/inner_pre.h"
+#include "evpp/utility.h"
 
 namespace evpp {
 class ServerStatus {

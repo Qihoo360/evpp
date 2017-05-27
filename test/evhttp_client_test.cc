@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <evpp/libevent_headers.h>
+#include <evpp/libevent.h>
 #include <evpp/timestamp.h>
 #include <evpp/event_loop_thread.h>
 

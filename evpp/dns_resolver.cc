@@ -2,7 +2,7 @@
 #include "evpp/dns_resolver.h"
 #include "evpp/event_loop.h"
 #include "evpp/event_watcher.h"
-#include "evpp/libevent_headers.h"
+#include "evpp/libevent.h"
 
 namespace evpp {
 DNSResolver::DNSResolver(EventLoop* evloop, const std::string& h, Duration timeout, const Functor& f)

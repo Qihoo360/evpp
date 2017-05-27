@@ -16,8 +16,7 @@ Quick Start
 ### Install dependent open source code
 
 1. Install glog
-2. Install gtest
-2. Install libevent 2.x
+2. Install libevent-2.x
 
 ### Download the source code of evpp
 
@@ -60,6 +59,19 @@ And in another console:
 
 	$ curl "http://127.0.0.1:9009/echo" -d "Hello, world"
 	Hello, world
+
+Run a TCP echo server example:
+
+	$ ./example_tcpecho
+
+And in another console:
+
+	$ telnet 127.0.0.1 9099 
+	Trying 127.0.0.1...
+	Connected to 127.0.0.1.
+	Escape character is '^]'.
+
+Here we can type any words and we will find it is responsed by our TCP echo server. 
 
 ### Other
 

@@ -1,7 +1,7 @@
 #include "evpp/inner_pre.h"
 
 #include "sync_udp_client.h"
-#include "evpp/libevent_headers.h"
+#include "evpp/libevent.h"
 #include "evpp/sockets.h"
 
 namespace evpp {

@@ -2,11 +2,6 @@
 
 #include <gtest/gtest.h>
 
-#ifdef _WIN32
-#pragma comment(lib, "gtest.lib")
-#pragma comment(lib, "gtest_main.lib")
-#endif
-
 //
 //   How to write a unit test:
 //   Please see <code>*_test.cc</code>

@@ -90,6 +90,12 @@
     <ClCompile Include="..\test\sockets_test.cc">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="..\3rdparty\gtest\src\gtest_main.cc">
+      <Filter>gtest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\gtest\src\gtest-all.cc">
+      <Filter>gtest</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\test\test_common.h">

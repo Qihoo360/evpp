@@ -19,8 +19,7 @@ Use [vcpkg](https://github.com/Microsoft/vcpkg) to install libevent,glog,gtest,g
 
 	D:\git\vcpkg>vcpkg install gflags
 	D:\git\vcpkg>vcpkg install glog
-	D:\git\vcpkg>vcpkg install gtest
-	D:\git\vcpkg>vcpkg install libevent
+	D:\git\vcpkg>vcpkg install libevent-2.x
 
 ### Download the source code of evpp
 
@@ -35,7 +34,7 @@ Using the default vs solution file:
 	$ start vsprojects/libevpp.sln
 	... # here yo can use Visual Studio 2015 to compile the whole evpp project
 
-Or, we can use CMake to compile the whole projects on WIDNOWS command line console (This is does not work on mingw-shell):
+Or, we can use CMake to compile the whole projects on WIDNOWS command line console (This does not work on unix shell):
 
 	D:\360.git\evpp>md build
 	D:\360.git\evpp>cd build

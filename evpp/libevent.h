@@ -1,6 +1,6 @@
 /********************************************************************
  *  Created:    2014/03/06 14:19
- *  File name:  libevent_headers.h
+ *  File name:  libevent.h
  *  Author:     weizili
  *  Purpose:
  *
@@ -8,9 +8,9 @@
  ********************************************************************/
 #pragma once
 
-#include "evpp_export.h"
+#include "platform_config.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <WinSock2.h>
 #else
 #include <sys/queue.h>

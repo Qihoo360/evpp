@@ -3,7 +3,7 @@
 #include "evpp/listener.h"
 #include "evpp/event_loop.h"
 #include "evpp/fd_channel.h"
-#include "evpp/libevent_headers.h"
+#include "evpp/libevent.h"
 #include "evpp/sockets.h"
 
 namespace evpp {

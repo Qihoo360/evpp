@@ -1,6 +1,6 @@
 #include "evpp/inner_pre.h"
 
-#include "evpp/libevent_headers.h"
+#include "evpp/libevent.h"
 
 #ifdef H_OS_WINDOWS
 #pragma comment(lib,"Ws2_32.lib")
@@ -15,7 +15,6 @@
 #include <mutex>
 
 namespace evpp {
-
 
 namespace {
 struct OnStartup {
