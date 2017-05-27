@@ -125,9 +125,6 @@
     <ClInclude Include="..\apps\evmc\vbucket_config.h">
       <Filter>evmc</Filter>
     </ClInclude>
-    <ClInclude Include="..\apps\evmc\exp.h">
-      <Filter>evmc</Filter>
-    </ClInclude>
     <ClInclude Include="..\apps\evmc\random.h">
       <Filter>evmc</Filter>
     </ClInclude>
@@ -144,6 +141,9 @@
       <Filter>evmc</Filter>
     </ClInclude>
     <ClInclude Include="..\apps\evmc\memcached.h">
+      <Filter>evmc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evmc\config.h">
       <Filter>evmc</Filter>
     </ClInclude>
   </ItemGroup>

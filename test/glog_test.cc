@@ -1,4 +1,4 @@
-#include <evpp/log_config.h>
+#include <evpp/logging.h>
 
 #include "test_common.h"
 

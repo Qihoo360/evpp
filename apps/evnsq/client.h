@@ -7,7 +7,7 @@
 #include <map>
 #include <set>
 
-#include "evnsq_export.h"
+#include "evnsq/config.h"
 #include "option.h"
 #include "message.h"
 #include "nsq_conn.h"

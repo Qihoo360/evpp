@@ -1,4 +1,3 @@
-#include <evnsq/exp.h>
 #include <evnsq/consumer.h>
 #include <evpp/event_loop.h>
 

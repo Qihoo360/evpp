@@ -1,9 +1,16 @@
 #pragma once
-#include "vbucket_config.h"
+
 #include <map>
-#include "evpp/event_loop_thread_pool.h"
-#include "memcache_client.h"
 #include <mutex>
+
+
+#include "evmc/config.h"
+
+#include "evpp/event_loop_thread_pool.h"
+
+#include "vbucket_config.h"
+#include "memcache_client.h"
+
 namespace evmc {
 class MemcacheClientBase {
 public:

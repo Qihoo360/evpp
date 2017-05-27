@@ -4,6 +4,7 @@
 #include "vbucket_config.h"
 #include "command.h"
 #include "memcache_client_base.h"
+
 namespace evmc {
 
 typedef std::map<std::string, MemcacheClientPtr> MemcClientMap;

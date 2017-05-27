@@ -1,7 +1,8 @@
 #pragma once
 
+#include "evmc/config.h"
+
 #include "mctypes.h"
-#include <glog/logging.h>
 #include "likely.h"
 
 namespace evmc {

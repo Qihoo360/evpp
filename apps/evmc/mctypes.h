@@ -5,8 +5,8 @@
 #include "evpp/buffer.h"
 #include "evpp/tcp_conn.h"
 #include "evpp/tcp_client.h"
-#include "glog/logging.h"
-//#include "objectpool.hpp"
+
+#include "evmc/config.h"
 
 namespace evmc {
 

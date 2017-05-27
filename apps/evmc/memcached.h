@@ -1,3 +1,5 @@
 #pragma once
-#include "memcache_client_pool.h"
-#include "memcache_client_serial.h"
+
+#include "evmc/config.h"
+#include "evmc/memcache_client_pool.h"
+#include "evmc/memcache_client_serial.h"

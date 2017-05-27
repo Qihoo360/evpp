@@ -8,7 +8,7 @@
 #include <evpp/duration.h>
 #include <evpp/utility.h>
 
-#include "evnsq_export.h"
+#include "evnsq/config.h"
 #include "message.h"
 
 namespace evnsq {

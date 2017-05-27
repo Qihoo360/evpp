@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "evnsq_export.h"
+#include "evnsq/config.h"
 
 #include <evpp/duration.h>
 

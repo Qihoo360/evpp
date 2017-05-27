@@ -1,4 +1,3 @@
-#include <evmc/exp.h>
 #include <evmc/memcache_client_serial.h>
 #include <evmc/memcache_client_pool.h>
 #include <evmc/vbucket_config.h>

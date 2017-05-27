@@ -1,7 +1,5 @@
 #pragma once
 
-#include "mctypes.h"
-
 #include <queue>
 
 #include "evpp/tcp_conn.h"
@@ -11,6 +9,7 @@
 #include "evpp/event_loop.h"
 #include "evpp/event_loop_thread_pool.h"
 
+#include "mctypes.h"
 #include "command.h"
 #include "memcache_client_base.h"
 

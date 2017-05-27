@@ -1,14 +1,14 @@
 #pragma once
 
-//! Define Operation System.
-#if ( defined(WIN32) || defined(WIN64) )
-#   ifndef H_OS_WINDOWS
-#       define H_OS_WINDOWS
-#   endif
-#   ifndef H_WINDOWS_API
-#       define H_WINDOWS_API
-#   endif
+#include <evpp/windows_port.h>
+
+// We must link against these libraries on windows platform for Visual Studio IDE
+#ifdef _WIN32
+#ifndef EVNSQ_EXPORTS
+#pragma comment(lib, "evnsq_static.lib")
 #endif
+#endif
+
 
 //! Module symbol export
 // #ifdef H_WINDOWS_API
@@ -24,6 +24,5 @@
 // #else
 // #   define EVNSQ_EXPORT
 // #endif // H_STATIC_LIB_
-
 
 #define EVNSQ_EXPORT

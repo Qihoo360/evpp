@@ -8,7 +8,7 @@
 
 #include <evpp/timestamp.h>
 
-#include "evnsq_export.h"
+#include "evnsq/config.h"
 #include "option.h"
 #include "message.h"
 #include "command.h"

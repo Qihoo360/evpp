@@ -1,9 +1,12 @@
 #pragma once
+
+#include <queue>
+
 #include "mctypes.h"
 #include "vbucket_config.h"
-#include <queue>
 #include "memcache_client_base.h"
 #include "evpp/event_loop_thread_pool.h"
+
 namespace evmc {
 
 class MemcacheClientSerial : public MemcacheClientBase {

@@ -55,7 +55,7 @@
     <ClInclude Include="..\3rdparty\libhashkit\visibility.h" />
     <ClInclude Include="..\apps\evmc\binary_codec.h" />
     <ClInclude Include="..\apps\evmc\command.h" />
-    <ClInclude Include="..\apps\evmc\exp.h" />
+    <ClInclude Include="..\apps\evmc\config.h" />
     <ClInclude Include="..\apps\evmc\extract_vbucket_conf.h" />
     <ClInclude Include="..\apps\evmc\likely.h" />
     <ClInclude Include="..\apps\evmc\mctypes.h" />
@@ -147,7 +147,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32; BUILDING_HASHKIT;_DEBUG;_WINDOWS;_USRDLL;EVMC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..;../3rdparty;$(VcpkgRoot)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../apps/;../3rdparty;$(VcpkgRoot)include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -177,7 +177,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32; BUILDING_HASHKIT;NDEBUG;_WINDOWS;_USRDLL;EVMC_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..;../3rdparty;$(VcpkgRoot)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../apps/;../3rdparty;$(VcpkgRoot)include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

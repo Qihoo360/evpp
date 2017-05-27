@@ -7,7 +7,7 @@
 
 #include <evpp/tcp_callbacks.h>
 
-#include "evnsq_export.h"
+#include "evnsq/config.h"
 
 #include "client.h"
 

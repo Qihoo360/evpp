@@ -1,11 +1,13 @@
 #pragma once
 
 #include <stdint.h>
+
 #include <memcached/protocol_binary.h>
 
 #include "evpp/buffer.h"
 #include "evpp/tcp_conn.h"
 #include "evpp/timestamp.h"
+
 #include "command.h"
 
 namespace evmc {

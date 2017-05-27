@@ -29,13 +29,13 @@
   <ItemGroup>
     <ClInclude Include="..\apps\evnsq\client.h" />
     <ClInclude Include="..\apps\evnsq\command.h" />
+    <ClInclude Include="..\apps\evnsq\config.h" />
     <ClInclude Include="..\apps\evnsq\nsq_conn.h" />
     <ClInclude Include="..\apps\evnsq\consumer.h" />
-    <ClInclude Include="..\apps\evnsq\evnsq_export.h" />
-    <ClInclude Include="..\apps\evnsq\exp.h" />
     <ClInclude Include="..\apps\evnsq\message.h" />
     <ClInclude Include="..\apps\evnsq\option.h" />
     <ClInclude Include="..\apps\evnsq\producer.h" />
+    <ClInclude Include="..\apps\evnsq\windows_port.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{88DAC3B3-597B-4523-B747-81FD02C93B64}</ProjectGuid>
@@ -112,7 +112,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EVNSQ_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..;../3rdparty;$(VcpkgRoot)include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../apps/;../3rdparty;$(VcpkgRoot)include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -142,7 +142,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EVNSQ_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..;../3rdparty;$(VcpkgRoot)include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../apps/;../3rdparty;$(VcpkgRoot)include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

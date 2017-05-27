@@ -9,12 +9,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\apps\evnsq\evnsq_export.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\apps\evnsq\exp.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\apps\evnsq\command.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -34,6 +28,12 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\apps\evnsq\nsq_conn.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evnsq\windows_port.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\apps\evnsq\config.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
