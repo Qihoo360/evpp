@@ -10,7 +10,7 @@ namespace evpp {
 static_assert(FdChannel::kReadable == EV_READ, "");
 static_assert(FdChannel::kWritable == EV_WRITE, "");
 
-FdChannel::FdChannel(EventLoop* l, int f, bool r, bool w)
+FdChannel::FdChannel(EventLoop* l, evpp_socket_t f, bool r, bool w)
     : loop_(l), attached_(false), event_(nullptr), fd_(f) {
     DLOG_TRACE << "fd=" << fd_;
     assert(fd_ > 0);
@@ -147,12 +147,12 @@ std::string FdChannel::EventsToString() const {
     return s;
 }
 
-void FdChannel::HandleEvent(int sockfd, short which, void* v) {
+void FdChannel::HandleEvent(evpp_socket_t sockfd, short which, void* v) {
     FdChannel* c = (FdChannel*)v;
     c->HandleEvent(sockfd, which);
 }
 
-void FdChannel::HandleEvent(int sockfd, short which) {
+void FdChannel::HandleEvent(evpp_socket_t sockfd, short which) {
     assert(sockfd == fd_);
     DLOG_TRACE << "fd=" << sockfd << " " << EventsToString();
 

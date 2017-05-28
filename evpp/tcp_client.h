@@ -95,7 +95,7 @@ public:
     }
 private:
     void DisconnectInLoop();
-    void OnConnection(int sockfd, const std::string& laddr);
+    void OnConnection(evpp_socket_t sockfd, const std::string& laddr);
     void OnRemoveConnection(const TCPConnPtr& conn);
     void Reconnect();
 private:

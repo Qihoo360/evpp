@@ -25,7 +25,7 @@ public:
     typedef std::function<void()> ReadEventCallback;
 
 public:
-    FdChannel(EventLoop* loop, int fd,
+    FdChannel(EventLoop* loop, evpp_socket_t fd,
               bool watch_read_event, bool watch_write_event);
     ~FdChannel();
 
@@ -56,7 +56,7 @@ public:
     void DisableAllEvent();
 
 public:
-    int fd() const {
+    evpp_socket_t fd() const {
         return fd_;
     }
     std::string EventsToString() const;
@@ -71,8 +71,8 @@ public:
     }
 
 private:
-    void HandleEvent(int fd, short which);
-    static void HandleEvent(int fd, short which, void* v);
+    void HandleEvent(evpp_socket_t fd, short which);
+    static void HandleEvent(evpp_socket_t fd, short which, void* v);
 
     void Update();
     void DetachFromLoop();
@@ -86,7 +86,7 @@ private:
     struct event* event_;
     int events_; // the bitwise OR of zero or more of the EventType flags
 
-    int fd_;
+    evpp_socket_t fd_;
 };
 
 }

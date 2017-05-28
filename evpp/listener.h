@@ -10,7 +10,7 @@ class FdChannel;
 class EVPP_EXPORT Listener {
 public:
     typedef std::function <
-    void(int sockfd,
+    void(evpp_socket_t sockfd,
          const std::string& /*remote address with format "ip:port"*/,
          const struct sockaddr_in* /*remote address*/) >
     NewConnectionCallback;
@@ -33,7 +33,7 @@ private:
     void HandleAccept();
 
 private:
-    int fd_ = -1;// The listening socket fd
+    evpp_socket_t fd_ = -1;// The listening socket fd
     EventLoop* loop_;
     std::string addr_;
     std::unique_ptr<FdChannel> chan_;

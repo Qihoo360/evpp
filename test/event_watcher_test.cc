@@ -73,7 +73,7 @@ TEST_UNIT(testTimerEventWatcher) {
 }
 
 TEST_UNIT(testsocketpair) {
-    int sockpair[2];
+    evpp_socket_t sockpair[2];
     memset(sockpair, 0, sizeof(sockpair[0] * 2));
     int r = evutil_socketpair(AF_UNIX, SOCK_STREAM, 0, sockpair);
     H_TEST_ASSERT(r >= 0);

@@ -8,7 +8,7 @@ namespace evpp {
 namespace udp {
 class EVPP_EXPORT Message : public Buffer {
 public:
-    Message(int fd, size_t buffer_size = 1472)
+    Message(evpp_socket_t fd, size_t buffer_size = 1472)
         : Buffer(buffer_size), sockfd_(fd) {
         memset(&remote_addr_, 0, sizeof(remote_addr_));
     }
@@ -20,7 +20,7 @@ public:
     }
     std::string remote_ip() const;
 
-    int sockfd() const {
+    evpp_socket_t sockfd() const {
         return sockfd_;
     }
 private:
@@ -41,7 +41,7 @@ inline std::string Message::remote_ip() const {
     return sock::ToIP(remote_addr());
 }
 
-inline bool SendMessage(int fd, const struct sockaddr* addr, const char* d, size_t dlen) {
+inline bool SendMessage(evpp_socket_t fd, const struct sockaddr* addr, const char* d, size_t dlen) {
     if (dlen == 0) {
         return true;
     }
@@ -54,11 +54,11 @@ inline bool SendMessage(int fd, const struct sockaddr* addr, const char* d, size
     return true;
 }
 
-inline bool SendMessage(int fd, const struct sockaddr* addr, const std::string& d) {
+inline bool SendMessage(evpp_socket_t fd, const struct sockaddr* addr, const std::string& d) {
     return SendMessage(fd, addr, d.data(), d.size());
 }
 
-inline bool SendMessage(int fd, const struct sockaddr* addr, const Slice& d) {
+inline bool SendMessage(evpp_socket_t fd, const struct sockaddr* addr, const Slice& d) {
     return SendMessage(fd, addr, d.data(), d.size());
 }
 

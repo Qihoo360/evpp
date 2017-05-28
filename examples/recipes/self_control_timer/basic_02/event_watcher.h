@@ -1,5 +1,9 @@
 #pragma once
 
+#include <event2/event.h>
+#include <event2/event_struct.h>
+#include <event2/event_compat.h>
+
 #include <functional>
 
 struct event;
@@ -41,7 +45,7 @@ namespace recipes {
 
     private:
         virtual bool DoInit();
-        static void HandlerFn(int fd, short which, void* v);
+        static void HandlerFn(evutil_socket_t fd, short which, void* v);
     private:
         double timeout_ms_;
     };

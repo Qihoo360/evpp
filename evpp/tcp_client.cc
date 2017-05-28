@@ -94,7 +94,7 @@ void TCPClient::SetConnectionCallback(const ConnectionCallback& cb) {
     }
 }
 
-void TCPClient::OnConnection(int sockfd, const std::string& laddr) {
+void TCPClient::OnConnection(evpp_socket_t sockfd, const std::string& laddr) {
     if (sockfd < 0) {
         DLOG_TRACE << "Failed to connect to " << remote_addr_ << ". errno=" << errno << " " << strerror(errno);
         // We need to notify this failure event to the user layer

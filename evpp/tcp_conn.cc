@@ -11,7 +11,7 @@
 namespace evpp {
 TCPConn::TCPConn(EventLoop* l,
                  const std::string& n,
-                 int sockfd,
+                 evpp_socket_t sockfd,
                  const std::string& laddr,
                  const std::string& raddr,
                  uint64_t conn_id)

@@ -1,10 +1,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include <event2/event.h>
-#include <event2/event_struct.h>
-#include <event2/event_compat.h>
-
 #include <iostream>
 
 #include "event_watcher.h"
@@ -106,7 +102,7 @@ namespace recipes {
         return true;
     }
 
-    void TimerEventWatcher::HandlerFn(int /*fd*/, short /*which*/, void* v) {
+    void TimerEventWatcher::HandlerFn(evutil_socket_t /*fd*/, short /*which*/, void* v) {
         TimerEventWatcher* h = (TimerEventWatcher*)v;
         h->handler_();
     }

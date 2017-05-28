@@ -57,13 +57,13 @@ public:
 
     bool AsyncWait();
     void Notify();
-    int wfd() const {        return pipe_[0];    }
+    evpp_socket_t wfd() const { return pipe_[0]; }
 private:
     virtual bool DoInit();
     virtual void DoClose();
-    static void HandlerFn(int fd, short which, void* v);
+    static void HandlerFn(evpp_socket_t fd, short which, void* v);
 
-    int pipe_[2]; // Write to pipe_[0] , Read from pipe_[1]
+    evpp_socket_t pipe_[2]; // Write to pipe_[0] , Read from pipe_[1]
 };
 
 class EVPP_EXPORT TimerEventWatcher : public EventWatcher {
@@ -77,20 +77,20 @@ public:
 
 private:
     virtual bool DoInit();
-    static void HandlerFn(int fd, short which, void* v);
+    static void HandlerFn(evpp_socket_t fd, short which, void* v);
 private:
     Duration timeout_;
 };
 
 class EVPP_EXPORT SignalEventWatcher : public EventWatcher {
 public:
-    SignalEventWatcher(int signo, EventLoop* loop, const Handler& handler);
-    SignalEventWatcher(int signo, EventLoop* loop, Handler&& handler);
+    SignalEventWatcher(signal_number_t signo, EventLoop* loop, const Handler& handler);
+    SignalEventWatcher(signal_number_t signo, EventLoop* loop, Handler&& handler);
 
     bool AsyncWait();
 private:
     virtual bool DoInit();
-    static void HandlerFn(int sn, short which, void* v);
+    static void HandlerFn(signal_number_t sn, short which, void* v);
 
     int signo_;
 };

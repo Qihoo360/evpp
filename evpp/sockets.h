@@ -1,6 +1,7 @@
 #pragma once
 
 #include "evpp/sys_addrinfo.h"
+#include "evpp/sys_sockets.h"
 
 #include <string.h>
 
@@ -12,14 +13,14 @@ EVPP_EXPORT std::string strerror(int e);
 
 namespace sock {
 
-EVPP_EXPORT int CreateNonblockingSocket();
-EVPP_EXPORT int CreateUDPServer(int port);
-EVPP_EXPORT void SetKeepAlive(int fd, bool on);
-EVPP_EXPORT void SetReuseAddr(int fd);
-EVPP_EXPORT void SetReusePort(int fd);
-EVPP_EXPORT void SetTCPNoDelay(int fd, bool on);
-EVPP_EXPORT void SetTimeout(int fd, uint32_t timeout_ms);
-EVPP_EXPORT void SetTimeout(int fd, const Duration& timeout);
+EVPP_EXPORT evpp_socket_t CreateNonblockingSocket();
+EVPP_EXPORT evpp_socket_t CreateUDPServer(int port);
+EVPP_EXPORT void SetKeepAlive(evpp_socket_t fd, bool on);
+EVPP_EXPORT void SetReuseAddr(evpp_socket_t fd);
+EVPP_EXPORT void SetReusePort(evpp_socket_t fd);
+EVPP_EXPORT void SetTCPNoDelay(evpp_socket_t fd, bool on);
+EVPP_EXPORT void SetTimeout(evpp_socket_t fd, uint32_t timeout_ms);
+EVPP_EXPORT void SetTimeout(evpp_socket_t fd, const Duration& timeout);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr_storage* ss);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr* ss);
 EVPP_EXPORT std::string ToIPPort(const struct sockaddr_in* ss);
@@ -47,7 +48,7 @@ inline struct sockaddr_storage ParseFromIPPort(const char* address) {
 // @return bool - false if the network address is invalid format
 EVPP_EXPORT bool SplitHostPort(const char* address, std::string& host, int& port);
 
-EVPP_EXPORT struct sockaddr_storage GetLocalAddr(int sockfd);
+EVPP_EXPORT struct sockaddr_storage GetLocalAddr(evpp_socket_t sockfd);
 
 inline bool IsZeroAddress(const struct sockaddr_storage* ss) {
     const char* p = reinterpret_cast<const char*>(ss);
@@ -117,5 +118,5 @@ inline const struct sockaddr_storage* sockaddr_storage_cast(const struct sockadd
 }
 
 #ifdef H_OS_WINDOWS
-EVPP_EXPORT int readv(int sockfd, struct iovec* iov, int iovcnt);
+EVPP_EXPORT int readv(evpp_socket_t sockfd, struct iovec* iov, int iovcnt);
 #endif

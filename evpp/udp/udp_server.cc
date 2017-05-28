@@ -81,7 +81,7 @@ public:
         status_ = s;
     }
 
-    int fd() const {
+    evpp_socket_t fd() const {
         return fd_;
     }
 

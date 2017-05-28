@@ -31,7 +31,7 @@ public:
 public:
     TCPConn(EventLoop* loop,
             const std::string& name,
-            int sockfd,
+            evpp_socket_t sockfd,
             const std::string& laddr,
             const std::string& raddr,
             uint64_t id);
@@ -50,7 +50,7 @@ public:
     EventLoop* loop() const {
         return loop_;
     }
-    int fd() const {
+    evpp_socket_t fd() const {
         return fd_;
     }
     uint64_t id() const {

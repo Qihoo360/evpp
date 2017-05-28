@@ -2,7 +2,7 @@
 #include "evpp/libevent.h"
 
 #ifdef H_LIBEVENT_VERSION_14
-struct event* event_new(struct event_base* base, int fd, short events,
+struct event* event_new(struct event_base* base, evpp_socket_t fd, short events,
                         void(*cb)(int, short, void*), void* arg) {
     struct event* ev;
     ev = (struct event*)malloc(sizeof(struct event));

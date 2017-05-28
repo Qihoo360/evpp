@@ -20,7 +20,7 @@
 
 using namespace evpp;
 
-std::vector<int> g_pipes;
+std::vector<evpp_socket_t> g_pipes;
 int numPipes;
 int numActive;
 int numWrites;
@@ -30,7 +30,7 @@ std::vector<FdChannel*> g_channels;
 int g_reads, g_writes, g_fired;
 int g_total_reads = 0;
 
-void readCallback(int fd, int idx) {
+void readCallback(evpp_socket_t fd, int idx) {
     g_total_reads++;
     char ch = 0;
     g_reads += static_cast<int>(::recv(fd, &ch, sizeof(ch), 0));

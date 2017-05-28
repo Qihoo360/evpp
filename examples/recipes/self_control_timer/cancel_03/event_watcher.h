@@ -1,5 +1,9 @@
 #pragma once
 
+#include <event2/event.h>
+#include <event2/event_struct.h>
+#include <event2/event_compat.h>
+
 #include <functional>
 
 struct event;
@@ -56,9 +60,9 @@ public:
 private:
     virtual bool DoInit();
     virtual void DoClose();
-    static void HandlerFn(int fd, short which, void* v);
+    static void HandlerFn(evutil_socket_t fd, short which, void* v);
 
-    int pipe_[2]; // Write to pipe_[0] , Read from pipe_[1]
+    evutil_socket_t pipe_[2]; // Write to pipe_[0] , Read from pipe_[1]
 };
 
 class TimerEventWatcher : public EventWatcher {
@@ -69,7 +73,7 @@ public:
 
 private:
     virtual bool DoInit();
-    static void HandlerFn(int fd, short which, void* v);
+    static void HandlerFn(evutil_socket_t fd, short which, void* v);
 private:
     double timeout_ms_;
 };

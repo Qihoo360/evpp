@@ -149,7 +149,7 @@ void PipeEventWatcher::DoClose() {
     }
 }
 
-void PipeEventWatcher::HandlerFn(int /*fd*/, short /*which*/, void* v) {
+void PipeEventWatcher::HandlerFn(evpp_socket_t /*fd*/, short /*which*/, void* v) {
     PipeEventWatcher* e = (PipeEventWatcher*)v;
 #ifdef H_BENCHMARK_TESTING
     // Every time we only read 1 byte for testing the IO event performance.
@@ -213,7 +213,7 @@ bool TimerEventWatcher::DoInit() {
     return true;
 }
 
-void TimerEventWatcher::HandlerFn(int /*fd*/, short /*which*/, void* v) {
+void TimerEventWatcher::HandlerFn(evpp_socket_t /*fd*/, short /*which*/, void* v) {
     TimerEventWatcher* h = (TimerEventWatcher*)v;
     h->handler_();
 }
@@ -226,14 +226,14 @@ bool TimerEventWatcher::AsyncWait() {
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
-SignalEventWatcher::SignalEventWatcher(int signo, EventLoop* loop,
+SignalEventWatcher::SignalEventWatcher(signal_number_t signo, EventLoop* loop,
                                        const Handler& handler)
     : EventWatcher(loop->event_base(), handler)
     , signo_(signo) {
     assert(signo_);
 }
 
-SignalEventWatcher::SignalEventWatcher(int signo, EventLoop* loop,
+SignalEventWatcher::SignalEventWatcher(signal_number_t signo, EventLoop* loop,
                                        Handler&& h)
     : EventWatcher(loop->event_base(), std::move(h))
     , signo_(signo) {
@@ -246,7 +246,7 @@ bool SignalEventWatcher::DoInit() {
     return true;
 }
 
-void SignalEventWatcher::HandlerFn(int /*sn*/, short /*which*/, void* v) {
+void SignalEventWatcher::HandlerFn(signal_number_t /*sn*/, short /*which*/, void* v) {
     SignalEventWatcher* h = (SignalEventWatcher*)v;
     h->handler_();
 }

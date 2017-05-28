@@ -1,10 +1,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include <event2/event.h>
-#include <event2/event_struct.h>
-#include <event2/event_compat.h>
-
 #include <iostream>
 
 
@@ -141,7 +137,7 @@ void PipeEventWatcher::DoClose() {
     }
 }
 
-void PipeEventWatcher::HandlerFn(int /*fd*/, short /*which*/, void* v) {
+void PipeEventWatcher::HandlerFn(evutil_socket_t /*fd*/, short /*which*/, void* v) {
     PipeEventWatcher* e = (PipeEventWatcher*)v;
     char buf[128];
     int n = 0;
@@ -178,7 +174,7 @@ bool TimerEventWatcher::DoInit() {
     return true;
 }
 
-void TimerEventWatcher::HandlerFn(int /*fd*/, short /*which*/, void* v) {
+void TimerEventWatcher::HandlerFn(evutil_socket_t /*fd*/, short /*which*/, void* v) {
     TimerEventWatcher* h = (TimerEventWatcher*)v;
     h->handler_();
 }

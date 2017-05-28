@@ -137,3 +137,12 @@ typedef int ssize_t;
     ((e) == ECONNREFUSED)
 
 #endif
+
+
+#ifdef H_OS_WINDOWS
+#define evpp_socket_t intptr_t
+#else
+#define evpp_socket_t int
+#endif
+
+#define signal_number_t evpp_socket_t

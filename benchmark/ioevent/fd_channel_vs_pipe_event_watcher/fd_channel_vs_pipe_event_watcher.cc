@@ -18,7 +18,7 @@
 
 using namespace evpp;
 
-std::vector<int> g_pipes;
+std::vector<evpp_socket_t> g_pipes;
 int numPipes;
 int numActive;
 int numWrites;
@@ -28,7 +28,7 @@ std::vector<std::shared_ptr<PipeEventWatcher>> g_pipe_event_watchers;
 
 int g_reads, g_writes, g_fired;
 
-void ReadCallbackOfFdChannel(int fd, int idx) {
+void ReadCallbackOfFdChannel(evpp_socket_t fd, int idx) {
     char ch = 'm';
 
     g_reads += static_cast<int>(::recv(fd, &ch, sizeof(ch), 0));
@@ -88,7 +88,7 @@ std::pair<int, int> FdChannelRunOnce() {
 std::pair<int, int> PipeEventWatcherRunOnce() {
     Timestamp beforeInit(Timestamp::Now());
     for (int i = 0; i < numActive; ++i) {
-        int fd = g_pipe_event_watchers[i]->wfd();
+        evpp_socket_t fd = g_pipe_event_watchers[i]->wfd();
         ::send(fd, "m", 1, 0);
     }
 
