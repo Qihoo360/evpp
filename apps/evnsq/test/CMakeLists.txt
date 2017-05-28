@@ -1,0 +1,1 @@
+add_subdirectory(producer_with_auth)

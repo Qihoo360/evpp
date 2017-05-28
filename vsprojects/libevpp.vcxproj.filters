@@ -135,9 +135,6 @@
     <ClInclude Include="..\evpp\sockets.h">
       <Filter>tcp</Filter>
     </ClInclude>
-    <ClInclude Include="..\evpp\log_config.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\evpp\platform_config.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -244,6 +241,9 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\evpp\libevent.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\evpp\logging.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
