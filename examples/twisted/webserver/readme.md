@@ -3,7 +3,6 @@ Here is a C++ HTTP web server which implements the example of [twisted](http://t
 ```C++
 #include <atomic>
 
-#include <evpp/exp.h>
 #include <evpp/http/http_server.h>
 
 std::atomic<int> request_count;

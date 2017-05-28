@@ -131,7 +131,6 @@ int main(int argc, char* argv[]) {
 ### An echo HTTP server
 
 ```cpp
-#include <evpp/exp.h>
 #include <evpp/http/http_server.h>
 
 int main(int argc, char* argv[]) {
@@ -158,7 +157,6 @@ int main(int argc, char* argv[]) {
 ### An echo UDP server
 
 ```cpp
-#include <evpp/exp.h>
 #include <evpp/udp/udp_server.h>
 #include <evpp/udp/udp_message.h>
 

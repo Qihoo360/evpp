@@ -7,7 +7,6 @@ You can test this out by opening two terminals and doing `telnet localhost 1025`
 ```C++
 #include <set>
 
-#include <evpp/exp.h>
 #include <evpp/tcp_server.h>
 #include <evpp/buffer.h>
 #include <evpp/tcp_conn.h>
@@ -18,7 +17,7 @@ public:
         std::string addr = std::string("0.0.0.0:") + std::to_string(port);
         loop_.reset(new evpp::EventLoop);
         server_.reset(new evpp::TCPServer(loop_.get(), addr, "ChatRoom", 0));
-        server_->SetMessageCallback(std::bind(&Server::OnMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        server_->SetMessageCallback(std::bind(&Server::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
         server_->SetConnectionCallback(std::bind(&Server::OnConnection, this, std::placeholders::_1));
     }
 
@@ -31,8 +30,7 @@ public:
 
 private:
     void OnMessage(const evpp::TCPConnPtr& conn,
-                   evpp::Buffer* msg,
-                   evpp::Timestamp ts) {
+                   evpp::Buffer* msg) {
         std::string s = msg->NextAllString();
         LOG_INFO << "Received a message [" << s << "]";
         if (s == "quit" || s == "exit") {
@@ -66,10 +64,12 @@ int main(int argc, char* argv[]) {
     if (argc == 2) {
         port = std::atoi(argv[1]);
     }
-    
+
     Server s(port);
     s.Run();
     return 0;
 }
 
 ```
+
+

@@ -47,6 +47,9 @@ core.*
 build
 build-debug
 build-release
+build-win64
+vcpkg-build-win64
+vcpkg-build
 
 
 apps/evnsq/evnsqtail/evnsqtail
