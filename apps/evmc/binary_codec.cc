@@ -36,6 +36,9 @@ void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& r
     const uint32_t buf_size = buf->size();
     int ret = resp.response.status;
     ptr->code = ret;
+    if (ret != (int)PROTOCOL_BINARY_RESPONSE_SUCCESS) {
+        return;
+    }
     while (pos < size) {
         if (pos >= buf_size || pos + 4 >= buf_size) {
             break;
