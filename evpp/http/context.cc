@@ -55,6 +55,35 @@ void Context::AddResponseHeader(const std::string& key, const std::string& value
     evhttp_add_header(req_->output_headers, key.data(), value.data());
 }
 
+std::string Context::FindRequestPathParameter(const char * key)
+{
+	if ((strchr(key, '?') != NULL) || (strchr(key, '&'))) {
+		return std::string();
+	}
+
+	char* beg = strchr(req_->uri, '?');
+	if (beg == NULL) { return std::string(); }
+
+	std::string fkey("?");
+	fkey.append(key).push_back('=');
+
+	char* kbeg = strstr(beg, fkey.c_str());
+	if (kbeg == NULL) {
+		fkey[0] = '&';
+		kbeg = strstr(beg, fkey.c_str());
+	}
+	if (kbeg == NULL) { return std::string(); }
+
+	char* vbeg = kbeg + fkey.size();
+	char* vend = strchr(vbeg, '&');
+
+	if (vend == NULL) {
+		return std::string(vbeg);
+	}
+	return std::string(vbeg,vend - vbeg);
+}
+
+
 const char* Context::FindRequestHeader(const char* key) {
     return evhttp_find_header(req_->input_headers, key);
 }
