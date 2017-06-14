@@ -26,11 +26,11 @@ public:
 
     void AddResponseHeader(const std::string& key, const std::string& value);
 
-	// 获取原始URI的参数.
+	// 获取原始URI的Query参数.
 	//
 	// @param   key URI参数的key.
 	// @returns 找到返回参数对应的字符串，没有找到或key不合法等返回空字符串.
-	std::string FindRequestPathParameter(const char* key);
+	std::string FindRequestUriQueryParam(const char* key) const;
 
     // Finds the value belonging to a header.
     //
