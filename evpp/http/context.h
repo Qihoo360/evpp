@@ -32,6 +32,11 @@ public:
 	// @returns 找到返回参数对应的字符串，没有找到或key不合法等返回空字符串.
 	std::string FindRequestUriQueryParam(const char* key, int keylen = -1) const;
 
+    inline std::string FindRequestUriQueryParam(const std::string& key) const {
+        return FindRequestUriQueryParam(key.c_str(), key.size());
+    }
+
+
     // Finds the value belonging to a header.
     //
     // @param key the name of the header to find

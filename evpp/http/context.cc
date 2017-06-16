@@ -58,7 +58,7 @@ void Context::AddResponseHeader(const std::string& key, const std::string& value
 std::string Context::FindRequestUriQueryParam(const char * key, int keylen) const
 {
     if(key == NULL){ return std::string(); }
-    if(len <= 0){ len = strlen(key); }
+    if(keylen <= 0){ keylen = strlen(key); }
 
     if ((strchr(key, '?') != NULL) || (strchr(key, '&'))) {
         return std::string();
