@@ -55,32 +55,35 @@ void Context::AddResponseHeader(const std::string& key, const std::string& value
     evhttp_add_header(req_->output_headers, key.data(), value.data());
 }
 
-std::string Context::FindRequestUriQueryParam(const char * key) const
+std::string Context::FindRequestUriQueryParam(const char * key, int keylen) const
 {
-	if ((strchr(key, '?') != NULL) || (strchr(key, '&'))) {
-		return std::string();
-	}
+    if(key == NULL){ return std::string(); }
+    if(len <= 0){ len = strlen(key); }
 
-	char* beg = strchr(req_->uri, '?');
-	if (beg == NULL) { return std::string(); }
+    if ((strchr(key, '?') != NULL) || (strchr(key, '&'))) {
+        return std::string();
+    }
 
-	std::string fkey("?");
-	fkey.append(key).push_back('=');
+    char* beg = strchr(req_->uri, '?');
+    if (beg == NULL) { return std::string(); }
 
-	char* kbeg = strstr(beg, fkey.c_str());
-	if (kbeg == NULL) {
-		fkey[0] = '&';
-		kbeg = strstr(beg, fkey.c_str());
-	}
-	if (kbeg == NULL) { return std::string(); }
+    std::string fkey("?");
+    fkey.append(key, keylen).push_back('=');
 
-	char* vbeg = kbeg + fkey.size();
-	char* vend = strchr(vbeg, '&');
+    char* kbeg = strstr(beg, fkey.c_str());
+    if (kbeg == NULL) {
+        fkey[0] = '&';
+        kbeg = strstr(beg, fkey.c_str());
+    }
+    if (kbeg == NULL) { return std::string(); }
 
-	if (vend == NULL) {
-		return std::string(vbeg);
-	}
-	return std::string(vbeg,vend - vbeg);
+    char* vbeg = kbeg + fkey.size();
+    char* vend = strchr(vbeg, '&');
+
+    if (vend == NULL) {
+        return std::string(vbeg);
+    }
+    return std::string(vbeg,vend - vbeg);
 }
 
 const char* Context::FindRequestHeader(const char* key) {

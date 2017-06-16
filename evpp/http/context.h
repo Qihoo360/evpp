@@ -30,7 +30,7 @@ public:
 	//
 	// @param   key URI参数的key.
 	// @returns 找到返回参数对应的字符串，没有找到或key不合法等返回空字符串.
-	std::string FindRequestUriQueryParam(const char* key) const;
+	std::string FindRequestUriQueryParam(const char* key, int keylen = -1) const;
 
     // Finds the value belonging to a header.
     //

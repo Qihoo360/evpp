@@ -54,9 +54,9 @@ static void RequestHandlerUriPathAndParam(evpp::EventLoop* loop, const evpp::htt
     oss << "func=" << __FUNCTION__ << " OK"
         << " ip=" << ctx->remote_ip() << "\n"
         << " uri=" << ctx->uri() << "\n"
-		<< " key1="<<ctx->FindRequestUriQueryParam("key1")<<"\n"
-		<< " key2="<<ctx->FindRequestUriQueryParam("key2")<<"\n"
-		<< " notkey="<<ctx->FindRequestUriQueryParam("notkey")<<"\n"
+        << " key1="<<ctx->FindRequestUriQueryParam("key1")<<"\n"
+        << " key2="<<ctx->FindRequestUriQueryParam("key2")<<"\n"
+        << " notkey="<<ctx->FindRequestUriQueryParam("notkey")<<"\n"
         << " body=" << ctx->body().ToString() << "\n";
     ctx->set_response_http_code(200);
     cb(oss.str());
@@ -264,13 +264,13 @@ static void TestAll() {
     testPushBootHandler(t.loop(), &finished);
     testRequestHandler201(t.loop(), &finished);
     testRequestHandler909(t.loop(), &finished);
-	testRequestHandlerUriPathAndParam(t.loop(),&finished);
+    testRequestHandlerUriPathAndParam(t.loop(),&finished);
     testStop(t.loop(), &finished);
 
     while (true) {
         usleep(10);
 
-        if (finished == 7) {
+        if (finished == 8) {
             break;
         }
     }
