@@ -99,7 +99,7 @@ void Request::ExecuteInLoop() {
         }
     }
 
-    if (evhttp_make_request(conn_->evhttp_conn(), req, req_type, uri_.c_str())) {
+    if (evhttp_make_request(conn_->evhttp_conn(), req, req_type, uri_.c_str()) != 0) {
         // At here conn_ has owned this req, so don't need to free it.
         errmsg = "evhttp_make_request fail";
         goto failed;
@@ -108,9 +108,24 @@ void Request::ExecuteInLoop() {
     return;
 
 failed:
-    LOG_ERROR << "http request failed: " << errmsg;
-    std::shared_ptr<Response> response;
+    // Retry
+    if (retried_ < retry_number_) {
+        LOG_WARN << "this=" << this << " http request failed : " << errmsg << " retried=" << retried_ << " max retry_time=" << retry_number_ << ". Try again.";
+        Retry();
+        return;
+    }
+
+    std::shared_ptr<Response> response(new Response(this, nullptr));
     handler_(response);
+}
+
+void Request::Retry() {
+    retried_ += 1;
+    if (retry_interval_.IsZero()) {
+        ExecuteInLoop();
+    } else {
+        loop_->RunAfter(retry_interval_, std::bind(&Request::ExecuteInLoop, this));
+    }
 }
 
 void Request::HandleResponse(struct evhttp_request* r, void* v) {
@@ -140,22 +155,22 @@ void Request::HandleResponse(struct evhttp_request* r) {
     // Retry
     if (retried_ < retry_number_) {
         LOG_WARN << "this=" << this << " response_code=" << (r ? r->response_code : 0) << " retried=" << retried_ << " max retry_time=" << retry_number_ << ". Try again";
-        retried_ += 1;
-        ExecuteInLoop();
+        Retry();
         return;
     }
 
- 
-     // Eventually this Request failed
-     std::shared_ptr<Response> response(new Response(this, r));
- 
-     // Recycling the http Connection object
-     if (pool_) {
-         pool_->Put(conn_);
-     }
+    // Eventually this Request failed
+    std::shared_ptr<Response> response(new Response(this, r));
 
-     handler_(response);
+    // Recycling the http Connection object
+    if (pool_) {
+        pool_->Put(conn_);
+    }
+
+    handler_(response);
 }
+
+
 
 } // httpc
 } // evpp

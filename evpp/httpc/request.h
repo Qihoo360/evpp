@@ -52,10 +52,14 @@ public:
     void set_retry_number(int v) {
         retry_number_ = v;
     }
+    void set_retry_interval(Duration d) {
+        retry_interval_ = d;
+    }
 private:
     static void HandleResponse(struct evhttp_request* r, void* v);
     void HandleResponse(struct evhttp_request* r);
     void ExecuteInLoop();
+    void Retry();
 protected:
     static const std::string empty_;
 private:
@@ -73,6 +77,9 @@ private:
     // The max retry times. Set to 0 if you don't want to retry when failed.
     // The total execution times is retry_number_+1
     int retry_number_ = 2;
+
+    // Default : 1ms
+    Duration retry_interval_ = Duration(0.001);
 };
 typedef std::shared_ptr<Request> RequestPtr;
 

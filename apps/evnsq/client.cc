@@ -114,6 +114,14 @@ void Client::HandleLoopkupdHTTPResponse(
     const std::shared_ptr<evpp::httpc::Request>& request) {
     DLOG_TRACE;
 
+    if (response.get() == nullptr) {
+        LOG_ERROR << "Request lookupd http://" << request->conn()->host() << ":"
+            << request->conn()->port() << request->uri()
+            << " failed, response is null";
+
+        return;
+    }
+
     std::string body = response->body().ToString();
     if (response->http_code() != 200) {
         LOG_ERROR << "Request lookupd http://" << request->conn()->host() << ":"
