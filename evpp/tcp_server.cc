@@ -58,8 +58,8 @@ bool TCPServer::Start() {
         // connections. If we use the following code :
         //     listener_->Accept();
         //     status_.store(kRunning);
-        // there is chance : we have accept a connection but status_ is not
-        // kRunning that will make the assert(status_ == kRuning) failed in
+        // there is a chance : we have accepted a connection but status_ is not
+        // kRunning that will cause the assert(status_ == kRuning) failed in
         // TCPServer::HandleNewConn.
         status_.store(kRunning);
         listener_->Accept();
