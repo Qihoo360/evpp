@@ -16,13 +16,16 @@ std::atomic<int> g_current_round_disconnected = {0};
 std::atomic<int64_t> g_recved_message = {0};
 std::atomic<int64_t> g_current_round_recved_message = {0};
 
+std::atomic<int64_t> g_current_round_recved_bytes = {0};
+
 void Print() {
     LOG_ERROR << "Running ...\n"
         << "\t                Total connected " << g_connected << "\n"
         << "\t        Current round connected " << g_current_round_connected.exchange(0) << "\n"
         << "\t     Current round disconnected " << g_current_round_disconnected.exchange(0) << "\n"
         << "\t        Total received messages " << g_recved_message << "\n"
-        << "\tCurrent round received messages " << g_current_round_recved_message.exchange(0) << "\n";
+        << "\tCurrent round received messages " << g_current_round_recved_message.exchange(0) << "\n"
+        << "\t                     Throughput " << g_current_round_recved_bytes.exchange(0) / 1024.0 / 1024.0 << "MB\n";
 }
 
 void OnMessage(const evpp::TCPConnPtr& conn,
@@ -35,6 +38,7 @@ void OnMessage(const evpp::TCPConnPtr& conn,
         }
 
         conn->Send(msg->data(), len + kHeadLen);
+        g_current_round_recved_bytes += len + kHeadLen;
         g_recved_message++;
         g_current_round_recved_message++;
         msg->Skip(kHeadLen);
