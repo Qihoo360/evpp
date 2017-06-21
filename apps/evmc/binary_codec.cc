@@ -27,7 +27,7 @@ void BinaryCodec::OnCodecMessage(const evpp::TCPConnPtr& conn,
 
 
 void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& resp,
-                                        evpp::Buffer* buf, PrefixGetResultPtr& ptr) {
+                                        evpp::Buffer* buf, std::string& key, CommandPtr& cmd) {
     const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
     uint32_t pos = resp.response.keylen;
     uint32_t klen = 0;
@@ -35,10 +35,21 @@ void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& r
     const uint32_t size = resp.response.bodylen - resp.response.keylen - resp.response.extlen;
     const uint32_t buf_size = buf->size();
     int ret = resp.response.status;
-    ptr->code = ret;
-    if (ret != (int)PROTOCOL_BINARY_RESPONSE_SUCCESS) {
+    if (key.empty()) {
+        auto handler = dynamic_cast<PrefixMultiGetCommand *>(cmd.get())->get_handler();
+        auto& keys = handler->FindKeysByid(cmd->vbucket_id());
+        auto& result_map = handler->get_result();
+        auto k = result_map.begin();
+        for (auto& it : keys) {
+            k = result_map.find(it);
+            assert(k != result_map.end());
+            k->second->code = ret;
+        }
         return;
     }
+
+    auto result_ptr = cmd->GetResultContainerByKey(key);
+    result_ptr->code = ret;
     while (pos < size) {
         if (pos >= buf_size || pos + 4 >= buf_size) {
             break;
@@ -60,7 +71,7 @@ void BinaryCodec::DecodePrefixGetPacket(const protocol_binary_response_header& r
         }
 
         std::string rval(pv + pos, vlen);
-        ptr->result_map_.emplace(rkey, rval);
+        result_ptr->result_map_.emplace(rkey, rval);
         pos += vlen;
     }
 }
@@ -128,27 +139,17 @@ void BinaryCodec::OnResponsePacket(const protocol_binary_response_header& resp,
         cmd = memc_client_->PopRunningCommand();
         const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
         std::string key(pv, resp.response.keylen);
-        if (!key.empty()) {
-            auto result_ptr = cmd->GetResultContainerByKey(key);
-            DecodePrefixGetPacket(resp, buf, result_ptr);
-            cmd->OnPrefixGetCommandDone();
-            LOG_DEBUG << "OnResponsePacket PGETK, opaque=" << id;
-        } else {
-            cmd->OnError(resp.response.status);
-        }
+        DecodePrefixGetPacket(resp, buf, key, cmd);
+        cmd->OnPrefixGetCommandDone();
+        LOG_DEBUG << "OnResponsePacket PGETK, opaque=" << id;
     }
     break;
 
     case PROTOCOL_BINARY_CMD_PGETKQ: {
         const char* pv = buf->data() + sizeof(resp) + resp.response.extlen;
         std::string key(pv, resp.response.keylen);
-        if (!key.empty()) {
-            auto result_ptr = cmd->GetResultContainerByKey(key);
-            DecodePrefixGetPacket(resp, buf, result_ptr);
-            LOG_DEBUG << "OnResponsePacket PGETKQ" << id;
-        } else {
-            cmd->OnError(resp.response.status);
-        }
+        DecodePrefixGetPacket(resp, buf, key, cmd);
+        LOG_DEBUG << "OnResponsePacket PGETKQ opaque=" << id;
     }
     break;
 

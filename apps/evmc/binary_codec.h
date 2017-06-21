@@ -25,7 +25,7 @@ private:
     // noncopyable
     BinaryCodec(const BinaryCodec&);
     void DecodePrefixGetPacket(const protocol_binary_response_header& resp,
-                               evpp::Buffer* buf, PrefixGetResultPtr& ptr);
+                               evpp::Buffer* buf, std::string& key, CommandPtr& cmd);
     const BinaryCodec& operator=(const BinaryCodec&);
 
     void OnResponsePacket(const protocol_binary_response_header& resp,
