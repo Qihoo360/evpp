@@ -25,7 +25,7 @@ void Print() {
         << "\t     Current round disconnected " << g_current_round_disconnected.exchange(0) << "\n"
         << "\t        Total received messages " << g_recved_message << "\n"
         << "\tCurrent round received messages " << g_current_round_recved_message.exchange(0) << "\n"
-        << "\t                     Throughput " << g_current_round_recved_bytes.exchange(0) / 1024.0 / 1024.0 << "MB\n";
+        << "\t                     Throughput " << g_current_round_recved_bytes.exchange(0) / 1024.0 / 1024.0 << "MB/s\n";
 }
 
 void OnMessage(const evpp::TCPConnPtr& conn,
@@ -64,7 +64,7 @@ void OnConnection(const evpp::TCPConnPtr& conn) {
     } else {
         LOG_INFO << "Disconnected from " << conn->remote_addr();
         g_connected--;
-        g_current_round_disconnected--;
+        g_current_round_disconnected++;
     }
 }
 
