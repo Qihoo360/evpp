@@ -31,8 +31,15 @@ public:
     Client(evpp::EventLoop* loop)
         : loop_(loop){
 
-        loop_->RunEvery(evpp::Duration(double(FLAGS_sleepIntervalMs) / 1000.0), 
-                        std::bind(&Client::SendMessage, this));
+        int round_count = FLAGS_sleepIntervalMs/1000;
+        int sec = round_count;
+        for (int i = 0; i < sec; i++) {
+            auto fn = [=]() {
+                loop_->RunEvery(evpp::Duration(double(sec)),
+                                std::bind(&Client::SendMessage, this, round_count, i));
+            };
+            loop_->RunAfter(evpp::Duration(double(i)), fn);
+        }
 
         tpool_.reset(new evpp::EventLoopThreadPool(loop, FLAGS_threadCount));
         tpool_->Start(true);
@@ -81,11 +88,13 @@ public:
 
 
 private:
-    void SendMessage() {
+    void SendMessage(int total_round, int index) {
+        // 每秒钟挑选一部分客户端发送消息，这样QPS能够比较均匀
         LOG_ERROR << "connected_count=" << connected_count_;
-        for (auto client : clients_) {
-            auto c = client->conn();
-            if (c->IsConnected()) {
+        size_t round_count = clients_.size() / total_round;
+        for (size_t i = round_count * index, k = 0; k < round_count; k++, i++) {
+            auto c = clients_[i]->conn();
+            if (c && c->IsConnected()) {
                 c->Send(message_);
             }
         }
@@ -94,7 +103,7 @@ private:
     evpp::EventLoop* loop_;
     std::shared_ptr<evpp::EventLoopThreadPool> tpool_;
     std::vector<std::shared_ptr<evpp::TCPClient>> clients_;
-    std::atomic<int> connected_count_;
+    std::atomic<int> connected_count_ = { 0 };
     std::string message_;
 };
 
@@ -107,13 +116,13 @@ void UnitTest() {
 int main(int argc, char* argv[]) {
     UnitTest();
 
-    google::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
     evpp::EventLoop loop;
     evpp::EventLoopThreadPool tpool(&loop, uint32_t(FLAGS_threadCount));
     tpool.Start(true);
 
 
-    //Client client(&loop, serverAddr, blockSize, sessionCount, timeout, threadCount);
+    Client client(&loop);
     loop.Run();
     return 0;
 }
