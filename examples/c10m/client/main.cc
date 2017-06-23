@@ -112,11 +112,20 @@ void UnitTest() {
     assert(r == "192.168.0.153:80");
 }
 
+// Fix gflags namespace changed between 1.x and 2.x
+namespace google {
+static int fix_gflags_compatiple1 = 0;
+}
+namespace gflags {
+static int fix_gflags_compatiple2 = 0;
+}
+using namespace gflags;
+using namespace google;
 
 int main(int argc, char* argv[]) {
     UnitTest();
 
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
+    ParseCommandLineFlags(&argc, &argv, true);
     evpp::EventLoop loop;
     evpp::EventLoopThreadPool tpool(&loop, uint32_t(FLAGS_threadCount));
     tpool.Start(true);
