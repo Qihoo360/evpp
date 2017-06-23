@@ -93,12 +93,26 @@ void Connector::Connect() {
     fd_ = sock::CreateNonblockingSocket();
     own_fd_ = true;
     assert(fd_ >= 0);
+    const std::string& laddr = owner_tcp_client_->local_addr();
+    if (!laddr.empty()) {
+        struct sockaddr_storage ss = sock::ParseFromIPPort(laddr.data());
+        struct sockaddr* addr = sock::sockaddr_cast(&ss);
+        int rc = ::bind(fd_, addr, sizeof(*addr));
+        if (rc != 0) {
+            int serrno = errno;
+            LOG_ERROR << "bind failed, errno=" << serrno << " " << strerror(serrno);
+            HandleError();
+            return;
+        }
+    }
     int rc = ::connect(fd_, sock::sockaddr_cast(&raddr_), sizeof(raddr_));
     if (rc != 0) {
         int serrno = errno;
         if (!EVUTIL_ERR_CONNECT_RETRIABLE(serrno)) {
             HandleError();
             return;
+        } else {
+            // TODO how to do it
         }
     }
 

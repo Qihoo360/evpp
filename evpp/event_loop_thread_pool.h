@@ -35,7 +35,7 @@ private:
 
 private:
     EventLoop* base_loop_;
-    //std::atomic<bool> started_ = { false };
+
     uint32_t thread_num_ = 0;
     std::atomic<int64_t> next_ = { 0 };
 
