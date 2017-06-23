@@ -5,7 +5,8 @@ Quick Start
 
 1. libevent
 2. glog
-3. gtest
+3. gtest (optional)
+4. boost (optional)
 
 # How to compile it
 
@@ -17,6 +18,8 @@ Quick Start
 
 1. Install glog
 2. Install libevent-2.x
+3. Install gtest
+4. Install boost
 
 ### Download the source code of evpp
 

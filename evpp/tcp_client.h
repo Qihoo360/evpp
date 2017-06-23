@@ -33,6 +33,11 @@ public:
               const std::string& name);
     ~TCPClient();
 
+    // @brief We can bind a local address. This is an optional operation.
+    //  If necessary, it should be called before doing Connect().
+    // @param[IN] local_addr -
+    void Bind(const std::string& local_addr/*host:port*/);
+
     // @brief Try to establish a connection with remote server asynchronously
     //  If the connection callback is set properly it will be invoked when
     //  the connection is established successfully or timeout or cannot
@@ -87,6 +92,9 @@ public:
     const std::string& remote_addr() const {
         return remote_addr_;
     }
+    const std::string& local_addr() const {
+        return local_addr_;
+    }
     const std::string& name() const {
         return name_;
     }
@@ -100,6 +108,7 @@ private:
     void Reconnect();
 private:
     EventLoop* loop_;
+    std::string local_addr_; // If the local address is not empty, we will bind to this local address before doing connect()
     std::string remote_addr_; // host:port
     std::string name_;
     std::atomic<bool> auto_reconnect_ = { true }; // The flag whether it reconnects automatically, Default : true

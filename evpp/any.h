@@ -4,7 +4,33 @@
 #include <algorithm>
 
 namespace evpp {
-// Variant type that can hold Any other type
+
+// A variant type that can hold any other type.
+//
+// Usage 1 :
+//
+//    Buffer* buf(new Buffer());
+//    Any any(buf);
+//    Buffer* b = any_cast<Buffer*>(any);
+//    assert(buf == b);
+//    delete buf;
+//
+//
+// Usage 2 :
+//
+//    std::shared_ptr<Buffer> buf(new Buffer());
+//    Any any(buf);
+//    std::shared_ptr<Buffer> b = any_cast<std::shared_ptr<Buffer>>(any);
+//    assert(buf.get() == b.get());
+//
+//
+// Usage 3 :
+//
+//    std::shared_ptr<Buffer> buf(new Buffer());
+//    Any any(buf);
+//    std::shared_ptr<Buffer> b = any.Get<std::shared_ptr<Buffer>>();
+//    assert(buf.get() == b.get());
+//
 class Any {
 public:
     Any() : content_(nullptr) {}
@@ -46,6 +72,11 @@ public:
 
     template<typename ValueType>
     ValueType operator()() const {
+        return Get<ValueType>();
+    }
+
+    template<typename ValueType>
+    ValueType Get() const {
         if (GetType() == typeid(ValueType)) {
             return static_cast<Any::Holder<ValueType>*>(content_)->held_;
         } else {

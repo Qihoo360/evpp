@@ -41,6 +41,10 @@ TCPClient::~TCPClient() {
     conn_.reset();
 }
 
+void TCPClient::Bind(const std::string& addr/*host:port*/) {
+    local_addr_ = addr;
+}
+
 void TCPClient::Connect() {
     LOG_INFO << "remote_addr=" << remote_addr();
     auto f = [this]() {

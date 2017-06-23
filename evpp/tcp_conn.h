@@ -99,6 +99,14 @@ public:
         return status_;
     }
 
+    std::string AddrToString() const {
+        if (IsIncommingConn()) {
+            return "(" + remote_addr_ + "->" + local_addr_ + "(local))";
+        } else {
+            return "(" + local_addr_ + "(local)->" + remote_addr_ + ")";
+        }
+    }
+
     // @brief When it is an incoming connection, we need to preserve the
     //  connection for a while so that we can reply to it. And we set a timer
     //  to close the connection eventually.
@@ -109,17 +117,11 @@ public:
         // Set the delay time to close the socket
         close_delay_ = d;
     }
+
+public:
     void SetTCPNoDelay(bool on);
 
     // TODO Add : SetLinger();
-
-    std::string AddrToString() const {
-        if (IsIncommingConn()) {
-            return "(" + remote_addr_ + "->" + local_addr_ + "(local))";
-        } else {
-            return "(" + local_addr_ + "(local)->" + remote_addr_ + ")";
-        }
-    }
 
     void ReserveInputBuffer(size_t len) { input_buffer_.Reserve(len); }
     void ReserveOutputBuffer(size_t len) { output_buffer_.Reserve(len); }
