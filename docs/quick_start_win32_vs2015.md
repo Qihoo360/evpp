@@ -50,13 +50,13 @@ Or, we can use CMake to compile the whole projects on WIDNOWS command line conso
 ## for win_x32:
 	D:\360.git\evpp>md build
 	D:\360.git\evpp>cd build
-	D:\360.git\evpp\build>cmake -DCMAKE_TOOLCHAIN_FILE=your_vcpkg_path/vcpkg.cmake -G "Visual Studio 14 2015" ..
+	D:\360.git\evpp\build>cmake -DCMAKE_TOOLCHAIN_FILE=your_vcpkg_path/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 14 2015" ..
 	D:\360.git\evpp\build>start safe-evpp.sln
 
 ## for win_x64:
 	D:\360.git\evpp>md build
 	D:\360.git\evpp>cd build
-	D:\360.git\evpp\build>cmake -DCMAKE_TOOLCHAIN_FILE=your_vcpkg_path/vcpkg.cmake -G "Visual Studio 14 2015 Win64" ..
+	D:\360.git\evpp\build>cmake -DCMAKE_TOOLCHAIN_FILE=your_vcpkg_path/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 14 2015 Win64" ..
 	D:\360.git\evpp\build>start safe-evpp.sln
 
 #### Run the unit tests
