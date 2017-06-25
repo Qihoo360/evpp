@@ -9,7 +9,7 @@ Prerequisites:
 
 - Visual Studio 2015 Update 3 or
 - Visual Studio 2017
-- CMake 3.8.0  (note: downloaded automatically if not found, but version must be 3.8.2)
+- CMake 3.8.0  (note: downloaded automatically if not found, but version must be 3.8.x)
 - git.exe available in your path. You can download and install it from [https://git-for-windows.github.io/]
 - vcpkg. You can download and install it from [https://github.com/Microsoft/vcpkg]. Commits c5daa93506b616d253e257488ecc385271238e2a tests OK. Following [https://github.com/Microsoft/vcpkg#quick-start](https://github.com/Microsoft/vcpkg#quick-start) to install [vcpkg]. This document assumes that [vcpkg] is installed at `d:\git\vcpkg`.
 
