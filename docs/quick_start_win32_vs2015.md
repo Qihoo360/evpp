@@ -17,14 +17,14 @@ Prerequisites:
 
 Use [vcpkg] to install libevent,glog,gtest,gflags.
 
-## for win_x32:
+##### for win_x32:
 	
 	D:\git\vcpkg>vcpkg install gflags
 	D:\git\vcpkg>vcpkg install glog
 	D:\git\vcpkg>vcpkg install openssl
 	D:\git\vcpkg>vcpkg install libevent-2.x
 
-## for win_x64:
+##### for win_x64:
 	
 	D:\git\vcpkg>vcpkg install gflags:x64-windows
 	D:\git\vcpkg>vcpkg install glog:x64-windows
@@ -47,13 +47,13 @@ Using the default vs solution file:
 
 Or, we can use CMake to compile the whole projects on WIDNOWS command line console (This does not work on unix shell):
 
-## for win_x32:
+##### for win_x32:
 	D:\360.git\evpp>md build
 	D:\360.git\evpp>cd build
 	D:\360.git\evpp\build>cmake -DCMAKE_TOOLCHAIN_FILE=your_vcpkg_path/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 14 2015" ..
 	D:\360.git\evpp\build>start safe-evpp.sln
 
-## for win_x64:
+##### for win_x64:
 	D:\360.git\evpp>md build
 	D:\360.git\evpp>cd build
 	D:\360.git\evpp\build>cmake -DCMAKE_TOOLCHAIN_FILE=your_vcpkg_path/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 14 2015 Win64" ..
