@@ -16,20 +16,31 @@
 #ifndef H_GETTIMEOFDAY
 #define H_GETTIMEOFDAY
 inline int gettimeofday(struct timeval* tp, void* tzp) {
-    time_t clock;
-    struct tm tm;
-    SYSTEMTIME wtm;
-    GetLocalTime(&wtm);
-    tm.tm_year = wtm.wYear - 1900;
-    tm.tm_mon = wtm.wMonth - 1;
-    tm.tm_mday = wtm.wDay;
-    tm.tm_hour = wtm.wHour;
-    tm.tm_min = wtm.wMinute;
-    tm.tm_sec = wtm.wSecond;
-    tm.tm_isdst = -1;
-    clock = mktime(&tm);
-    tp->tv_sec = (long)clock;
-    tp->tv_usec = wtm.wMilliseconds * 1000;
+	uint64_t  intervals;
+	FILETIME  ft;
+
+	GetSystemTimeAsFileTime(&ft);
+
+	/*
+	* A file time is a 64-bit value that represents the number
+	* of 100-nanosecond intervals that have elapsed since
+	* January 1, 1601 12:00 A.M. UTC.
+	*
+	* Between January 1, 1970 (Epoch) and January 1, 1601 there were
+	* 134744 days,
+	* 11644473600 seconds or
+	* 11644473600,000,000,0 100-nanosecond intervals.
+	*
+	* See also MSKB Q167296.
+	*/
+
+	intervals = ((uint64_t)ft.dwHighDateTime << 32) | ft.dwLowDateTime;
+	intervals -= 116444736000000000;
+
+	tp->tv_sec = (long)(intervals / 10000000);
+	tp->tv_usec = (long)((intervals % 10000000) / 10);
+
+
     return (0);
 }
 #endif // end of H_GETTIMEOFDAY
