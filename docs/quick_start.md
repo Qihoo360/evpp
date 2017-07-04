@@ -78,4 +78,4 @@ Here we can type any words and we will find it is responsed by our TCP echo serv
 
 # Other
 
-If you want to compile evpp on Windows using Microsoft Visual Studio 2015, please see [quick_start_win32_vs2015.md](quick_start_win32_vs2015.md)
+If you want to compile evpp on Windows using Microsoft Visual Studio 2015, please see [quick_start_windows_with_visualstudio.md](quick_start_windows_with_visualstudio.md)
