@@ -7,12 +7,16 @@ Quick Start
 2. glog
 3. gtest (optional)
 4. boost (optional)
+5. gflags (optional)
 
 # How to compile it
 
 ### Install compiling tool chain
+
 1. gcc (GCC) 4.8+
 2. GNU Make
+3. git
+4. CMake
 
 ### Install dependent open source code
 
@@ -20,6 +24,7 @@ Quick Start
 2. Install libevent-2.x
 3. Install gtest
 4. Install boost
+5. Install boost
 
 ### Download the source code of evpp
 
