@@ -24,7 +24,7 @@ Quick Start
 2. Install libevent-2.x
 3. Install gtest
 4. Install boost
-5. Install boost
+5. Install gflags
 
 ### Download the source code of evpp
 
