@@ -48,6 +48,20 @@ static void RequestHandler909(evpp::EventLoop* loop, const evpp::http::ContextPt
     cb(oss.str());
 }
 
+static void RequestHandlerUriPathAndParam(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
+    LOG_INFO << "RequestHandlerUriParam";
+    std::stringstream oss;
+    oss << "func=" << __FUNCTION__ << " OK"
+        << " ip=" << ctx->remote_ip() << "\n"
+        << " uri=" << ctx->uri() << "\n"
+        << " key1="<<ctx->FindRequestUriQueryParam("key1")<<"\n"
+        << " key2="<<ctx->FindRequestUriQueryParam("key2")<<"\n"
+        << " notkey="<<ctx->FindRequestUriQueryParam("notkey")<<"\n"
+        << " body=" << ctx->body().ToString() << "\n";
+    ctx->set_response_http_code(200);
+    cb(oss.str());
+}
+
 static void DefaultRequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     //std::cout << __func__ << " called ...\n";
     std::stringstream oss;
@@ -188,6 +202,26 @@ void testRequestHandler909(evpp::EventLoop* loop, int* finished) {
     r->Execute(f);
 }
 
+void testRequestHandlerUriPathAndParam(evpp::EventLoop* loop, int* finished) {
+    std::string uri = "/UriPathAndParam?key2=key2value&key1=key1value";
+    std::string url = GetHttpServerURL() + uri;
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
+    auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
+        std::string result = response->body().ToString();
+        H_TEST_ASSERT(!result.empty());
+        H_TEST_ASSERT(response->http_code() == 200);
+        H_TEST_ASSERT(result.find("uri=/UriPathAndParam") != std::string::npos);
+        H_TEST_ASSERT(result.find("key2=key2value") != std::string::npos);
+        H_TEST_ASSERT(result.find("key1=key1value") != std::string::npos);
+        H_TEST_ASSERT(result.find("notkey=\n") != std::string::npos);
+        H_TEST_ASSERT(result.find("func=RequestHandlerUriPathAndParam") != std::string::npos);
+        *finished += 1;
+        delete r;
+    };
+
+    r->Execute(f);
+}
+
 void testStop(evpp::EventLoop* loop, int* finished) {
     std::string uri = "/mod/stop";
     std::string url = GetHttpServerURL() + uri;
@@ -214,12 +248,13 @@ static void TestAll() {
     testPushBootHandler(t.loop(), &finished);
     testRequestHandler201(t.loop(), &finished);
     testRequestHandler909(t.loop(), &finished);
+    testRequestHandlerUriPathAndParam(t.loop(),&finished);
     testStop(t.loop(), &finished);
 
     while (true) {
         usleep(10);
 
-        if (finished == 7) {
+        if (finished == 8) {
             break;
         }
     }
@@ -256,6 +291,7 @@ TEST_UNIT(testHTTPServer) {
         ph.RegisterHandler("/push/boot", &RequestHandler);
         ph.RegisterHandler("/201", &RequestHandler201);
         ph.RegisterHandler("/909", &RequestHandler909);
+        ph.RegisterHandler("/UriPathAndParam", &RequestHandlerUriPathAndParam);
         bool r = ph.Init(g_listening_port) && ph.Start();
         H_TEST_ASSERT(r);
         TestAll();
