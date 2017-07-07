@@ -48,20 +48,6 @@ static void RequestHandler909(evpp::EventLoop* loop, const evpp::http::ContextPt
     cb(oss.str());
 }
 
-static void RequestHandlerUriPathAndParam(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
-    LOG_INFO << "RequestHandlerUriParam";
-    std::stringstream oss;
-    oss << "func=" << __FUNCTION__ << " OK"
-        << " ip=" << ctx->remote_ip() << "\n"
-        << " uri=" << ctx->uri() << "\n"
-        << " key1="<<ctx->FindRequestUriQueryParam("key1")<<"\n"
-        << " key2="<<ctx->FindRequestUriQueryParam("key2")<<"\n"
-        << " notkey="<<ctx->FindRequestUriQueryParam("notkey")<<"\n"
-        << " body=" << ctx->body().ToString() << "\n";
-    ctx->set_response_http_code(200);
-    cb(oss.str());
-}
-
 static void DefaultRequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
     //std::cout << __func__ << " called ...\n";
     std::stringstream oss;
@@ -248,13 +234,12 @@ static void TestAll() {
     testPushBootHandler(t.loop(), &finished);
     testRequestHandler201(t.loop(), &finished);
     testRequestHandler909(t.loop(), &finished);
-    testRequestHandlerUriPathAndParam(t.loop(),&finished);
     testStop(t.loop(), &finished);
 
     while (true) {
         usleep(10);
 
-        if (finished == 8) {
+        if (finished == 7) {
             break;
         }
     }
@@ -291,7 +276,6 @@ TEST_UNIT(testHTTPServer) {
         ph.RegisterHandler("/push/boot", &RequestHandler);
         ph.RegisterHandler("/201", &RequestHandler201);
         ph.RegisterHandler("/909", &RequestHandler909);
-        ph.RegisterHandler("/UriPathAndParam", &RequestHandlerUriPathAndParam);
         bool r = ph.Init(g_listening_port) && ph.Start();
         H_TEST_ASSERT(r);
         TestAll();
@@ -327,7 +311,8 @@ TEST_UNIT(testFindClientIP) {
     };
 
     for (size_t i = 0; i < H_ARRAYSIZE(cases); i++) {
-        std::string ip = evpp::http::Context::FindClientIP(cases[i].uri.data());
+        std::string uri = cases[i].uri;
+        std::string ip = evpp::http::Context::FindClientIPFromURI(uri.data(), uri.size());
         H_TEST_ASSERT(ip == cases[i].ip);
     }
 }

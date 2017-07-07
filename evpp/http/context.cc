@@ -38,8 +38,8 @@ bool Context::Init() {
     }
 
 #endif
-
-    remote_ip_ = FindClientIP(original_uri());
+    const char* original_url = original_uri();
+    remote_ip_ = FindClientIPFromURI(original_url, strlen(original_url));
     if (remote_ip_.empty()) {
         remote_ip_ = req_->remote_host;
     }
@@ -55,45 +55,14 @@ void Context::AddResponseHeader(const std::string& key, const std::string& value
     evhttp_add_header(req_->output_headers, key.data(), value.data());
 }
 
-std::string Context::FindRequestUriQueryParam(const char * key, int keylen) const
-{
-    if(key == NULL){ return std::string(); }
-    if(keylen <= 0){ keylen = strlen(key); }
-
-    if ((strchr(key, '?') != NULL) || (strchr(key, '&'))) {
-        return std::string();
-    }
-
-    char* beg = strchr(req_->uri, '?');
-    if (beg == NULL) { return std::string(); }
-
-    std::string fkey("?");
-    fkey.append(key, keylen).push_back('=');
-
-    char* kbeg = strstr(beg, fkey.c_str());
-    if (kbeg == NULL) {
-        fkey[0] = '&';
-        kbeg = strstr(beg, fkey.c_str());
-    }
-    if (kbeg == NULL) { return std::string(); }
-
-    char* vbeg = kbeg + fkey.size();
-    char* vend = strchr(vbeg, '&');
-
-    if (vend == NULL) {
-        return std::string(vbeg);
-    }
-    return std::string(vbeg,vend - vbeg);
-}
-
 const char* Context::FindRequestHeader(const char* key) {
     return evhttp_find_header(req_->input_headers, key);
 }
 
-std::string Context::FindClientIP(const char* uri) {
+std::string Context::FindClientIPFromURI(const char* uri, size_t uri_len) {
     static const std::string __s_nullptr = "";
     static const std::string __s_clientip = "clientip=";
-    const char* found = static_cast<const char*>(memmem(uri, strlen(uri), __s_clientip.data(), __s_clientip.size()));
+    const char* found = static_cast<const char*>(memmem(uri, uri_len, __s_clientip.data(), __s_clientip.size()));
     if (found) {
         const char* ip = found + __s_clientip.size();
         const char* end = strchr(const_cast<char*>(ip), '&');
@@ -106,5 +75,42 @@ std::string Context::FindClientIP(const char* uri) {
 
     return __s_nullptr;
 }
+
+std::string Context::FindQueryParamFromURI(const char* uri, size_t uri_len, const char* key, size_t key_len) {
+    static const std::string __s_nullptr = "";
+    for (;;) {
+        const char* found = static_cast<const char*>(memmem(uri, uri_len, key, key_len));
+        if (!found) {
+            break;
+        }
+
+        if (found[key_len] != '=') {
+            continue;
+        }
+
+        if (*(found - 1) != '&' && *(found - 1) != '?') {
+            continue;
+        }
+
+        const char* v = found + key_len + 1;
+        const char* end = strchr(const_cast<char*>(v), '&');
+        if (!end) {
+            return v;
+        } else {
+            return std::string(v, end);
+        }
+    }
+
+    return __s_nullptr;
+}
+
+std::string Context::FindQueryParamFromURI(const char* uri, const char* key) {
+    return FindQueryParamFromURI(uri, strlen(uri), key, strlen(key));
+}
+
+std::string Context::FindQueryParamFromURI(const std::string& uri, const std::string& key) {
+    return FindQueryParamFromURI(uri.data(), uri.size(), key.data(), key.size());
+}
+
 }
 }

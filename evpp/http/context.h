@@ -26,17 +26,6 @@ public:
 
     void AddResponseHeader(const std::string& key, const std::string& value);
 
-	// 获取原始URI的Query参数.
-	//
-	// @param   key URI参数的key.
-	// @returns 找到返回参数对应的字符串，没有找到或key不合法等返回空字符串.
-	std::string FindRequestUriQueryParam(const char* key, int keylen = -1) const;
-
-    inline std::string FindRequestUriQueryParam(const std::string& key) const {
-        return FindRequestUriQueryParam(key.c_str(), key.size());
-    }
-
-
     // Finds the value belonging to a header.
     //
     // @param key the name of the header to find
@@ -73,7 +62,18 @@ public:
     }
 
 public:
-    static std::string FindClientIP(const char* uri);
+    static std::string FindClientIPFromURI(const char* uri, size_t uri_len);
+
+    // @brief Get the first value associated with the given key from the URI.
+    //  If there are no values associated with the key, returns an empty string.
+    // @param[IN] uri - The uri with parameters
+    // @param[IN] uri_len - The uri length
+    // @param[IN] key -
+    // @param[IN] key_len -
+    // @return std::string -
+    static std::string FindQueryParamFromURI(const char* uri, size_t uri_len, const char* key, size_t key_len);
+    static std::string FindQueryParamFromURI(const char* uri, const char* key);
+    static std::string FindQueryParamFromURI(const std::string& uri, const std::string& key);
 
 private:
     // The URI without any parameters : e.g. /status.html
