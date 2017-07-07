@@ -63,9 +63,6 @@
     <ClCompile Include="..\test\evhttp_client_test.cc">
       <Filter>http</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\url_parser_test.cc">
-      <Filter>http</Filter>
-    </ClCompile>
     <ClCompile Include="..\test\buffer_test.cc">
       <Filter>common</Filter>
     </ClCompile>
@@ -97,6 +94,9 @@
       <Filter>gtest</Filter>
     </ClCompile>
     <ClCompile Include="..\test\http_client_test.cc">
+      <Filter>http</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\http_trivial_test.cc">
       <Filter>http</Filter>
     </ClCompile>
   </ItemGroup>

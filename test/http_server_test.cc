@@ -297,22 +297,3 @@ TEST_UNIT(testHTTPServer909) {
         usleep(1000 * 1000); // sleep a while to release the listening address and port
     }
 }
-
-TEST_UNIT(testFindClientIP) {
-    struct TestCase {
-        std::string uri;
-        std::string ip;
-    } cases[] = {
-        {"/abc?clientip=", ""},
-        {"/abc?clientip=123.1.1.9", "123.1.1.9"},
-        {"/abc?clientip=123.1.1.9&a=b", "123.1.1.9"},
-        {"/abc?c=d&clientip=123.1.1.9&a=b", "123.1.1.9"},
-        {"/abc?c=d&xx=123.1.1.9&a=b", ""},
-    };
-
-    for (size_t i = 0; i < H_ARRAYSIZE(cases); i++) {
-        std::string uri = cases[i].uri;
-        std::string ip = evpp::http::Context::FindClientIPFromURI(uri.data(), uri.size());
-        H_TEST_ASSERT(ip == cases[i].ip);
-    }
-}

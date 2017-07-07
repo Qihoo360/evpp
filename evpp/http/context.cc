@@ -60,20 +60,8 @@ const char* Context::FindRequestHeader(const char* key) {
 }
 
 std::string Context::FindClientIPFromURI(const char* uri, size_t uri_len) {
-    static const std::string __s_nullptr = "";
-    static const std::string __s_clientip = "clientip=";
-    const char* found = static_cast<const char*>(memmem(uri, uri_len, __s_clientip.data(), __s_clientip.size()));
-    if (found) {
-        const char* ip = found + __s_clientip.size();
-        const char* end = strchr(const_cast<char*>(ip), '&');
-        if (!end) {
-            return ip;
-        } else {
-            return std::string(ip, end);
-        }
-    }
-
-    return __s_nullptr;
+    static const std::string __s_clientip = "clientip";
+    return FindQueryParamFromURI(uri, uri_len, __s_clientip.data(), __s_clientip.size());
 }
 
 std::string Context::FindQueryParamFromURI(const char* uri, size_t uri_len, const char* key, size_t key_len) {
