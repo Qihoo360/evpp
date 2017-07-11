@@ -61,8 +61,20 @@ public:
         return response_http_code_;
     }
 
+    // Get the first value associated with the given key from the URI.
+    std::string GetQuery(const char* query_key, size_t key_len) {
+        const char* u = original_uri();
+        return FindQueryFromURI(u, strlen(u), query_key, key_len);
+    }
+    std::string GetQuery(const std::string& query_key) {
+        return GetQuery(query_key.data(), query_key.size());
+    }
+
 public:
-    static std::string FindClientIPFromURI(const char* uri, size_t uri_len);
+    static std::string FindClientIPFromURI(const char* uri, size_t uri_len) {
+        static const std::string __s_clientip = "clientip";
+        return FindQueryFromURI(uri, uri_len, __s_clientip.data(), __s_clientip.size());
+    }
 
     // @brief Get the first value associated with the given key from the URI.
     //  If there are no values associated with the key, returns an empty string.
@@ -71,9 +83,9 @@ public:
     // @param[IN] key -
     // @param[IN] key_len -
     // @return std::string -
-    static std::string FindQueryParamFromURI(const char* uri, size_t uri_len, const char* key, size_t key_len);
-    static std::string FindQueryParamFromURI(const char* uri, const char* key);
-    static std::string FindQueryParamFromURI(const std::string& uri, const std::string& key);
+    static std::string FindQueryFromURI(const char* uri, size_t uri_len, const char* key, size_t key_len);
+    static std::string FindQueryFromURI(const char* uri, const char* key);
+    static std::string FindQueryFromURI(const std::string& uri, const std::string& key);
 
 private:
     // The URI without any parameters : e.g. /status.html

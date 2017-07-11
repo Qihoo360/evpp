@@ -30,7 +30,7 @@ TEST_UNIT(testURLParser) {
     }
 }
 
-TEST_UNIT(TestFindQueryParamFromURI) {
+TEST_UNIT(TestFindQueryFromURI) {
     struct TestCase {
         std::string uri;
         std::string key;
@@ -38,6 +38,7 @@ TEST_UNIT(TestFindQueryParamFromURI) {
     };
 
     TestCase cases[] = {
+        { "/query?aabc=1312&abc=3&ab=1&ccc=3", "ab", "1"},
         { "/query", "a", ""},
         { "/query?", "abc", ""},
         { "/query?a=1&bc=123", "abc", ""},
@@ -60,7 +61,7 @@ TEST_UNIT(TestFindQueryParamFromURI) {
         std::string uri = cases[i].uri;
         std::string k = cases[i].key;
         std::string expected_value = cases[i].value;
-        std::string v = evpp::http::Context::FindQueryParamFromURI(uri, k);
+        std::string v = evpp::http::Context::FindQueryFromURI(uri, k);
         H_TEST_ASSERT(v == expected_value);
     }
 }

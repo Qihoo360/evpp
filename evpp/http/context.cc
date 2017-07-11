@@ -59,45 +59,52 @@ const char* Context::FindRequestHeader(const char* key) {
     return evhttp_find_header(req_->input_headers, key);
 }
 
-std::string Context::FindClientIPFromURI(const char* uri, size_t uri_len) {
-    static const std::string __s_clientip = "clientip";
-    return FindQueryParamFromURI(uri, uri_len, __s_clientip.data(), __s_clientip.size());
-}
-
-std::string Context::FindQueryParamFromURI(const char* uri, size_t uri_len, const char* key, size_t key_len) {
+std::string Context::FindQueryFromURI(const char* uri, size_t uri_len, const char* key, size_t key_len) {
     static const std::string __s_nullptr = "";
-    for (;;) {
-        const char* found = static_cast<const char*>(memmem(uri, uri_len, key, key_len));
-        if (!found) {
-            break;
+
+    // Find query start point
+    const char* start = strchr(const_cast<char*>(uri), '?');
+    if (!start) {
+        return __s_nullptr;
+    }
+
+    for (const char* p = start + 1; p < uri + uri_len;) {
+        size_t index = 0;
+        for (; index < key_len; ++index) {
+            if (p[index] != key[index]) {
+                break;
+            }
         }
 
-        if (found[key_len] != '=') {
-            continue;
+        if (index == key_len && p[key_len] == '=') {
+            // Found the key
+            const char* v = p + key_len + 1;
+            const char* end = strchr(const_cast<char*>(v), '&');
+            if (!end) {
+                return v;
+            } else {
+                return std::string(v, end);
+            }
         }
 
-        if (*(found - 1) != '&' && *(found - 1) != '?') {
-            continue;
+        // Skip to next query
+        p += index;
+        p = strchr(const_cast<char*>(p), '&');
+        if (!p) {
+            return __s_nullptr;
         }
-
-        const char* v = found + key_len + 1;
-        const char* end = strchr(const_cast<char*>(v), '&');
-        if (!end) {
-            return v;
-        } else {
-            return std::string(v, end);
-        }
+        p += 1;
     }
 
     return __s_nullptr;
 }
 
-std::string Context::FindQueryParamFromURI(const char* uri, const char* key) {
-    return FindQueryParamFromURI(uri, strlen(uri), key, strlen(key));
+std::string Context::FindQueryFromURI(const char* uri, const char* key) {
+    return FindQueryFromURI(uri, strlen(uri), key, strlen(key));
 }
 
-std::string Context::FindQueryParamFromURI(const std::string& uri, const std::string& key) {
-    return FindQueryParamFromURI(uri.data(), uri.size(), key.data(), key.size());
+std::string Context::FindQueryFromURI(const std::string& uri, const std::string& key) {
+    return FindQueryFromURI(uri.data(), uri.size(), key.data(), key.size());
 }
 
 }
