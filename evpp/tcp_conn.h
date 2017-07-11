@@ -125,6 +125,8 @@ public:
 
     void ReserveInputBuffer(size_t len) { input_buffer_.Reserve(len); }
     void ReserveOutputBuffer(size_t len) { output_buffer_.Reserve(len); }
+
+    void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
 protected:
     friend class TCPClient;
     friend class TCPServer;
@@ -140,7 +142,6 @@ protected:
     void SetConnectionCallback(ConnectionCallback cb) {
         conn_fn_ = cb;
     }
-    void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
     void SetCloseCallback(CloseCallback cb) {
         close_fn_ = cb;
     }
