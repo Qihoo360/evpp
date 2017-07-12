@@ -124,6 +124,29 @@ TEST_UNIT(testEventLoop4) {
 
 
 
+// Test EventLoop::QueueInLoop() before EventLoop::Run()
+TEST_UNIT(testEventLoop5) {
+    evpp::EventLoop loop;
+    auto fn = [&loop]() {
+        LOG_INFO << "Entering fn";
+        auto close = [&loop]() {
+            LOG_INFO << "Entering close";
+            loop.Stop();
+        };
+        loop.RunAfter(evpp::Duration(1.0), close);
+    };
+
+    loop.QueueInLoop(fn);
+    loop.Run();
+}
+
+
+
+
+
+
+
+
 
 
 

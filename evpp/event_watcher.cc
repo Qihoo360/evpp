@@ -5,6 +5,7 @@
 #include "evpp/libevent.h"
 #include "evpp/event_watcher.h"
 #include "evpp/event_loop.h"
+#include "evpp/logging.h"
 
 namespace evpp {
 
@@ -149,7 +150,8 @@ void PipeEventWatcher::DoClose() {
     }
 }
 
-void PipeEventWatcher::HandlerFn(evpp_socket_t /*fd*/, short /*which*/, void* v) {
+void PipeEventWatcher::HandlerFn(evpp_socket_t fd, short /*which*/, void* v) {
+    LOG_INFO << "PipeEventWatcher::HandlerFn fd=" << fd << " v=" << v;
     PipeEventWatcher* e = (PipeEventWatcher*)v;
 #ifdef H_BENCHMARK_TESTING
     // Every time we only read 1 byte for testing the IO event performance.
