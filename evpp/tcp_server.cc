@@ -39,6 +39,10 @@ bool TCPServer::Init() {
     return true;
 }
 
+void TCPServer::AfterFork() {
+    // Nothing to do right now.
+}
+
 bool TCPServer::Start() {
     DLOG_TRACE;
     assert(status_ == kInitialized);

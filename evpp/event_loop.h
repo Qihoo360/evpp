@@ -52,7 +52,7 @@ public:
     // @brief Stop the event loop
     void Stop();
 
-    // @brief Reinitialize the event_base object after a fork
+    // @brief Reinitialize some data fields after a fork
     void AfterFork();
 
     InvokeTimerPtr RunAfter(double delay_ms, const Functor& f);
@@ -105,6 +105,7 @@ public:
     }
 private:
     void Init();
+    void InitNotifyPipeWatcher();
     void StopInLoop();
     void DoPendingFunctors();
     size_t GetPendingQueueSize();

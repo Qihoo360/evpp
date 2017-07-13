@@ -76,6 +76,9 @@ public:
     //  the TCP server is totally stopped
     void Stop(DoneCallback cb = DoneCallback());
 
+    // @brief Reinitialize some data fields after a fork
+    void AfterFork();
+
 public:
     // Set a connection event relative callback when the TCPServer
     // receives a new connection or an exist connection breaks down.

@@ -30,6 +30,9 @@ public:
     void Pause();
     void Continue();
 
+    // @brief Reinitialize some data fields after a fork
+    void AfterFork();
+
     bool IsRunning() const;
     bool IsStopped() const;
 

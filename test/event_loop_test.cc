@@ -34,7 +34,7 @@ static void PeriodicFunc() {
 }
 }
 
-TEST_UNIT(testEventLoop) {
+TEST_UNIT(TestEventLoop1) {
     using namespace evloop;
     std::thread th(MyEventThread);
     usleep(delay.Microseconds());
@@ -50,15 +50,13 @@ TEST_UNIT(testEventLoop) {
     H_TEST_ASSERT(evpp::GetActiveEventCount() == 0);
 }
 
-
 namespace {
     void OnTimer(evpp::EventLoop* loop) {
 
     }
 }
 
-
-TEST_UNIT(testEventLoop2) {
+TEST_UNIT(TestEventLoop2) {
     evpp::EventLoop loop;
     auto timer = [&loop]() {
         auto close = [&loop]() {
@@ -72,7 +70,7 @@ TEST_UNIT(testEventLoop2) {
 }
 
 // Test std::move of C++11
-TEST_UNIT(testEventLoop3) {
+TEST_UNIT(TestEventLoop3) {
     evpp::EventLoop loop;
     auto timer = [&loop]() {
         auto close = [&loop]() {
@@ -108,7 +106,7 @@ void NewEventLoop(struct event_base* base) {
 }
 
 // Test creating EventLoop from a exist event_base
-TEST_UNIT(testEventLoop4) {
+TEST_UNIT(TestEventLoop4) {
     struct event_base* base = event_base_new();
     auto timer = std::make_shared<evpp::TimerEventWatcher>(base, std::bind(&NewEventLoop, base), evpp::Duration(1.0));
     timer->Init();
@@ -125,7 +123,7 @@ TEST_UNIT(testEventLoop4) {
 
 
 // Test EventLoop::QueueInLoop() before EventLoop::Run()
-TEST_UNIT(testEventLoop5) {
+TEST_UNIT(TestEventLoop5) {
     evpp::EventLoop loop;
     auto fn = [&loop]() {
         LOG_INFO << "Entering fn";
@@ -139,6 +137,16 @@ TEST_UNIT(testEventLoop5) {
     loop.QueueInLoop(fn);
     loop.Run();
 }
+
+
+// Test EventLoop's constructor and destructor
+TEST_UNIT(TestEventLoop6) {
+    evpp::EventLoop* loop = new evpp::EventLoop;
+    LOG_INFO << "loop=" << loop;
+    delete loop;
+}
+
+
 
 
 

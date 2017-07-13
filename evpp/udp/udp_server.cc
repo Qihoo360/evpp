@@ -140,6 +140,10 @@ bool Server::Init(const std::string& listen_ports/*like "53,5353,1053"*/) {
     return Init(v);
 }
 
+void Server::AfterFork() {
+    // Nothing to do right now.
+}
+
 bool Server::Start() {
     if (!message_handler_) {
         LOG_ERROR << "MessageHandler DO NOT set!";

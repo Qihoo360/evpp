@@ -66,15 +66,19 @@ void EventLoop::Init() {
 
     tid_ = std::this_thread::get_id(); // The default thread id
 
-    // Initialized task queue watcher
+    InitNotifyPipeWatcher();
+
+    status_.store(kInitialized);
+}
+
+void EventLoop::InitNotifyPipeWatcher() {
+    // Initialized task queue notify pipe watcher
     watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
     int rc = watcher_->Init();
     assert(rc);
     if (!rc) {
         LOG_FATAL << "PipeEventWatcher init failed.";
     }
-
-    status_.store(kInitialized);
 }
 
 void EventLoop::Run() {
@@ -149,6 +153,20 @@ void EventLoop::AfterFork() {
         LOG_FATAL << "event_reinit failed!";
         abort();
     }
+
+    // We create EventLoopThread and initialize it in father process,
+    // but we use it in child process.
+    // If we have only one child process, everything goes well.
+    //
+    // But if we have multi child processes, something goes wrong.
+    // Because EventLoop::watcher_ is created and initialized in father process
+    // all children processes inherited father's pipe.
+    //
+    // When we use the pipe to do a notification in one child process
+    // the notification may be received by another child process randomly.
+    //
+    // So we need to reinitialize the watcher_
+    InitNotifyPipeWatcher();
 }
 
 InvokeTimerPtr EventLoop::RunAfter(double delay_ms, const Functor& f) {
