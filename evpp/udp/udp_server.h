@@ -56,6 +56,8 @@ private:
     MessageHandler   message_handler_;
 
     // The worker thread pool, used to process UDP package
+    // This data field is not owned by UDPServer,
+    // it is set by outer application layer.
     std::shared_ptr<EventLoopThreadPool> tpool_;
 
     // The buffer size used to receive an UDP package.

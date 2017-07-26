@@ -40,7 +40,7 @@ bool TCPServer::Init() {
 }
 
 void TCPServer::AfterFork() {
-    // Nothing to do right now.
+    tpool_->AfterFork();
 }
 
 bool TCPServer::Start() {

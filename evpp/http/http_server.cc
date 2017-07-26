@@ -94,6 +94,7 @@ void Server::AfterFork() {
     for (auto& lt : listen_threads_) {
         lt.thread->loop()->AfterFork();
     }
+    tpool_->AfterFork();
 }
 
 bool Server::Start() {

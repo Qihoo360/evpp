@@ -128,6 +128,13 @@ void EventLoopThreadPool::Join() {
     threads_.clear();
 }
 
+void EventLoopThreadPool::AfterFork() {
+    DLOG_TRACE << "thread_num=" << thread_num();
+    for (auto &t : threads_) {
+        t->AfterFork();
+    }
+}
+
 EventLoop* EventLoopThreadPool::GetNextLoop() {
     DLOG_TRACE;
     EventLoop* loop = base_loop_;

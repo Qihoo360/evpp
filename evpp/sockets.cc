@@ -73,6 +73,7 @@ evpp_socket_t CreateUDPServer(int port) {
         return INVALID_SOCKET;
     }
     SetReuseAddr(fd);
+    SetReusePort(fd);
 
     std::string addr = std::string("0.0.0.0:") + std::to_string(port);
     struct sockaddr_storage local = ParseFromIPPort(addr.c_str());
@@ -282,6 +283,7 @@ void SetReusePort(evpp_socket_t fd) {
     int optval = 1;
     int rc = ::setsockopt(fd, SOL_SOCKET, SO_REUSEPORT,
                           reinterpret_cast<const char*>(&optval), static_cast<socklen_t>(sizeof optval));
+    LOG_INFO << "setsockopt SO_REUSEPORT fd=" << fd << " rc=" << rc;
     if (rc != 0) {
         int serrno = errno;
         LOG_ERROR << "setsockopt(SO_REUSEPORT) failed, errno=" << serrno << " " << strerror(serrno);

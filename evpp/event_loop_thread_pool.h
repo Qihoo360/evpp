@@ -22,6 +22,9 @@ public:
     // it will be invoked automatically in the destruct method ~EventLoopThreadPool().
     // @note DO NOT call this method from any of the working thread.
     void Join();
+
+    // @brief Reinitialize some data fields after a fork
+    void AfterFork();
 public:
     EventLoop* GetNextLoop();
     EventLoop* GetNextLoopWithHash(uint64_t hash);
