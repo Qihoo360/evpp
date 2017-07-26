@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
 
 ### Dependencies
 
-- [evpp](https://github.com/nsqio/nsq)
-- [rapidjson](https://github.com/nsqio/nsq)
+- [evpp](https://github.com/Qihoo360/evpp)
+- [rapidjson](https://github.com/miloyip/rapidjson)
 - [libevent](https://github.com/libevent/libevent)
 - [glog](https://github.com/google/glog)

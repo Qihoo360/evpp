@@ -16,7 +16,7 @@ This library is currently used in production which sends more than 300 billions 
 ### Dependencies
 
 - libhashkit
-- [evpp](https://github.com/nsqio/nsq)
-- [rapidjson](https://github.com/nsqio/nsq)
+- [evpp](https://github.com/Qihoo360/evpp)
+- [rapidjson](https://github.com/miloyip/rapidjson)
 - [libevent](https://github.com/libevent/libevent)
 - [glog](https://github.com/google/glog)

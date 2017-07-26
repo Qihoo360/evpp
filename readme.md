@@ -199,7 +199,7 @@ Thanks for [libevent], [glog], [gtest], [Golang], [LevelDB], [rapidjson] project
 [libevent]:https://github.com/libevent/libevent
 [libevent2]:https://github.com/libevent/libevent
 [LevelDB]:https://github.com/google/leveldb
-[rapidjson]:https://github.com/miloyip/
+[rapidjson]:https://github.com/miloyip/rapidjson
 [Boost.Asio]:http://www.boost.org/
 [boost.asio]:http://www.boost.org/
 [asio]:http://www.boost.org/
