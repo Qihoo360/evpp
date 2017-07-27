@@ -299,7 +299,7 @@ TEST_UNIT(testHTTPServer909) {
 }
 
 
-#ifndef H_OS_WINDOWS
+#if 0
 TEST_UNIT(testHTTPServerAfterFork) {
     int i = 2;
     LOG_INFO << "Running testHTTPServer i=" << i;
