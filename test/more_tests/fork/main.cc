@@ -1,7 +1,5 @@
 #include <iostream>
 
-#include "test_common.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -16,6 +14,8 @@
 #include "evpp/http/service.h"
 #include "evpp/http/context.h"
 #include "evpp/http/http_server.h"
+
+#define H_TEST_ASSERT assert
 
 static bool g_stopping = false;
 static void RequestHandler(evpp::EventLoop* loop, const evpp::http::ContextPtr& ctx, const evpp::http::HTTPSendResponseCallback& cb) {
@@ -267,35 +267,32 @@ static void Test909() {
 
 }
 
-
-TEST_UNIT(testHTTPServer) {
-    for (int i = 0; i < 5; ++i) {
-        LOG_INFO << "Running testHTTPServer i=" << i;
-        evpp::http::Server ph(i);
-        ph.RegisterDefaultHandler(&DefaultRequestHandler);
-        ph.RegisterHandler("/push/boot", &RequestHandler);
-        ph.RegisterHandler("/201", &RequestHandler201);
-        ph.RegisterHandler("/909", &RequestHandler909);
-        bool r = ph.Init(g_listening_port) && ph.Start();
-        H_TEST_ASSERT(r);
-        TestAll();
+int main() {
+    int i = 2;
+    LOG_INFO << "Running testHTTPServer i=" << i;
+    evpp::http::Server ph(i);
+    ph.RegisterDefaultHandler(&DefaultRequestHandler);
+    ph.RegisterHandler("/909", &RequestHandler909);
+    bool r = ph.Init(g_listening_port);
+    auto pid = fork();
+    if (pid != 0) {
+        // In parent process 
+        LOG_INFO << "In parent process. Starting";
+        ph.Start();
+        LOG_INFO << "In parent process. Stopping";
         ph.Stop();
-        usleep(1000 * 1000); // sleep a while to release the listening address and port
+        LOG_INFO << "In parent process. Stopped";
+        return 0;
     }
-}
-
-TEST_UNIT(testHTTPServer909) {
-    for (int i = 0; i < 10; ++i) {
-        LOG_INFO << "Running testHTTPServer i=" << i;
-        evpp::http::Server ph(i);
-        ph.RegisterDefaultHandler(&DefaultRequestHandler);
-        ph.RegisterHandler("/909", &RequestHandler909);
-        bool r = ph.Init(g_listening_port) && ph.Start();
-        H_TEST_ASSERT(r);
-        Test909();
-        ph.Stop();
-        usleep(1000 * 1000); // sleep a while to release the listening address and port
-    }
+    
+    LOG_INFO << "In child process. Doing AfterFork";
+    ph.AfterFork();
+    ph.Start();
+    H_TEST_ASSERT(r);
+    Test909();
+    ph.Stop();
+    usleep(1000 * 1000); // sleep a while to release the listening address and port
+    return 0;
 }
 
 

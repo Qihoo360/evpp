@@ -27,3 +27,4 @@ if (UNIX)
 endif (UNIX)
 
 add_subdirectory (stability)
+add_subdirectory (more_tests)
