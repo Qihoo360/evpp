@@ -297,3 +297,34 @@ TEST_UNIT(testHTTPServer909) {
         usleep(1000 * 1000); // sleep a while to release the listening address and port
     }
 }
+
+
+#ifndef H_OS_WINDOWS
+TEST_UNIT(testHTTPServerAfterFork) {
+    int i = 2;
+    LOG_INFO << "Running testHTTPServer i=" << i;
+    evpp::http::Server ph(i);
+    ph.RegisterDefaultHandler(&DefaultRequestHandler);
+    ph.RegisterHandler("/909", &RequestHandler909);
+    bool r = ph.Init(g_listening_port);
+    auto pid = fork();
+    if (pid != 0) {
+        // In parent process 
+        LOG_INFO << "In parent process. Starting";
+        ph.Start();
+        LOG_INFO << "In parent process. Stopping";
+        ph.Stop();
+        LOG_INFO << "In parent process. Stopped";
+        return;
+    }
+    
+    LOG_INFO << "In child process. Doing AfterFork";
+    ph.AfterFork();
+    ph.Start();
+    H_TEST_ASSERT(r);
+    Test909();
+    ph.Stop();
+    usleep(1000 * 1000); // sleep a while to release the listening address and port
+}
+#endif
+
