@@ -113,17 +113,16 @@ void UnitTest() {
 }
 
 // Fix gflags namespace changed between 1.x and 2.x
-namespace google {
-static int fix_gflags_compatiple1 = 0;
-}
 namespace gflags {
-static int fix_gflags_compatiple2 = 0;
+static int fix_gflags_compatiple = 0;
 }
 using namespace gflags;
 using namespace google;
 
 int main(int argc, char* argv[]) {
     UnitTest();
+
+    (void)fix_gflags_compatiple;
 
     ParseCommandLineFlags(&argc, &argv, true);
     evpp::EventLoop loop;
