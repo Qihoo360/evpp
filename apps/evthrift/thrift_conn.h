@@ -19,23 +19,23 @@ using apache::thrift::transport::TTransportException;
 
 class ThriftServer;
 
-class ThriftConnection : public std::enable_shared_from_this<ThriftConnection> {
+class ThriftConn : public std::enable_shared_from_this<ThriftConn> {
 public:
     enum State {
         kExpectFrameSize,
         kExpectFrame
     };
 
-    ThriftConnection(ThriftServer* server, const evpp::TCPConnPtr& conn);
+    ThriftConn(ThriftServer* server, const evpp::TCPConnPtr& conn);
 
 private:
     friend class ThriftServer;
     void OnMessage(const evpp::TCPConnPtr& conn,
                    evpp::Buffer* buffer);
 
-    void process();
+    void Process();
 
-    void close();
+    void Close();
 
 private:
     ThriftServer* server_;
@@ -58,6 +58,6 @@ private:
     uint32_t frameSize_;
 };
 
-typedef std::shared_ptr<ThriftConnection> ThriftConnectionPtr;
+typedef std::shared_ptr<ThriftConn> ThriftConnectionPtr;
 
 }

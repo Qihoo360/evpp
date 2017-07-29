@@ -10,7 +10,7 @@ set(PING_THRIFT_SRCS
     gen-cpp/Ping.cpp
     )
 set(PING_SRCS
-    PingServer.cc
+    ping_server.cc
     )
-add_executable(muduo_thrift_ping ${PING_SRCS} ${PING_THRIFT_SRCS})
-target_link_libraries(muduo_thrift_ping muduo_thrift)
+add_executable(evthrift_ping ${PING_SRCS} ${PING_THRIFT_SRCS})
+target_link_libraries(evthrift_ping evthrift_static)

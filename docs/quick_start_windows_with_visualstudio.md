@@ -23,6 +23,7 @@ Use [vcpkg] to install libevent,glog,gtest,gflags.
 	D:\git\vcpkg>vcpkg install glog
 	D:\git\vcpkg>vcpkg install openssl
 	D:\git\vcpkg>vcpkg install libevent
+	D:\git\vcpkg>vcpkg install thrift
 
 ##### for win_x64:
 	
@@ -30,6 +31,7 @@ Use [vcpkg] to install libevent,glog,gtest,gflags.
 	D:\git\vcpkg>vcpkg install glog:x64-windows
 	D:\git\vcpkg>vcpkg install openssl:x64-windows
 	D:\git\vcpkg>vcpkg install libevent:x64-windows
+	D:\git\vcpkg>vcpkg install thrift:x64-windows
 
 
 #### Download the source code of evpp

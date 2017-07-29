@@ -6,7 +6,7 @@
 
 namespace evthrift {
 
-ThriftConnection::ThriftConnection(ThriftServer* server,
+ThriftConn::ThriftConn(ThriftServer* server,
                                     const evpp::TCPConnPtr& conn)
     : server_(server),
     conn_(conn),
@@ -26,7 +26,7 @@ ThriftConnection::ThriftConnection(ThriftServer* server,
     processor_ = server_->getProcessor(inputProtocol_, outputProtocol_, nullTransport_);
 }
 
-void ThriftConnection::OnMessage(const evpp::TCPConnPtr& conn,
+void ThriftConn::OnMessage(const evpp::TCPConnPtr& conn,
                                     evpp::Buffer* buffer) {
     bool more = true;
     while (more) {
@@ -46,11 +46,7 @@ void ThriftConnection::OnMessage(const evpp::TCPConnPtr& conn,
                 outputTransport_->getWritePtr(4);
                 outputTransport_->wroteBytes(4);
 
-                if (server_->isWorkerThreadPoolProcessing()) {
-                    //server_->workerThreadPool().run(std::bind(&ThriftConnection::process, this));
-                } else {
-                    process();
-                }
+                Process();
 
                 buffer->Retrieve(frameSize_);
                 state_ = kExpectFrameSize;
@@ -61,7 +57,7 @@ void ThriftConnection::OnMessage(const evpp::TCPConnPtr& conn,
     }
 }
 
-void ThriftConnection::process() {
+void ThriftConn::Process() {
     try {
         processor_->process(inputProtocol_, outputProtocol_, NULL);
 
@@ -76,17 +72,17 @@ void ThriftConnection::process() {
         conn_->Send(buf, size);
     } catch (const TTransportException& ex) {
         LOG_ERROR << "ThriftServer TTransportException: " << ex.what();
-        close();
+        Close();
     } catch (const std::exception& ex) {
         LOG_ERROR << "ThriftServer std::exception: " << ex.what();
-        close();
+        Close();
     } catch (...) {
         LOG_ERROR << "ThriftServer unknown exception";
-        close();
+        Close();
     }
 }
 
-void ThriftConnection::close() {
+void ThriftConn::Close() {
     nullTransport_->close();
     factoryInputTransport_->close();
     factoryOutputTransport_->close();

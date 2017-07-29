@@ -9,7 +9,7 @@ from ping import Ping
 
 
 def ping():
-    transport = TSocket.TSocket('127.0.0.1', 9090)
+    transport = TSocket.TSocket('127.0.0.1', 9099)
     tranport = TTransport.TFramedTransport(transport)
     protocol = TCompactProtocol.TCompactProtocol(tranport)
     client = Ping.Client(protocol)

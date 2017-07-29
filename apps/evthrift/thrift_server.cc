@@ -4,7 +4,7 @@ namespace evthrift {
 
 ThriftServer::~ThriftServer() {}
 
-void ThriftServer::start() {
+void ThriftServer::serve() {
     server_.SetMessageCallback(std::bind(&ThriftServer::OnMessage,
                                          this, std::placeholders::_1,
                                          std::placeholders::_2));
@@ -16,9 +16,9 @@ void ThriftServer::stop() {
     server_.Stop();
 }
 
-void ThriftServer::onConnection(const evpp::TCPConnPtr& conn) {
+void ThriftServer::OnConnection(const evpp::TCPConnPtr& conn) {
     if (conn->IsConnected()) {
-        ThriftConnectionPtr ptr(new ThriftConnection(this, conn));
+        ThriftConnectionPtr ptr(new ThriftConn(this, conn));
         conn->set_context(evpp::Any(ptr));
     } else {
         conn->set_context(evpp::Any());

@@ -8,6 +8,8 @@ Quick Start
 3. gtest (optional)
 4. boost (optional)
 5. gflags (optional)
+6. thrift (optional)
+7. libthrift (optional)
 
 # How to compile it
 
