@@ -77,6 +77,8 @@ message (STATUS "THRIFT_LIBRARY " ${THRIFT_LIBRARY})
 
 add_subdirectory (evpp)
 add_subdirectory (apps)
+add_subdirectory (lab)
+
 if (NOT EVPP_VCPKG_BUILD)
     add_subdirectory (test)
     add_subdirectory (examples)
