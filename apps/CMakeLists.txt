@@ -12,3 +12,11 @@ endif(UNIX)
 
 add_subdirectory(evnsq)
 add_subdirectory(evmc)
+
+add_subdirectory(evthrift)
+#if(THRIFT_COMPILER AND THRIFT_INCLUDE_DIR AND THRIFT_LIBRARY)
+#    add_subdirectory(evthrift)
+#else()
+#    add_subdirectory(evthrift EXCLUDE_FROM_ALL)
+#endif()
+#
