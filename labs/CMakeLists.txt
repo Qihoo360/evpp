@@ -1,7 +1,7 @@
 
 include_directories(${PROJECT_SOURCE_DIR}/apps
-            ${PROJECT_SOURCE_DIR}/lab
-            ${PROJECT_SOURCE_DIR}/3rdparty)
+                    ${PROJECT_SOURCE_DIR}/labs
+                    ${PROJECT_SOURCE_DIR}/3rdparty)
 
 if (UNIX)
 set(LIBRARIES evpp_concurrentqueue event glog pthread)
