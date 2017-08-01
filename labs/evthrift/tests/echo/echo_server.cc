@@ -14,6 +14,22 @@ public:
         str = s;
     }
 
+    void execute(Response& _return, const std::string& name, const Request& r) {
+        using std::to_string;
+        LOG_INFO << "name=" << name
+            << "Request("
+            << "num1=" << to_string(r.num1)
+            << ", " << "num2=" << to_string(r.num2)
+            << ", " << "c=" << r.c
+            << ", " << "d=" << r.d
+            << ", " << "comment=" << (r.__isset.comment ? (r.comment) : ( "<null>"))
+            << ")";
+        _return.result = 0;
+        _return.x = r.c;
+        _return.y = r.d;
+        _return.z = r.comment;
+    }
+
 
     void ping() {
         LOG_INFO << "EchoHandler::ping ...";
