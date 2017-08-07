@@ -24,10 +24,17 @@ std::string strerror(int e) {
     return empty_string;
 #else
     char buf[2048] = {};
-    const char* s = strerror_r(e, buf, sizeof(buf) - 1);
+    #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
+    int rc = strerror_r(e, buf, sizeof(buf) - 1); // XSI-compliant
+    if (rc == 0) {
+        return std::string(buf);
+    }
+    #else
+    const char* s = strerror_r(e, buf, sizeof(buf) - 1); // GNU-specific
     if (s) {
         return std::string(s);
     }
+    #endif
     return std::string();
 #endif
 }

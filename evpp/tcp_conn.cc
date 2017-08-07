@@ -309,7 +309,7 @@ void TCPConn::SetTCPNoDelay(bool on) {
 }
 
 std::string TCPConn::StatusToString() const {
-    H_CASE_STRING_BIGIN(status_);
+    H_CASE_STRING_BIGIN(status_.load());
     H_CASE_STRING(kDisconnected);
     H_CASE_STRING(kConnecting);
     H_CASE_STRING(kConnected);
