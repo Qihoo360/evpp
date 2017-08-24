@@ -44,10 +44,12 @@ int main(int argc, char* argv[]) {
     server.Init(ports);
     server.Start();
 
-    evpp::EventLoop base_loop;
-    std::shared_ptr<evpp::EventLoopThreadPool> tpool(new evpp::EventLoopThreadPool(&base_loop, thread_num));
+    evpp::EventLoop loop;
+    std::shared_ptr<evpp::EventLoopThreadPool> tpool(new evpp::EventLoopThreadPool(&loop, thread_num));
     tpool->Start(true);
     server.SetEventLoopThreadPool(tpool);
-    base_loop.Run();
+    loop.Run();
+    server.Stop(true);
+    tpool->Stop(true);
     return 0;
 }
