@@ -56,8 +56,10 @@ TEST_UNIT(testDNSResolverTimeout) {
         evpp::Duration delay(double(0.000001));
         std::unique_ptr<evpp::EventLoopThread> t(new evpp::EventLoopThread);
         t->Start(true);
+
+        auto loop = t->loop();
         std::shared_ptr<evpp::DNSResolver> dns_resolver(
-            new evpp::DNSResolver(t->loop(),
+            new evpp::DNSResolver(loop,
                                   "wwwwwww.en.cppreference.com",
                                   delay,
                                   fn_resolved));
@@ -72,13 +74,13 @@ TEST_UNIT(testDNSResolverTimeout) {
             deleted = true;
         };
 
-        t->loop()->QueueInLoop(fn_deleter);
+        loop->QueueInLoop(fn_deleter);
         dns_resolver.reset();
         while (!deleted) {
             usleep(1);
         }
 
-        t->loop()->RunAfter(evpp::Duration(0.05), [loop = t.get()]() { loop->Stop(); });
+        loop->RunAfter(evpp::Duration(0.05), [loop]() { loop->Stop(); });
         while (!t->IsStopped()) {
             usleep(1);
         }

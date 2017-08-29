@@ -172,7 +172,8 @@ void Server::Stop() {
     // Firstly we pause all the listening threads to accept new requests.
     substatus_.store(kStoppingListener);
     for (auto& lt : listen_threads_) {
-        auto fn = [&count, &promise, this, hs = lt.hservice]() {
+        std::shared_ptr<Service>& hs = lt.hservice;
+        auto fn = [&count, &promise, this, hs]() {
             hs->Pause();
             if (count.fetch_add(1) + 1 == static_cast<int>(listen_threads_.size())) {
                 promise.set_value();
@@ -212,7 +213,8 @@ void Server::Pause() {
     DLOG_TRACE << "http server pause";
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->loop();
-        auto f = [hs = lt.hservice]() {
+        std::shared_ptr<Service>& hs = lt.hservice;
+        auto f = [hs]() {
             hs->Pause();
         };
         loop->RunInLoop(f);
@@ -223,7 +225,8 @@ void Server::Continue() {
     DLOG_TRACE << "http server continue";
     for (auto& lt : listen_threads_) {
         EventLoop* loop = lt.thread->loop();
-        auto f = [hs = lt.hservice]() {
+        std::shared_ptr<Service>& hs = lt.hservice;
+        auto f = [hs]() {
             hs->Continue();
         };
         loop->RunInLoop(f);
