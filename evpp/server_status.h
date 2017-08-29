@@ -25,7 +25,7 @@ public:
     };
 
     std::string StatusToString() const {
-        H_CASE_STRING_BIGIN(status_);
+        H_CASE_STRING_BIGIN(status_.load());
         H_CASE_STRING(kNull);
         H_CASE_STRING(kInitialized);
         H_CASE_STRING(kRunning);

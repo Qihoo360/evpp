@@ -21,7 +21,12 @@ std::string strerror(int e) {
         return s;
     }
 
-    return empty_string;
+#elif defined(H_OS_MACOSX)
+    char buf[2048] = {};
+    int rc = strerror_r(e, buf, sizeof(buf) - 1); // XSI-compliant
+    if (rc == 0) {
+        return std::string(buf);
+    }
 #else
     char buf[2048] = {};
     #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
@@ -35,8 +40,8 @@ std::string strerror(int e) {
         return std::string(s);
     }
     #endif
-    return std::string();
 #endif
+    return empty_string;
 }
 
 namespace sock {
