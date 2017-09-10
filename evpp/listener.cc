@@ -19,7 +19,7 @@ Listener::~Listener() {
     fd_ = INVALID_SOCKET;
 }
 
-void Listener::Listen() {
+void Listener::Listen(int backlog) {
     DLOG_TRACE;
     fd_ = sock::CreateNonblockingSocket();
     if (fd_ < 0) {
@@ -36,7 +36,7 @@ void Listener::Listen() {
         LOG_FATAL << "bind error :" << strerror(serrno);
     }
 
-    ret = ::listen(fd_, SOMAXCONN);
+    ret = ::listen(fd_, backlog);
     if (ret < 0) {
         int serrno = errno;
         LOG_FATAL << "Listen failed " << strerror(serrno);
