@@ -27,7 +27,7 @@ int GetVbucketConf::GetVbucketConfContext(const std::string& conf_addr, std::str
 }
 
 void GetVbucketConf::OnHttpReqDone(struct evhttp_request* req, void* arg) {
-    char buf[10 * 1024] = {};
+    char buf[1024 * 1024] = {};
     HttpReqDoneArg* argument = (HttpReqDoneArg*)arg;
     int res_code = req->response_code;
     if (res_code == 200) {
