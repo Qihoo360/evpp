@@ -12,6 +12,7 @@ DEFINE_string(serverIpPort, "127.0.0.1:2007", "The tcp server ip address and lis
 DEFINE_int32(messageLen, 26, "The length of the message sending to server");
 DEFINE_int32(sleepIntervalMs, 1000, "The sleeping interval time between message sending on one connection");
 DEFINE_int32(threadCount, 24, "The working thread count");
+DEFINE_int32(pendingMax, 10, "The maximum number of pending requests");
 
 
 // 根据index计算当前ip的下一个IP
@@ -83,19 +84,27 @@ public:
     }
 
     void OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
-        
-    }
+        const size_t kHeadLen = 4;
+        while (buf->size() >= kHeadLen) {
+            int32_t len = buf->PeekInt32();
+            if (buf->size() < len + kHeadLen) {
+                break;
+            }
 
+            buf->NextString(len + kHeadLen);
+            pending_req_count_--;
+        }
+    }
 
 private:
     void SendMessage(int total_round, int index) {
         // 每秒钟挑选一部分客户端发送消息，这样QPS能够比较均匀
-        LOG_ERROR << "connected_count=" << connected_count_;
         size_t round_count = clients_.size() / total_round;
         for (size_t i = round_count * index, k = 0; k < round_count; k++, i++) {
             auto c = clients_[i]->conn();
-            if (c && c->IsConnected()) {
+            if (c && c->IsConnected() && pending_req_count_ < FLAGS_pendingMax) {
                 c->Send(message_);
+                pending_req_count_++;
             }
         }
     }
@@ -104,6 +113,7 @@ private:
     std::shared_ptr<evpp::EventLoopThreadPool> tpool_;
     std::vector<std::shared_ptr<evpp::TCPClient>> clients_;
     std::atomic<int> connected_count_ = { 0 };
+    std::atomic<int> pending_req_count_ = { 0 };
     std::string message_;
 };
 
