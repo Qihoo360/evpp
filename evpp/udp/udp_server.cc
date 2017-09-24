@@ -45,6 +45,28 @@ public:
         return true;
     }
 
+    bool Bind(std::string host, int p) {
+        this->port_ = p;
+        this->fd_ = sock::CreateUDPServer(host, p);
+        if (this->fd_ < 0) {
+            LOG_ERROR << "bind error";
+            return false;
+        }
+        sock::SetTimeout(this->fd_, 500);
+        return true;
+    }
+
+    bool JoinMultiCastGroup(std::string host, int p) {
+        this->port_ = p;
+        this->fd_ = sock::CreateUDPMultiCastSocket(host, p);
+        if (this->fd_ < 0) {
+            LOG_ERROR << "join error";
+            return false;
+        }
+        sock::SetTimeout(this->fd_, 500);
+        return true;
+    }
+
     bool Run() {
         this->thread_.reset(new std::thread(std::bind(&Server::RecvingLoop, this->server_, this)));
         return true;
@@ -112,6 +134,23 @@ bool Server::Init(int port) {
     recv_threads_.push_back(t);
     return ret;
 }
+
+bool Server::Init(std::string host, int port) {
+    RecvThreadPtr t(new RecvThread(this));
+    bool ret = t->Bind(host, port);
+    assert(ret);
+    recv_threads_.push_back(t);
+    return ret;
+}
+
+bool Server::JoinMulticastGroup(std::string host, int port) {
+    RecvThreadPtr t(new RecvThread(this));
+    bool ret = t->JoinMultiCastGroup(host, port);
+    assert(ret);
+    recv_threads_.push_back(t);
+    return ret;
+}
+
 
 bool Server::Init(const std::vector<int>& ports) {
     for (auto it : ports) {
@@ -259,7 +298,7 @@ void Server::RecvingLoop(RecvThread* thread) {
 
 
 /*
-Benchmark data£ºIntel(R) Xeon(R) CPU E5-2630 0 @ 2.30GHz 24 core
+Benchmark dataï¿½ï¿½Intel(R) Xeon(R) CPU E5-2630 0 @ 2.30GHz 24 core
 
 The recvfrom thread is the bottleneck, other 23 working threads' load is very very low.
 
@@ -268,7 +307,7 @@ If we need to improve the performance, there two ways to achieve it:
 2. Using RAW SOCKET
 3. Using recvmmsg/sendmmsg which can achieve 40w QPS on single thread
 
-udp message length QPS£º
+udp message length QPSï¿½ï¿½
 0.1k    9w+
 1k      9w+
 
