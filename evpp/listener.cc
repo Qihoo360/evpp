@@ -30,10 +30,10 @@ void Listener::Listen(int backlog) {
 
     struct sockaddr_storage addr = sock::ParseFromIPPort(addr_.data());
     // TODO Add retry when failed
-    int ret = ::bind(fd_, sock::sockaddr_cast(&addr), static_cast<socklen_t>(sizeof addr));
+    int ret = ::bind(fd_, sock::sockaddr_cast(&addr), static_cast<socklen_t>(sizeof(struct sockaddr)));
     if (ret < 0) {
         int serrno = errno;
-        LOG_FATAL << "bind error :" << strerror(serrno);
+        LOG_FATAL << "bind error :" << strerror(serrno) << " . addr=" << addr_;
     }
 
     ret = ::listen(fd_, backlog);

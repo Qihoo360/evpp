@@ -89,7 +89,7 @@ evpp_socket_t CreateUDPServer(int port) {
 
     std::string addr = std::string("0.0.0.0:") + std::to_string(port);
     struct sockaddr_storage local = ParseFromIPPort(addr.c_str());
-    if (::bind(fd, (struct sockaddr*)&local, sizeof(local))) {
+    if (::bind(fd, (struct sockaddr*)&local, sizeof(struct sockaddr))) {
         int serrno = errno;
         LOG_ERROR << "socket bind error=" << serrno << " " << strerror(serrno);
         return INVALID_SOCKET;

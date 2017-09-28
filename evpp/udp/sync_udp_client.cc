@@ -46,8 +46,9 @@ bool Client::Connect() {
     sockfd_ = ::socket(AF_INET, SOCK_DGRAM, 0);
     sock::SetReuseAddr(sockfd_);
 
-    socklen_t addrlen = sizeof(remote_addr_);
-    int ret = ::connect(sockfd_, reinterpret_cast<struct sockaddr*>(&remote_addr_), addrlen);
+    struct sockaddr* addr = reinterpret_cast<struct sockaddr*>(&remote_addr_);
+    socklen_t addrlen = sizeof(*addr);
+    int ret = ::connect(sockfd_, addr, addrlen);
 
     if (ret != 0) {
         Close();
@@ -57,6 +58,7 @@ bool Client::Connect() {
         return false;
     }
 
+    connected_ = true;
     return true;
 }
 
@@ -76,8 +78,8 @@ std::string Client::DoRequest(const std::string& data, uint32_t timeout_ms) {
 
     size_t buf_size = 1472; // The UDP max payload size
     MessagePtr msg(new Message(sockfd_, buf_size));
-    socklen_t m_nAddrLen = sizeof(remote_addr_);
-    int readn = ::recvfrom(sockfd_, msg->WriteBegin(), buf_size, 0, msg->mutable_remote_addr(), &m_nAddrLen);
+    socklen_t addrLen = sizeof(struct sockaddr);
+    int readn = ::recvfrom(sockfd_, msg->WriteBegin(), buf_size, 0, msg->mutable_remote_addr(), &addrLen);
     int err = errno;
     if (readn >= 0) {
         msg->WriteBytes(readn);
@@ -99,11 +101,17 @@ std::string Client::DoRequest(const std::string& remote_ip, int port, const std:
 }
 
 bool Client::Send(const char* msg, size_t len) {
-    // TODO use 'send' to improve performance??
+    if (connected_) {
+        int sentn = ::send(sockfd(), msg, len, 0);
+        return sentn == len;
+    }
+
+    struct sockaddr* addr = reinterpret_cast<struct sockaddr*>(&remote_addr_);
+    socklen_t addrlen = sizeof(*addr);
     int sentn = ::sendto(sockfd(),
                          msg, len, 0,
-                         sock::sockaddr_cast(&remote_addr_),
-                         sizeof(remote_addr_));
+                         addr,
+                         addrlen);
     return sentn > 0;
 }
 

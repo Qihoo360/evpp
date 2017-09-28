@@ -34,9 +34,13 @@ EVPP_EXPORT bool ParseFromIPPort(const char* address, struct sockaddr_storage& s
 
 inline struct sockaddr_storage ParseFromIPPort(const char* address) {
     struct sockaddr_storage ss;
-    memset(&ss, 0, sizeof(ss));
-    ParseFromIPPort(address, ss);
-    return ss;
+    bool rc = ParseFromIPPort(address, ss);
+    if (rc) {
+        return ss;
+    } else {
+        memset(&ss, 0, sizeof(ss));
+        return ss;
+    }
 }
 
 // @brief Splits a network address of the form "host:port" or "[host]:port"

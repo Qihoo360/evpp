@@ -105,7 +105,8 @@ void Connector::Connect() {
             return;
         }
     }
-    int rc = ::connect(fd_, sock::sockaddr_cast(&raddr_), sizeof(raddr_));
+    struct sockaddr* addr = sock::sockaddr_cast(&raddr_);
+    int rc = ::connect(fd_, addr, sizeof(*addr));
     if (rc != 0) {
         int serrno = errno;
         if (!EVUTIL_ERR_CONNECT_RETRIABLE(serrno)) {
