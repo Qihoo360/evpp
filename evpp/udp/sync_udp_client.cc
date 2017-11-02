@@ -51,10 +51,10 @@ bool Client::Connect() {
     int ret = ::connect(sockfd_, addr, addrlen);
 
     if (ret != 0) {
-        Close();
         LOG_ERROR << "Failed to connect to remote "
                   << sock::ToIPPort(&remote_addr_)
                   << ", errno=" << errno << " " << strerror(errno);
+        Close();
         return false;
     }
 
