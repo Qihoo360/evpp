@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 #include "evpp/inner_pre.h"
 #include "evpp/event_loop.h"
 
@@ -55,6 +57,7 @@ public:
     void set_retry_interval(Duration d) {
         retry_interval_ = d;
     }
+    void AddHeader(const std::string& header, const std::string& value);
 private:
     static void HandleResponse(struct evhttp_request* r, void* v);
     void HandleResponse(struct evhttp_request* r);
@@ -67,6 +70,7 @@ private:
     EventLoop* loop_;
     std::string host_;
     std::string uri_; // The URI of the HTTP request with parameters
+    std::map<std::string, std::string> headers_;
     std::string body_;
     std::shared_ptr<Conn> conn_;
     Handler handler_;

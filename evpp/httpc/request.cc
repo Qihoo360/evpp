@@ -19,6 +19,9 @@ Request::Request(EventLoop* loop, const std::string& http_url, const std::string
 #if LIBEVENT_VERSION_NUMBER >= 0x02001500
     struct evhttp_uri* evuri = evhttp_uri_parse(http_url.c_str());
     uri_ = evhttp_uri_get_path(evuri);
+    if (uri_[0] == 0) {
+        uri_ = "/";
+    }
     const char* query = evhttp_uri_get_query(evuri);
     if (query && strlen(query) > 0) {
         uri_ += "?";
@@ -28,11 +31,20 @@ Request::Request(EventLoop* loop, const std::string& http_url, const std::string
     host_ = evhttp_uri_get_host(evuri);
 
     int port = evhttp_uri_get_port(evuri);
+
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+    const char* scheme = evhttp_uri_get_scheme(evuri);
+    bool enable_ssl = scheme && strcasecmp(scheme, "https") == 0;
+    if (port < 0) {
+        port = enable_ssl ? 443 : 80;
+    }
+    conn_.reset(new Conn(loop, host_, port, enable_ssl, timeout));
+#else
     if (port < 0) {
         port = 80;
     }
-
     conn_.reset(new Conn(loop, host_, port, timeout));
+#endif
     evhttp_uri_free(evuri);
 #else
     URLParser p(http_url);
@@ -90,6 +102,15 @@ void Request::ExecuteInLoop() {
         goto failed;
     }
 
+    for (const auto& header : headers_) {
+        if (evhttp_add_header(
+                req->output_headers, header.first.c_str(), header.second.c_str())) {
+            evhttp_request_free(req);
+            errmsg = "evhttp_add_header failed";
+            goto failed;
+        }
+    }
+
     if (!body_.empty()) {
         req_type = EVHTTP_REQ_POST;
         if (evbuffer_add(req->output_buffer, body_.c_str(), body_.size())) {
@@ -117,6 +138,10 @@ failed:
 
     std::shared_ptr<Response> response(new Response(this, nullptr));
     handler_(response);
+}
+
+void Request::AddHeader(const std::string& header, const std::string& value) {
+    headers_[header] = value;
 }
 
 void Request::Retry() {
@@ -159,6 +184,25 @@ void Request::HandleResponse(struct evhttp_request* r) {
         return;
     }
 
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+    bool had_ssl_error = false;
+    if (!r) {
+        had_ssl_error = true;
+        int errcode = EVUTIL_SOCKET_ERROR();
+        unsigned long oslerr;
+        bool printed_some_error = false;
+        char buffer[256];
+        while ((oslerr = bufferevent_get_openssl_error(conn_->bufferevent()))) {
+            ERR_error_string_n(oslerr, buffer, sizeof(buffer));
+            LOG_ERROR << "Openssl error: " << buffer;
+            printed_some_error = true;
+        }
+        if (!printed_some_error) {
+            LOG_ERROR << "socket error(" << errcode << "): "
+                << evutil_socket_error_to_string(errcode);
+        }
+    }
+#endif
     // Eventually this Request failed
     std::shared_ptr<Response> response(new Response(this, r));
 
@@ -169,8 +213,6 @@ void Request::HandleResponse(struct evhttp_request* r) {
 
     handler_(response);
 }
-
-
 
 } // httpc
 } // evpp

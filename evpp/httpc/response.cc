@@ -7,8 +7,13 @@
 
 namespace evpp {
 namespace httpc {
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+Response::Response(Request* r, struct evhttp_request* evreq, bool had_ssl_error)
+    : request_(r), evreq_(evreq), http_code_(0), had_ssl_error_(had_ssl_error) {
+#else
 Response::Response(Request* r, struct evhttp_request* evreq)
     : request_(r), evreq_(evreq), http_code_(0) {
+#endif
     if (evreq) {
         http_code_ = evreq->response_code;
 

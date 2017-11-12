@@ -3,8 +3,18 @@
 
 namespace evpp {
 namespace httpc {
-ConnPool::ConnPool(const std::string& h, int p, Duration t, size_t size)
-    : host_(h), port_(p), timeout_(t), max_pool_size_(size) {
+ConnPool::ConnPool(const std::string& h, int p,
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+    bool enable_ssl,
+#endif
+    Duration t,
+    size_t size)
+    : host_(h), port_(p),
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+      enable_ssl_(enable_ssl),
+#endif
+      timeout_(t),
+      max_pool_size_(size) {
 }
 
 ConnPool::~ConnPool() {
