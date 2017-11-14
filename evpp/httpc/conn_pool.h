@@ -22,7 +22,7 @@ public:
     ~ConnPool();
 
     ConnPtr Get(EventLoop* loop);
-    void Put(const ConnPtr& c);
+    void Put(ConnPtr& c);
 
     // To make sure all Conn are released in it's own EventLoop
     void Clear();

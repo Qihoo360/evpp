@@ -43,7 +43,7 @@ ConnPtr ConnPool::Get(EventLoop* loop) {
     return c;
 }
 
-void ConnPool::Put(const ConnPtr& c) {
+void ConnPool::Put(ConnPtr& c) {
     EventLoop* loop = c->loop();
     assert(loop->IsInLoopThread());
     auto it = pool_.find(loop);
@@ -52,6 +52,8 @@ void ConnPool::Put(const ConnPtr& c) {
         return;
     }
     it->second.push_back(c);
+    // Take over the ownership
+    c.reset();
 }
 
 void ConnPool::Clear() {

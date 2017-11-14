@@ -39,17 +39,14 @@ public:
 
     void Execute(const Handler& h);
 
-    const std::shared_ptr<Conn>& conn() const {
-        return conn_;
-    }
-    struct evhttp_connection* evhttp_conn() const {
-        return conn_->evhttp_conn();
-    }
     const std::string& uri() const {
         return uri_;
     }
     const std::string& host() const {
         return host_;
+    }
+    const int port() const {
+        return port_;
     }
     void set_retry_number(int v) {
         retry_number_ = v;
@@ -69,6 +66,7 @@ private:
     ConnPool* pool_ = nullptr;
     EventLoop* loop_;
     std::string host_;
+    int port_;
     std::string uri_; // The URI of the HTTP request with parameters
     std::map<std::string, std::string> headers_;
     std::string body_;

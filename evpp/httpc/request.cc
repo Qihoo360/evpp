@@ -10,7 +10,7 @@ namespace httpc {
 const std::string Request::empty_ = "";
 
 Request::Request(ConnPool* pool, EventLoop* loop, const std::string& http_uri, const std::string& body)
-    : pool_(pool), loop_(loop), host_(pool->host()), uri_(http_uri), body_(body) {
+    : pool_(pool), loop_(loop), host_(pool->host()), port_(pool->port()), uri_(http_uri), body_(body) {
 }
 
 Request::Request(EventLoop* loop, const std::string& http_url, const std::string& body, Duration timeout)
@@ -30,31 +30,32 @@ Request::Request(EventLoop* loop, const std::string& http_url, const std::string
 
     host_ = evhttp_uri_get_host(evuri);
 
-    int port = evhttp_uri_get_port(evuri);
+    port_ = evhttp_uri_get_port(evuri);
 
 #if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
     const char* scheme = evhttp_uri_get_scheme(evuri);
     bool enable_ssl = scheme && strcasecmp(scheme, "https") == 0;
-    if (port < 0) {
-        port = enable_ssl ? 443 : 80;
+    if (port_ < 0) {
+        port_ = enable_ssl ? 443 : 80;
     }
-    conn_.reset(new Conn(loop, host_, port, enable_ssl, timeout));
+    conn_.reset(new Conn(loop, host_, port_, enable_ssl, timeout));
 #else
-    if (port < 0) {
-        port = 80;
+    if (port_ < 0) {
+        port_ = 80;
     }
-    conn_.reset(new Conn(loop, host_, port, timeout));
+    conn_.reset(new Conn(loop, host_, port_, timeout));
 #endif
     evhttp_uri_free(evuri);
 #else
     URLParser p(http_url);
-    conn_.reset(new Conn(loop, p.host, port, timeout));
+    conn_.reset(new Conn(loop, p.host, p.port, timeout));
     if (p.query.empty()) {
         uri_ = p.path;
     } else {
         uri_ = p.path + "?" + p.query;
     }
     host_ = p.host;
+    port_ = p.port;
 #endif
 }
 
@@ -146,6 +147,13 @@ void Request::AddHeader(const std::string& header, const std::string& value) {
 
 void Request::Retry() {
     retried_ += 1;
+
+    // Recycling the http Connection object for retry.
+    // Connection will be obtained again by ExecuteInLoop
+    if (pool_) {
+        pool_->Put(conn_);
+    }
+
     if (retry_interval_.IsZero()) {
         ExecuteInLoop();
     } else {
@@ -163,7 +171,9 @@ void Request::HandleResponse(struct evhttp_request* r) {
     assert(loop_->IsInLoopThread());
 
     if (r) {
-        if (r->response_code == HTTP_OK || retried_ >= retry_number_) {
+        int response_code = r->response_code;
+        bool needs_retry = response_code >= 500 && response_code < 600;
+        if (!needs_retry || retried_ >= retry_number_) {
             LOG_WARN << "this=" << this << " response_code=" << r->response_code << " retried=" << retried_ << " max retry_time=" << retry_number_;
             std::shared_ptr<Response> response(new Response(this, r));
 
