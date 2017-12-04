@@ -45,7 +45,7 @@ public:
     const std::string& host() const {
         return host_;
     }
-    const int port() const {
+    int port() const {
         return port_;
     }
     void set_retry_number(int v) {
@@ -75,7 +75,7 @@ private:
 
     // The retried times
     int retried_ = 0;
-    
+
     // The max retry times. Set to 0 if you don't want to retry when failed.
     // The total execution times is retry_number_+1
     int retry_number_ = 2;

@@ -4,6 +4,7 @@
 #if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
 #include "evpp/httpc/ssl.h"
 #include <openssl/x509v3.h>
+#include <openssl/err.h>
 #endif
 
 #include "evpp/libevent.h"

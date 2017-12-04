@@ -16,6 +16,12 @@ include_directories(${PROJECT_SOURCE_DIR})
 add_library(evpp_static STATIC ${evpp_SRCS})
 target_link_libraries(evpp_static ${DEPENDENT_LIBRARIES})
 
+if (HTTPS)
+add_library(evpp_https_static STATIC ${evpp_SRCS})
+target_compile_definitions(evpp_https_static PRIVATE -DEVPP_HTTP_CLIENT_SUPPORTS_SSL)
+target_link_libraries(evpp_https_static ${DEPENDENT_LIBRARIES})
+endif (HTTPS)
+
 add_library(evpp_lite_static STATIC ${evpp_lite_SRCS})
 target_link_libraries(evpp_lite_static ${DEPENDENT_LIBRARIES})
 

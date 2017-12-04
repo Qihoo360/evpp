@@ -1,9 +1,12 @@
-
 #include "evpp/libevent.h"
 #include "evpp/httpc/conn_pool.h"
 #include "evpp/httpc/response.h"
 #include "evpp/httpc/request.h"
 #include "evpp/httpc/url_parser.h"
+
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+#include <openssl/err.h>
+#endif
 
 namespace evpp {
 namespace httpc {
@@ -195,9 +198,7 @@ void Request::HandleResponse(struct evhttp_request* r) {
     }
 
 #if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
-    bool had_ssl_error = false;
     if (!r) {
-        had_ssl_error = true;
         int errcode = EVUTIL_SOCKET_ERROR();
         unsigned long oslerr;
         bool printed_some_error = false;
