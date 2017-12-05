@@ -155,6 +155,7 @@ void Request::Retry() {
     // Connection will be obtained again by ExecuteInLoop
     if (pool_) {
         pool_->Put(conn_);
+        conn_.reset();
     }
 
     if (retry_interval_.IsZero()) {
@@ -183,6 +184,7 @@ void Request::HandleResponse(struct evhttp_request* r) {
             //Recycling the http Connection object
             if (pool_) {
                 pool_->Put(conn_);
+                conn_.reset();
             }
 
             handler_(response);
@@ -220,6 +222,7 @@ void Request::HandleResponse(struct evhttp_request* r) {
     // Recycling the http Connection object
     if (pool_) {
         pool_->Put(conn_);
+        conn_.reset();
     }
 
     handler_(response);
