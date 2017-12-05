@@ -14,7 +14,11 @@ class Conn;
 typedef std::shared_ptr<Conn> ConnPtr;
 class EVPP_EXPORT ConnPool {
 public:
-    ConnPool(const std::string& host, int port, Duration timeout, size_t max_pool_size = 1024);
+    ConnPool(const std::string& host, int port,
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+        bool enable_ssl,
+#endif
+        Duration timeout, size_t max_pool_size = 1024);
     ~ConnPool();
 
     ConnPtr Get(EventLoop* loop);
@@ -29,12 +33,20 @@ public:
     int port() const {
         return port_;
     }
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+    bool enable_ssl() const {
+        return enable_ssl_;
+    }
+#endif
     Duration timeout() const {
         return timeout_;
     }
 private:
     std::string host_;
     int port_;
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+    bool enable_ssl_;
+#endif
     Duration timeout_;
     size_t max_pool_size_; // The max size of the pool for every EventLoop
 

@@ -52,6 +52,15 @@ else (UNIX)
     SET(DEPENDENT_LIBRARIES event glog)
 endif (UNIX)
 
+# Set to true if https support is needed.
+# Note that this needs openssl
+# SET(HTTPS True)
+if (HTTPS)
+    list(APPEND DEPENDENT_LIBRARIES ssl crypto event_openssl)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DEVPP_HTTP_CLIENT_SUPPORTS_SSL")
+endif (HTTPS)
+
+
 if (CMAKE_BENCHMARK_TESTING)
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DH_BENCHMARK_TESTING=1")
 endif (CMAKE_BENCHMARK_TESTING)
