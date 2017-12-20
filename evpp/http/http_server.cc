@@ -128,8 +128,11 @@ bool Server::Start() {
             auto cb = std::bind(&Server::Dispatch, this, _1, _2, _3, c.second);
             hservice->RegisterHandler(c.first, cb);
         }
-        auto cb = std::bind(&Server::Dispatch, this, _1, _2, _3, default_callback_);
-        hservice->RegisterDefaultHandler(cb);
+
+        if (default_callback_) {
+            auto cb = std::bind(&Server::Dispatch, this, _1, _2, _3, default_callback_);
+            hservice->RegisterDefaultHandler(cb);
+        }
     }
 
     assert(rc);
