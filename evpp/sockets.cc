@@ -113,16 +113,16 @@ bool ParseFromIPPort(const char* address, struct sockaddr_storage& ss) {
     }
 
     struct sockaddr_in* addr = sockaddr_in_cast(&ss);
-    int rc = ::inet_pton(family, host.data(), &addr->sin_addr);
+    int rc = ::evutil_inet_pton(family, host.data(), &addr->sin_addr);
     if (rc == 0) {
-        LOG_INFO << "ParseFromIPPort inet_pton(AF_INET '" << host.data() << "', ...) rc=0. " << host.data() << " is not a valid IP address. Maybe it is a hostname.";
+        LOG_INFO << "ParseFromIPPort evutil_inet_pton (AF_INET '" << host.data() << "', ...) rc=0. " << host.data() << " is not a valid IP address. Maybe it is a hostname.";
         return false;
     } else if (rc < 0) {
         int serrno = errno;
         if (serrno == 0) {
             LOG_INFO << "[" << host.data() << "] is not a IP address. Maybe it is a hostname.";
         } else {
-            LOG_WARN << "ParseFromIPPort inet_pton(AF_INET, '" << host.data() << "', ...) failed : " << strerror(serrno);
+            LOG_WARN << "ParseFromIPPort evutil_inet_pton (AF_INET, '" << host.data() << "', ...) failed : " << strerror(serrno);
         }
         return false;
     }
@@ -190,7 +190,7 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
     if (ss->ss_family == AF_INET) {
         struct sockaddr_in* addr4 = const_cast<struct sockaddr_in*>(sockaddr_in_cast(ss));
         char buf[INET_ADDRSTRLEN] = {};
-        const char* addr = ::inet_ntop(ss->ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
+        const char* addr = ::evutil_inet_ntop(ss->ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
 
         if (addr) {
             saddr = addr;
@@ -200,7 +200,7 @@ std::string ToIPPort(const struct sockaddr_storage* ss) {
     } else if (ss->ss_family == AF_INET6) {
         struct sockaddr_in6* addr6 = const_cast<struct sockaddr_in6*>(sockaddr_in6_cast(ss));
         char buf[INET6_ADDRSTRLEN] = {};
-        const char* addr = ::inet_ntop(ss->ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
+        const char* addr = ::evutil_inet_ntop(ss->ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
 
         if (addr) {
             saddr = std::string("[") + addr + "]";
@@ -232,14 +232,14 @@ std::string ToIP(const struct sockaddr* s) {
     if (ss->ss_family == AF_INET) {
         struct sockaddr_in* addr4 = const_cast<struct sockaddr_in*>(sockaddr_in_cast(ss));
         char buf[INET_ADDRSTRLEN] = {};
-        const char* addr = ::inet_ntop(ss->ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
+        const char* addr = ::evutil_inet_ntop(ss->ss_family, &addr4->sin_addr, buf, INET_ADDRSTRLEN);
         if (addr) {
             return std::string(addr);
         }
     } else if (ss->ss_family == AF_INET6) {
         struct sockaddr_in6* addr6 = const_cast<struct sockaddr_in6*>(sockaddr_in6_cast(ss));
         char buf[INET6_ADDRSTRLEN] = {};
-        const char* addr = ::inet_ntop(ss->ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
+        const char* addr = ::evutil_inet_ntop(ss->ss_family, &addr6->sin6_addr, buf, INET6_ADDRSTRLEN);
         if (addr) {
             return std::string(addr);
         }
