@@ -12,8 +12,6 @@
 
 #ifdef _WIN32
 #include <WinSock2.h>
-#else
-#include <sys/queue.h>
 #endif
 
 
