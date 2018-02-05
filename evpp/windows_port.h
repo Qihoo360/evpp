@@ -21,6 +21,8 @@
 #define usleep(us) Sleep((us)/1000)
 #define snprintf  _snprintf
 #define thread_local __declspec(thread)
+#define strcasecmp   _stricmp
+#define strncasecmp  _strnicmp
 #endif
 
 #ifdef H_OS_WINDOWS
@@ -62,17 +64,37 @@
 #define EVPP_EXPORT
 
 // We must link against these libraries on windows platform for Visual Studio IDE
-#ifdef _WIN32
+#ifdef H_OS_WINDOWS
+
 #ifndef EVPP_EXPORTS
+#ifdef _DEBUG
+#pragma comment(lib, "evpp_staticd.lib")
+#else
 #pragma comment(lib, "evpp_static.lib")
 #endif
+#endif
+
+
 #pragma comment(lib, "Ws2_32.lib")
-#pragma comment(lib, "glog.lib")
+
+#ifdef _DEBUG
+#pragma comment(lib, "libglog_staticd.lib")
+#ifdef H_LIBEVENT_VERSION_14
+#pragma comment(lib, "eventd.lib")
+#else
+#pragma comment(lib, "event_cored.lib") // libevent2.0
+#pragma comment(lib, "event_extrad.lib") // libevent2.0
+#endif
+#else
+#pragma comment(lib, "libglog_static.lib")
+#ifdef H_LIBEVENT_VERSION_14
 #pragma comment(lib, "event.lib")
-#ifndef H_LIBEVENT_VERSION_14
+#else
 #pragma comment(lib, "event_core.lib") // libevent2.0
 #pragma comment(lib, "event_extra.lib") // libevent2.0
 #endif
+#endif
+
 #endif
 
 
