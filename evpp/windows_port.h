@@ -80,7 +80,7 @@
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "libglog_static" EVPP_LIB_SUFFIX)
 #ifdef H_LIBEVENT_VERSION_14
-#pragma comment(lib, "eventd" EVPP_LIB_SUFFIX)
+#pragma comment(lib, "event" EVPP_LIB_SUFFIX)
 #else
 #pragma comment(lib, "event_core" EVPP_LIB_SUFFIX) // libevent2.0
 #pragma comment(lib, "event_extra" EVPP_LIB_SUFFIX) // libevent2.0
