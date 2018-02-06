@@ -63,41 +63,30 @@
 
 #define EVPP_EXPORT
 
+#if defined(_DEBUG)
+#define EVPP_LIB_SUFFIX "d.lib"
+#else
+#define EVPP_LIB_SUFFIX ".lib"
+#endif
+
 // We must link against these libraries on windows platform for Visual Studio IDE
 #ifdef H_OS_WINDOWS
 
 #ifndef EVPP_EXPORTS
-#ifdef _DEBUG
-#pragma comment(lib, "evpp_staticd.lib")
-#else
-#pragma comment(lib, "evpp_static.lib")
-#endif
+#pragma comment(lib, "evpp_static" EVPP_LIB_SUFFIX)
 #endif
 
 
 #pragma comment(lib, "Ws2_32.lib")
-
-#ifdef _DEBUG
-#pragma comment(lib, "libglog_staticd.lib")
+#pragma comment(lib, "libglog_static" EVPP_LIB_SUFFIX)
 #ifdef H_LIBEVENT_VERSION_14
-#pragma comment(lib, "eventd.lib")
+#pragma comment(lib, "eventd" EVPP_LIB_SUFFIX)
 #else
-#pragma comment(lib, "event_cored.lib") // libevent2.0
-#pragma comment(lib, "event_extrad.lib") // libevent2.0
-#endif
-#else
-#pragma comment(lib, "libglog_static.lib")
-#ifdef H_LIBEVENT_VERSION_14
-#pragma comment(lib, "event.lib")
-#else
-#pragma comment(lib, "event_core.lib") // libevent2.0
-#pragma comment(lib, "event_extra.lib") // libevent2.0
-#endif
+#pragma comment(lib, "event_core" EVPP_LIB_SUFFIX) // libevent2.0
+#pragma comment(lib, "event_extra" EVPP_LIB_SUFFIX) // libevent2.0
 #endif
 
 #endif
-
-
 
 #ifdef H_OS_WINDOWS
 #define __PRETTY_FUNCTION__ __FUNCTION__
