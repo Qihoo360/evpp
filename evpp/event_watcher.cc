@@ -89,7 +89,6 @@ void EventWatcher::Cancel() {
 
     if (cancel_callback_) {
         cancel_callback_();
-        cancel_callback_ = Handler();
     }
 }
 
@@ -106,13 +105,13 @@ void EventWatcher::SetCancelCallback(const Handler& cb) {
 PipeEventWatcher::PipeEventWatcher(EventLoop* loop,
                                    const Handler& handler)
     : EventWatcher(loop->event_base(), handler) {
-    memset(pipe_, 0, sizeof(pipe_[0] * 2));
+    memset(pipe_, 0, sizeof(pipe_));
 }
 
 PipeEventWatcher::PipeEventWatcher(EventLoop* loop,
                                    Handler&& h)
     : EventWatcher(loop->event_base(), std::move(h)) {
-    memset(pipe_, 0, sizeof(pipe_[0] * 2));
+    memset(pipe_, 0, sizeof(pipe_));
 }
 
 

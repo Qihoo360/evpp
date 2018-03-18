@@ -45,9 +45,10 @@ void InvokeTimer::Start() {
 
 void InvokeTimer::Cancel() {
     DLOG_TRACE;
-    if (timer_) {
-        loop_->QueueInLoop(std::bind(&TimerEventWatcher::Cancel, timer_));
-    }
+    auto f = [this](){
+        timer_->Cancel();
+    };
+    loop_->RunInLoop(std::move(f));
 }
 
 void InvokeTimer::OnTimerTriggered() {
