@@ -79,10 +79,10 @@ void EventLoopThreadPool::Stop(DoneCallback fn) {
 void EventLoopThreadPool::Stop(bool wait_thread_exit, DoneCallback fn) {
     DLOG_TRACE;
     status_.store(kStopping);
-    
+
     if (thread_num_ == 0) {
         status_.store(kStopped);
-        
+
         if (fn) {
             DLOG_TRACE << "calling stopped callback";
             fn();
@@ -93,7 +93,7 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, DoneCallback fn) {
     DLOG_TRACE << "wait_thread_exit=" << wait_thread_exit;
     stopped_cb_ = fn;
 
-    for (auto &t : threads_) {
+    for (auto& t : threads_) {
         t->Stop();
     }
 
@@ -101,7 +101,7 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, DoneCallback fn) {
     // status_ will be stored with kStopped in method OnThreadExited
 
     auto is_stopped_fn = [this]() {
-        for (auto &t : this->threads_) {
+        for (auto& t : this->threads_) {
             if (!t->IsStopped()) {
                 return false;
             }
@@ -122,7 +122,7 @@ void EventLoopThreadPool::Stop(bool wait_thread_exit, DoneCallback fn) {
 
 void EventLoopThreadPool::Join() {
     DLOG_TRACE << "thread_num=" << thread_num();
-    for (auto &t : threads_) {
+    for (auto& t : threads_) {
         t->Join();
     }
     threads_.clear();
@@ -130,7 +130,7 @@ void EventLoopThreadPool::Join() {
 
 void EventLoopThreadPool::AfterFork() {
     DLOG_TRACE << "thread_num=" << thread_num();
-    for (auto &t : threads_) {
+    for (auto& t : threads_) {
         t->AfterFork();
     }
 }

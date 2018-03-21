@@ -25,7 +25,7 @@ public:
 
     // @param wait_thread_started - If it is true this method will block
     //  until the thread totally started
-    // @param pre - This functor will be executed immediately when the thread is started. 
+    // @param pre - This functor will be executed immediately when the thread is started.
     // @param post - This functor will be executed at the moment when the thread is going to stop.
     bool Start(bool wait_thread_started = true,
                Functor pre = Functor(),

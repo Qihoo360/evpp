@@ -130,7 +130,7 @@ bool PipeEventWatcher::DoInit() {
     }
 
     if (evutil_make_socket_nonblocking(pipe_[0]) < 0 ||
-        evutil_make_socket_nonblocking(pipe_[1]) < 0) {
+            evutil_make_socket_nonblocking(pipe_[1]) < 0) {
         goto failed;
     }
 
@@ -155,7 +155,7 @@ void PipeEventWatcher::HandlerFn(evpp_socket_t fd, short /*which*/, void* v) {
     PipeEventWatcher* e = (PipeEventWatcher*)v;
 #ifdef H_BENCHMARK_TESTING
     // Every time we only read 1 byte for testing the IO event performance.
-    // We use it in the benchmark test program 
+    // We use it in the benchmark test program
     //  1. evpp/benchmark/ioevent/evpp/
     //  1. evpp/benchmark/ioevent/fd_channel_vs_pipe_event_watcher/
     char buf[1];

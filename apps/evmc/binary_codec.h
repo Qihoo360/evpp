@@ -24,12 +24,14 @@ public:
 private:
     // noncopyable
     BinaryCodec(const BinaryCodec&);
-    void DecodePrefixGetPacket(const protocol_binary_response_header& resp,
-                               evpp::Buffer* buf, std::string& key, CommandPtr& cmd);
     const BinaryCodec& operator=(const BinaryCodec&);
 
-    void OnResponsePacket(const protocol_binary_response_header& resp,
-                          evpp::Buffer* buf);
+    void RecvMultiGetData(evpp::Buffer* buf, const std::size_t size, CommandPtr& cmd);
+    void RecvGetData(const void* data, CommandPtr& cmd);
+    void OnResponsePacket(evpp::Buffer* buf, const std::size_t size);
+    uint32_t OnRecvPrefixGetData(const char*   buf, EvmcCode& code
+                                 , std::map<std::string, std::map<std::string, std::string>>& results);
+    void RecvPrefixGetData(const evpp::Buffer* const buf, const std::size_t size, CommandPtr& cmd);
 private:
     // TODO : 若使用智能指针，要处理循环引用. client的回调中引用了codec
     MemcacheClient* memc_client_;

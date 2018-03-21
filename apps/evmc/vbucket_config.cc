@@ -10,7 +10,6 @@
 
 #include <libhashkit/hashkit.h>
 
-#include "random.h"
 #include "extract_vbucket_conf.h"
 #include "likely.h"
 
@@ -19,17 +18,16 @@ namespace evmc {
 
 const uint16_t BAD_SERVER_ID = 65535;
 
-VbucketConfig::VbucketConfig() : rand_(new Random(time(nullptr))) {
+VbucketConfig::VbucketConfig() {
 }
 
 VbucketConfig::~VbucketConfig() {
-    delete rand_;
 }
 
 enum {
-    INIT_WEIGHT = 1000,
-    MAX_WEIGHT = 1000000,
-    MIN_WEIGHT = 100,
+    INC_WEIGHT = 1,
+    MAX_WEIGHT = 50,
+    MIN_WEIGHT = 2,
     CLUSTER_MODE = 1,
     STAND_ALONE_MODE = 2,
 };
@@ -50,47 +48,66 @@ uint16_t VbucketConfig::SelectServerFirstId(uint16_t vbucket) const {
     return server_ids[0];
 }
 
-uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const {
+uint16_t VbucketConfig::SelectServerId(uint16_t vbucket, std::vector<uint16_t>& last_ids) {
     uint16_t vb = vbucket % vbucket_map_.size();
+    uint16_t server_id = BAD_SERVER_ID;
 
     const std::vector<int>& server_ids = vbucket_map_[vb];
+    if (last_ids.size() >= server_ids.size()) {
+        return server_id;
+    }
+    thread_local std::vector<int32_t> server_health;
+    if (server_health.empty()) {
+        server_health.resize(server_list().size(), MAX_WEIGHT);
+    }
 
-    uint16_t server_id = BAD_SERVER_ID;
+
     {
         // 按健康权重选定server id
         std::map<int64_t, uint16_t> weighted_items;
         int64_t total_weight = 0;
 
+        auto begin = last_ids.begin();
         for (size_t i = 0 ; i < server_ids.size(); ++i) {
-            if (server_ids[i] == last_id) {
+            for (begin = last_ids.begin(); begin != last_ids.end(); ++begin) {
+                if (server_ids[i] == *begin) {
+                    break;
+                }
+            }
+            if (begin != last_ids.end()) {
                 continue;
             }
 
-            total_weight += server_health_[server_ids[i]];
+            total_weight += server_health[server_ids[i]];
             // total_weight += 1000; // for test only
             weighted_items[total_weight] = server_ids[i];
         }
 
         if (total_weight > 0) {
-            server_id = weighted_items.upper_bound(rand_->Next() % total_weight)->second;
-            LOG_DEBUG << "SelectServerId selected_server_id=" << server_id << " last_id=" << last_id;
+            server_id = weighted_items.upper_bound(rand() % total_weight)->second;
         } else {
             return BAD_SERVER_ID;
         }
     }
 
     // 捎带更新健康值，不专门更新
-    server_health_[server_id] += 1000;
+    server_health[server_id] += INC_WEIGHT;
 
-    if (server_health_[server_id] > MAX_WEIGHT) {
-        server_health_[server_id] = MAX_WEIGHT;
+    if (server_health[server_id] > MAX_WEIGHT) {
+        server_health[server_id] = MAX_WEIGHT;
     }
 
-    if (last_id < server_health_.size()) {
-        server_health_[last_id] /= 2;
+    uint16_t last_id = BAD_SERVER_ID;
+    if (last_ids.size() > 0) {
+        last_id = *last_ids.rbegin();
+    }
+    LOG_DEBUG << "SelectServerId selected_server_id=" << server_id << " last_id=" << *last_ids.rbegin();
 
-        if (server_health_[last_id] <= MIN_WEIGHT) {
-            server_health_[last_id] = 100;
+    if (last_id < server_health.size()) {
+        server_health[last_id] /= 2;
+
+        if (server_health[last_id] <= MIN_WEIGHT) {
+            server_health[last_id] = MIN_WEIGHT;
         }
     }
 
@@ -123,7 +140,6 @@ bool VbucketConfig::Load(const char* json_info) {
 
     for (rapidjson::SizeType i = 0; i < servers.Size(); i++) {
         server_list_.emplace_back(servers[i].GetString());
-        server_health_.emplace_back(INIT_WEIGHT);
     }
 
     rapidjson::Value& vbuckets = d["vBucketMap"];
@@ -192,7 +208,7 @@ uint16_t MultiModeVbucketConfig::SelectServerFirstId(uint16_t vbucket) const {
     return 0;
 }
 
-uint16_t MultiModeVbucketConfig::SelectServerId(uint16_t vbucket, uint16_t last_id) const {
+uint16_t MultiModeVbucketConfig::SelectServerId(uint16_t vbucket, std::vector<uint16_t>& last_id) {
     if (mode_ != STAND_ALONE_MODE) {
         return VbucketConfig::SelectServerId(vbucket, last_id);
     }

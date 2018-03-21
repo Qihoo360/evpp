@@ -4,6 +4,8 @@
 #include "evpp/event_watcher.h"
 #include "evpp/event_loop.h"
 #include "evpp/invoke_timer.h"
+#include "folly/synchronization/Baton.h"
+#include "folly/io/async/EventUtil.h"
 
 namespace evpp {
 EventLoop::EventLoop()
@@ -48,8 +50,8 @@ EventLoop::~EventLoop() {
         evbase_ = nullptr;
     }
 
-    delete pending_functors_;
-    pending_functors_ = nullptr;
+    //delete pending_functors_;
+    //pending_functors_ = nullptr;
 }
 
 void EventLoop::Init() {
@@ -61,7 +63,7 @@ void EventLoop::Init() {
 #elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
     this->pending_functors_ = new moodycamel::ConcurrentQueue<Functor>();
 #else
-    this->pending_functors_ = new std::vector<Functor>();
+    //this->pending_functors_ = new std::vector<Functor>();
 #endif
 
     tid_ = std::this_thread::get_id(); // The default thread id
@@ -73,12 +75,35 @@ void EventLoop::Init() {
 
 void EventLoop::InitNotifyPipeWatcher() {
     // Initialized task queue notify pipe watcher
-    watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
+    //watcher_.reset(new PipeEventWatcher(this, std::bind(&EventLoop::DoPendingFunctors, this)));
+    watcher_.reset(new PipeEventWatcher(this, []() {}));
     int rc = watcher_->Init();
     assert(rc);
     if (!rc) {
         LOG_FATAL << "PipeEventWatcher init failed.";
     }
+}
+
+void EventLoop::WaitUntilRunning() {
+    folly::Baton<> bat;
+    RunInLoop([baton = std::ref(bat)]() {
+        baton.get().post();
+    });
+    bat.wait();
+}
+
+void EventLoop::RunOnce() {
+    int res = 0;
+    if (status_ == kStopped) {
+        return;
+    }
+    DoBeforeLoop();
+    res = event_base_loop(evbase_, EVLOOP_ONCE | EVLOOP_NONBLOCK);
+    if (res == -1) {
+        int serrno = errno;
+        LOG_ERROR << "event_base_dispatch error " << serrno << " thread_id=" << pthread_self();
+    }
+    DoPendingFunctors();
 }
 
 void EventLoop::Run() {
@@ -95,19 +120,29 @@ void EventLoop::Run() {
     // After everything have initialized, we set the status to kRunning
     status_.store(kRunning);
 
-    rc = event_base_dispatch(evbase_);
-    if (rc == 1) {
-        LOG_ERROR << "event_base_dispatch error: no event registered";
-    } else if (rc == -1) {
-        int serrno = errno;
-        LOG_ERROR << "event_base_dispatch error " << serrno << " " << strerror(serrno);
+    while (status_ != kStopped) {
+        //rc = event_base_dispatch(evbase_);
+        DoBeforeLoop();
+        if (GetPendingQueueSize() == 0) {
+            LOG_TRACE << "pending size = 0, block";
+            rc = event_base_loop(evbase_, EVLOOP_ONCE);//block
+        } else {
+            rc = event_base_loop(evbase_, EVLOOP_ONCE | EVLOOP_NONBLOCK);
+        }
+        if (rc == 1) {
+            LOG_ERROR << "event_base_dispatch error: no event registered";
+        } else if (rc == -1) {
+            int serrno = errno;
+            LOG_ERROR << "event_base_dispatch error " << serrno << " " << strerror(serrno) << " threadid=" << pthread_self();
+        }
+        DoPendingFunctors();
     }
+    DoPendingFunctors();
 
     // Make sure watcher_ does construct, initialize and destruct in the same thread.
     watcher_.reset();
     DLOG_TRACE << "EventLoop stopped, tid=" << std::this_thread::get_id();
 
-    status_.store(kStopped);
 }
 
 void EventLoop::Stop() {
@@ -123,7 +158,7 @@ void EventLoop::StopInLoop() {
     assert(status_.load() == kStopping);
 
     auto f = [this]() {
-        for (int i = 0;;i++) {
+        for (int i = 0;; i++) {
             DLOG_TRACE << "calling DoPendingFunctors index=" << i;
             DoPendingFunctors();
             if (IsPendingQueueEmpty()) {
@@ -141,6 +176,7 @@ void EventLoop::StopInLoop() {
     DLOG_TRACE << "after event_base_loopexit, we invoke DoPendingFunctors";
 
     f();
+    status_.store(kStopped);
 
     DLOG_TRACE << "end of StopInLoop";
 }
@@ -207,12 +243,72 @@ evpp::InvokeTimerPtr EventLoop::RunEvery(Duration interval, Functor&& f) {
     return t;
 }
 
+void EventLoop::drive() {
+    RunOnce();
+}
+
+void EventLoop::attachTimeoutManager(folly::AsyncTimeout* obj, folly::AsyncTimeout::InternalEnum internal) {
+    struct event* ev = obj->getEvent();
+    assert(ev->ev_base == nullptr);
+
+    event_base_set(event_base(), ev);
+    if (internal == folly::AsyncTimeout::InternalEnum::INTERNAL) {
+        // Set the EVLIST_INTERNAL flag
+        folly::event_ref_flags(ev) |= EVLIST_INTERNAL;
+    }
+}
+bool EventLoop::isInTimeoutManagerThread() {
+    return IsInLoopThread();
+}
+void EventLoop::cancelTimeout(folly::AsyncTimeout* obj) {
+    assert(isInTimeoutManagerThread());
+    struct event* ev = obj->getEvent();
+    if (folly::EventUtil::isEventRegistered(ev)) {
+        event_del(ev);
+    }
+}
+void EventLoop::detachTimeoutManager(folly::AsyncTimeout* obj) {
+    cancelTimeout(obj);
+    struct event* ev = obj->getEvent();
+    ev->ev_base = nullptr;
+}
+
+bool EventLoop::scheduleTimeout(folly::AsyncTimeout* obj,
+                                timeout_type timeout) {
+    // Set up the timeval and add the event
+    struct timeval tv;
+    tv.tv_sec = long(timeout.count() / 1000LL);
+    tv.tv_usec = long((timeout.count() % 1000LL) * 1000LL);
+
+    struct event* ev = obj->getEvent();
+    if (event_add(ev, &tv) < 0) {
+        LOG(ERROR) << "EventBase: failed to schedule timeout: " << strerror(errno);
+        return false;
+    }
+
+    return true;
+}
+
 void EventLoop::RunInLoop(const Functor& functor) {
     DLOG_TRACE;
     if (IsRunning() && IsInLoopThread()) {
         functor();
     } else {
         QueueInLoop(functor);
+    }
+}
+
+void EventLoop::RunBeforeLoop(Functor&& functor) {
+    assert(IsInLoopThread());
+    run_before_loop_functors_.emplace_back(std::move(functor));
+}
+
+void EventLoop::DoBeforeLoop() {
+    assert(IsInLoopThread());
+    while (!run_before_loop_functors_.empty()) {
+        Functor f(std::move(run_before_loop_functors_.front()));
+        run_before_loop_functors_.pop_front();
+        f();
     }
 }
 
@@ -236,8 +332,10 @@ void EventLoop::QueueInLoop(const Functor& cb) {
         while (!pending_functors_->enqueue(cb)) {
         }
 #else
-        std::lock_guard<std::mutex> lock(mutex_);
-        pending_functors_->emplace_back(cb);
+        {
+            folly::SpinLockGuard g(spinlock_);
+            pending_functors_.emplace_back(cb);
+        }
 #endif
     }
     ++pending_functor_count_;
@@ -264,7 +362,7 @@ void EventLoop::QueueInLoop(const Functor& cb) {
             assert(!IsRunning());
         }
     } else {
-         DLOG_TRACE << "No need to call watcher_->Nofity()";
+        DLOG_TRACE << "No need to call watcher_->Nofity()";
     }
 }
 
@@ -279,8 +377,8 @@ void EventLoop::QueueInLoop(Functor&& cb) {
         while (!pending_functors_->enqueue(std::move(cb))) {
         }
 #else
-        std::lock_guard<std::mutex> lock(mutex_);
-        pending_functors_->emplace_back(std::move(cb));
+        folly::SpinLockGuard g(spinlock_);
+        pending_functors_.emplace_back(std::move(cb));
 #endif
     }
     ++pending_functor_count_;
@@ -318,16 +416,18 @@ void EventLoop::DoPendingFunctors() {
         --pending_functor_count_;
     }
 #else
-    std::vector<Functor> functors;
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        notified_.store(false);
-        pending_functors_->swap(functors);
-        DLOG_TRACE << "pending_functor_count_=" << pending_functor_count_ << " PendingQueueSize=" << GetPendingQueueSize() << " notified_=" << notified_.load();
-    }
-    DLOG_TRACE << "pending_functor_count_=" << pending_functor_count_ << " PendingQueueSize=" << GetPendingQueueSize() << " notified_=" << notified_.load();
-    for (size_t i = 0; i < functors.size(); ++i) {
-        functors[i]();
+    notified_.store(false);
+    while (true) {
+        Functor f;
+        {
+            folly::SpinLockGuard g(spinlock_);
+            if (pending_functors_.size() == 0) {
+                break;
+            }
+            f = std::move(pending_functors_.front());
+            pending_functors_.pop_front();
+        }
+        f();
         --pending_functor_count_;
     }
     DLOG_TRACE << "pending_functor_count_=" << pending_functor_count_ << " PendingQueueSize=" << GetPendingQueueSize() << " notified_=" << notified_.load();
@@ -340,7 +440,7 @@ size_t EventLoop::GetPendingQueueSize() {
 #elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
     return pending_functors_->size_approx();
 #else
-    return pending_functors_->size();
+    return pending_functors_.size();
 #endif
 }
 
@@ -350,7 +450,7 @@ bool EventLoop::IsPendingQueueEmpty() {
 #elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
     return pending_functors_->size_approx() == 0;
 #else
-    return pending_functors_->empty();
+    return pending_functors_.empty();
 #endif
 }
 

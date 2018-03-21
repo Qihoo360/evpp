@@ -11,18 +11,20 @@
 
 #include "mctypes.h"
 #include "command.h"
-#include "memcache_client_base.h"
 
 namespace evmc {
 class BinaryCodec;
-class MemcacheClientBase;
+class MemcacheClientPool;
 
 class MemcacheClient : public std::enable_shared_from_this<MemcacheClient> {
 public:
-    MemcacheClient(evpp::EventLoop* evloop, evpp::TCPClient* tcp_client, MemcacheClientBase* mcpool = nullptr, const int timeout_ms = 249)
-        : id_seq_(0), exec_loop_(evloop), tcp_client_(tcp_client)
-        , mc_pool_(mcpool), timeout_(timeout_ms * 1000 * 1000), codec_(nullptr), timer_canceled_(true), con_timer_canceled_(true) {
+    MemcacheClient(evpp::EventLoop* evloop, evpp::TCPClient* tcp_client, MemcacheClientPool* mcpool = nullptr, const int timeout_ms = 249)
+        : exec_loop_(evloop), tcp_client_(tcp_client)
+        , mc_pool_(mcpool), timeout_(timeout_ms), codec_(nullptr) {
+        send_next_id_ = 0;
+        recv_next_id_ = 0;
     }
+
     virtual ~MemcacheClient();
 
     inline evpp::EventLoop* exec_loop() const {
@@ -39,44 +41,57 @@ public:
         return CommandPtr(running_command_.front());
     }
 
-    void PushWaitingCommand(CommandPtr& cmd);
-
-    CommandPtr PopWaitingCommand();
-
     inline evpp::TCPConnPtr conn() const {
         return tcp_client_->conn();
     }
-    inline uint32_t next_id() {
-        return ++id_seq_;
+
+    inline uint32_t next_send_id() {
+        return send_next_id_++;
+    }
+
+    inline uint32_t send_id() {
+        //return send_next_id_.load(std::memory_order_acquire);
+        return send_next_id_;
+    }
+
+    inline uint32_t recv_id() {
+        //return recv_next_id_.load(std::memory_order_acquire);
+        return recv_next_id_;
+    }
+
+    inline uint32_t next_recv_id() {
+        return recv_next_id_++;
     }
 
     void OnConnectTimeout(uint32_t cmd_id);
     void OnResponseData(const evpp::TCPConnPtr& tcp_conn,
                         evpp::Buffer* buf);
-    void OnPacketTimeout(uint32_t cmd_id);
+    void OnPacketTimeout(const uint32_t cmd_id);
+    void OnTimeout(const uint32_t recv_id);
+    void Launch(CommandPtr& cmd);
+    void SendData();
+    void OnClientConnection(const evpp::TCPConnPtr& conn);
 
 private:
     // noncopyable
     MemcacheClient(const MemcacheClient&);
     const MemcacheClient& operator=(const MemcacheClient&);
 private:
-    uint32_t id_seq_;
+    std::atomic_uint send_next_id_;
+    std::atomic_uint recv_next_id_;
+
+    //timer checkpoint
+    int64_t recv_checkpoint_{-1};
+    //int64_t send_checkpoint_{-1};
 
     evpp::EventLoop* exec_loop_;
     evpp::TCPClient* tcp_client_;
-    MemcacheClientBase* mc_pool_;
-    evpp::Duration timeout_;
-
-    evpp::InvokeTimerPtr cmd_timer_;
-    evpp::InvokeTimerPtr con_cmd_timer_;
-    evpp::InvokeTimerPtr cmd_timer_bakup_;
+    MemcacheClientPool* mc_pool_;
+    evpp::Buffer send_buf_;
+    int timeout_;
 
     BinaryCodec* codec_;
-    bool  timer_canceled_;
-    bool  con_timer_canceled_;
-
     std::queue<CommandPtr> running_command_;
-    std::queue<CommandPtr> waiting_command_;
 };
 
 

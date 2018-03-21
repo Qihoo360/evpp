@@ -1,8 +1,10 @@
 #include "memcache_client_pool.h"
+#include "folly/MoveWrapper.h"
 
 #include "vbucket_config.h"
 #include "evpp/event_loop_thread_pool.h"
 #include "likely.h"
+#include "command.h"
 
 namespace evmc {
 
@@ -12,94 +14,163 @@ namespace evmc {
         name = key.size(); \
     }
 
-#define SET_SERVERID(vbucket,command) \
-    MultiModeVbucketConfig* vbconf = vbucket_config(); \
-    uint16_t server_id = vbconf->SelectServerId(vbucket, BAD_SERVER_ID); \
-    command->set_server_id(server_id); \
+MemcacheClientPool::~MemcacheClientPool() {
+    if (loop_pool_.IsRunning()) {
+        Stop(true);
+    }
+}
 
-    MemcacheClientPool::~MemcacheClientPool() {
-        if (loop_pool_.IsRunning()) {
-            Stop(true);
+void MemcacheClientPool::Stop(bool wait_thread_exit) {
+    loop_pool_.Stop(wait_thread_exit);
+}
+
+void MemcacheClientPool::BuilderMemClient(evpp::EventLoop* loop, std::string& server, std::map<std::string, MemcacheClientPtr>& client_map, const int timeout_ms) {
+    evpp::TCPClient* tcp_client = new evpp::TCPClient(loop, server, "evmc");
+    MemcacheClientPtr memc_client = std::make_shared<MemcacheClient>(loop, tcp_client, this, timeout_ms);
+
+    LOG_INFO << "Start new tcp_client=" << tcp_client << " server=" << server << " timeout=" << timeout_ms;
+
+    tcp_client->SetConnectionCallback(std::bind(&MemcacheClient::OnClientConnection, memc_client,
+                                                std::placeholders::_1));
+    tcp_client->SetMessageCallback(std::bind(&MemcacheClient::OnResponseData, memc_client,
+                                             std::placeholders::_1, std::placeholders::_2));
+    tcp_client->Connect();
+    client_map.emplace(server, memc_client);
+}
+
+
+bool MemcacheClientPool::Start() {
+    bool ok = vbucket_config_->Load(vbucket_conf_file_.c_str());
+    if (UNLIKELY(!ok)) {
+        LOG_ERROR << "vbucket load failed";
+        return false;
+    }
+
+    ok = loop_pool_.Start(true);
+
+    if (UNLIKELY(!ok)) {
+        LOG_ERROR << "loop pool start failed";
+        return false;
+    }
+
+    auto server_list = vbucket_config()->server_list();
+
+    // 须先构造memc_client_map_数组，再各个元素取地址，否则地址不稳定，可能崩溃
+    for (uint32_t i = 0; i < loop_pool_.thread_num(); ++i) {
+        memc_client_map_.emplace_back(MemcClientMap());
+        evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(i);
+
+        for (size_t svr = 0; svr < server_list.size(); ++svr) {
+            auto& client_map = memc_client_map_.back();
+            BuilderMemClient(loop, server_list[svr], client_map, timeout_ms_);
         }
     }
 
-    void MemcacheClientPool::Stop(bool wait_thread_exit) {
-        loop_pool_.Stop(wait_thread_exit);
-        MemcacheClientBase::Stop();
+    for (uint32_t i = 0; i < loop_pool_.thread_num(); ++i) {
+        evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(i);
+        loop->set_context(evpp::Any(&memc_client_map_[i]));
+    }
+    return ok;
+}
+
+template<class CmdType, class RetType>
+folly::Future<RetType> MemcacheClientPool::LaunchOneKeyCommand(const std::string& key, const std::string& value) {
+    std::size_t pos = 0;
+    GET_FILTER_KEY_POS(pos, key);
+    const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), pos);
+    std::vector<std::string> send_data = {key};
+    if (!value.empty()) {
+        send_data.emplace_back(value);
+    }
+    std::vector<int> vbucket_ids = {vbucket};
+    folly::Promise<RetType> promise;
+    folly::Future<RetType> fut = promise.getFuture();
+    std::vector<uint16_t> server_ids;
+    auto server_id = vbucket_config()->SelectServerId(vbucket, server_ids);
+    CommandPtr command = std::make_shared<CmdType>(server_id, send_data, vbucket_ids, promise);
+    LaunchCommand(command);
+    return std::move(fut);
+}
+
+intFuture MemcacheClientPool::Set(const std::string& key, const std::string& value) {
+    return std::move(LaunchOneKeyCommand<SetCommand, intExpected>(key, value));
+}
+
+intFuture MemcacheClientPool::Remove(const std::string& key) {
+    return std::move(LaunchOneKeyCommand<RemoveCommand, intExpected>(key, ""));
+}
+
+str2mapFuture MemcacheClientPool::PrefixGet(const std::string& key) {
+    return std::move(LaunchOneKeyCommand<PrefixGetCommand, str2mapExpected>(key, ""));
+}
+
+stringFuture MemcacheClientPool::Get(const std::string& key) {
+    return std::move(LaunchOneKeyCommand<GetCommand, stringExpected>(key, ""));
+}
+
+#define WaitInLoop() \
+    caller_loop->RunInLoop([f = folly::makeMoveWrapper(std::move(future)), &key, callback, caller_loop]() mutable {\
+        auto & fut = f->waitVia(caller_loop); \
+        auto expected = std::move(fut.value());\
+        if (expected.hasValue()) {\
+            callback(key, expected.value()); \
+            return; \
+        } else { \
+            callback(key, expected.error()); \
+        } \
+        return; \
+    }); \
+
+
+    void MemcacheClientPool::Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, SetCallback& callback) {
+        auto future = std::move(Set(key, value));
+        WaitInLoop();
     }
 
+    void MemcacheClientPool::Remove(evpp::EventLoop* caller_loop, const std::string& key, RemoveCallback& callback) {
+        auto future = std::move(Remove(key));
+        WaitInLoop();
+    }
 
-    bool MemcacheClientPool::Start() {
-
-        bool ok = loop_pool_.Start(true);
-
-        if (UNLIKELY(!ok)) {
-            LOG_ERROR << "loop pool start failed";
-            return false;
-        }
-
-        if (!MemcacheClientBase::Start(true)) {
-            loop_pool_.Stop(true);
-            LOG_ERROR << "vbucket init failed";
-            return false;
-        }
-        auto server_list = vbucket_config()->server_list();
-
-        // 须先构造memc_client_map_数组，再各个元素取地址，否则地址不稳定，可能崩溃
-        for (uint32_t i = 0; i < loop_pool_.thread_num(); ++i) {
-            memc_client_map_.emplace_back(MemcClientMap());
-            evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(i);
-
-            for (size_t svr = 0; svr < server_list.size(); ++svr) {
-                auto& client_map = memc_client_map_.back();
-                BuilderMemClient(loop, server_list[svr], client_map, timeout_ms_);
+    void MemcacheClientPool::Get(evpp::EventLoop* caller_loop, const std::string& key, GetCallback& callback) {
+        auto future = std::move(Get(key));
+        caller_loop->RunInLoop([f = folly::makeMoveWrapper(std::move(future)), key, callback, caller_loop]() mutable {
+            auto& fut = f->waitVia(caller_loop);
+            auto expected = std::move(fut.value());
+            GetResult gr;
+            if (expected.hasValue()) {
+                gr.set(EVMC_SUCCESS, std::move(expected.value()));
+                callback(key, gr);
+                return;
+            } else {
+                gr.error(expected.error());
+                callback(key, gr);
             }
-        }
-
-        for (uint32_t i = 0; i < loop_pool_.thread_num(); ++i) {
-            evpp::EventLoop* loop = loop_pool_.GetNextLoopWithHash(i);
-            loop->set_context(evpp::Any(&memc_client_map_[i]));
-        }
-
-        return ok;
+            return;
+        });
     }
 
-    void MemcacheClientPool::Set(evpp::EventLoop* caller_loop, const std::string& key, const std::string& value, uint32_t flags,
-                                 uint32_t expire, SetCallback callback) {
-
-        std::size_t pos = 0;
-        GET_FILTER_KEY_POS(pos, key)
-        const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), pos);
-        CommandPtr command = std::make_shared<SetCommand>(caller_loop, vbucket, key, value, flags, expire, callback);
-        SET_SERVERID(vbucket, command)
-        LaunchCommand(command);
-    }
-
-    void MemcacheClientPool::Remove(evpp::EventLoop* caller_loop, const std::string& key, RemoveCallback callback) {
-        std::size_t pos = 0;
-        GET_FILTER_KEY_POS(pos, key)
-        const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), pos);
-        CommandPtr command = std::make_shared<RemoveCommand>(caller_loop, vbucket, key, callback);
-        SET_SERVERID(vbucket, command)
-        LaunchCommand(command);
-    }
-
-    void MemcacheClientPool::Get(evpp::EventLoop* caller_loop, const std::string& key, GetCallback callback) {
-        std::size_t pos = 0;
-        GET_FILTER_KEY_POS(pos, key)
-        const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), pos);
-        CommandPtr command = std::make_shared<GetCommand>(caller_loop, vbucket, key, callback);
-        SET_SERVERID(vbucket, command)
-        LaunchCommand(command);
-    }
-
-    void MemcacheClientPool::PrefixGet(evpp::EventLoop* caller_loop, const std::string& key, PrefixGetCallback callback) {
-        std::size_t pos = 0;
-        GET_FILTER_KEY_POS(pos, key)
-        const uint16_t vbucket = vbucket_config()->GetVbucketByKey(key.c_str(), pos);
-        CommandPtr command = std::make_shared<PrefixGetCommand>(caller_loop, vbucket, key, callback);
-        SET_SERVERID(vbucket, command)
-        LaunchCommand(command);
+    void MemcacheClientPool::PrefixGet(evpp::EventLoop* caller_loop, const std::string& key, PrefixGetCallback& callback) {
+        auto future = PrefixGet(key);
+        caller_loop->RunInLoop([f = folly::makeMoveWrapper(std::move(future)), key, callback, caller_loop]() mutable {
+            auto& fut = f->waitVia(caller_loop);
+            auto expected = std::move(fut.value());
+            PrefixGetResultPtr pgr = std::make_shared<PrefixGetResult>();
+            if (expected.hasValue()) {
+                auto pmap = std::move(expected.value());
+                if (!pmap.empty() && !pmap.begin()->second.empty()) {
+                    pgr->set(EVMC_SUCCESS, std::move(pmap.begin()->second));
+                } else {
+                    pgr->error(EVMC_KEY_ENOENT);
+                }
+                callback(key, pgr);
+                return;
+            } else {
+                pgr->error((int)expected.error());
+                callback(key, pgr);
+            }
+            return;
+        });
     }
 
     void MemcacheClientPool::RunBackGround(const std::function<void(void)>& fun) {
@@ -107,148 +178,183 @@ namespace evmc {
         loop->RunInLoop(fun);
     }
 
-    void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, MultiGetCallback& callback) {
-        if (UNLIKELY(keys.size() <= 0)) {
-            MultiGetResult result;
-            caller_loop->RunInLoop(std::bind(callback, std::move(result)));
-            return;
+    void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, PrefixMultiGetCallback& callback) {
+        auto future = PrefixMultiGet(keys);
+        PrefixMultiGetResult pmgresult;
+        PrefixGetResultPtr pgr;
+        for (auto& key : keys) {
+            pgr = std::make_shared<PrefixGetResult>();
+            pmgresult.emplace(key, pgr);
         }
+        caller_loop->RunInLoop([f = folly::makeMoveWrapper(std::move(future)), pmgr = std::move(pmgresult), callback, caller_loop]() mutable {
+            auto& fut = f->waitVia(caller_loop);
+            auto expected = std::move(fut.value());
+            auto it = pmgr.begin();
+            if (expected.hasValue()) {
+                auto pmmap = std::move(expected.value());
+                for (auto& kv : pmmap) {
+                    it = pmgr.find(kv.first);
+                    if (it == pmgr.end() || kv.second.empty()) {
+                        continue;
+                    }
+                    it->second->set(EVMC_SUCCESS, std::move(kv.second));
+                }
+                callback(pmgr);
+                return;
+            } else {
+                for (auto& kv : pmgr) {
+                    kv.second->error((int)expected.error());
+                    callback(pmgr);
+                }
+            }
+            return;
+        });
+    }
+
+
+    void MemcacheClientPool::MultiGet(evpp::EventLoop* caller_loop, const std::vector<std::string>& keys, MultiGetCallback& callback) {
+        auto future = MultiGet(keys);
+        MultiGetResult mgresult;
+        for (auto& key : keys) {
+            mgresult.emplace(key, GetResult());
+        }
+        caller_loop->RunInLoop([f = folly::makeMoveWrapper(std::move(future)), mgr = std::move(mgresult), callback, caller_loop]() mutable {
+            auto& fut = f->waitVia(caller_loop);
+            auto expected = std::move(fut.value());
+            if (expected.hasValue()) {
+                std::map<std::string, std::string> k_v(std::move(expected.value()));
+                auto k_v_iter = k_v.end();
+                for (auto& it : mgr) {
+                    k_v_iter = k_v.find(it.first);
+                    if (k_v_iter != k_v.end()) {
+                        it.second.set(EVMC_SUCCESS, std::move(k_v_iter->second));
+                    }
+                }
+            } else {
+                auto error = expected.error();
+                for (auto& it : mgr) {
+                    it.second.error(error);
+                }
+            }
+            callback(mgr);
+        });
+    }
+
+    template <class CmdType, class RetType>
+    void MemcacheClientPool::LaunchMultiKeyCommand(const std::vector<std::string>& keys, std::vector<folly::Future<RetType>>& futs) {
         const std::size_t size = keys.size();
-        std::map<uint16_t, IdInfo> serverid_keys;
 
         MultiModeVbucketConfig* vbconf = vbucket_config();
         uint16_t vbucket = 0;
+        uint16_t first_server_id = 0;
         uint16_t server_id = 0;
-        MultiKeyGetHandlerPtr handler = std::make_shared<MultiKeyHandler<MultiGetResult, MultiGetCallback> > (callback);
-        auto& result = handler->get_result();
         std::size_t pos = 0;
-        std::vector<int> serverid_table(vbconf->server_list().size(), -1);
-
+        std::map<int, CommandPtr> serverid_cmd;
+        std::vector<uint16_t> server_ids;
         for (size_t i = 0; i < size; ++i) {
             auto& key = keys[i];
             GET_FILTER_KEY_POS(pos, key)
             vbucket = vbconf->GetVbucketByKey(key.c_str(), pos);
-            server_id = vbconf->SelectServerFirstId(vbucket);
-            if (serverid_table[server_id] == -1) {
-                serverid_table[server_id] = vbconf->SelectServerId(vbucket, BAD_SERVER_ID);
+            first_server_id = vbconf->SelectServerFirstId(vbucket);
+
+            //同一个server的指令聚合
+            if (serverid_cmd.find(first_server_id) == serverid_cmd.end()) {
+                server_id = vbconf->SelectServerId(vbucket, server_ids);
+                assert(server_id != BAD_SERVER_ID);
+                folly::Promise<RetType> p;
+                futs.emplace_back(p.getFuture());
+                std::vector<std::string> ks = {key};
+                std::vector<int> vbucket_ids = {vbucket};
+                auto cmd = std::make_shared<CmdType>(server_id, ks, vbucket_ids, p);
+                serverid_cmd.emplace(server_id, std::move(cmd));
+            } else {
+                auto& cmd = serverid_cmd[first_server_id];
+                cmd->send_data().emplace_back(key);
+                cmd->vbucketids().emplace_back(vbucket);
             }
-            server_id = serverid_table[server_id];
-
-            auto& item = serverid_keys[server_id];
-            item.keys.emplace_back(key);
-            item.vbuckets.emplace_back(vbucket);
-            result.emplace(std::move(key), std::move(GetResult()));
         }
-        handler->set_serverid_keys(serverid_keys);
 
-        auto& serverid_keys_d = handler->get_serverid_keys();
-        for (auto& it : serverid_keys_d) {
-            server_id = it.first;
-            CommandPtr command = std::make_shared<MultiGetCommand>(caller_loop, server_id, handler);
-            command->set_server_id(server_id);
-            LaunchCommand(command);
+        for (auto& it : serverid_cmd) {
+            LaunchCommand(it.second);
         }
     }
 
-    void MemcacheClientPool::PrefixMultiGet(evpp::EventLoop* caller_loop, std::vector<std::string>& keys, PrefixMultiGetCallback callback) {
-        if (UNLIKELY(keys.size() <= 0)) {
-            PrefixMultiGetResult result;
-            caller_loop->RunInLoop(std::bind(callback, std::move(result)));
-            return;
-        }
-        MultiModeVbucketConfig* vbconf = vbucket_config();
-        const std::size_t size = keys.size();
-        std::map<uint16_t, IdInfo> serverid_keys;
-        std::vector<int> serverid_table(vbconf->server_list().size(), -1);
-
-        uint16_t vbucket = 0;
-        uint16_t server_id = 0;
-        PrefixMultiKeyGetHandlerPtr handler = std::make_shared<MultiKeyHandler<PrefixMultiGetResult, PrefixMultiGetCallback> >(callback);
-        auto& result = handler->get_result();
-        std::size_t pos = 0;
-
-        for (size_t i = 0; i < size; ++i) {
-            auto& key = keys[i];
-            GET_FILTER_KEY_POS(pos, key)
-            vbucket = vbconf->GetVbucketByKey(key.c_str(), pos);
-            server_id = vbconf->SelectServerFirstId(vbucket);
-            if (serverid_table[server_id] == -1) {
-                serverid_table[server_id] = vbconf->SelectServerId(vbucket, BAD_SERVER_ID);
+    template <class RetType>
+    folly::Future<RetType> MemcacheClientPool::CollectAllFuture(std::vector<folly::Future<RetType>>& futs) {
+        auto fut = folly::collectAll(futs).then([](const std::vector<folly::Try<RetType>>& tries) ->folly::Future<RetType> {
+            folly::ExpectedValueType<RetType> ret_data;
+            for (auto& t : tries) {
+                if (!t.hasValue()) {
+                    return folly::makeUnexpected(EVMC_EXCEPTION);
+                }
+                auto expect = t.value();
+                if (expect.hasValue()) {
+                    if (ret_data.empty()) {
+                        ret_data.swap(expect.value());
+                    } else {
+                        for (auto& k_v : expect.value()) {
+                            ret_data.emplace(std::move(k_v));
+                        }
+                    }
+                    continue;
+                }
+                return folly::makeUnexpected(expect.error());
             }
-            server_id = serverid_table[server_id];
-            auto& item = serverid_keys[server_id];
-            item.keys.emplace_back(key);
-            item.vbuckets.emplace_back(vbucket);
-            result.emplace(std::move(key), std::make_shared<PrefixGetResult>());
+            return folly::makeExpected<EvmcCode>(std::move(ret_data));
         }
-        handler->set_serverid_keys(serverid_keys);
+                                               );
+        return std::move(fut);
+    }
 
-        auto& serverid_keys_d = handler->get_serverid_keys();
-        for (auto& it : serverid_keys_d) {
-            server_id = it.first;
-            CommandPtr command = std::make_shared<PrefixMultiGetCommand>(caller_loop, server_id, handler);
-            command->set_server_id(server_id);
-            LaunchCommand(command);
+    str2mapFuture MemcacheClientPool::PrefixMultiGet(const std::vector<std::string>& keys)  {
+        if (UNLIKELY(keys.size() <= 0)) {
+            str2map ret_data;
+            return folly::makeFuture<str2mapExpected>(folly::makeExpected<EvmcCode>(std::move(ret_data)));
         }
+        std::vector<str2mapFuture> futs;
+        LaunchMultiKeyCommand<PrefixGetCommand>(keys, futs);
+        return CollectAllFuture(futs);
+    }
+
+
+    str2strFuture MemcacheClientPool::MultiGet(const std::vector<std::string>& keys) {
+        if (UNLIKELY(keys.size() <= 0)) {
+            std::map<std::string, std::string> ret_data;
+            return folly::makeFuture<str2strExpected>(folly::makeExpected<EvmcCode>(std::move(ret_data)));
+        }
+        std::vector<str2strFuture> futs;
+        LaunchMultiKeyCommand<MultiGetCommand>(keys, futs);
+        return CollectAllFuture(futs);
     }
 
     void MemcacheClientPool::LaunchCommand(CommandPtr& command) {
-        //const int thread = next_thread_++;
         auto loop = loop_pool_.GetNextLoopWithHash(rand());
-        loop->RunInLoop(
-            std::bind(&MemcacheClientPool::DoLaunchCommand, this, loop, command));
+        loop->RunInLoop(std::bind(&MemcacheClientPool::DoLaunchCommand, this, loop, command));
+    }
+
+    void MemcacheClientPool::ReLaunchCommand(evpp::EventLoop* loop, CommandPtr& command) {
+        MultiModeVbucketConfig* vbconf = vbucket_config();
+        auto server_id = vbconf->SelectServerId(command->vbucketids()[0], command->server_ids());
+        if (server_id == BAD_SERVER_ID) {
+            command->error(EVMC_ALLDOWN);
+            return;
+        }
+        command->set_server_id(server_id);
+        DoLaunchCommand(loop, command);
     }
 
     void MemcacheClientPool::DoLaunchCommand(evpp::EventLoop* loop, CommandPtr command) {
         MultiModeVbucketConfig* vbconf = vbucket_config();
 
-        uint16_t server_id = command->server_id();
-        if (UNLIKELY(!command->ShouldRetry())) { //重试 需要重新算serverid
-            uint16_t vbucket = command->vbucket_id();
-            server_id = vbconf->SelectServerId(vbucket, command->server_id());
-            if (UNLIKELY(server_id == BAD_SERVER_ID)) {
-                LOG_ERROR << "bad server id";
-                command->OnError(ERR_CODE_DISCONNECT);
-                return;
-            }
-        }
+        uint16_t server_id = *command->server_ids().rbegin();
 
         std::string server_addr = vbconf->GetServerAddrById(server_id);
         MemcClientMap* client_map = GetMemcClientMap(loop);
-
-        if (UNLIKELY(client_map == nullptr)) {
-            command->OnError(ERR_CODE_DISCONNECT);
-            LOG_INFO << "DoLaunchCommand thread pool empty";
-            return;
-        }
+        assert(client_map != nullptr);
 
         auto it = client_map->find(server_addr);
-
-        if (UNLIKELY(it == client_map->end())) {
-            BuilderMemClient(loop, server_addr, *client_map, timeout_ms_);
-            auto client = client_map->find(server_addr);
-            client->second->PushWaitingCommand(command);
-            return;
-        }
-
-        if (LIKELY(it->second->conn() && it->second->conn()->IsConnected())) {
-            it->second->PushRunningCommand(command);
-            command->Launch(it->second);
-            return;
-        }
-
-        if (!it->second->conn() || it->second->conn()->status() == evpp::TCPConn::kConnecting) {
-            it->second->PushWaitingCommand(command);
-        } else {
-            if (command->ShouldRetry()) {
-                LOG_INFO << "OnClientConnection disconnect retry";
-                command->set_id(0);
-                command->set_server_id(command->server_id());
-                LaunchCommand(command);
-            } else {
-                command->OnError(ERR_CODE_DISCONNECT);
-            }
-        }
+        assert(it != client_map->end());
+        it->second->Launch(command);
     }
     }
 

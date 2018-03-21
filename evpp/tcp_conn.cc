@@ -34,9 +34,9 @@ TCPConn::TCPConn(EventLoop* l,
 
 TCPConn::~TCPConn() {
     DLOG_TRACE << "name=" << name()
-        << " channel=" << chan_.get()
-        << " fd=" << fd_ << " type=" << int(type())
-        << " status=" << StatusToString() << " addr=" << AddrToString();
+               << " channel=" << chan_.get()
+               << " fd=" << fd_ << " type=" << int(type())
+               << " status=" << StatusToString() << " addr=" << AddrToString();
     assert(status_ == kDisconnected);
 
     if (fd_ >= 0) {

@@ -1,368 +1,226 @@
 #pragma once
 
 #include "evmc/config.h"
+#include "evpp/buffer.h"
+#include "folly/futures/Future.h"
+#include "folly/Expected.h"
+#include "memcached/protocol_binary.h"
 
 #include "mctypes.h"
 #include "likely.h"
+#include <type_traits>
 
 namespace evmc {
 
-class Command : public std::enable_shared_from_this<Command> {
+class Command {
 public:
-    Command(evpp::EventLoop* evloop, uint16_t vbucket)
-        : caller_loop_(evloop), id_(0)
-        , vbucket_id_(vbucket) {
-    }
-
-    virtual ~Command() {}
-
-    uint32_t id() const {
-        return id_;
-    }
-    void set_id(uint32_t v) {
-        id_ = v;
-    }
-
-    uint16_t vbucket_id() const {
-        return vbucket_id_;
-    }
-
-    uint16_t server_id()  const;
-    void set_server_id(uint16_t sid) {
-        server_id_history_.emplace_back(sid);
-    }
-
-    evpp::EventLoop* caller_loop() const {
-        return caller_loop_;
-    }
-
-    virtual void Launch(MemcacheClientPtr memc_client);
-
-    bool ShouldRetry() const;
-
-    virtual void OnError(int code) = 0;
-    virtual void OnSetCommandDone(int resp_code) {}
-    virtual void OnRemoveCommandDone(int resp_code) {}
-    virtual void OnGetCommandDone(int resp_code, const std::string& value) {}
-    virtual void OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value) {}
-    virtual void OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value) {}
-    virtual void OnPrefixGetCommandDone() {}
-    virtual PrefixGetResultPtr& GetResultContainerByKey(const std::string& key) {
-        return *((PrefixGetResultPtr*)0);
-    }
-
-private:
-    virtual void RequestBuffer(std::string& str) = 0;
-    evpp::EventLoop* caller_loop_;
-    uint32_t id_; // 并非全局id，只是各个memc_client内部的序号; mget的多个命令共用一个id
-    uint16_t vbucket_id_;
-    std::vector<uint16_t> server_id_history_; // 执行时从多个备选server中所选定的server
+    virtual std::vector<std::string>& send_data() = 0;
+    virtual std::vector<int>& vbucketids() = 0;
+    virtual std::vector<uint16_t>& server_ids() = 0;
+    virtual void  set_server_id(const uint16_t id) = 0;
+    virtual uint32_t recv_id() = 0;
+    virtual void set_recv_id(const uint32_t r_id) = 0;
+    virtual void construct_command(evpp::Buffer* buf) = 0;
+    virtual void error(const EvmcCode err) = 0;
 };
 
 typedef std::shared_ptr<Command> CommandPtr;
 
-class SetCommand : public Command {
-public:
-    SetCommand(evpp::EventLoop* evloop, uint16_t vbucket, const std::string& key, const std::string& value,
-               uint32_t flags, uint32_t expire, SetCallback callback)
-        : Command(evloop, vbucket), key_(key), value_(value),
-          flags_(flags), expire_(expire),
-          set_callback_(callback) {
-    }
-
-    virtual void OnError(int err_code) {
-        LOG_INFO << "SetCommand OnError id=" << id();
-        auto loop = caller_loop();
-        if (loop && !loop->IsInLoopThread()) {
-            loop->RunInLoop(std::bind(set_callback_,
-                                      std::move(key_), err_code));
-        } else {
-            set_callback_(key_, err_code);
-        }
-    }
-    virtual void OnSetCommandDone(int resp_code) {
-        auto loop = caller_loop();
-        if (loop && !loop->IsInLoopThread()) {
-            loop->RunInLoop(std::bind(set_callback_, std::move(key_), resp_code));
-        } else {
-            set_callback_(key_, resp_code);
-        }
-    }
-private:
-    std::string key_;
-    std::string value_;
-    uint32_t flags_;
-    uint32_t expire_;
-    SetCallback set_callback_;
-    static std::atomic_int next_thread_;
-private:
-    virtual void RequestBuffer(std::string& str);
+enum CmdTag {
+    RemoveTag = 0,
+    SetTag,
+    GetTag,
+    MultiGetTag,
+    PrefixGetTag,
 };
 
-class GetCommand : public Command {
-public:
-    GetCommand(evpp::EventLoop* evloop, uint16_t vbucket, const std::string& key, GetCallback callback)
-        : Command(evloop, vbucket)
-        , key_(key)
-        , get_callback_(callback) {
-    }
+#define construct_multikey_cmd(proto_kq, proto_k) \
+    assert(send_data_.size() > 0);\
+    assert(send_data_.size() == vbucketids_.size());\
+    std::size_t size = 0; \
+    protocol_binary_request_header req;\
+    memset((void*)&req, 0, sizeof(req));\
+    auto keys = send_data_; \
+    const std::size_t keys_num = keys.size();\
+    int total_size = 0;\
+    for (std::size_t i = 0; i < keys_num; ++i) {\
+        total_size += keys[i].size() + sizeof(protocol_binary_request_header);\
+    }\
+    buf->EnsureWritableBytes(total_size);\
+    for (size_t i = 0; i < keys_num; ++i) {\
+        size = keys[i].size();\
+        req.request.magic    = PROTOCOL_BINARY_REQ;\
+        if (i < keys_num - 1) {\
+            req.request.opcode   = proto_kq;\
+        } else {\
+            req.request.opcode   = proto_k;\
+        }\
+        req.request.keylen = htons(uint16_t(size));\
+        req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;\
+        req.request.vbucket  = htons(vbucketids_[i]);\
+        req.request.opaque   = recv_id_;\
+        req.request.extlen = 0;\
+        req.request.bodylen  = htonl(size);\
+        buf->Write((const void *)&req, sizeof(protocol_binary_request_header));\
+        buf->Write((const void *)keys[i].data(), size);\
+    }\
 
-    virtual void OnError(int err_code) {
-        LOG(WARNING) << "GetCommand OnError id=" << id();
-        auto loop = caller_loop();
-        if (loop && !loop->IsInLoopThread()) {
-            caller_loop()->RunInLoop(std::bind(get_callback_, std::move(key_),
-                                               std::move(GetResult(err_code, std::string()))));
-        } else {
-            get_callback_(key_, GetResult(err_code, std::string()));
-        }
-    }
-    virtual void OnGetCommandDone(int resp_code, const std::string& value) {
-        auto loop = caller_loop();
-        if (loop && !loop->IsInLoopThread()) {
-            caller_loop()->RunInLoop(std::bind(get_callback_, std::move(key_),
-                                               std::move(GetResult(resp_code, value))));
-        } else {
-            get_callback_(key_, GetResult(resp_code, value));
-        }
-    }
-private:
-    std::string key_;
-    GetCallback get_callback_;
-    static std::atomic_int next_thread_;
-private:
-    virtual void RequestBuffer(std::string& str);
-};
 
-class PrefixGetCommand : public Command {
-public:
-    PrefixGetCommand(evpp::EventLoop* evloop, uint16_t vbucket, const std::string& key, PrefixGetCallback callback)
-        : Command(evloop, vbucket), key_(key), mget_callback_(callback), mget_result_(std::make_shared<PrefixGetResult>()) {
-    }
+#define construct_onekey_cmd(proto) \
+    assert(send_data_.size() == 1);\
+    assert(vbucketids_.size() == 1);\
+    std::string& key = send_data_[0];\
+    const int size = sizeof(protocol_binary_request_header) + key.size();\
+    buf->EnsureWritableBytes(size);\
+    protocol_binary_request_header req;\
+    memset((void*)&req, 0, sizeof(req));\
+    req.request.magic  = PROTOCOL_BINARY_REQ;\
+    req.request.opcode = proto ;\
+    req.request.keylen = htons(uint16_t(key.size()));\
+    req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;\
+    req.request.extlen = 0;\
+    req.request.vbucket  = htons(vbucketids_[0]);\
+    req.request.opaque   = recv_id_;\
+    req.request.bodylen = htonl(key.size());\
+    buf->Write((const void *)&req, sizeof(protocol_binary_request_header));\
+    buf->Write((const void *)&key[0], key.size());\
 
-    virtual void OnError(int err_code) {
-        LOG(WARNING) << "PrefixGetCommand OnError id=" << id();
-        mget_result_->code = err_code;
-        auto loop = caller_loop();
-        if (loop && !loop->IsInLoopThread()) {
-            loop->RunInLoop(std::bind(mget_callback_, std::move(key_), std::move(mget_result_)));
-        } else {
-            mget_callback_(key_, mget_result_);
+
+#define construct_keyvalue_cmd(proto) \
+    assert(send_data_.size() == 2);\
+    assert(vbucketids_.size() == 1);\
+    std::string& key = send_data_[0];\
+    std::string& value = send_data_[1];\
+    uint32_t flag = htonl(0); \
+    uint32_t expire = htonl(0);\
+    const int size = sizeof(protocol_binary_request_header) + key.size() + value.size() + sizeof(flag) + sizeof(expire);\
+    buf->EnsureWritableBytes(size);\
+    protocol_binary_request_header req;\
+    memset((void*)&req, 0, sizeof(req));\
+    req.request.magic  = PROTOCOL_BINARY_REQ;\
+    req.request.opcode = proto ;\
+    req.request.keylen = htons(uint16_t(key.size()));\
+    req.request.datatype = PROTOCOL_BINARY_RAW_BYTES;\
+    req.request.extlen = sizeof(flag) + sizeof(expire);\
+    req.request.vbucket  = htons(vbucketids_[0]);\
+    req.request.opaque   = recv_id_;\
+    req.request.bodylen = htonl((uint32_t)(key.size() + value.size() + sizeof(flag) + sizeof(expire)));\
+    buf->Write((const void *)&req, sizeof(protocol_binary_request_header));\
+    buf->Write((const void *)&flag, sizeof(flag));\
+    buf->Write((const void *)&expire, sizeof(expire));\
+    buf->Write((const void *)key.data(), key.size());\
+    buf->Write((const void *)value.data(), value.size());\
+
+    template<class T, CmdTag tag>
+    class CommandImpl final: public Command {
+    public:
+        CommandImpl(int32_t server_id, std::vector<std::string>& datas, std::vector<int>& vbucket_ids
+                    , folly::Promise<folly::Expected<T, EvmcCode>>& result): server_id_(1, server_id)
+            , send_data_(std::move(datas)), vbucketids_(std::move(vbucket_ids)), result_(std::move(result)) {
         }
-    }
-    virtual void OnPrefixGetCommandDone();
-    virtual PrefixGetResultPtr& GetResultContainerByKey(const std::string& key) {
-        return mget_result_;
+
+        CommandImpl(const CommandImpl& cmd) = delete;
+        CommandImpl& operator=(const CommandImpl& cmd) = delete;
+        CommandImpl(CommandImpl&& cmd) : recv_id_(cmd.recv_id_), server_id_(std::move(cmd.server_id_)), send_data_(std::move(cmd.send_data_))
+            , vbucketids_(std::move(cmd.vbucketids_)), result_(std::move(cmd.result_)) {
+        }
+
+        CommandImpl& operator= (CommandImpl&& cmd) {
+            recv_id_ = cmd.recv_id_;
+            server_id_.swap(cmd.server_id_);
+            vbucketids_ = std::move(cmd.vbucketids_);
+            send_data_ = std::move(cmd.send_data_);
+            result_ = std::move(cmd.result);
+            return *this;
+        }
+
+        std::vector<std::string>& send_data() override {
+            return send_data_;
+        }
+
+        std::vector<int>& vbucketids() override {
+            return vbucketids_;
+        }
+
+        std::vector<uint16_t>& server_ids() override {
+            return server_id_;
+        }
+
+        void set_server_id(const uint16_t id) override {
+            server_id_.push_back(id);
+        }
+
+        uint32_t recv_id() override {
+            return recv_id_;
+        }
+
+        void set_recv_id(const uint32_t r_id) override {
+            recv_id_ = r_id;
+        }
+
+        void construct_command(evpp::Buffer* buf) override {
+            switch (tag) {
+            case MultiGetTag: {
+                construct_multikey_cmd(PROTOCOL_BINARY_CMD_GETKQ, PROTOCOL_BINARY_CMD_GETK);
+            }
+            break;
+            case RemoveTag: {
+                construct_onekey_cmd(PROTOCOL_BINARY_CMD_DELETE);
+            }
+            break;
+            case PrefixGetTag: {
+                construct_multikey_cmd(PROTOCOL_BINARY_CMD_PGETKQ, PROTOCOL_BINARY_CMD_PGETK);
+            }
+            break;
+            case GetTag: {
+                construct_onekey_cmd(PROTOCOL_BINARY_CMD_GET);
+            }
+            break;
+            case SetTag: {
+                construct_keyvalue_cmd(PROTOCOL_BINARY_CMD_SET);
+            }
+            break;
+            }
+        }
+
+        void error(const EvmcCode err) override {
+            auto ret = folly::makeUnexpected((EvmcCode)err);
+            folly::Expected<T, EvmcCode> result(std::move(ret));
+            set_result(result);
+        }
+
+        void set_result(folly::Expected<T, EvmcCode>& r) {
+            result_.setValue(std::move(r));
+        }
+    private:
+        uint32_t recv_id_{0};
+        std::vector<uint16_t> server_id_;
+        std::vector<std::string> send_data_;
+        std::vector<int> vbucketids_;
+        folly::Promise<folly::Expected<T, EvmcCode>> result_;
     };
-private:
-    std::string key_;
-    PrefixGetCallback mget_callback_;
-    PrefixGetResultPtr mget_result_;
-    static std::atomic_int next_thread_;
-private:
-    virtual void RequestBuffer(std::string& str);
-};
 
-struct IdInfo {
-    std::vector<std::string> keys;
-    std::vector<uint16_t> vbuckets;
-};
+    typedef folly::Expected<std::map<std::string, std::string>, EvmcCode> str2strExpected;
+    typedef folly::Promise<str2strExpected> str2strPromise;
+    typedef folly::Future<str2strExpected> str2strFuture;
 
-template<class Result, class Callback>
-class MultiKeyHandler {
-public:
-    MultiKeyHandler(const Callback& callback, uint32_t finished_nums = 0)
-        : finished_serverid_nums_(finished_nums), serverid_size_(0),
-          mget_callback_(callback) {
-    }
+    typedef folly::Expected<int, EvmcCode> intExpected;
+    typedef folly::Promise<intExpected> intPromise;
+    typedef folly::Future<intExpected> intFuture;
 
-    inline void set_serverid_keys(std::map<uint16_t, IdInfo>& serverid_keys) {
-        serverid_keys_.swap(serverid_keys);
-        serverid_size_ = serverid_keys_.size();
-    }
+    typedef folly::Expected<std::string, EvmcCode> stringExpected;
+    typedef folly::Promise<stringExpected> stringPromise;
+    typedef folly::Future<stringExpected> stringFuture;
 
-    inline uint32_t finished_serverid_nums() {
-        return finished_serverid_nums_;
-    }
+    typedef std::map<std::string, std::map<std::string, std::string>> str2map;
+    typedef folly::Expected<str2map, EvmcCode> str2mapExpected;
+    typedef folly::Promise<str2mapExpected> str2mapPromise;
+    typedef folly::Future<str2mapExpected> str2mapFuture;
 
-    inline uint32_t  FinishedOne()  {
-        return finished_serverid_nums_++;
+    typedef CommandImpl<std::map<std::string, std::string>, MultiGetTag> MultiGetCommand;
+    typedef CommandImpl<int, RemoveTag> RemoveCommand;
+    typedef CommandImpl<int, SetTag> SetCommand;
+    typedef CommandImpl<std::string, GetTag> GetCommand;
+    typedef CommandImpl<str2map, PrefixGetTag> PrefixGetCommand;
     }
-
-    inline  std::size_t serverid_size() const {
-        return serverid_size_;
-    }
-
-    IdInfo& FindInfoByid(const int16_t id) {
-        auto it = serverid_keys_.find(id);
-        assert(it != serverid_keys_.end());
-        return it->second;
-    }
-
-    std::vector<std::string>& FindKeysByid(const int16_t id) {
-        auto it = serverid_keys_.find(id);
-        assert(it != serverid_keys_.end());
-        return it->second.keys;
-    }
-
-    inline Callback& get_callback() {
-        return mget_callback_;
-    }
-
-    inline Result& get_result() {
-        return mget_result_;
-    }
-
-    inline std::map<uint16_t, IdInfo>& get_serverid_keys() {
-        return serverid_keys_;
-    }
-
-private:
-    std::map<uint16_t, IdInfo> serverid_keys_;
-    uint32_t thread_ticket_;
-    std::atomic_uint finished_serverid_nums_;
-    std::size_t serverid_size_;
-    Callback mget_callback_;
-    Result mget_result_;
-};
-
-template<class Result, class Callback>
-class MultiKeyMode {
-private:
-    typedef std::shared_ptr<MultiKeyHandler<Result, Callback>> MultiKeyHandlerPtr;
-public:
-    MultiKeyMode(const MultiKeyHandlerPtr& handler)
-        : multikey_handler_(handler), retry_stage_(false) {
-    }
-    inline MultiKeyHandlerPtr& get_handler() {
-        return multikey_handler_;
-    }
-    inline void do_retry() {
-        retry_stage_ = true;
-    }
-    inline bool is_retry_state() {
-        return retry_stage_;
-    }
-private:
-    MultiKeyHandlerPtr multikey_handler_;
-    bool retry_stage_;
-};
-
-typedef std::shared_ptr<MultiKeyHandler<MultiGetResult, MultiGetCallback>> MultiKeyGetHandlerPtr;
-
-class MultiGetCommand  : public Command, public MultiKeyMode<MultiGetResult, MultiGetCallback> {
-public:
-    MultiGetCommand(evpp::EventLoop* evloop, const uint16_t vbucket, const MultiKeyGetHandlerPtr& handler)
-        : Command(evloop, vbucket), MultiKeyMode(handler) {
-    }
-
-    virtual void OnError(int err_code) {
-        LOG(WARNING) << "MultiGetCommand OnError id=" << id();
-        auto& keys = get_handler()->FindKeysByid(vbucket_id());
-        auto& result_map = get_handler()->get_result();
-        auto k = result_map.begin();
-        for (auto& it : keys) {
-            k = result_map.find(it);
-            assert(k != result_map.end());
-            k->second.code = err_code;
-        }
-        const uint32_t finish = get_handler()->FinishedOne();
-        if ((finish + 1) >= get_handler()->serverid_size()) {
-            caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), std::move(get_handler()->get_result())));
-        }
-    }
-    static void PacketRequest(const std::vector<std::string>& keys, const std::vector<uint16_t>& vbuckets, const uint32_t id, std::string&   buf);
-    virtual void OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value);
-    virtual void OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value);
-private:
-    virtual void RequestBuffer(std::string& buf);
-};
-
-class SerialMultiGetCommand  : public Command {
-public:
-    SerialMultiGetCommand(evpp::EventLoop* loop, MultiGetCallback callback)
-        : Command(loop, 0), callback_(callback) {
-    }
-
-    virtual void OnError(int err_code) {
-        LOG(WARNING) << "MultiGetCommand OnError id =" << id();
-        callback_(multiget_result_);
-    }
-    virtual void OnMultiGetCommandDone(int resp_code, std::string& key, std::string& value);
-    virtual void OnMultiGetCommandOneResponse(int resp_code, std::string& key, std::string& value);
-    virtual void Launch(MemcacheClientPtr memc_client);
-    inline void  PacketRequests(const std::vector<std::string>& keys) {
-        std::vector<uint16_t> vec(keys.size(), 0);
-        MultiGetCommand::PacketRequest(keys, vec, id(), buf_);
-    }
-private:
-    virtual void RequestBuffer(std::string& buf) {}
-private:
-    std::string buf_;
-    MultiGetResult multiget_result_;
-    MultiGetCallback callback_;
-};
-
-typedef std::shared_ptr<MultiKeyHandler<PrefixMultiGetResult, PrefixMultiGetCallback>> PrefixMultiKeyGetHandlerPtr;
-
-class PrefixMultiGetCommand  : public Command, public MultiKeyMode<PrefixMultiGetResult, PrefixMultiGetCallback> {
-public:
-    PrefixMultiGetCommand(evpp::EventLoop* evloop, uint16_t vbucket, const PrefixMultiKeyGetHandlerPtr& handler)
-        : Command(evloop, vbucket), MultiKeyMode(handler) {
-    }
-
-    virtual void OnError(int err_code) {
-        LOG(WARNING) << "prefixMultiGetCommand OnError id=" << id();
-        auto& keys = get_handler()->FindKeysByid(vbucket_id());
-        auto& result_map = get_handler()->get_result();
-        auto k = result_map.begin();
-        for (auto& it : keys) {
-            k = result_map.find(it);
-            assert(k != result_map.end());
-            k->second->code = err_code;
-        }
-        const uint32_t finish = get_handler()->FinishedOne();
-        if ((finish + 1) >= get_handler()->serverid_size()) {
-            caller_loop()->RunInLoop(std::bind(get_handler()->get_callback(), get_handler()->get_result()));
-        }
-    }
-    static void PacketRequest(const std::vector<std::string>& keys, const std::vector<uint16_t>& vbuckets, const uint32_t id, std::string&  buf);
-    virtual PrefixGetResultPtr& GetResultContainerByKey(const std::string& key);
-    virtual void OnPrefixGetCommandDone();
-private:
-    virtual void RequestBuffer(std::string& buf);
-};
-
-class RemoveCommand  : public Command {
-public:
-    RemoveCommand(evpp::EventLoop* evloop, uint16_t vbucket, const std::string& key, RemoveCallback callback)
-        : Command(evloop, vbucket), key_(key), remove_callback_(callback) {
-    }
-    virtual void OnError(int err_code) {
-        LOG(WARNING) << "RemoveCommand OnError id=" << id();
-
-        auto loop = caller_loop();
-        if (loop && !loop->IsInLoopThread()) {
-            loop->RunInLoop(std::bind(remove_callback_, std::move(key_), err_code));
-        } else {
-            remove_callback_(key_, err_code);
-        }
-    }
-    virtual void OnRemoveCommandDone(int resp_code) {
-        auto loop = caller_loop();
-        if (loop && !loop->IsInLoopThread()) {
-            loop->RunInLoop(std::bind(remove_callback_, std::move(key_), resp_code));
-        } else {
-            remove_callback_(key_, resp_code);
-        }
-    }
-private:
-    std::string key_;
-    RemoveCallback remove_callback_;
-    static std::atomic_int next_thread_;
-private:
-    virtual void RequestBuffer(std::string& buf);
-};
-
-}
 

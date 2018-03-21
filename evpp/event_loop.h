@@ -4,6 +4,8 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <queue>
+#include <boost/intrusive/list.hpp>
 
 #include "evpp/inner_pre.h"
 #include "evpp/event_watcher.h"
@@ -11,6 +13,9 @@
 #include "evpp/any.h"
 #include "evpp/invoke_timer.h"
 #include "evpp/server_status.h"
+#include "folly/io/async/AsyncTimeout.h"
+#include "folly/SpinLock.h"
+#include "folly/executors/DrivableExecutor.h"
 
 #ifdef H_HAVE_BOOST
 #include <boost/lockfree/queue.hpp>
@@ -33,11 +38,12 @@ namespace evpp {
 // This class is a wrapper of event_base but not only a wrapper.
 // It provides a simple way to run a IO Event driving loop.
 // One thread one loop.
-class EVPP_EXPORT EventLoop : public ServerStatus {
+class EVPP_EXPORT EventLoop : public ServerStatus, public folly::TimeoutManager, public folly::DrivableExecutor {
 public:
     typedef std::function<void()> Functor;
 public:
     EventLoop();
+    void RunBeforeLoop(Functor&& functor);
 
     // Build an EventLoop using an existing event_base object,
     // so we can embed an EventLoop object into the old applications based on libevent
@@ -48,9 +54,12 @@ public:
     // @brief Run the IO Event driving loop forever
     // @note It must be called in the IO Event thread
     void Run();
+    void RunOnce();
 
     // @brief Stop the event loop
     void Stop();
+//  void SyncStop();
+    void WaitUntilRunning();
 
     // @brief Reinitialize some data fields after a fork
     void AfterFork();
@@ -63,6 +72,18 @@ public:
 
     void RunInLoop(const Functor& handler);
     void QueueInLoop(const Functor& handler);
+
+
+    void add(folly::Func fn) override {
+        RunInLoop(std::move(fn).asStdFunction());
+    }
+
+    void bumpHandlingTime() override {}
+    void attachTimeoutManager(folly::AsyncTimeout* obj, folly::AsyncTimeout::InternalEnum internal) override;
+    bool isInTimeoutManagerThread() override;
+    void cancelTimeout(folly::AsyncTimeout* obj) override;
+    void detachTimeoutManager(folly::AsyncTimeout* obj) override;
+    bool scheduleTimeout(folly::AsyncTimeout* obj, folly::TimeoutManager::timeout_type timeout) override;
 
 public:
 
@@ -103,6 +124,7 @@ public:
     const std::thread::id& tid() const {
         return tid_;
     }
+    void drive() override;
 private:
     void Init();
     void InitNotifyPipeWatcher();
@@ -110,6 +132,7 @@ private:
     void DoPendingFunctors();
     size_t GetPendingQueueSize();
     bool IsPendingQueueEmpty();
+    void DoBeforeLoop();
 private:
     struct event_base* evbase_;
     bool create_evbase_myself_;
@@ -117,7 +140,8 @@ private:
     enum { kContextCount = 16, };
     Any context_[kContextCount];
 
-    std::mutex mutex_;
+    //std::mutex mutex_;
+    folly::SpinLock spinlock_;
     // We use this to notify the thread when we put a task into the pending_functors_ queue
     std::shared_ptr<PipeEventWatcher> watcher_;
     // When we put a task into the pending_functors_ queue,
@@ -128,8 +152,9 @@ private:
 #elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)
     moodycamel::ConcurrentQueue<Functor>* pending_functors_;
 #else
-    std::vector<Functor>* pending_functors_; // @Guarded By mutex_
+    std::deque<Functor> pending_functors_; // @Guarded By mutex_
 #endif
+    std::deque<Functor> run_before_loop_functors_;
 
     std::atomic<int> pending_functor_count_;
 };

@@ -3,39 +3,41 @@
 #include "binary_codec.h"
 #include "memcache_client_pool.h"
 #include "likely.h"
+#include "evpp/evpp_wheeltimer_thread.h"
 
 namespace evmc {
 
 MemcacheClient::~MemcacheClient() {
     tcp_client_->Disconnect();
-    delete codec_;
 }
 
-void MemcacheClient::PushRunningCommand(CommandPtr& cmd) {
-    if (UNLIKELY(!cmd)) {
+//called by wheeltimer thread
+void MemcacheClient::OnTimeout(const uint32_t r_id) {
+    int64_t recv_id_int64 = (int64_t)r_id;
+    if (recv_id_int64 < recv_checkpoint_) {
         return;
     }
+    recv_checkpoint_ = recv_id();
+    exec_loop_->RunInLoop([this, r_id]() {
+        this->OnPacketTimeout(r_id);
+    });
+}
 
-    if (cmd->id() == 0) {
-        cmd->set_id(next_id());
+void MemcacheClient::Launch(CommandPtr& cmd) {
+    cmd->set_recv_id(next_send_id());
+    cmd->construct_command(&send_buf_);
+    running_command_.push(cmd);
+    evpp::EvppHHWheelTimer::Instance()->scheduleTimeout([this, cmd_id = cmd->recv_id()]() {
+        this->OnTimeout(cmd_id);
     }
-    running_command_.emplace(cmd);
-
-    if (UNLIKELY(!timeout_.IsZero() && timer_canceled_)) {
-        cmd_timer_ = exec_loop_->RunAfter(timeout_, std::bind(&MemcacheClient::OnPacketTimeout, shared_from_this(), cmd->id()));
-        timer_canceled_ = false;
+    , timeout_);
+    if (tcp_client_->conn() && tcp_client_->conn()->IsConnected()) {
+        SendData();
     }
 }
 
-void MemcacheClient::PushWaitingCommand(CommandPtr& cmd) {
-    if (LIKELY(cmd)) {
-        cmd->set_id(next_id());
-        waiting_command_.push(cmd);
-    }
-    if (UNLIKELY(!timeout_.IsZero() && con_timer_canceled_)) {
-        con_cmd_timer_ = exec_loop_->RunAfter(timeout_, std::bind(&MemcacheClient::OnConnectTimeout, shared_from_this(), cmd->id()));
-        con_timer_canceled_ = false;
-    }
+void MemcacheClient::SendData() {
+    tcp_client_->conn()->Send(&send_buf_);
 }
 
 CommandPtr MemcacheClient::PopRunningCommand() {
@@ -48,13 +50,22 @@ CommandPtr MemcacheClient::PopRunningCommand() {
     return command;
 }
 
-CommandPtr MemcacheClient::PopWaitingCommand() {
-    if (UNLIKELY(waiting_command_.empty())) {
-        return CommandPtr();
+void MemcacheClient::OnClientConnection(const evpp::TCPConnPtr& connection) {
+    if (connection && connection->IsConnected()) {
+        //发送数据
+        SendData();
+        return;
     }
-    CommandPtr command(waiting_command_.front());
-    waiting_command_.pop();
-    return command;
+    CommandPtr command;
+    if (connection) {
+        LOG_WARN << "connect " << (int)(connection->status()) << "[0:kDisconnected,1:kConnecting,3:kDisconnecting],ip=" << connection->remote_addr() << ",pop command size=" << running_command_.size();
+    }
+    while (running_command_.size() > 0) {
+        command = running_command_.front();
+        running_command_.pop();
+        mc_pool_->ReLaunchCommand(exec_loop_, command);
+    }
+    send_buf_.Reset();
 }
 
 void MemcacheClient::OnResponseData(const evpp::TCPConnPtr& tcp_conn,
@@ -62,75 +73,19 @@ void MemcacheClient::OnResponseData(const evpp::TCPConnPtr& tcp_conn,
     if (!codec_) {
         codec_ = new BinaryCodec(this);
     }
-
     codec_->OnCodecMessage(tcp_conn, buf);
 }
 
-
-void MemcacheClient::OnConnectTimeout(uint32_t cmd_id) {
-    con_timer_canceled_ = true;
-    if (!waiting_command_.empty()) {
-        CommandPtr cmd(waiting_command_.front());
-        if (LIKELY(cmd->id() != cmd_id)) {
-            cmd_timer_bakup_.swap(con_cmd_timer_);
-            con_cmd_timer_ = exec_loop_->RunAfter(timeout_, std::bind(&MemcacheClient::OnConnectTimeout, shared_from_this(), cmd->id()));
-            con_timer_canceled_ = false;
-            return;
-        }
-    } else {
+void MemcacheClient::OnPacketTimeout(const uint32_t cmd_id) {
+    if (running_command_.size() == 0) {
         return;
     }
-
-    LOG_DEBUG << "InvokeTimer triggered for " << cmd_id << " " << conn()->remote_addr();
-
-    while (!waiting_command_.empty()) {
-        CommandPtr cmd(waiting_command_.front());
-        waiting_command_.pop();
-
-        if (mc_pool_ && cmd->ShouldRetry()) {
-            cmd->set_id(0);
-            cmd->set_server_id(cmd->server_id());
-            exec_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, mc_pool_, cmd));
-        } else {
-            cmd->OnError(ERR_CODE_TIMEOUT);
-        }
-    }
-}
-
-void MemcacheClient::OnPacketTimeout(uint32_t cmd_id) {
-    timer_canceled_ = true;
-    if (!running_command_.empty()) {
-        CommandPtr cmd(running_command_.front());
-        if (LIKELY(cmd->id() != cmd_id)) {
-            cmd_timer_bakup_.swap(cmd_timer_);
-            cmd_timer_ = exec_loop_->RunAfter(timeout_, std::bind(&MemcacheClient::OnPacketTimeout, shared_from_this(), cmd->id()));
-            timer_canceled_ = false;
-            return;
-        }
-    } else {
+    auto& cmd = running_command_.front();
+    if (cmd->recv_id() != cmd_id) {
         return;
     }
-
-    LOG_DEBUG << "InvokeTimer triggered for " << cmd_id << " " << conn()->remote_addr();
-
-    while (!running_command_.empty()) {
-        CommandPtr cmd(running_command_.front());
-        running_command_.pop();
-
-        if (mc_pool_ && cmd->ShouldRetry()) {
-            cmd->set_id(0);
-            cmd->set_server_id(cmd->server_id());
-            exec_loop()->RunInLoop(std::bind(&MemcacheClientBase::LaunchCommand, mc_pool_, cmd));
-        } else {
-            cmd->OnError(ERR_CODE_TIMEOUT);
-        }
-
-        if (cmd->id() == cmd_id) {
-            break;
-        }
-    }
-    LOG_ERROR << "OnPacketTimeout post, waiting=" << waiting_command_.size()
-              << " running=" << running_command_.size();
+    CommandPtr command(running_command_.front());
+    running_command_.pop();
+    mc_pool_->ReLaunchCommand(exec_loop_, command);
 }
-
 }

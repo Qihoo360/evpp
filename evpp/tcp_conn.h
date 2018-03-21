@@ -123,8 +123,12 @@ public:
 
     // TODO Add : SetLinger();
 
-    void ReserveInputBuffer(size_t len) { input_buffer_.Reserve(len); }
-    void ReserveOutputBuffer(size_t len) { output_buffer_.Reserve(len); }
+    void ReserveInputBuffer(size_t len) {
+        input_buffer_.Reserve(len);
+    }
+    void ReserveOutputBuffer(size_t len) {
+        output_buffer_.Reserve(len);
+    }
 
     void SetHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t mark);
 protected:

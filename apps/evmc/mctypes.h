@@ -13,20 +13,35 @@ namespace evmc {
 // TODO
 // - embedded & standalone
 
-typedef std::shared_ptr<evpp::TimerEventWatcher> TimerEventPtr;
+enum EvmcCode {
+    EVMC_SUCCESS = 0x00,
+    EVMC_KEY_ENOENT = 0x01,
+    EVMC_KEY_EEXISTS = 0x02,
+    EVMC_E2BIG = 0x03,
+    EVMC_EINVAL = 0x04,
+    EVMC_NOT_STORED = 0x05,
+    EVMC_DELTA_BADVAL = 0x06,
+    EVMC_NOT_MY_VBUCKET = 0x07,
+    EVMC_AUTH_ERROR = 0x20,
+    EVMC_AUTH_CONTINUE = 0x21,
+    EVMC_ERANGE = 0x22,
+    EVMC_UNKNOWN_COMMAND = 0x81,
+    EVMC_ENOMEM = 0x82,
+    EVMC_NOT_SUPPORTED = 0x83,
+    EVMC_EINTERNAL = 0x84,
+    EVMC_EBUSY = 0x85,
+    EVMC_ETMPFAIL = 0x86,
 
-enum {
-    SUC_RET = 0,
-    NOT_FIND_RET = 1,
-    ERR_CODE_TIMEOUT = -1,
-    ERR_CODE_NETWORK = -2,
-    ERR_CODE_DISCONNECT = -3,
-    ERR_CODE_EMPTYKEY = -4,
+    EVMC_TIMEOUT = -1,
+    EVMC_NETWORK = -2,
+    EVMC_DISCONNECT = -3,
+    EVMC_ALLDOWN = -4,
+    EVMC_EXCEPTION = -5,
 };
 
 
 struct GetResult {
-    GetResult() : code(NOT_FIND_RET) {}
+    GetResult() : code(EVMC_KEY_ENOENT) {}
     GetResult(const GetResult& result) : code(result.code), value(result.value) {}
     GetResult(GetResult&& result) : code(result.code), value(std::move(result.value)) {}
     GetResult& operator=(GetResult&& result) {
@@ -35,7 +50,15 @@ struct GetResult {
         return *this;
     }
 
-    GetResult(int c, const std::string& v) : code(c), value(v) {}
+    GetResult(const int c, const std::string& v) : code(c), value(v) {}
+    void set(const int c, std::string&& v) {
+        code = c;
+        value = std::move(v);
+    }
+    void error(const int c) {
+        code = c;
+    }
+
     int code;
     std::string value;
 };
@@ -43,41 +66,48 @@ struct GetResult {
 typedef std::shared_ptr<GetResult> GetResultPtr;
 typedef std::map<std::string, GetResult>  MultiGetResult;
 
+typedef std::function<void(const MultiGetResult& result)> MultiGetCallback;
+typedef std::function<void(const std::string& key, int code)> SetCallback;
+typedef std::function<void(const std::string& key, int code)> RemoveCallback;
+typedef std::function<void(const std::string& key, const GetResult& result)> GetCallback;
+
 struct PrefixGetResult {
-    PrefixGetResult() : code(NOT_FIND_RET) {
+    PrefixGetResult() : code(EVMC_KEY_ENOENT) {
     }
+
     virtual ~PrefixGetResult() {
     }
+
     PrefixGetResult(const PrefixGetResult& result) {
         code = result.code;
-        result_map_ = result.result_map_;
+        result_map = result.result_map;
     }
-    PrefixGetResult(PrefixGetResult&& result) : code(result.code), result_map_(std::move(result.result_map_)) {
+
+    PrefixGetResult(PrefixGetResult&& result) : code(result.code), result_map(std::move(result.result_map)) {
     }
+
     PrefixGetResult& operator=(PrefixGetResult&& result) {
         code = result.code;
-        result_map_ = std::move(result.result_map_);
+        result_map = std::move(result.result_map);
         return *this;
     }
-    int code;
-    std::map<std::string, std::string> result_map_;
-    void clear() {
-        code = NOT_FIND_RET;
-        result_map_.clear();
+    void set(const int c, std::map<std::string, std::string>&& r_map) {
+        code = c;
+        result_map = std::move(r_map);
     }
+    inline void error(const int c) {
+        code = c;
+    }
+    int code;
+    std::map<std::string, std::string> result_map;
 };
 
 typedef std::shared_ptr<PrefixGetResult> PrefixGetResultPtr;
+typedef std::function<void(const std::string& key, const PrefixGetResultPtr result)> PrefixGetCallback;
 
 typedef std::map<std::string, PrefixGetResultPtr> PrefixMultiGetResult;
-
-
-typedef std::function<void(const std::string& key, const GetResult& result)> GetCallback;
-typedef std::function<void(const std::string& key, int code)> SetCallback;
-typedef std::function<void(const std::string& key, int code)> RemoveCallback;
-typedef std::function<void(const MultiGetResult& result)> MultiGetCallback;
-typedef std::function<void(const std::string& key, const PrefixGetResultPtr result)> PrefixGetCallback;
 typedef std::function<void(const PrefixMultiGetResult& result)> PrefixMultiGetCallback;
+
 class MemcacheClient;
 typedef std::shared_ptr<MemcacheClient> MemcacheClientPtr;
 

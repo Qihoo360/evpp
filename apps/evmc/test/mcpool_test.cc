@@ -1,55 +1,16 @@
-#include <evmc/memcache_client_serial.h>
 #include <evmc/memcache_client_pool.h>
 #include <evmc/vbucket_config.h>
 
 #include <evpp/gettimeofday.h>
 
 #include "../../../examples/winmain-inl.h"
+#include "folly/synchronization/Baton.h"
 
 #include <thread>
 
 namespace {
 
 using namespace evmc;
-static struct timeval g_tv_begin;
-static struct timeval g_tv_end;
-static void OnTestSetDone(const std::string& key, int code) {
-    LOG_INFO << "+++++++++++++ OnTestSetDone code=" << code << " " << key;
-}
-static void OnTestGetDone(const std::string& key, const GetResult& res) {
-    LOG_INFO << "============= OnTestGetDone " << key << " code=" << res.code << " " << res.value;
-}
-
-static void OnTestPrefixDone(const std::string& prefix_key, const PrefixGetResultPtr res) {
-    LOG_INFO << "************** OnTestPrefixGetDone prefix=" << prefix_key << " code=" << res->code;
-    std::map<std::string, std::string>::const_iterator it = res->result_map_.begin();
-
-    for (; it != res->result_map_.end(); ++it) {
-        LOG_INFO << "<<<<<<<<<<<<<< OnTestPrefixGetDone " << it->first << " " << it->second;
-    }
-}
-
-static void OnTestRemoveDone(const std::string& key, int code) {
-    LOG_INFO << "------------- OnTestRemoveDone code=" << code << " " << key;
-}
-static void OnTestMultiGetDone(const MultiGetResult& res) {
-    std::map<std::string, GetResult>::const_iterator it = res.begin();
-
-    LOG_INFO << ">>>>>>>>>>>>> OnTestMultiGetDone";
-    for (; it != res.end(); ++it) {
-        LOG_INFO << "<<<<<<<<<< OnTestMultiGetDone " << it->first << " " << it->second.code << " " << it->second.value;
-    }
-}
-
-static void OnTestPrefixMultiGetDone(const PrefixMultiGetResult& res) {
-    gettimeofday(&g_tv_end, nullptr);
-    LOG_INFO << "cost:" << (g_tv_end.tv_sec - g_tv_begin.tv_sec) * 1e6 + (g_tv_end.tv_usec - g_tv_end.tv_usec);
-    LOG_INFO << ">>>>>>>>>>>>> OnTestPrefixMultiGetDone";
-    auto it = res.begin();
-    for (; it != res.end(); ++it) {
-        OnTestPrefixDone(it->first, it->second);
-    }
-}
 
 static evpp::EventLoop* g_loop;
 static void StopLoop() {
@@ -85,134 +46,165 @@ void VbucketConfTest() {
         LOG_INFO << "VbucketConfTest key=" << keys[i] << " vbucket=" << vbucket;
     }
 }
+}
 
+void TestSet(MemcacheClientPool& mcp) {
+    std::string key("testt+0");
+    auto fut = mcp.Set(key, key).wait();
+    auto result = fut.value();
+    assert(result.hasValue());
+    int ret = result.value();
+    LOG_ERROR << "ret:" << ret;
+    folly::Baton<> bat;
+    SetCallback scb([baton = std::ref(bat)](const std::string & k, int code) {
+        LOG_ERROR << "set key:" << k << ", code=" << code;
+        baton.get().post();
+    });
+    mcp.Set(g_loop, key, key, scb);
+    bat.wait();
+}
+
+void TestRemove(MemcacheClientPool& mcp) {
+    std::string key("testt+0");
+    auto fut = mcp.Remove(key).wait();
+    auto result = fut.value();
+    assert(result.hasValue());
+    int ret = result.value();
+    LOG_ERROR << "ret:" << ret;
+    folly::Baton<> bat;
+    RemoveCallback rcb([baton = std::ref(bat)](const std::string & k, int code) {
+        LOG_ERROR << "remove key:" << k << ", code=" << code;
+        baton.get().post();
+    });
+    mcp.Remove(g_loop, key, rcb);
+    bat.wait();
+}
+
+void TestGet(MemcacheClientPool& mcp) {
+    std::string key("testtt+0");
+    auto fut = mcp.Get(key).wait();
+    auto result = fut.value();
+    if (result.hasValue()) {
+        auto ret = result.value();
+        LOG_ERROR << "get value:" << ret;
+    } else {
+        LOG_ERROR << "get error:" << result.error();
+    }
+    folly::Baton<> bat;
+    GetCallback gcb([baton = std::ref(bat)](const std::string & k, const GetResult & r) {
+        LOG_ERROR << "get key:" << k << ", code=" << r.code << ",value=" << r.value;
+        baton.get().post();
+    });
+    mcp.Get(g_loop, key, gcb);
+    bat.wait();
+}
+
+void TestMultiGet(MemcacheClientPool& mcp) {
+    std::vector<std::string> mget_keys;
+    int num = 1;
+    while (num-- > 0) {
+        mget_keys.clear();
+        for (size_t i = 0; i < 5; ++i) {
+            std::stringstream ss;
+            ss << "test+" << i;
+            std::string key(ss.str());
+            mget_keys.push_back(key);
+            mget_keys.push_back(key);
+        }
+        auto ret = mcp.MultiGet(mget_keys).wait();
+        assert(ret.hasValue());
+        auto result = ret.value();
+        if (result.hasValue()) {
+            for (auto& it : result.value()) {
+                LOG_ERROR << "key:" << it.first << ", value=" << it.second;
+            }
+        } else {
+            LOG_ERROR << "error:" << result.error();
+        }
+        MultiGetCallback callback([](const MultiGetResult & mgr) {
+            for (auto& it : mgr) {
+                LOG_ERROR << "key:" << it.first << ", code=" << it.second.code << ", value" << it.second.value;
+            }
+        });
+        mcp.MultiGet(g_loop, mget_keys, callback);
+    }
+    sleep(1);
+}
+
+
+void Printstr2mapFuture(str2mapFuture& future) {
+    auto result = std::move(future.value());
+    if (result.hasValue()) {
+        for (auto& kv : result.value()) {
+            LOG_ERROR << "prefix key=" << kv.first;
+            for (auto& it : kv.second) {
+                LOG_ERROR << "Get key=" << it.first << ", value=" << it.second;
+            }
+        }
+    } else {
+        LOG_ERROR << "PrefixGet error=" << result.error();
+    }
+}
+
+void TestPrefixGet(MemcacheClientPool& mcp) {
+    std::string key("test");
+    auto future = mcp.PrefixGet(key).wait();
+    Printstr2mapFuture(future);
+    folly::Baton<> bat;
+    PrefixGetCallback pgcb([baton = std::ref(bat)](const std::string & k, const PrefixGetResultPtr result) {
+        LOG_ERROR << "prefix key=" << k << ",code=" << result->code;
+        for (auto& kv : result->result_map) {
+            LOG_ERROR << "get key=" << kv.first << ",value=" << kv.second;
+        }
+        baton.get().post();
+    });
+    mcp.PrefixGet(g_loop, key, pgcb);
+    bat.wait();
+}
+
+void TestMultiPrefixGet(MemcacheClientPool& mcp) {
+    std::vector<std::string> keys = {"test", "1test"};
+    auto future = mcp.PrefixMultiGet(keys).wait();
+    Printstr2mapFuture(future);
+    folly::Baton<> bat;
+    PrefixMultiGetCallback pmgcb([baton = std::ref(bat)](const PrefixMultiGetResult & result) {
+        for (auto& kv : result) {
+            LOG_ERROR << "prefixmulti key=" << kv.first << ",code=" << kv.second->code;
+            for (auto& it : kv.second->result_map) {
+                LOG_ERROR << "get key=" << it.first << ",value=" << it.second;
+            }
+        }
+        baton.get().post();
+    });
+    mcp.PrefixMultiGet(g_loop, keys, pmgcb);
+    bat.wait();
 }
 
 int main() {
-// TEST_UNIT(testMemcacheClient) {
-    //VbucketConfTest();
-    //return 0;
-
-#if 0
     g_loop = new evpp::EventLoop;
     std::thread th(MyEventThread);
-    while (!g_loop->running()) {
-        usleep(1000);
-    }
+    g_loop->WaitUntilRunning();
     MemcacheClientPool mcp("./kill_storage_cluster.json", 4, 200);
-    assert(mcp.Start());
-
-    const static int MAX_KEY = 1000;
-
-    for (size_t i = 0; i < MAX_KEY; ++i) {
-        std::stringstream ss_key;
-        ss_key << "test" << i;
-        std::stringstream ss_value;
-        ss_value << "test_value" << i;
-        // mcp.Set(g_loop, ss_key.str(), ss_value.str(), &OnTestSetDone);
+    bool ok = mcp.Start();
+    if (!ok) {
+        LOG_ERROR << "init failed";
+        return -1;
     }
+    assert(ok);
+
+    TestSet(mcp);
+    TestGet(mcp);
+    TestRemove(mcp);
+    TestMultiGet(mcp);
+    TestPrefixGet(mcp);
+    TestMultiPrefixGet(mcp);
 
 
-    std::vector<std::string> mget_keys;
-    for (size_t i = 1; i < 5/*MAX_KEY*/; ++i) {
-        std::stringstream ss;
-        //ss << "test" << i;
-        //usleep(1000);
-        ss << "test+" << i;
-        std::string key(ss.str());
-        //key.resize(12, 'T');
-        // mcp.PrefixGet(g_loop, ss.str(), &OnTestPrefixDone);
-        //mcp.Get(g_loop, key, &OnTestGetDone);
-        mcp.Set(g_loop, key, key, &OnTestSetDone);
-        mcp.Get(g_loop, key, &OnTestGetDone);
-        mget_keys.push_back(key);
-        //mcp.Get(g_loop, key, &OnTestGetDone);
-        //mcp.Remove(g_loop, key, &OnTestRemoveDone);
-        //mcp.Get(g_loop, key, &OnTestGetDone);
-        //mcp.Set(g_loop, key, key, &OnTestSetDone);
-    }
-    mcp.PrefixGet(g_loop, "test", &OnTestPrefixDone);
-    mcp.MultiGet(g_loop, mget_keys, &OnTestMultiGetDone);
-    mget_keys.clear();
-    std::stringstream ps;
-    ps << "test";
-    mget_keys.push_back(ps.str());
-    mget_keys.push_back(ps.str());
-    mget_keys.push_back(ps.str());
 
-    mcp.PrefixMultiGet(g_loop, mget_keys, &OnTestPrefixMultiGetDone);
-
-    std::stringstream ss;
-    int count = 0;
-    for (size_t i = 0; i < 1/*MAX_KEY*/; ++i) {
-        mget_keys.clear();
-        for (size_t j = 1; j < 2; j++) {
-            ss.str("");
-            ss << j;
-            mget_keys.push_back(ss.str());
-        }
-        count++;
-        //mcp.MultiGet(g_loop, mget_keys, &OnTestMultiGetDone);
-        gettimeofday(&g_tv_begin, nullptr);
-        //mcp.PrefixMultiGet(g_loop, mget_keys, &OnTestPrefixMultiGetDone);
-    }
-    LOG_INFO << "count value:" << count;
-// mcp.PrefixMultiGet(g_loop, mget_keys, &OnTestPrefixMultiGetDone);
-    //mcp.MultiGet(g_loop, mget_keys, &OnTestMultiGetDone);
-
-    for (size_t i = 0; i < MAX_KEY; ++i) {
-        std::stringstream ss_key;
-        ss_key << "test" << i;
-        usleep(1000);
-//      mcp.Remove(g_loop, ss_key.str().c_str(), &OnTestRemoveDone);
-    }
-    g_loop->RunAfter(10.0, &StopLoop);
+    g_loop->RunAfter(1, &StopLoop);
     mcp.Stop(true);
     th.join();
-
-
-#else
-
-    g_loop = new evpp::EventLoop;
-    std::thread th(MyEventThread);
-    while (!g_loop->IsRunning()) {
-        usleep(1000);
-    }
-    MemcacheClientSerial mcp("10.102.16.25:20099", 200);
-    assert(mcp.Start(g_loop));
-    usleep(2 * 1000 * 1000);
-    std::string key("test");
-    std::string value("test1");
-    mcp.Set(key, value, &OnTestSetDone);
-    std::string monkey = "monkey";
-    mcp.Get(monkey, &OnTestGetDone);
-    std::string key1("dog");
-    std::string value1("dog1");
-    mcp.Set(key1, value1, &OnTestSetDone);
-    std::string key2("cat");
-    std::string value2("cat1");
-    mcp.Set(key2, value2, &OnTestSetDone);
-    std::string key3("cat1");
-    std::string value3("cat2");
-    mcp.Set(key3, value3, &OnTestSetDone);
-    mcp.Get(key, &OnTestGetDone);
-    mcp.Remove(key, &OnTestRemoveDone);
-    std::vector<std::string> mget_keys;
-    mget_keys.push_back("monkey");
-    mget_keys.push_back("test");
-    mget_keys.push_back("dog");
-    mget_keys.push_back("cat");
-    mget_keys.push_back("cat1");
-    while (1) {
-        mcp.MultiGet(mget_keys, &OnTestMultiGetDone);
-        usleep(100000);
-    }
-
-    g_loop->RunAfter(10.0, &StopLoop);
-    th.join();
-    //mcp.Stop(true);
-    mcp.Stop();
-#endif
+    delete g_loop;
     return 0;
 }
 

@@ -119,7 +119,7 @@ void DNSResolver::AsyncDNSResolve() {
 
     DLOG_TRACE << "call shared_from_this";
     std::shared_ptr<DNSResolver> p = shared_from_this();
-    std::shared_ptr<DNSResolver> *pp = new std::shared_ptr<DNSResolver>(p);
+    std::shared_ptr<DNSResolver>* pp = new std::shared_ptr<DNSResolver>(p);
     dnsbase_ = evdns_base_new(loop_->event_base(), 1);
     assert(dnsbase_);
     dns_req_ = evdns_getaddrinfo(dnsbase_
@@ -135,8 +135,8 @@ void DNSResolver::OnResolved(int errcode, struct addrinfo* addr) {
         if (errcode != EVUTIL_EAI_CANCEL) {
             ClearTimer();
             LOG_ERROR << "DNS resolve failed, "
-                << ", error code: " << errcode
-                << ", error msg: " << evutil_gai_strerror(errcode);
+                      << ", error code: " << errcode
+                      << ", error msg: " << evutil_gai_strerror(errcode);
         } else {
             DLOG_WARN << "DNS resolve cancel, may be timeout";
         }
