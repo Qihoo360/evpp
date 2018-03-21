@@ -111,116 +111,116 @@ enum CmdTag {
     buf->Write((const void *)key.data(), key.size());\
     buf->Write((const void *)value.data(), value.size());\
 
-    template<class T, CmdTag tag>
-    class CommandImpl final: public Command {
-    public:
-        CommandImpl(int32_t server_id, std::vector<std::string>& datas, std::vector<int>& vbucket_ids
-                    , folly::Promise<folly::Expected<T, EvmcCode>>& result): server_id_(1, server_id)
-            , send_data_(std::move(datas)), vbucketids_(std::move(vbucket_ids)), result_(std::move(result)) {
-        }
-
-        CommandImpl(const CommandImpl& cmd) = delete;
-        CommandImpl& operator=(const CommandImpl& cmd) = delete;
-        CommandImpl(CommandImpl&& cmd) : recv_id_(cmd.recv_id_), server_id_(std::move(cmd.server_id_)), send_data_(std::move(cmd.send_data_))
-            , vbucketids_(std::move(cmd.vbucketids_)), result_(std::move(cmd.result_)) {
-        }
-
-        CommandImpl& operator= (CommandImpl&& cmd) {
-            recv_id_ = cmd.recv_id_;
-            server_id_.swap(cmd.server_id_);
-            vbucketids_ = std::move(cmd.vbucketids_);
-            send_data_ = std::move(cmd.send_data_);
-            result_ = std::move(cmd.result);
-            return *this;
-        }
-
-        std::vector<std::string>& send_data() override {
-            return send_data_;
-        }
-
-        std::vector<int>& vbucketids() override {
-            return vbucketids_;
-        }
-
-        std::vector<uint16_t>& server_ids() override {
-            return server_id_;
-        }
-
-        void set_server_id(const uint16_t id) override {
-            server_id_.push_back(id);
-        }
-
-        uint32_t recv_id() override {
-            return recv_id_;
-        }
-
-        void set_recv_id(const uint32_t r_id) override {
-            recv_id_ = r_id;
-        }
-
-        void construct_command(evpp::Buffer* buf) override {
-            switch (tag) {
-            case MultiGetTag: {
-                construct_multikey_cmd(PROTOCOL_BINARY_CMD_GETKQ, PROTOCOL_BINARY_CMD_GETK);
-            }
-            break;
-            case RemoveTag: {
-                construct_onekey_cmd(PROTOCOL_BINARY_CMD_DELETE);
-            }
-            break;
-            case PrefixGetTag: {
-                construct_multikey_cmd(PROTOCOL_BINARY_CMD_PGETKQ, PROTOCOL_BINARY_CMD_PGETK);
-            }
-            break;
-            case GetTag: {
-                construct_onekey_cmd(PROTOCOL_BINARY_CMD_GET);
-            }
-            break;
-            case SetTag: {
-                construct_keyvalue_cmd(PROTOCOL_BINARY_CMD_SET);
-            }
-            break;
-            }
-        }
-
-        void error(const EvmcCode err) override {
-            auto ret = folly::makeUnexpected((EvmcCode)err);
-            folly::Expected<T, EvmcCode> result(std::move(ret));
-            set_result(result);
-        }
-
-        void set_result(folly::Expected<T, EvmcCode>& r) {
-            result_.setValue(std::move(r));
-        }
-    private:
-        uint32_t recv_id_{0};
-        std::vector<uint16_t> server_id_;
-        std::vector<std::string> send_data_;
-        std::vector<int> vbucketids_;
-        folly::Promise<folly::Expected<T, EvmcCode>> result_;
-    };
-
-    typedef folly::Expected<std::map<std::string, std::string>, EvmcCode> str2strExpected;
-    typedef folly::Promise<str2strExpected> str2strPromise;
-    typedef folly::Future<str2strExpected> str2strFuture;
-
-    typedef folly::Expected<int, EvmcCode> intExpected;
-    typedef folly::Promise<intExpected> intPromise;
-    typedef folly::Future<intExpected> intFuture;
-
-    typedef folly::Expected<std::string, EvmcCode> stringExpected;
-    typedef folly::Promise<stringExpected> stringPromise;
-    typedef folly::Future<stringExpected> stringFuture;
-
-    typedef std::map<std::string, std::map<std::string, std::string>> str2map;
-    typedef folly::Expected<str2map, EvmcCode> str2mapExpected;
-    typedef folly::Promise<str2mapExpected> str2mapPromise;
-    typedef folly::Future<str2mapExpected> str2mapFuture;
-
-    typedef CommandImpl<std::map<std::string, std::string>, MultiGetTag> MultiGetCommand;
-    typedef CommandImpl<int, RemoveTag> RemoveCommand;
-    typedef CommandImpl<int, SetTag> SetCommand;
-    typedef CommandImpl<std::string, GetTag> GetCommand;
-    typedef CommandImpl<str2map, PrefixGetTag> PrefixGetCommand;
+template<class T, CmdTag tag>
+class CommandImpl final: public Command {
+public:
+    CommandImpl(int32_t server_id, std::vector<std::string>& datas, std::vector<int>& vbucket_ids
+                , folly::Promise<folly::Expected<T, EvmcCode>>& result): server_id_(1, server_id)
+        , send_data_(std::move(datas)), vbucketids_(std::move(vbucket_ids)), result_(std::move(result)) {
     }
+
+    CommandImpl(const CommandImpl& cmd) = delete;
+    CommandImpl& operator=(const CommandImpl& cmd) = delete;
+    CommandImpl(CommandImpl&& cmd) : recv_id_(cmd.recv_id_), server_id_(std::move(cmd.server_id_)), send_data_(std::move(cmd.send_data_))
+        , vbucketids_(std::move(cmd.vbucketids_)), result_(std::move(cmd.result_)) {
+    }
+
+    CommandImpl& operator= (CommandImpl&& cmd) {
+        recv_id_ = cmd.recv_id_;
+        server_id_.swap(cmd.server_id_);
+        vbucketids_ = std::move(cmd.vbucketids_);
+        send_data_ = std::move(cmd.send_data_);
+        result_ = std::move(cmd.result);
+        return *this;
+    }
+
+    std::vector<std::string>& send_data() override {
+        return send_data_;
+    }
+
+    std::vector<int>& vbucketids() override {
+        return vbucketids_;
+    }
+
+    std::vector<uint16_t>& server_ids() override {
+        return server_id_;
+    }
+
+    void set_server_id(const uint16_t id) override {
+        server_id_.push_back(id);
+    }
+
+    uint32_t recv_id() override {
+        return recv_id_;
+    }
+
+    void set_recv_id(const uint32_t r_id) override {
+        recv_id_ = r_id;
+    }
+
+    void construct_command(evpp::Buffer* buf) override {
+        switch (tag) {
+        case MultiGetTag: {
+            construct_multikey_cmd(PROTOCOL_BINARY_CMD_GETKQ, PROTOCOL_BINARY_CMD_GETK);
+        }
+        break;
+        case RemoveTag: {
+            construct_onekey_cmd(PROTOCOL_BINARY_CMD_DELETE);
+        }
+        break;
+        case PrefixGetTag: {
+            construct_multikey_cmd(PROTOCOL_BINARY_CMD_PGETKQ, PROTOCOL_BINARY_CMD_PGETK);
+        }
+        break;
+        case GetTag: {
+            construct_onekey_cmd(PROTOCOL_BINARY_CMD_GET);
+        }
+        break;
+        case SetTag: {
+            construct_keyvalue_cmd(PROTOCOL_BINARY_CMD_SET);
+        }
+        break;
+        }
+    }
+
+    void error(const EvmcCode err) override {
+        auto ret = folly::makeUnexpected((EvmcCode)err);
+        folly::Expected<T, EvmcCode> result(std::move(ret));
+        set_result(result);
+    }
+
+    void set_result(folly::Expected<T, EvmcCode>& r) {
+        result_.setValue(std::move(r));
+    }
+private:
+    uint32_t recv_id_{0};
+    std::vector<uint16_t> server_id_;
+    std::vector<std::string> send_data_;
+    std::vector<int> vbucketids_;
+    folly::Promise<folly::Expected<T, EvmcCode>> result_;
+};
+
+typedef folly::Expected<std::map<std::string, std::string>, EvmcCode> str2strExpected;
+typedef folly::Promise<str2strExpected> str2strPromise;
+typedef folly::Future<str2strExpected> str2strFuture;
+
+typedef folly::Expected<int, EvmcCode> intExpected;
+typedef folly::Promise<intExpected> intPromise;
+typedef folly::Future<intExpected> intFuture;
+
+typedef folly::Expected<std::string, EvmcCode> stringExpected;
+typedef folly::Promise<stringExpected> stringPromise;
+typedef folly::Future<stringExpected> stringFuture;
+
+typedef std::map<std::string, std::map<std::string, std::string>> str2map;
+typedef folly::Expected<str2map, EvmcCode> str2mapExpected;
+typedef folly::Promise<str2mapExpected> str2mapPromise;
+typedef folly::Future<str2mapExpected> str2mapFuture;
+
+typedef CommandImpl<std::map<std::string, std::string>, MultiGetTag> MultiGetCommand;
+typedef CommandImpl<int, RemoveTag> RemoveCommand;
+typedef CommandImpl<int, SetTag> SetCommand;
+typedef CommandImpl<std::string, GetTag> GetCommand;
+typedef CommandImpl<str2map, PrefixGetTag> PrefixGetCommand;
+}
 

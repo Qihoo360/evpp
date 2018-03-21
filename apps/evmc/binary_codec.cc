@@ -187,11 +187,10 @@ void BinaryCodec::OnResponsePacket(evpp::Buffer* buf, const std::size_t size) {
         static_cast<RemoveCommand*>(cmd.get())->set_result(ret);
     }
     break;
+
     case PROTOCOL_BINARY_CMD_GET:
         RecvGetData(data, cmd);
         break;
-
-
 
     case PROTOCOL_BINARY_CMD_GETK:
     case PROTOCOL_BINARY_CMD_GETKQ:
