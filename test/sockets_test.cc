@@ -6,6 +6,7 @@ TEST_UNIT(TestParseFromIPPort1) {
     std::string dd[] = {
         "192.168.0.6:99",
         "101.205.216.65:60931",
+        "127.0.0.1:19099",
     };
 
     for (size_t i = 0; i < H_ARRAYSIZE(dd); i++) {

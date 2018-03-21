@@ -115,8 +115,8 @@ void Client::HandleLoopkupdHTTPResponse(
     DLOG_TRACE;
 
     if (response.get() == nullptr) {
-        LOG_ERROR << "Request lookupd http://" << request->conn()->host() << ":"
-            << request->conn()->port() << request->uri()
+        LOG_ERROR << "Request lookupd http://" << request->host() << ":"
+            << request->port() << request->uri()
             << " failed, response is null";
 
         return;
@@ -124,8 +124,8 @@ void Client::HandleLoopkupdHTTPResponse(
 
     std::string body = response->body().ToString();
     if (response->http_code() != 200) {
-        LOG_ERROR << "Request lookupd http://" << request->conn()->host() << ":"
-                  << request->conn()->port() << request->uri()
+        LOG_ERROR << "Request lookupd http://" << request->host() << ":"
+                  << request->port() << request->uri()
                   << " failed, http-code=" << response->http_code()
                   << " [" << body << "]";
         return;
@@ -135,15 +135,15 @@ void Client::HandleLoopkupdHTTPResponse(
     doc.Parse(body.c_str());
     int status_code = doc["status_code"].GetInt();
     if (status_code != 200) {
-        LOG_ERROR << "Request lookupd http://" << request->conn()->host()
-                  << ":" << request->conn()->port() << request->uri()
+        LOG_ERROR << "Request lookupd http://" << request->host()
+                  << ":" << request->port() << request->uri()
                   << " failed: [" << body
                   << "]. We will automatically retry later.";
         return;
     } else {
         LOG_INFO << "lookupd response OK. http://"
-                 << request->conn()->host() << ":"
-                 << request->conn()->port() << request->uri()
+                 << request->host() << ":"
+                 << request->port() << request->uri()
                  << " : " << body;
     }
 
