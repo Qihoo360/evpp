@@ -1,5 +1,5 @@
 
-file(GLOB evpp_SRCS *.cc */*.cc *.h */*.h)
+file(GLOB evpp_SRCS *.cc */*.cc ../folly/*.cpp ../folly/*/*.cpp ../folly/*/*/*.cpp ../folly/*.h ../folly/*/*.h ../folly/*/*/*.h *.h */*.h)
 file(GLOB evpp_lite_SRCS *.cc *.h httpc/*.*)
 list(REMOVE_ITEM evpp_lite_SRCS tcp_server.h tcp_server.cc listener.h listener.cc event_loop_thread.h event_loop_thread.cc event_loop_thread_pool.h event_loop_thread_pool.cc)
 file(GLOB evpp_PUBLIC_HEADERS *.h)
