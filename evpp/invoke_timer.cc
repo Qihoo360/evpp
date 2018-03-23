@@ -58,9 +58,6 @@ void InvokeTimer::OnTimerTriggered() {
     if (periodic_) {
         timer_->AsyncWait();
     } else {
-        functor_ = Functor();
-        cancel_callback_ = Functor();
-        timer_.reset();
         self_.reset();
     }
 }
@@ -70,10 +67,7 @@ void InvokeTimer::OnCanceled() {
     periodic_ = false;
     if (cancel_callback_) {
         cancel_callback_();
-        cancel_callback_ = Functor();
     }
-    functor_ = Functor();
-    timer_.reset();
     self_.reset();
 }
 
