@@ -58,6 +58,7 @@ void InvokeTimer::OnTimerTriggered() {
     if (periodic_) {
         timer_->AsyncWait();
     } else {
+        timer_.reset();
         self_.reset();
     }
 }
