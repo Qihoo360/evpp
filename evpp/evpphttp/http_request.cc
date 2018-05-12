@@ -13,17 +13,17 @@ HttpRequest::HttpRequest() {
     settings.on_chunk_header = &HttpRequest::EmptyCB;
     settings.on_chunk_complete = &HttpRequest::EmptyCB;
     http_parser_init(&parser, HTTP_REQUEST);
-    parser.data = const_cast<HttpRequest *>(this);
 }
 
 int HttpRequest::Parse(evpp::Buffer * buf) {
+    parser.data = const_cast<HttpRequest *>(this);
     size_t parsed = http_parser_execute(&parser, &settings, buf->data(), buf->size());
     auto err = HTTP_PARSER_ERRNO(&parser);
     if (err != HPE_OK && err != HPE_PAUSED) {
         LOG_WARN << "http request header parsed failed, err=" << http_errno_name(err) << "," << http_errno_description(err);
         return err;
     }
-    buf->Retrieve(parsed + 1);
+    buf->Retrieve(parsed);
     return 0;
 }
 }

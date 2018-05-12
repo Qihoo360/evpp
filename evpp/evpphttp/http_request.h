@@ -57,6 +57,13 @@ private:
         field_value.swap(hr.field_value);
         parser = hr.parser;
         remote_ip.swap(hr.remote_ip);
+		field.swap(hr.field);
+		value.swap(hr.value);
+		url.swap(hr.url);
+		pre_state = hr.pre_state;
+		is_completed = hr.is_completed;
+		settings = hr.settings;
+		u = hr.u;
     }
     static int OnMessageBegin(http_parser *p) {
         return 0;
