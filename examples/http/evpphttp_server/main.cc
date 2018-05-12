@@ -37,14 +37,14 @@ int main(int argc, char* argv[]) {
     } else if (argc == 3) {
         g_port = atoi(argv[1]);
         thread_num = atoi(argv[2]);
-    }
-    evpp::evpphttp::Service server(std::string("127.0.0.1:") + std::to_string(g_port), "test", thread_num);
+    } 
+    evpp::evpphttp::Service server(std::string("0.0.0.0:") + std::to_string(g_port), "test", thread_num);
     server.RegisterHandler("/echo", &DefaultHandler);
     if (!server.Start()) {
 		std::cout << "start serv failed\n";
 		return -1;
 	}
-	std::cout << "start serv on 127.0.0.1:" << g_port << " suc\n";
+	std::cout << "start serv on 0.0.0.0:" << g_port << " suc\n";
     while (!server.IsStopped()) {
         usleep(1);
     }

@@ -1,4 +1,5 @@
 #include "service.h"
+#include "evpp/libevent.h"
 namespace evpp {
 namespace evpphttp {
 Service::Service(const std::string& listen_addr, const std::string& name, uint32_t thread_num):listen_addr_(listen_addr), name_(name), thread_num_(thread_num) {
@@ -72,13 +73,19 @@ int Service::RequestHandler(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, Htt
         }
         return 0;
     }
+    //continue
+    auto expect = hr.field_value.find("Expect");
+    if (expect != hr.field_value.end() && evutil_ascii_strcasecmp(expect->first.data(), "100-continue")) {
+        HttpResponse resp(hr);
+        resp.SendReply(conn, 100/*CONTINUE*/, empty_field_value, "");
+    }
     return 1; //need recv more data
 }
 
 
 void Service::OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
     int ret = 0;
-    //LOG_WARN << "recv message:" << buf->ToString();
+    //LOG_TRACE << "recv message:" << buf->ToString();
     if (!conn->context().IsEmpty()) {
         auto context = conn->context();
         HttpRequest *hr = context.Get<HttpRequest *>();

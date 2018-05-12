@@ -69,7 +69,7 @@ void HttpResponse::MakeHttpResponse(const int response_code, const int64_t body_
         buf.Append("Content-Type:text/html; charset=ISO-8859-1\r\n");
     }
     auto conn_iter = header_field_value.find("Connection");
-    if (!keep_alive_ && conn_iter == header_field_value.end()) {
+    if (!keep_alive_ && conn_iter == header_field_value.end() && response_code != 100/*continue*/) {
         buf.Append("Connection:close\r\n");
     }
     if (conn_iter != header_field_value.end()) {
@@ -97,7 +97,7 @@ void HttpResponse::SendReply(const evpp::TCPConnPtr& conn, const int response_co
         conn->Send(response_body);
         //buf.Append(response_body);
     }
-    if (!keep_alive_) {
+    if (!keep_alive_ && response_code != 100) {
         conn->Close();
     }
 }
