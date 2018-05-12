@@ -16,7 +16,7 @@ public:
     ~Service();
     void Stop();
     bool Start(const ConnectionCallback& cb = [](const TCPConnPtr& conn) {
-        conn->SetTCPNoDelay(false);
+        conn->SetTCPNoDelay(true);
     });
     void RegisterHandler(const std::string& uri, const HTTPRequestCallback& callback);
     inline bool IsStopped() const {
