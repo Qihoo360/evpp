@@ -79,15 +79,17 @@ int Service::RequestHandler(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, Htt
 
 void Service::OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
     int ret = 0;
-    //LOG_TRACE << "recv message:" << buf->ToString();
+    //LOG_WARN << "recv message:" << buf->ToString();
     if (!conn->context().IsEmpty()) {
         auto context = conn->context();
         HttpRequest *hr = context.Get<HttpRequest *>();
         ret = RequestHandler(conn, buf, *hr);
-        delete hr;
         if (ret != 0) {
             return;
         }
+        delete hr;
+		Any empty;
+		conn->set_context(empty);
     }
     while (buf->size() > 0) {
         HttpRequest hr;
