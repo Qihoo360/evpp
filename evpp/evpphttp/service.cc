@@ -88,8 +88,8 @@ void Service::OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
             return;
         }
         delete hr;
-		Any empty;
-		conn->set_context(empty);
+        Any empty;
+        conn->set_context(empty);
     }
     while (buf->size() > 0) {
         HttpRequest hr;

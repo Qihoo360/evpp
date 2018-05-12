@@ -93,6 +93,7 @@ void HttpResponse::SendReply(const evpp::TCPConnPtr& conn, const int response_co
     conn->Send(&buf);
     if (response_body.size() > 0) {
         conn->Send(response_body);
+        //buf.Append(response_body);
     }
     if (!keep_alive_) {
         conn->Close();
