@@ -49,7 +49,8 @@ void HttpResponse::MakeHttpResponse(const int response_code, const int64_t body_
     buf.Append(response_code_iter->second);
     buf.Append("\r\n");
     if (response_code == 400) { //Bad request
-		keep_alive_ = false;
+        buf.Append("\r\n");
+        keep_alive_ = false;
         return;
     }
     if (hp_.http_major == 1) {
