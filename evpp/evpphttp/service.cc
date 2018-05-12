@@ -55,7 +55,6 @@ int Service::RequestHandler(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, Htt
     if (hr.Parse(buf) != 0) {
         HttpResponse resp(hr);
         resp.SendReply(conn, 400/*bad request*/, empty_field_value, "");
-        conn->Close();
         return -1;
     }
     if (hr.completed()) {
