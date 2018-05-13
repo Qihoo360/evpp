@@ -45,6 +45,12 @@ public:
     void set_remote_ip(const std::string& ip) {
         remote_ip.assign(ip);
     }
+    inline bool is_send_continue() const {
+        return send_continue_;
+    }
+    inline void set_continue() {
+        send_continue_ = true;
+    }
 public:
     evpp::Buffer body;
     std::map<std::string, std::string> field_value;
@@ -63,6 +69,7 @@ private:
         pre_state = hr.pre_state;
         is_completed = hr.is_completed;
         settings = hr.settings;
+        send_continue_ = hr.send_continue_;
         u = hr.u;
     }
     static int OnMessageBegin(http_parser *p) {
@@ -135,6 +142,7 @@ private:
     std::string url;
     unsigned char pre_state{0};
     bool is_completed{false};
+    bool send_continue_{false};
     http_parser_settings settings;
     http_parser_url  u;
 };

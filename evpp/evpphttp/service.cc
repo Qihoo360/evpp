@@ -75,9 +75,10 @@ int Service::RequestHandler(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, Htt
     }
     //continue
     auto expect = hr.field_value.find("Expect");
-    if (expect != hr.field_value.end() && evutil_ascii_strcasecmp(expect->first.data(), "100-continue")) {
+    if (expect != hr.field_value.end() && !hr.is_send_continue() && evutil_ascii_strcasecmp(expect->first.data(), "100-continue")) {
         HttpResponse resp(hr);
         resp.SendReply(conn, 100/*CONTINUE*/, empty_field_value, "");
+		hr.set_continue();
     }
     return 1; //need recv more data
 }
