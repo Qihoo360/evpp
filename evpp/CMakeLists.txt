@@ -73,5 +73,6 @@ endif (UNIX)
 
 install (FILES ${evpp_PUBLIC_HEADERS} DESTINATION "include/evpp")
 install (FILES ${evpp_HTTP_PUBLIC_HEADERS} DESTINATION "include/evpp/http")
+install (FILES ${evpp_HTTP_PUBLIC_HEADERS} DESTINATION "include/evpp/evpphttp")
 install (FILES ${evpp_HTTPC_PUBLIC_HEADERS} DESTINATION "include/evpp/httpc")
 install (FILES ${evpp_UDP_PUBLIC_HEADERS} DESTINATION "include/evpp/udp")
