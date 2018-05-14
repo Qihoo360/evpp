@@ -3,6 +3,10 @@
 namespace evpp {
 namespace evpphttp {
 Service::Service(const std::string& listen_addr, const std::string& name, uint32_t thread_num):listen_addr_(listen_addr), name_(name), thread_num_(thread_num) {
+    default_callback_ = [](EventLoop* loop, HttpRequest& ctx, const HTTPSendResponseCallback& respcb) {
+        std::map<std::string, std::string> response_field_value;
+        respcb(404/*NOT FOUND*/, response_field_value, "");
+    };
 }
 
 bool Service::Start(const ConnectionCallback& cb) {
@@ -34,6 +38,11 @@ Service::~Service() {
     }
 }
 
+void Service::AfterFork() {
+	listen_loop_->AfterFork();
+	tcp_srv_->AfterFork();
+}
+
 void Service::Stop() {
     DLOG_TRACE << "http service is stopping";
     tcp_srv_->Stop();
@@ -62,14 +71,13 @@ int Service::RequestHandler(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, Htt
         auto path = std::move(hr.url_path());
         auto cb = callbacks_.find(path);
         HttpResponse resp(hr);
+        auto f = [conn, resp](const int response_code, const std::map<std::string, std::string>& response_field_value, const std::string& response_data) mutable {
+            resp.SendReply(conn, response_code, response_field_value, response_data);
+        };
         if (cb == callbacks_.end()) {
-            resp.SendReply(conn, 404/*NOT FOUND*/, empty_field_value, "");
+            default_callback_(conn->loop(), hr, f);
         } else {
-            cb->second(conn->loop(), hr,
-                       [conn, resp](const int response_code, const std::map<std::string, std::string>& response_field_value, const std::string& response_data) mutable
-            {
-                resp.SendReply(conn, response_code, response_field_value, response_data);
-            });
+            cb->second(conn->loop(), hr, f);
         }
         return 0;
     }
@@ -78,7 +86,7 @@ int Service::RequestHandler(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, Htt
     if (expect != hr.field_value.end() && !hr.is_send_continue() && evutil_ascii_strcasecmp(expect->first.data(), "100-continue")) {
         HttpResponse resp(hr);
         resp.SendReply(conn, 100/*CONTINUE*/, empty_field_value, "");
-		hr.set_continue();
+        hr.set_continue();
     }
     return 1; //need recv more data
 }

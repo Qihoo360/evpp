@@ -23,6 +23,12 @@ public:
         return is_stopped_;
     }
 
+    inline void set_default_cb(const HTTPRequestCallback& cb) {
+        default_callback_ = cb;
+    }
+
+	void AfterFork();
+
 private:
     int RequestHandler(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, HttpRequest& hr);
     void OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf);
@@ -33,6 +39,7 @@ private:
     EventLoop* listen_loop_{nullptr};
     TCPServer* tcp_srv_{nullptr};
     std::thread * listen_thr_;
+    HTTPRequestCallback default_callback_;
     HTTPRequestCallbackMap callbacks_;
     bool is_stopped_{false};
 };
