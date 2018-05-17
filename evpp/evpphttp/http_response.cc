@@ -101,7 +101,6 @@ void HttpResponse::SendReply(const evpp::TCPConnPtr& conn, const int response_co
         SendContinue(conn);
         return;
     }
-    LOG_WARN << "response init use_count=" << conn.use_count();
     Buffer buf;
     MakeHttpResponse(response_code, response_body.size(), header_field_value, buf);
     conn->Send(&buf);
@@ -115,17 +114,13 @@ void HttpResponse::SendReply(const evpp::TCPConnPtr& conn, const int response_co
         if (chunked_) {
             conn->Send("\r\n");
         }
-        //buf.Append(response_body);
     }
-    LOG_WARN << "response before send conn use_count=" << conn.use_count();
     if (chunked_) {
         conn->Send("0\r\n\r\n");
     }
-    LOG_WARN << "response before close conn use_count=" << conn.use_count();
     if (close_) {
         conn->Close();
     }
-    LOG_WARN << "response after close conn use_count=" << conn.use_count();
 }
 }
 }
