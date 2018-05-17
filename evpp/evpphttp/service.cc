@@ -16,9 +16,9 @@ bool Service::Init(const ConnectionCallback& cb) {
     tcp_srv_->SetConnectionCallback(cb);
     tcp_srv_->SetMessageCallback(std::bind(&Service::OnMessage, this, std::placeholders::_1, std::placeholders::_2));
     if (!tcp_srv_->Init()) {
-		delete listen_loop_;
-		delete tcp_srv_;
-		is_stopped_ = true;
+        delete listen_loop_;
+        delete tcp_srv_;
+        is_stopped_ = true;
         LOG_WARN << "tcpserver on " << listen_addr_ << " init failed";
         return false;
     }
@@ -27,10 +27,10 @@ bool Service::Init(const ConnectionCallback& cb) {
 }
 
 bool Service::Start() {
-	if (is_stopped_) {
-		LOG_WARN << "init failed, so not to start";
-		return false;
-	}
+    if (is_stopped_) {
+        LOG_WARN << "init failed, so not to start";
+        return false;
+    }
     listen_thr_ = new std::thread([listen_loop = listen_loop_]() {
         listen_loop->Run();
     });
@@ -50,7 +50,7 @@ Service::~Service() {
 }
 
 void Service::AfterFork() {
-	listen_loop_->AfterFork();
+    listen_loop_->AfterFork();
 }
 
 void Service::Stop() {
@@ -104,7 +104,7 @@ int Service::RequestHandler(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, Htt
 
 void Service::OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
     int ret = 0;
-    //LOG_WARN << "recv message:" << buf->ToString();
+    //LOG_TRACE << "recv message:" << buf->ToString();
     if (!conn->context().IsEmpty()) {
         auto context = conn->context();
         HttpRequest *hr = context.Get<HttpRequest *>();

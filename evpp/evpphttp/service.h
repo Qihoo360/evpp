@@ -15,9 +15,10 @@ public:
     Service(const std::string& listen_addr, const std::string& name, uint32_t thread_num);
     ~Service();
     void Stop();
-    bool Start(const ConnectionCallback& cb = [](const TCPConnPtr& conn) {
+    bool Init(const ConnectionCallback& cb = [](const TCPConnPtr& conn) {
         conn->SetTCPNoDelay(true);
     });
+    bool Start();
     void RegisterHandler(const std::string& uri, const HTTPRequestCallback& callback);
     inline bool IsStopped() const {
         return is_stopped_;
@@ -27,7 +28,7 @@ public:
         default_callback_ = cb;
     }
 
-	void AfterFork();
+    void AfterFork();
 
 private:
     int RequestHandler(const evpp::TCPConnPtr& conn, evpp::Buffer* buf, HttpRequest& hr);

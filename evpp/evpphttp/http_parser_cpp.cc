@@ -1515,11 +1515,11 @@ reexecute_byte:
 
                     // fast-forwarding, wheeeeeee!
 #define MOVE_THE_HEAD do { \
-    ++p;                     \
-    if (!TOKEN(*p)) {        \
-      ch = *p;               \
-      goto notatoken;        \
-    }                        \
+++p;                     \
+if (!TOKEN(*p)) {        \
+  ch = *p;               \
+  goto notatoken;        \
+}                        \
   } while(0);
 
                     if (data + len - p >= 9) {
@@ -1717,8 +1717,8 @@ cr_or_lf_or_qt:
   ++p;                                    \
   ch = *p;                                \
   if (ch == CR || ch == LF || ch == QT || \
-      ch == BS || !IS_HEADER_CHAR(ch)) {  \
-    goto cr_or_lf_or_qt;                  \
+  ch == BS || !IS_HEADER_CHAR(ch)) {  \
+goto cr_or_lf_or_qt;                  \
   }                                       \
 } while(0);
 
