@@ -34,12 +34,12 @@ InvokeTimer::~InvokeTimer() {
 void InvokeTimer::Start() {
     DLOG_TRACE << "loop=" << loop_ << " refcount=" << self_.use_count();
     auto f = [this]() {
-		timer_.reset(new TimerEventWatcher(loop_, [time_weak = std::weak_ptr<InvokeTimer>(shared_from_this())]() {
+        timer_.reset(new TimerEventWatcher(loop_, [time_weak = std::weak_ptr<InvokeTimer>(shared_from_this())]() {
             auto time_ptr = time_weak.lock();
             if (time_ptr) {
                 time_ptr->OnTimerTriggered();
             }
-		}, timeout_));
+        }, timeout_));
 
         timer_->SetCancelCallback([time_weak = std::weak_ptr<InvokeTimer>(shared_from_this())]() {
             auto time_ptr = time_weak.lock();
@@ -56,13 +56,13 @@ void InvokeTimer::Start() {
 
 void InvokeTimer::Cancel() {
     DLOG_TRACE;
-	auto f = [time_weak = std::weak_ptr<InvokeTimer>(shared_from_this())]() {
-		auto time_ptr = time_weak.lock();
-		if (time_ptr && time_ptr->timer_) {
-			time_ptr->timer_->Cancel();
-		}
-	};
-	loop_->RunInLoop(std::move(f));
+    auto f = [time_weak = std::weak_ptr<InvokeTimer>(shared_from_this())]() {
+        auto time_ptr = time_weak.lock();
+        if (time_ptr && time_ptr->timer_) {
+            time_ptr->timer_->Cancel();
+        }
+    };
+    loop_->RunInLoop(std::move(f));
 }
 
 void InvokeTimer::OnTimerTriggered() {
