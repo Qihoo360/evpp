@@ -47,6 +47,9 @@ Service::~Service() {
     if (!is_stopped_) {
         Stop();
     }
+    delete listen_thr_;
+    delete listen_loop_;
+    delete tcp_srv_;
 }
 
 void Service::AfterFork() {
@@ -57,10 +60,7 @@ void Service::Stop() {
     DLOG_TRACE << "http service is stopping";
     tcp_srv_->Stop();
     listen_loop_->Stop();
-    listen_thr_->join();
-    delete listen_thr_;
-    delete listen_loop_;
-    delete tcp_srv_;
+    //listen_thr_->join();
     callbacks_.clear();
     DLOG_TRACE << "http service stopped";
     is_stopped_ = true;
