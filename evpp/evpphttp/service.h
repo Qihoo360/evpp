@@ -39,7 +39,7 @@ private:
     const int thread_num_;
     EventLoop* listen_loop_{nullptr};
     TCPServer* tcp_srv_{nullptr};
-    std::thread * listen_thr_;
+    std::thread * listen_thr_{nullptr};
     HTTPRequestCallback default_callback_;
     HTTPRequestCallbackMap callbacks_;
     bool is_stopped_{false};
