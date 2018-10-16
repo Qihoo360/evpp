@@ -114,3 +114,23 @@ TEST_UNIT(testTCPClientConnectLocalhost) {
 
 
 
+TEST_UNIT(TestTCPClientDisconnectImmediatelyIssue172) {
+    const std::string strAddr = "qup.f.360.cn:80";
+    evpp::EventLoop loop;
+    evpp::TCPClient client(&loop, strAddr, "TestClient");
+    client.SetConnectionCallback([&loop, &client](const evpp::TCPConnPtr& conn) {
+        if (conn->IsConnected()) {
+            auto f = [&]() {
+                client.Disconnect();
+                loop.Stop();
+            };
+            loop.RunAfter(evpp::Duration(1.0), f);
+        }
+    }
+    );
+    client.SetMessageCallback([](const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
+        std::string strMsg = buf->NextAllString();
+                              });
+    client.Connect();
+    loop.Run();
+}
