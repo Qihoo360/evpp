@@ -103,7 +103,7 @@ std::string Client::DoRequest(const std::string& remote_ip, int port, const std:
 bool Client::Send(const char* msg, size_t len) {
     if (connected_) {
         int sentn = ::send(sockfd(), msg, len, 0);
-        return sentn == len;
+        return static_cast<size_t>(sentn) == len;
     }
 
     struct sockaddr* addr = reinterpret_cast<struct sockaddr*>(&remote_addr_);
