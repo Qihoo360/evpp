@@ -7,6 +7,8 @@
 
 #include "evpp/thread_dispatch_policy.h"
 #include "evpp/server_status.h"
+#include "evpp/slice.h"
+#include "evpp/buffer.h"
 
 #include <map>
 
@@ -79,6 +81,9 @@ public:
     // @brief Reinitialize some data fields after a fork
     void AfterFork();
 
+    void SendTo(uint64_t conn_id, const void* d, size_t dlen);
+    void SendTo(uint64_t conn_id, const Slice& message);
+    void SendTo(uint64_t conn_id, const std::string& d);
 public:
     // Set a connection event relative callback when the TCPServer
     // receives a new connection or an exist connection breaks down.
@@ -104,6 +109,9 @@ private:
     void RemoveConnection(const TCPConnPtr& conn);
     void HandleNewConn(evpp_socket_t sockfd, const std::string& remote_addr/*ip:port*/, const struct sockaddr_in* raddr);
     EventLoop* GetNextLoop(const struct sockaddr_in* raddr);
+
+    void SendToInLoop(uint64_t conn_id, const Slice& message);
+    void SendToStringInLoop(uint64_t conn_id, const std::string& message);
 private:
     EventLoop* loop_;  // the listening loop
     const std::string listen_addr_; // ip:port

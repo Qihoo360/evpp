@@ -186,4 +186,54 @@ void TCPServer::RemoveConnection(const TCPConnPtr& conn) {
     loop_->RunInLoop(f);
 }
 
+
+void TCPServer::SendTo(uint64_t conn_id, const void* d, size_t dlen) {
+    SendTo(conn_id, Slice(static_cast<const char*>(d),dlen));
+}
+
+void TCPServer::SendTo(uint64_t conn_id, const Slice& message) {
+    if (loop_->IsInLoopThread()) {
+        this->SendToInLoop(conn_id, message);
+    }
+    else {
+        loop_->RunInLoop(std::bind(TCPServer::SendToInLoop, this, conn_id, message));
+    }
+}
+
+void TCPServer::SendTo(uint64_t conn_id, const std::string& d) {
+    if (loop_->IsInLoopThread()) {
+        this->SendToStringInLoop(conn_id, d);
+    }
+    else {
+        loop_->RunInLoop(std::bind(TCPServer::SendToStringInLoop, this, conn_id, d));
+    }
+}
+
+
+void TCPServer::SendToInLoop(uint64_t conn_id, const Slice& message) {
+    assert(loop_->IsInLoopThread());
+    auto it = connections_.find(conn_id);
+    if (it == connections_.end()) {
+        DLOG_WARN << "SendToInLoop not find id = " << conn_id;
+    }
+    else {
+        TCPConnPtr conn = it->second;
+        conn->Send(message);
+    }
+}
+    
+    
+void TCPServer::SendToStringInLoop(uint64_t conn_id, const std::string& message) {
+    assert(loop_->IsInLoopThread());
+    auto it = connections_.find(conn_id);
+    if (it == connections_.end()) {
+        DLOG_WARN << "SendToInLoop not find id = " << conn_id;
+    }
+    else {
+        TCPConnPtr conn = it->second;
+        conn->Send(message);
+    }    
+}
+
+
 }
