@@ -22,12 +22,15 @@ TCPConn::TCPConn(EventLoop* l,
     , local_addr_(laddr)
     , remote_addr_(raddr)
     , type_(kIncoming)
-    , status_(kDisconnected) {
+    , status_(kDisconnected)
+    , last_active_() {
     if (sockfd >= 0) {
         chan_.reset(new FdChannel(l, sockfd, false, false));
         chan_->SetReadCallback(std::bind(&TCPConn::HandleRead, this));
         chan_->SetWriteCallback(std::bind(&TCPConn::HandleWrite, this));
     }
+
+    last_active_ = Timestamp::Now();
 
     DLOG_TRACE << "TCPConn::[" << name_ << "] channel=" << chan_.get() << " fd=" << sockfd << " addr=" << AddrToString();
 }
@@ -174,6 +177,7 @@ void TCPConn::SendInLoop(const void* data, size_t len) {
 
 void TCPConn::HandleRead() {
     assert(loop_->IsInLoopThread());
+    last_active_ = Timestamp::Now();
     int serrno = 0;
     ssize_t n = input_buffer_.ReadFromFD(chan_->fd(), &serrno);
     if (n > 0) {
@@ -212,6 +216,8 @@ void TCPConn::HandleRead() {
 void TCPConn::HandleWrite() {
     assert(loop_->IsInLoopThread());
     assert(!chan_->attached() || chan_->IsWritable());
+
+    last_active_ = Timestamp::Now();
 
     ssize_t n = ::send(fd_, output_buffer_.data(), output_buffer_.length(), MSG_NOSIGNAL);
     if (n > 0) {

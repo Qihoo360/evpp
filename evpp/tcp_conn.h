@@ -8,6 +8,7 @@
 #include "evpp/slice.h"
 #include "evpp/any.h"
 #include "evpp/duration.h"
+#include "evpp/timestamp.h"
 
 namespace evpp {
 
@@ -107,6 +108,10 @@ public:
         }
     }
 
+    evpp::Timestamp LastActive() const {
+        return last_active_;
+    }
+
     // @brief When it is an incoming connection, we need to preserve the
     //  connection for a while so that we can reply to it. And we set a timer
     //  to close the connection eventually.
@@ -170,7 +175,7 @@ private:
     std::string remote_addr_; // the remote address with form : "ip:port"
     std::unique_ptr<FdChannel> chan_;
     Buffer input_buffer_;
-    Buffer output_buffer_; // TODO use a list<Slice> ??
+    Buffer output_buffer_; // TODO use a list<Slice> ??    
 
     enum { kContextCount = 16, };
     Any context_[kContextCount];
@@ -188,5 +193,7 @@ private:
     WriteCompleteCallback write_complete_fn_; // This will be called to the user application layer
     HighWaterMarkCallback high_water_mark_fn_; // This will be called to the user application layer
     CloseCallback close_fn_; // This will be called to TCPClient or TCPServer
+
+    evpp::Timestamp last_active_;
 };
 }
