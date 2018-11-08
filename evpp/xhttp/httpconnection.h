@@ -34,7 +34,7 @@ namespace xhttp {
 
         ~HttpConnection();
 
-        int getSockFd() { return m_fd; }
+        //int getSockFd() { return m_fd; }
 
         void send(HttpResponse& resp);
         void send(int statusCode);
@@ -71,8 +71,7 @@ namespace xhttp {
         
     private:
         std::weak_ptr<evpp::TCPConn> m_conn;
-        int m_fd;
-        
+         
         HttpRequest m_request;    
     
         RequestCallback_t m_callback;

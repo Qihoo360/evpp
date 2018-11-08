@@ -21,16 +21,16 @@ namespace xhttp {
     HttpConnection::HttpConnection(const evpp::TCPConnPtr& conn, const RequestCallback_t& callback)
         : HttpParser(HTTP_REQUEST)
         , m_conn(conn)
-        , m_fd(0)
         , m_callback(callback)
 
     {
-        m_fd = conn->fd();
         m_sendCallback = std::bind(&dummyCallback);
+        std::cout << "HttpConnection::HttpConnection" << std::endl;
     }
 
     HttpConnection::~HttpConnection()
     {
+        std::cout << "httpconnection destroyed" << std::endl;
         DLOG_TRACE << "httpconnection destroyed";
     }
 
@@ -196,7 +196,6 @@ namespace xhttp {
 
     int HttpConnection::onUpgrade(const char* at, size_t length)
     {
-        //StackBuffer buffer(at, length);
         evpp::Buffer buffer;
         buffer.Write(at, length);
         m_callback(shared_from_this(), m_request, Request_Upgrade, &buffer);
