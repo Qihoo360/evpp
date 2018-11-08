@@ -14,38 +14,41 @@ extern "C"
 namespace evpp
 {
 namespace xhttp {
-    class HttpRequest
-    {
-    public:
-        HttpRequest();
-        ~HttpRequest();
+class HttpRequest
+{
+public:
+    HttpRequest();
+    ~HttpRequest();
 
-        void clear();
-        void parseUrl();
-        std::string dump();
+    void clear();
+    void parseUrl();
+    std::string dump();
 
-        std::string url;
-        std::string body;
+    std::string url;    
 
-        std::string schema;
-        
-        std::string host;
-        std::string path;
-        std::string query;
+    std::string schema;
+    
+    std::string host;
+    std::string path;
+    std::string query;
 
-        Headers_t headers;
+    Headers_t headers;
 
-        Params_t params;
-        
-        unsigned short majorVersion;
-        unsigned short minorVersion;
+    Params_t params;
+    
+    unsigned short majorVersion;
+    unsigned short minorVersion;
 
-        http_method method;
+    http_method method;
 
-        uint16_t port;
+    uint16_t port;
 
-        void parseQuery();
-    };
+    void parseQuery();
+
+    // TODO: replace to evpp::Buffer;
+    std::string body;
+
+};
         
 }
 

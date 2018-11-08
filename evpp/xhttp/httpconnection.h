@@ -28,7 +28,7 @@ namespace xhttp {
     public:
         friend class HttpServer;
 
-        typedef std::function<void (HttpConnectionPtr_t, const HttpRequest&, RequestEvent, const void*)> RequestCallback_t;
+        typedef std::function<void (HttpConnectionPtr_t, const HttpRequest&, RequestEvent, void*)> RequestCallback_t;
         
         HttpConnection(const evpp::TCPConnPtr& conn, const RequestCallback_t& callback);
 
@@ -69,7 +69,7 @@ namespace xhttp {
         int onBody(const char* at, size_t length);
         int onMessageComplete();
         int onUpgrade(const char* at, size_t length);
-        int onError(const HttpError& error);
+        int onError(HttpError& error);
 
         void onTcpWriteComplete(const TCPConnPtr&);        
     private:

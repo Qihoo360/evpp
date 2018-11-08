@@ -47,7 +47,7 @@ namespace xhttp {
         void onTcpConnectionCallback(const TCPConnPtr& conn);
         void onTcpMessageCallback(const TCPConnPtr&, evpp::Buffer*);
 
-        void onRequest(const HttpConnectionPtr_t& conn, const HttpRequest& request, RequestEvent event, const void* context);
+        void onRequest(const HttpConnectionPtr_t& conn, const HttpRequest& request, RequestEvent event, void* context);
 
         void onHttpRequestError(const HttpConnectionPtr_t& conn, const HttpRequest& request, const HttpError& error);
         void onWebSocket(const HttpConnectionPtr_t& conn, const HttpRequest& request, evpp::Buffer* buffer);

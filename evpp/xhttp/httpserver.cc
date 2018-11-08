@@ -14,7 +14,7 @@
 
 
 
-using namespace std;
+using std::string;
 
 using namespace evpp;
 
@@ -110,19 +110,19 @@ namespace xhttp {
         }
     }
 
-    void HttpServer::onRequest(const HttpConnectionPtr_t& conn, const HttpRequest& request, RequestEvent event, const void* context) {
+    void HttpServer::onRequest(const HttpConnectionPtr_t& conn, const HttpRequest& request, RequestEvent event, void* context) {
 
         switch(event)
         {
             case Request_Upgrade:
-                onWebSocket(conn, request, (evpp::Buffer*) context);
+                onWebSocket(conn, request, static_cast<evpp::Buffer*>(context));
                 break;
             case Request_Error:
                 onHttpRequestError(conn, request, *(HttpError*)context);
                 break;
             case Request_Complete:
                 {
-                    map<string, HttpCallback_t>::iterator iter = m_httpCallbacks.find(request.path);
+                    std::map<string, HttpCallback_t>::iterator iter = m_httpCallbacks.find(request.path);
                     if(iter == m_httpCallbacks.end())
                     {
                         m_defaultCallback(conn, request);

@@ -137,7 +137,7 @@ namespace evpp
 
         uint8_t* dest = (uint8_t*)&str[0];
         
-        if(base64_encode(dest, &destLen, (uint8_t*)src.data(), src.size()) != 0)
+        if(base64_encode(dest, &destLen, (const uint8_t*)src.data(), src.size()) != 0)
         {
             return "";    
         }
@@ -154,7 +154,7 @@ namespace evpp
 
         uint8_t* dest = (uint8_t*)&str[0];
         
-        if(base64_decode(dest, &destLen, (uint8_t*)src.data(), src.size()) != 0)
+        if(base64_decode(dest, &destLen, (const uint8_t*)src.data(), src.size()) != 0)
         {
             return "";    
         }

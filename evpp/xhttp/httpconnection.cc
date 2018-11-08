@@ -183,7 +183,7 @@ namespace xhttp {
         return 0;    
     }
 
-    int HttpConnection::onError(const HttpError& error)
+    int HttpConnection::onError(HttpError& error)
     {
         m_callback(shared_from_this(), m_request, Request_Error, (void *)&error);
         return 0;    

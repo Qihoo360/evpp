@@ -32,9 +32,12 @@ namespace xhttp {
         std::string dump();
    
         int statusCode;
-        std::string body;
+
         
         Headers_t headers;
+
+        // TODO: replace to evpp::Buffer
+        std::string body;        
     };
     
 }

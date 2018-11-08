@@ -16,10 +16,10 @@ namespace xhttp {
     {
     }
 
-    HttpResponse::HttpResponse(int code, const Headers_t& headers, const string& body)
+    HttpResponse::HttpResponse(int code, const Headers_t& resp_headers, const string& resp_body)
         : statusCode(code)
-        , body(body)
-        , headers(headers)
+        , headers(resp_headers)        
+        , body(resp_body)
     {
         
     }
