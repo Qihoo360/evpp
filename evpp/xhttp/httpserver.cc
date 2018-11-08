@@ -46,7 +46,8 @@ namespace xhttp {
     , m_server(nullptr)
     , m_serverName(name)
     , m_listenAddr(listen_addr)
-    , m_threadNum(thread_num)  {
+    , m_threadNum(thread_num)
+    , m_defaultCallback(httpNotFoundCallback)  {
 
     }
    
@@ -120,7 +121,8 @@ namespace xhttp {
                     map<string, HttpCallback_t>::iterator iter = m_httpCallbacks.find(request.path);
                     if(iter == m_httpCallbacks.end())
                     {
-                        httpNotFoundCallback(conn, request); 
+                        //httpNotFoundCallback(conn, request); 
+                        m_defaultCallback(conn, request);
                     }
                     else
                     {
@@ -137,6 +139,14 @@ namespace xhttp {
         }
     }
 
+    void HttpServer::setHttpDefaultCallback(const HttpCallback_t& callback) {
+        if (callback) {
+            m_defaultCallback = callback;
+        }
+        else {
+            m_defaultCallback = httpNotFoundCallback;
+        }
+    }
 
 }
 }

@@ -28,6 +28,14 @@ int main(int argc, char const *argv[])
 
         conn->send(resp);
     });
+
+    httpServer.setHttpDefaultCallback([](const HttpConnectionPtr_t& conn, const HttpRequest& req) {
+        HttpResponse resp(200);
+        resp.body = "Wellcome here.";
+
+        conn->send(resp);        
+    });
+
     httpServer.Init();
     httpServer.Start();
 

@@ -41,7 +41,7 @@ namespace xhttp {
         bool Stop();
     
         void setHttpCallback(const std::string& path, const HttpCallback_t& callback);
-    
+        void setHttpDefaultCallback(const HttpCallback_t& callback);
     private:
         void onTcpConnectionCallback(const TCPConnPtr& conn);
         void onTcpMessageCallback(const TCPConnPtr&, evpp::Buffer*);
@@ -55,7 +55,8 @@ namespace xhttp {
         std::string m_listenAddr;
         int m_threadNum;
     
-        std::map<std::string, HttpCallback_t> m_httpCallbacks;        
+        std::map<std::string, HttpCallback_t> m_httpCallbacks;  
+        HttpCallback_t m_defaultCallback;      
 
     };
     
