@@ -7,6 +7,7 @@ file(GLOB evpp_HTTP_PUBLIC_HEADERS http/*.h)
 file(GLOB evpp_HTTPC_PUBLIC_HEADERS httpc/*.h)
 file(GLOB evpp_UDP_PUBLIC_HEADERS udp/*.h)
 file(GLOB evpp_POLARSSL_PUBLIC_HEADERS polarssl/*.h)
+file(GLOB evpp_XHTTP_PUBLIC_HEADERS xhttp/*.h)
 
 message(STATUS "evpp_SRCS : " ${evpp_SRCS})
 
@@ -77,3 +78,5 @@ install (FILES ${evpp_HTTP_PUBLIC_HEADERS} DESTINATION "include/evpp/http")
 install (FILES ${evpp_HTTPC_PUBLIC_HEADERS} DESTINATION "include/evpp/httpc")
 install (FILES ${evpp_UDP_PUBLIC_HEADERS} DESTINATION "include/evpp/udp")
 install (FILES ${evpp_POLARSSL_PUBLIC_HEADERS} DESTINATION "include/evpp/polarssl")
+install (FILES ${evpp_XHTTP_PUBLIC_HEADERS} DESTINATION "include/evpp/xhttp")
+
