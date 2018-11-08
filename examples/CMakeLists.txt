@@ -67,3 +67,6 @@ target_link_libraries(example_signal01 ${LIBRARIES})
 
 add_executable(example_signal02 signal/signal02.cc)
 target_link_libraries(example_signal02 ${LIBRARIES})
+
+add_executable(example_xhttp_server xhttp/xhttp_server.cc)
+target_link_libraries(example_xhttp_server ${LIBRARIES})

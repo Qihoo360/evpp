@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "system_error": "cpp"
-    }
+    },
+    "C_Cpp.default.configurationProvider": "vector-of-bool.cmake-tools"
 }
