@@ -107,8 +107,6 @@ namespace xhttp {
 
     void HttpServer::onRequest(const HttpConnectionPtr_t& conn, const HttpRequest& request, RequestEvent event, const void* context) {
 
-        std::cout << "TEST: HttpServer::onRequest" << std::endl;
-
         switch(event)
         {
             case Request_Upgrade:

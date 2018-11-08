@@ -191,8 +191,8 @@ namespace xhttp {
         auto iter = headers.cbegin();
         while(iter != headers.cend())
         {
-            int n = snprintf(buf, sizeof(buf), "%s: %s\r\n", iter->first.c_str(), iter->second.c_str());
-            str.append(buf, n);
+            int mm = snprintf(buf, sizeof(buf), "%s: %s\r\n", iter->first.c_str(), iter->second.c_str());
+            str.append(buf, mm);
             ++iter;    
         }
 
