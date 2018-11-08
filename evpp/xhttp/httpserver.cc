@@ -103,7 +103,11 @@ namespace xhttp {
     
     void HttpServer::onTcpMessageCallback(const TCPConnPtr& conn, evpp::Buffer* buffer) {
         HttpConnectionPtr_t httpConn = evpp::any_cast<HttpConnectionPtr_t>(conn->context());
-        httpConn->onDataReceived(conn, buffer);
+        if (httpConn)
+            httpConn->onDataReceived(conn, buffer);
+        else {
+            LOG_ERROR << "HttpServer OnData Not HttpConnection?";
+        }
     }
 
     void HttpServer::onRequest(const HttpConnectionPtr_t& conn, const HttpRequest& request, RequestEvent event, const void* context) {
@@ -111,17 +115,16 @@ namespace xhttp {
         switch(event)
         {
             case Request_Upgrade:
-                //onWebsocket(conn, request, context);
+                onWebSocket(conn, request, (evpp::Buffer*) context);
                 break;
             case Request_Error:
-                //onError(conn, *(HttpError*)context);
+                onHttpRequestError(conn, request, *(HttpError*)context);
                 break;
             case Request_Complete:
                 {
                     map<string, HttpCallback_t>::iterator iter = m_httpCallbacks.find(request.path);
                     if(iter == m_httpCallbacks.end())
                     {
-                        //httpNotFoundCallback(conn, request); 
                         m_defaultCallback(conn, request);
                     }
                     else
@@ -137,6 +140,16 @@ namespace xhttp {
                 LOG_ERROR << "invalid request event" << event;
                 break;
         }
+    }
+
+    void HttpServer::onHttpRequestError(const HttpConnectionPtr_t& conn, const HttpRequest& request, const HttpError& error) {
+        conn->send(error.statusCode, error.message);
+        conn->shutDown(1000);
+    }
+
+
+    void HttpServer::onWebSocket(const HttpConnectionPtr_t& conn, const HttpRequest& request, evpp::Buffer* buffer) {
+
     }
 
     void HttpServer::setHttpDefaultCallback(const HttpCallback_t& callback) {

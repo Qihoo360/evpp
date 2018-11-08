@@ -56,9 +56,12 @@ namespace xhttp {
 
         static void setMaxHeaderSize(size_t size) { ms_maxHeaderSize = size; }
         static void setMaxBodySize(size_t size) { ms_maxBodySize = size; }
+        
+    protected:
 
         void onDataReceived(const TCPConnPtr& conn, evpp::Buffer* buffer);
     private:
+        // http parser
         int onMessageBegin();
         int onUrl(const char* at, size_t length);
         int onHeader(const std::string& field, const std::string& value);
@@ -68,7 +71,7 @@ namespace xhttp {
         int onUpgrade(const char* at, size_t length);
         int onError(const HttpError& error);
 
-        
+        void onTcpWriteComplete(const TCPConnPtr&);        
     private:
         std::weak_ptr<evpp::TCPConn> m_conn;
          

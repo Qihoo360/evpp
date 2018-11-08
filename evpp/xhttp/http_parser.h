@@ -53,7 +53,7 @@ typedef unsigned __int64 uint64_t;
 #endif
 
 /* Maximium header size allowed */
-#define HTTP_MAX_HEADER_SIZE (80*1024)
+#define HTTP_MAX_HEADER_SIZE (256*1024)
 
 
 typedef struct http_parser http_parser;

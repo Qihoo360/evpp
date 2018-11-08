@@ -19,6 +19,7 @@ namespace evpp
 {
 class EventLoop;
 class TCPServer;
+class Buffer;
 
 
 namespace xhttp { 
@@ -42,12 +43,14 @@ namespace xhttp {
     
         void setHttpCallback(const std::string& path, const HttpCallback_t& callback);
         void setHttpDefaultCallback(const HttpCallback_t& callback);
-    private:
+    protected:
         void onTcpConnectionCallback(const TCPConnPtr& conn);
         void onTcpMessageCallback(const TCPConnPtr&, evpp::Buffer*);
 
         void onRequest(const HttpConnectionPtr_t& conn, const HttpRequest& request, RequestEvent event, const void* context);
 
+        void onHttpRequestError(const HttpConnectionPtr_t& conn, const HttpRequest& request, const HttpError& error);
+        void onWebSocket(const HttpConnectionPtr_t& conn, const HttpRequest& request, evpp::Buffer* buffer);
     private:
         evpp::EventLoop* m_loop;
         evpp::TCPServer* m_server;

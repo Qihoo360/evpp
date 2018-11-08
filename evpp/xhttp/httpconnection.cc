@@ -25,13 +25,12 @@ namespace xhttp {
 
     {
         m_sendCallback = std::bind(&dummyCallback);
-        std::cout << "HttpConnection::HttpConnection" << std::endl;
+        conn->SetWriteCompleteCallback(std::bind(&HttpConnection::onTcpWriteComplete, this, std::placeholders::_1));
     }
 
     HttpConnection::~HttpConnection()
     {
-        std::cout << "httpconnection destroyed" << std::endl;
-        DLOG_TRACE << "httpconnection destroyed";
+        
     }
 
     void HttpConnection::onDataReceived(const TCPConnPtr& conn, evpp::Buffer* buffer) {
@@ -39,29 +38,11 @@ namespace xhttp {
         buffer->Reset();
     }
 
-    // void HttpConnection::onConnEvent(const ConnectionPtr_t& conn, ConnEvent event, const void* context)
-    // {
-    //     HttpConnectionPtr_t httpConn = shared_from_this();
+    void HttpConnection::onTcpWriteComplete(const TCPConnPtr&) {
+        m_sendCallback();
+        m_sendCallback = std::bind(&dummyCallback);
+    }
 
-    //     switch(event)
-    //     {
-    //         case Conn_ReadEvent:
-    //             {
-    //                 const StackBuffer* buf = (const StackBuffer*)context;
-                    
-    //                 execute(buf->buffer, buf->count);    
-    //             }
-    //             break;   
-    //         case Conn_WriteCompleteEvent:
-    //             {
-    //                 m_sendCallback();
-    //                 m_sendCallback = std::bind(&dummyCallback);
-    //             }
-    //             break;
-    //         default:
-    //             break; 
-    //     }    
-    // }
 
     void HttpConnection::shutDown(int after)
     {
