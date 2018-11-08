@@ -86,6 +86,7 @@ namespace xhttp {
     //Response_Complete: context is 0
     //Response_Error: context is &HttpError
 
+    typedef std::function<void (void)> Callback_t;
     typedef std::function<void (const HttpConnectionPtr_t&, const HttpRequest&)> HttpCallback_t;
     
     //Ws_OpenEvent: server side, context is &HttpRequest, client side, context is &HttpResponse
