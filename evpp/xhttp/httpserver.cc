@@ -47,7 +47,8 @@ namespace xhttp {
     , m_serverName(name)
     , m_listenAddr(listen_addr)
     , m_threadNum(thread_num)
-    , m_defaultCallback(httpNotFoundCallback)  {
+    , m_defaultCallback(httpNotFoundCallback)
+    , m_authCallbacks()  {
 
     }
    
@@ -120,17 +121,14 @@ namespace xhttp {
             case Request_Error:
                 onHttpRequestError(conn, request, *(HttpError*)context);
                 break;
-            case Request_Complete:
+            case Request_Complete: 
                 {
                     std::map<string, HttpCallback_t>::iterator iter = m_httpCallbacks.find(request.path);
-                    if(iter == m_httpCallbacks.end())
-                    {
+                    if(iter == m_httpCallbacks.end())  {
                         m_defaultCallback(conn, request);
                     }
-                    else
-                    {
-                        //if(authRequest(conn, request))
-                        { 
+                    else  {
+                        if(authRequest(conn, request)) { 
                             (iter->second)(conn, request);    
                         }
                     }
@@ -160,6 +158,29 @@ namespace xhttp {
             m_defaultCallback = httpNotFoundCallback;
         }
     }
+
+    void HttpServer::setHttpCallback(const std::string& path, const HttpCallback_t& callback, const AuthCallback_t& auth) {
+        setHttpCallback(path, callback);
+
+        m_authCallbacks[path] = auth;
+    }
+
+    bool HttpServer::authRequest(const HttpConnectionPtr_t& conn, const HttpRequest& request)
+    {
+        auto it = m_authCallbacks.find(request.path);
+        if(it == m_authCallbacks.end()) {
+            return true;
+        }
+
+        HttpError err = (it->second)(request);
+        if(err.statusCode != 200) {
+            onHttpRequestError(conn, request, err);
+            return false;
+        } 
+        else { 
+            return true;
+        }
+    }    
 
 }
 }

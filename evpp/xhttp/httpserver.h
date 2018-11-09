@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <map>
 
-#include <evpp/tcp_callbacks.h>
+#include "../tcp_callbacks.h"
 
 
 #include "xhttp.h"
@@ -43,6 +43,8 @@ namespace xhttp {
     
         void setHttpCallback(const std::string& path, const HttpCallback_t& callback);
         void setHttpDefaultCallback(const HttpCallback_t& callback);
+
+        void setHttpCallback(const std::string& path, const HttpCallback_t& callback, const AuthCallback_t& auth);
     protected:
         void onTcpConnectionCallback(const TCPConnPtr& conn);
         void onTcpMessageCallback(const TCPConnPtr&, evpp::Buffer*);
@@ -51,6 +53,8 @@ namespace xhttp {
 
         void onHttpRequestError(const HttpConnectionPtr_t& conn, const HttpRequest& request, const HttpError& error);
         void onWebSocket(const HttpConnectionPtr_t& conn, const HttpRequest& request, evpp::Buffer* buffer);
+
+        bool authRequest(const HttpConnectionPtr_t& conn, const HttpRequest& request);
     private:
         evpp::EventLoop* m_loop;
         evpp::TCPServer* m_server;
@@ -59,7 +63,8 @@ namespace xhttp {
         int m_threadNum;
     
         std::map<std::string, HttpCallback_t> m_httpCallbacks;  
-        HttpCallback_t m_defaultCallback;      
+        HttpCallback_t m_defaultCallback;  
+        std::map<std::string, AuthCallback_t> m_authCallbacks;    
 
     };
     
