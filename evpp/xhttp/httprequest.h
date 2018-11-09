@@ -24,7 +24,8 @@ public:
 
     void clear();
     void parseUrl();
-    std::string dump();
+
+
 
     std::string url;    
 
@@ -47,8 +48,9 @@ public:
 
     void parseQuery();
 
-    // TODO: replace to evpp::Buffer;
-    //std::string body;
+    std::string dump();
+    std::string dumpHeaders();
+
     int bodyLen() const;
 
     void appendBody(const void* data, const size_t len);

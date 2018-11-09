@@ -10,9 +10,9 @@ extern "C"
 }
 
 #include "httputil.h"
-#include <evpp/stringutil.h>
-#include <evpp/logging.h>
-#include <evpp/buffer.h>
+#include "../stringutil.h"
+#include "../logging.h"
+#include "../buffer.h"
 
 using namespace std;
 
@@ -144,9 +144,9 @@ namespace xhttp {
 
     static const string HostKey = "Host";
     static const string ContentLengthKey = "Content-Length";
-    
-    string HttpRequest::dump()
-    {
+
+
+    std::string HttpRequest::dumpHeaders() {
         string str;
         
         parseUrl();
@@ -201,10 +201,16 @@ namespace xhttp {
         }
 
         str.append("\r\n");
+        return std::move(str);
+    }
+    
+    string HttpRequest::dump()
+    {
+        std::string str = dumpHeaders();
 
         str.append(body_->ToString());
 
-        return str;
+        return std::move(str);
     } 
 
     int HttpRequest::bodyLen() const {
