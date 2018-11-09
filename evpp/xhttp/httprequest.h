@@ -13,6 +13,8 @@ extern "C"
 
 namespace evpp
 {
+class Buffer;
+
 namespace xhttp {
 class HttpRequest
 {
@@ -46,8 +48,13 @@ public:
     void parseQuery();
 
     // TODO: replace to evpp::Buffer;
-    std::string body;
+    //std::string body;
+    int bodyLen() const;
 
+    void appendBody(const void* data, const size_t len);
+    void appendBody(const std::string& str);
+private:
+    evpp::Buffer* body_;
 };
         
 }

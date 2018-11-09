@@ -10,8 +10,9 @@ extern "C"
 }
 
 #include "httputil.h"
-#include "../stringutil.h"
-#include "../logging.h"
+#include <evpp/stringutil.h>
+#include <evpp/logging.h>
+#include <evpp/buffer.h>
 
 using namespace std;
 
@@ -20,24 +21,27 @@ namespace evpp
 namespace xhttp { 
 
     HttpRequest::HttpRequest()
-    {
+    : body_(nullptr)   {
         majorVersion = 1;
         minorVersion = 1;
         method = HTTP_GET;
+        body_ = new evpp::Buffer();
     }
    
-    HttpRequest::~HttpRequest()
-    {
+    HttpRequest::~HttpRequest() {
+        if (body_) {
+            delete body_;
+            body_ = nullptr;
+        }
     } 
 
-    void HttpRequest::clear()
-    {
+    void HttpRequest::clear() {
         url.clear();
         schema.clear();
         host.clear();
         path.clear();
         query.clear();
-        body.clear();
+        body_->Reset();
         
         headers.clear();
         params.clear();
@@ -184,7 +188,7 @@ namespace xhttp {
         {
             headers.erase(ContentLengthKey);
 
-            n = snprintf(buf, sizeof(buf), "%d", int(body.size()));
+            n = snprintf(buf, sizeof(buf), "%d", int(body_->length()));
             headers.insert(make_pair(ContentLengthKey, string(buf, n)));
         }
 
@@ -198,9 +202,26 @@ namespace xhttp {
 
         str.append("\r\n");
 
-        str.append(body);
+        str.append(body_->ToString());
 
         return str;
     } 
+
+    int HttpRequest::bodyLen() const {
+        return body_->length();
+    }
+
+
+    void HttpRequest::appendBody(const void* data, const size_t len) {
+        if (body_) {
+            body_->Write(data, len);
+        }
+    }
+
+
+    void HttpRequest::appendBody(const std::string& str) {
+        if (body_)
+            body_->Write(str.data(), str.size());
+    }
 }
 }

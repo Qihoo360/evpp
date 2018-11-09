@@ -57,12 +57,12 @@ namespace xhttp {
     void HttpConnection::send(HttpResponse& resp)
     {
         evpp::TCPConnPtr conn = m_conn.lock();
-        if(!conn)
-        {
+        if(!conn) {
             return;    
-        }    
-
-        conn->Send(resp.dump());
+        } 
+        conn->Send(resp.dumpHeaders());
+        conn->Send(resp.getBody()->ToSlice());
+        //conn->Send(resp.dump());
     }
 
     void HttpConnection::send(int statusCode)
@@ -77,7 +77,7 @@ namespace xhttp {
     {
         HttpResponse resp;
         resp.statusCode = statusCode;
-        resp.body = body;
+        resp.appendBody(body);
         
         send(resp);    
     }
@@ -86,7 +86,7 @@ namespace xhttp {
     {
         HttpResponse resp;
         resp.statusCode = statusCode;
-        resp.body = body;
+        resp.appendBody(body);
         
         resp.headers = headers;
 
@@ -144,13 +144,13 @@ namespace xhttp {
 
     int HttpConnection::onBody(const char* at, size_t length)
     {
-        if(m_request.body.size() + length > ms_maxBodySize)
+        if(m_request.bodyLen() + length > ms_maxBodySize)
         {
             m_errorCode = 413;
             return -1;    
         }
 
-        m_request.body.append(at, length);    
+        m_request.appendBody(at, length);    
         return 0;
     }
 

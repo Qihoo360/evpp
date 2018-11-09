@@ -43,7 +43,9 @@
         "condition_variable": "cpp",
         "mutex": "cpp",
         "ratio": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "cstdarg": "cpp",
+        "iomanip": "cpp"
     },
     "C_Cpp.default.configurationProvider": "vector-of-bool.cmake-tools"
 }

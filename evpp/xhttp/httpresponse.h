@@ -5,8 +5,10 @@
 
 #include "xhttp.h"
 
-namespace evpp
-{
+namespace evpp {
+
+class Buffer;
+
 namespace xhttp { 
     class HttpResponse
     {
@@ -16,12 +18,7 @@ namespace xhttp {
         HttpResponse(int code, const Headers_t& headers = Headers_t(), const std::string& body = "");
         ~HttpResponse();    
 
-        void clear()
-        {
-            statusCode = 200;
-            body.clear();
-            headers.clear();    
-        }
+        void clear();
 
         void setContentType(const std::string& contentType);
         void setKeepAlive(bool on);
@@ -30,14 +27,23 @@ namespace xhttp {
 
         //generate http response text
         std::string dump();
+
+        std::string dumpHeaders();
    
         int statusCode;
 
         
         Headers_t headers;
 
-        // TODO: replace to evpp::Buffer
-        std::string body;        
+        //std::string body;
+        void appendBody(const void* p, size_t len);
+        void appendBody(const std::string& s);
+
+        const evpp::Buffer* getBody() const {
+            return body_;
+        }
+    private:
+        evpp::Buffer* body_;
     };
     
 }

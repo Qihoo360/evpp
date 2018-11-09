@@ -24,14 +24,14 @@ int main(int argc, char const *argv[])
     httpServer.setHttpCallback("/test", [](const HttpConnectionPtr_t& conn, const HttpRequest& req) {
         std::cout << "OnHttpRequest" << std::endl;
         HttpResponse resp(200);
-        resp.body = "Hello World!";
+        resp.appendBody("Hello World!");
 
         conn->send(resp);
     });
 
     httpServer.setHttpDefaultCallback([](const HttpConnectionPtr_t& conn, const HttpRequest& req) {
         HttpResponse resp(200);
-        resp.body = "Wellcome here.";
+        resp.appendBody("Wellcome here.");
 
         conn->send(resp);        
     });
