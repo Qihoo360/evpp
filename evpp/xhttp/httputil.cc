@@ -136,8 +136,8 @@ namespace evpp
         {
             if(src[i] == '%')
             {
-                char dec1 = HEX2DEC[src[i + 1]];
-                char dec2 = HEX2DEC[src[i + 2]];
+                char dec1 = HEX2DEC[(int)src[i + 1]];
+                char dec2 = HEX2DEC[(int)src[i + 2]];
                 if(dec1 != -1 && dec2 != -1)
                 {
                     dest[j++] = (dec1 << 4) + dec2;
@@ -199,7 +199,7 @@ namespace evpp
         size_t j = 0;
         for(;i < src.size(); ++i)
         {
-            if(SAFE[src[i]])
+            if(SAFE[(int)src[i]])
             {
                 dest[j++] = src[i];    
             }    
