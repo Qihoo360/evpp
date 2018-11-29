@@ -54,7 +54,7 @@ private:
     Duration timeout_;
     Functor functor_;
     Functor cancel_callback_;
-    std::shared_ptr<TimerEventWatcher> timer_;
+    std::unique_ptr<TimerEventWatcher> timer_;
     bool periodic_;
     std::shared_ptr<InvokeTimer> self_; // Hold myself
 };
