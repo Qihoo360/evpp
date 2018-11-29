@@ -23,7 +23,11 @@ void http_request_done(struct evhttp_request* req, void* arg) {
 
 TEST_UNIT(evhttpClientSample) {
     struct event_base* base = event_base_new();
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+    struct evhttp_connection* conn = evhttp_connection_base_new(base, nullptr, "www.360.cn", 443);
+#else
     struct evhttp_connection* conn = evhttp_connection_base_new(base, nullptr, "www.360.cn", 80);
+#endif
     struct evhttp_request* req = evhttp_request_new(http_request_done, base); // will be free by evhttp_connection
     evhttp_add_header(req->output_headers, "Host", "www.360.cn");
     evhttp_make_request(conn, req, EVHTTP_REQ_GET, "/robots.txt");
@@ -54,7 +58,11 @@ TEST_UNIT(testHTTPRequest1) {
     Init();
     evpp::EventLoopThread t;
     t.Start(true);
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+    std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("www.360.cn", 443, true, evpp::Duration(2.0)));
+#else
     std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("www.360.cn", 80, evpp::Duration(2.0)));
+#endif
     evpp::httpc::Request* r = new evpp::httpc::Request(pool.get(), t.loop(), "/robots.txt", "");
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));
@@ -93,7 +101,11 @@ TEST_UNIT(testHTTPRequest3) {
     Init();
     evpp::EventLoopThread t;
     t.Start(true);
+#if defined(EVPP_HTTP_CLIENT_SUPPORTS_SSL)
+    std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("www.360.cn", 443, true, evpp::Duration(2.0)));
+#else
     std::shared_ptr<evpp::httpc::ConnPool> pool(new evpp::httpc::ConnPool("www.360.cn", 80, evpp::Duration(2.0)));
+#endif
     evpp::httpc::GetRequest* r = new evpp::httpc::GetRequest(pool.get(), t.loop(), "/robots.txt");
     LOG_INFO << "Do http request";
     r->Execute(std::bind(&HandleHTTPResponse, std::placeholders::_1, &t));

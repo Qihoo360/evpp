@@ -16,6 +16,9 @@ namespace http {
 Server::Server(uint32_t thread_num) {
     DLOG_TRACE;
     tpool_.reset(new EventLoopThreadPool(nullptr, thread_num));
+#if defined(EVPP_HTTP_SERVER_SUPPORTS_SSL)
+	setPortSSLDefaultOption(false);
+#endif
 }
 
 Server::~Server() {
@@ -34,13 +37,43 @@ Server::~Server() {
     }
 }
 
+#if defined(EVPP_HTTP_SERVER_SUPPORTS_SSL)
+void Server::setPortSSLOption(int listen_port,
+			bool enable_ssl,
+			const char* certificate_chain_file,
+			const char* private_key_file)
+{
+	ssl_option_map_[listen_port] = PortSSLOption { 
+		enable_ssl, certificate_chain_file, private_key_file};
+}
+
+void Server::setPortSSLDefaultOption(
+			bool enable_ssl,
+			const char* certificate_chain_file,
+			const char* private_key_file)
+{
+	/* 以0代表默认设置 */
+	ssl_option_map_[0] = PortSSLOption {
+		enable_ssl, certificate_chain_file, private_key_file };
+}
+#endif
+
 bool Server::Init(int listen_port) {
     status_.store(kInitializing);
     ListenThread lt;
     lt.thread = std::make_shared<EventLoopThread>();
     lt.thread->set_name(std::string("StandaloneHTTPServer-Main-") + std::to_string(listen_port));
 
+#if defined(EVPP_HTTP_SERVER_SUPPORTS_SSL)
+	PortSSLOption option = ssl_option_map_[0];
+	if(ssl_option_map_.find(listen_port) != ssl_option_map_.end()){
+		option = ssl_option_map_[listen_port];
+	}
+	lt.hservice = std::make_shared<Service>(lt.thread->loop(), option.enable_ssl_,
+				option.certificate_chain_file_.c_str(),option.private_key_file_.c_str());
+#else
     lt.hservice = std::make_shared<Service>(lt.thread->loop());
+#endif
     if (!lt.hservice->Listen(listen_port)) {
         int serrno = errno;
         LOG_ERROR << "this=" << this << " http server listen at port " << listen_port << " failed. errno=" << serrno << " " << strerror(serrno);
