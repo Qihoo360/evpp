@@ -141,6 +141,39 @@ int main(int argc, char* argv[]) {
 
 ```
 
+### An echo HTTPS server
+
+First generate an SSL certificate chain file
+```bash
+openssl req -newkey rsa:2048 -nodes -keyout server.key -x509 -days 365 -out server.pem
+```
+
+```cpp
+#include <evpp/http/http_server.h>
+
+int main(int argc, char* argv[]) {
+    std::vector<int> ports = { 9009, 23456, 23457 };
+    int thread_num = 2;
+    evpp::http::Server server(thread_num);
+    server.RegisterHandler("/echo",
+                           [](evpp::EventLoop* loop,
+                              const evpp::http::ContextPtr& ctx,
+                              const evpp::http::HTTPSendResponseCallback& cb) {
+        cb(ctx->body().ToString()); }
+    );
+    // Configure default SSL settings
+    server.setPortSSLDefaultOption(true,"./server.pem","./server.key");
+
+    server.Init(ports);
+    server.Start();
+    while (!server.IsStopped()) {
+        usleep(1);
+    }
+    return 0;
+}
+
+```
+
 
 ### An echo UDP server
 
