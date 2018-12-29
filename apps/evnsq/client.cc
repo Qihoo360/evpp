@@ -133,6 +133,9 @@ void Client::HandleLoopkupdHTTPResponse(
 
     rapidjson::Document doc;
     doc.Parse(body.c_str());
+
+    /* nsqlookupd version 1.1.0 cancel "status_code"
+     *
     int status_code = doc["status_code"].GetInt();
     if (status_code != 200) {
         LOG_ERROR << "Request lookupd http://" << request->host()
@@ -145,9 +148,16 @@ void Client::HandleLoopkupdHTTPResponse(
                  << request->host() << ":"
                  << request->port() << request->uri()
                  << " : " << body;
+    } */
+
+    rapidjson::Value* jnode = &doc["producers"];
+
+    // bear version = 0.3.8
+    if (!doc["data"].IsNull())  {
+        jnode = &doc["data"]["producers"];
     }
 
-    rapidjson::Value& producers = doc["data"]["producers"];
+    rapidjson::Value& producers = *jnode;
     for (rapidjson::SizeType i = 0; i < producers.Size(); ++i) {
         rapidjson::Value& producer = producers[i];
         std::string broadcast_address = producer["broadcast_address"].GetString();
