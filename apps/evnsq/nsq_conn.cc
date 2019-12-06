@@ -99,7 +99,7 @@ void NSQConn::OnRecv(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
     while (buf->size() > 4) {
         size_t size = buf->PeekInt32();
 
-        if (buf->size() < size) {
+        if (buf->size() < size + 4) {
             // need to read more data
             return;
         }

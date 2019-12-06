@@ -34,8 +34,19 @@ InvokeTimer::~InvokeTimer() {
 void InvokeTimer::Start() {
     DLOG_TRACE << "loop=" << loop_ << " refcount=" << self_.use_count();
     auto f = [this]() {
-        timer_.reset(new TimerEventWatcher(loop_, std::bind(&InvokeTimer::OnTimerTriggered, shared_from_this()), timeout_));
-        timer_->SetCancelCallback(std::bind(&InvokeTimer::OnCanceled, shared_from_this()));
+        timer_.reset(new TimerEventWatcher(loop_, [time_weak = std::weak_ptr<InvokeTimer>(shared_from_this())]() {
+            auto time_ptr = time_weak.lock();
+            if (time_ptr) {
+                time_ptr->OnTimerTriggered();
+            }
+        }, timeout_));
+
+        timer_->SetCancelCallback([time_weak = std::weak_ptr<InvokeTimer>(shared_from_this())]() {
+            auto time_ptr = time_weak.lock();
+            if (time_ptr) {
+                time_ptr->OnCanceled();
+            }
+        });
         timer_->Init();
         timer_->AsyncWait();
         DLOG_TRACE << "timer=" << timer_.get() << " loop=" << loop_ << " refcount=" << self_.use_count() << " periodic=" << periodic_ << " timeout(ms)=" << timeout_.Milliseconds();
@@ -45,9 +56,13 @@ void InvokeTimer::Start() {
 
 void InvokeTimer::Cancel() {
     DLOG_TRACE;
-    if (timer_) {
-        loop_->QueueInLoop(std::bind(&TimerEventWatcher::Cancel, timer_));
-    }
+    auto f = [time_weak = std::weak_ptr<InvokeTimer>(shared_from_this())]() {
+        auto time_ptr = time_weak.lock();
+        if (time_ptr && time_ptr->timer_) {
+            time_ptr->timer_->Cancel();
+        }
+    };
+    loop_->RunInLoop(std::move(f));
 }
 
 void InvokeTimer::OnTimerTriggered() {
@@ -57,8 +72,6 @@ void InvokeTimer::OnTimerTriggered() {
     if (periodic_) {
         timer_->AsyncWait();
     } else {
-        functor_ = Functor();
-        cancel_callback_ = Functor();
         timer_.reset();
         self_.reset();
     }
@@ -69,9 +82,7 @@ void InvokeTimer::OnCanceled() {
     periodic_ = false;
     if (cancel_callback_) {
         cancel_callback_();
-        cancel_callback_ = Functor();
     }
-    functor_ = Functor();
     timer_.reset();
     self_.reset();
 }

@@ -265,6 +265,50 @@ static void Test909() {
     t.Stop(true);
 }
 
+void testRequestDefaultHandler(evpp::EventLoop* loop, int* finished) {
+    std::string uri = "/xxxx";
+    std::string url = GetHttpServerURL() + uri;
+    auto r = new evpp::httpc::Request(loop, url, "", evpp::Duration(10.0));
+    auto f = [r, finished](const std::shared_ptr<evpp::httpc::Response>& response) {
+        std::string result = response->body().ToString();
+        H_TEST_ASSERT(result.empty());
+        H_TEST_ASSERT(response->http_code() == 400);
+        *finished += 1;
+        delete r;
+    };
+
+    r->Execute(f);
+}
+
+static void TestDefaultHandler() {
+    evpp::EventLoopThread t;
+    t.Start(true);
+    int finished = 0;
+    testRequestDefaultHandler(t.loop(), &finished);
+
+    while (true) {
+        usleep(10);
+
+        if (finished == 1) {
+            break;
+        }
+    }
+
+    t.Stop(true);
+}
+
+}
+
+TEST_UNIT(testHTTPServerNoDefaultHandler) {
+    for (int i = 0; i < 3; ++i) {
+        LOG_INFO << "Running testHTTPServer i=" << i;
+        evpp::http::Server ph(i);
+        bool r = ph.Init(g_listening_port) && ph.Start();
+        H_TEST_ASSERT(r);
+        TestDefaultHandler();
+        ph.Stop();
+        usleep(1000 * 1000); // sleep a while to release the listening address and port
+    }
 }
 
 
@@ -297,5 +341,7 @@ TEST_UNIT(testHTTPServer909) {
         usleep(1000 * 1000); // sleep a while to release the listening address and port
     }
 }
+
+
 
 

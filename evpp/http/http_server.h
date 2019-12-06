@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <map>
 
 #include "service.h"
 #include "evpp/thread_dispatch_policy.h"
@@ -36,6 +37,27 @@ public:
 
     ~Server();
 
+#if defined(EVPP_HTTP_SERVER_SUPPORTS_SSL)
+	/* berif 对指定监听端口设置SSL选项
+	 * param listen_port 监听的端口
+	 * param enable_ssl 是否开启SSL支持
+	 * param certificate_chain_file 证书链文件
+	 * param private_key_file 私钥文件
+	 */
+    void setPortSSLOption(int listen_port,
+			bool enable_ssl,
+			const char* certificate_chain_file = "",
+			const char* private_key_file = "");
+	/* berif 设置端口默认SSL配置选项
+	 * param enable_ssl 是否开启SSL支持
+	 * param certificate_chain_file 证书链文件
+	 * param private_key_file 私钥文件
+	 */
+    void setPortSSLDefaultOption(
+			bool enable_ssl,
+			const char* certificate_chain_file = "",
+			const char* private_key_file = "");
+#endif
     bool Init(int listen_port);
     bool Init(const std::vector<int>& listen_ports);
     bool Init(const std::string& listen_ports/*like "80,8080,443"*/);
@@ -88,6 +110,15 @@ private:
 
     HTTPRequestCallbackMap callbacks_;
     HTTPRequestCallback default_callback_;
+#if defined(EVPP_HTTP_SERVER_SUPPORTS_SSL)
+		typedef struct {
+			bool enable_ssl_;
+			std::string certificate_chain_file_;
+			std::string private_key_file_;
+		}PortSSLOption;
+		bool all_port_enable_ssl_;
+		std::map<int,PortSSLOption> ssl_option_map_;
+#endif
 };
 }
 
