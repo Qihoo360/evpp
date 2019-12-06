@@ -11,6 +11,7 @@ if (UNIX)
          -g
          -fPIC
          -Wall
+		 -D__STDC_FORMAT_MACROS
          -Wno-unused-parameter
          -Wno-unused-function
          -Wunused-variable
