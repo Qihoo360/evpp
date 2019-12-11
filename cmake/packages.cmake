@@ -19,7 +19,7 @@ execute_process (
             )
 if (RV EQUAL 0)
 else ()
-set (GIT_CHECKIN_COUNT "1")
+    set (GIT_CHECKIN_COUNT 1)
 endif ()
 
 set (PACKAGE_NAME        "${CMAKE_PROJECT_NAME}")
@@ -31,7 +31,7 @@ set (PACKAGE_DESCRIPTION "evpp is a modern C++ network library for developing hi
 set (PACKAGE_URL         "http://github.com/Qihoo360/evpp")
 
 version_numbers (
-  ${PACKAGE_VERSION}
+    ${PACKAGE_VERSION}
     PACKAGE_VERSION_MAJOR
     PACKAGE_VERSION_MINOR
     PACKAGE_VERSION_PATCH
@@ -43,6 +43,7 @@ set (CPACK_PACKAGE_ARCHITECTURE  "${KERNEL_RELEASE}")
 set (CPACK_PACKAGE_VERSION_MAJOR "${PACKAGE_VERSION_MAJOR}")
 set (CPACK_PACKAGE_VERSION_MINOR "${PACKAGE_VERSION_MINOR}")
 set (CPACK_PACKAGE_VERSION_PATCH "${PACKAGE_VERSION_PATCH}")
+set (CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}")
 set (CPACK_PACKAGE_FILE_NAME     "${PACKAGE_NAME}-${PACKAGE_VERSION}-${CPACK_PACKAGE_ARCHITECTURE}")
 set (CPACK_OUTPUT_FILE_PREFIX   packages)
 set (CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/home/s" "/home/s/include" "/home/s/lib" "/home/s/safe" "/home/s/safe/lib" "/home/s/safe/include")
