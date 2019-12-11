@@ -27,6 +27,7 @@ Quick Start
 3. Install gtest
 4. Install boost
 5. Install gflags
+6. Install redhat-rpm-config
 
 ### Download the source code of evpp
 
