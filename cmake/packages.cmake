@@ -13,6 +13,17 @@ set (KERNEL_RELEASE "unknown-arch")
 endif ()
 
 execute_process (
+            COMMAND         ${CMAKE_MODULE_PATH}/release.sh
+            RESULT_VARIABLE RV
+            OUTPUT_VARIABLE OS_VERSION
+            )
+if (RV EQUAL 0) 
+set (OS_RELEASE ${OS_VERSION})
+else ()
+set (OS_RELEASE "unknown")
+endif ()
+
+execute_process (
             COMMAND         ${CMAKE_MODULE_PATH}/git_checkin_count.sh
             RESULT_VARIABLE RV
             OUTPUT_VARIABLE GIT_CHECKIN_COUNT
@@ -54,6 +65,7 @@ set (CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/home/s" "/home/s/include" "/home/s/l
 #message(STATUS "XXXXXXXXXXXXXXX CPACK_PACKAGE_FILE_NAME=" ${CPACK_PACKAGE_FILE_NAME})
 
 if (UNIX)
+    set (CPACK_RPM_PACKAGE_RELEASE  "${PACKAGE_RELEASE}${OS_VERSION}")
     set (CPACK_GENERATOR "TGZ;DEB;RPM")
     set (CPACK_PACKAGING_INSTALL_PREFIX "/home/s/safe")
 else (UNIX)
