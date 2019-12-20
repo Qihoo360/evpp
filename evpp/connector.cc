@@ -72,8 +72,10 @@ void Connector::Cancel() {
     }
 
     assert(timer_);
-    timer_->Cancel();
-    timer_.reset();
+    if(timer_) {
+        timer_->Cancel();
+        timer_.reset();
+    }
 
     if (status_ == kDNSResolving) {
         assert(chan_.get() == nullptr);
