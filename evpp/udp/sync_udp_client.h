@@ -44,6 +44,7 @@ private:
     evpp_socket_t sockfd_ = -1;
     bool connected_ = false;
     struct sockaddr_storage remote_addr_;
+	DISALLOW_COPY_AND_ASSIGN(Client);
 };
 }
 }

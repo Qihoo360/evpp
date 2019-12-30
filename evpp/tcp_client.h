@@ -124,5 +124,6 @@ private:
 
     ConnectionCallback conn_fn_;
     MessageCallback msg_fn_;
+	DISALLOW_COPY_AND_ASSIGN(TCPClient);
 };
 }

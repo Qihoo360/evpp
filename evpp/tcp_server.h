@@ -119,5 +119,6 @@ private:
     uint64_t next_conn_id_ = 0;
     typedef std::map<uint64_t/*the id of the connection*/, TCPConnPtr> ConnectionMap;
     ConnectionMap connections_;
+	DISALLOW_COPY_AND_ASSIGN(TCPServer);
 };
 }

@@ -119,6 +119,7 @@ private:
 		bool all_port_enable_ssl_;
 		std::map<int,PortSSLOption> ssl_option_map_;
 #endif
+		DISALLOW_COPY_AND_ASSIGN(Server);
 };
 }
 

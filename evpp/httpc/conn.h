@@ -65,6 +65,7 @@ private:
 #endif
     Duration timeout_;
     struct evhttp_connection* evhttp_conn_;
+	DISALLOW_COPY_AND_ASSIGN(Conn);
 };
 } // httpc
 } // evpp

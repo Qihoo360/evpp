@@ -58,5 +58,6 @@ private:
     std::shared_ptr<std::thread> thread_; // Guard by mutex_
 
     std::string name_;
+	DISALLOW_COPY_AND_ASSIGN(EventLoopThread);
 };
 }

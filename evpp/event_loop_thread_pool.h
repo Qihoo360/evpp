@@ -46,5 +46,6 @@ private:
 
     typedef std::shared_ptr<EventLoopThread> EventLoopThreadPtr;
     std::vector<EventLoopThreadPtr> threads_;
+	DISALLOW_COPY_AND_ASSIGN(EventLoopThreadPool);
 };
 }

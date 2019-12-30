@@ -66,6 +66,7 @@ private:
     size_t recv_buf_size_;
 private:
     void RecvingLoop(RecvThread* th);
+	DISALLOW_COPY_AND_ASSIGN(Server);
 };
 
 }

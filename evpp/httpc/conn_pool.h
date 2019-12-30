@@ -52,6 +52,7 @@ private:
 
     std::mutex mutex_; // The guard of pools_
     std::map<EventLoop*, std::vector<ConnPtr>> pool_; // Every thread has its own pool which has a max size specified by max_pool_size_
+	DISALLOW_COPY_AND_ASSIGN(ConnPool);
 };
 } // httpc
 } // evpp

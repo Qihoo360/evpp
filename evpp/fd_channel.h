@@ -87,6 +87,7 @@ private:
     int events_; // the bitwise OR of zero or more of the EventType flags
 
     evpp_socket_t fd_;
+	DISALLOW_COPY_AND_ASSIGN(FdChannel);
 };
 
 }

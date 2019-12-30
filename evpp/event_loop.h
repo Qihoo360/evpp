@@ -132,5 +132,6 @@ private:
 #endif
 
     std::atomic<int> pending_functor_count_;
+	DISALLOW_COPY_AND_ASSIGN(EventLoop);
 };
 }

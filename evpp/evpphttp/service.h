@@ -43,6 +43,7 @@ private:
     HTTPRequestCallback default_callback_;
     HTTPRequestCallbackMap callbacks_;
     bool is_stopped_{false};
+	DISALLOW_COPY_AND_ASSIGN(Service);
 };
 }
 }

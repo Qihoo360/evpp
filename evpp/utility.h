@@ -3,6 +3,14 @@
 #include <string>
 #include <sstream>
 
+#define DISALLOW_COPY(TypeName) \
+  TypeName(const TypeName&) = delete
+#define DISALLOW_ASSIGN(TypeName) TypeName& operator=(const TypeName&) = delete
+
+#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+  DISALLOW_COPY(TypeName);                 \
+  DISALLOW_ASSIGN(TypeName)
+
 #ifndef H_CASE_STRING_BIGIN
 #define H_CASE_STRING_BIGIN(state) switch(state){
 #define H_CASE_STRING(state) case state:return #state;break;

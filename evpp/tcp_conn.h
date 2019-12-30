@@ -188,5 +188,6 @@ private:
     WriteCompleteCallback write_complete_fn_; // This will be called to the user application layer
     HighWaterMarkCallback high_water_mark_fn_; // This will be called to the user application layer
     CloseCallback close_fn_; // This will be called to TCPClient or TCPServer
+	DISALLOW_COPY_AND_ASSIGN(TCPConn);
 };
 }

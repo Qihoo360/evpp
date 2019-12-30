@@ -64,5 +64,6 @@ private:
     std::unique_ptr<TimerEventWatcher> timer_;
     std::shared_ptr<DNSResolver> dns_resolver_;
     NewConnectionCallback conn_fn_;
+	DISALLOW_COPY_AND_ASSIGN(Connector);
 };
 }
