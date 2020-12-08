@@ -23,8 +23,14 @@ public:
     // @return  -
     MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms, const char* key_filter = "+")
         : MemcacheClientBase(vbucket_conf), vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
-        , timeout_ms_(timeout_ms), key_filter_(key_filter) {
+        , timeout_ms_(timeout_ms), key_filter_(key_filter), filter_len_(-1) {
     }
+
+    MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms, std::size_t filter_len)
+        : MemcacheClientBase(vbucket_conf), vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
+        , timeout_ms_(timeout_ms), filter_len_(filter_len <= 0 ? 16 : filter_len) {
+    }
+
     virtual ~MemcacheClientPool();
 
     bool Start();
@@ -71,6 +77,7 @@ private:
     MultiModeVbucketConfigPtr vbucket_config_;
     //pthread_rwlock_t vbucket_config_mutex_; // TODO : use rw mutex
     std::string key_filter_;
+    std::size_t filter_len_;
 
     std::atomic_int next_thread_;
 };
