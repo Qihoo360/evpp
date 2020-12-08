@@ -7,9 +7,9 @@
 namespace evmc {
 
 #define GET_FILTER_KEY_POS(name, key)          \
-    if(filter_len_ > 0) {                      \
+    if (filter_len_ > 0) {                     \
         name = filter_len_;                    \
-        if(key.size() < filter_len_) {         \
+        if (key.size() < filter_len_) {        \
             name = key.size();                 \
         }                                      \
     } else {                                   \
