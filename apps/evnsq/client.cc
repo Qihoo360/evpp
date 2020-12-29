@@ -134,22 +134,6 @@ void Client::HandleLoopkupdHTTPResponse(
     rapidjson::Document doc;
     doc.Parse(body.c_str());
 
-    /* nsqlookupd version 1.1.0 cancel "status_code"
-     *
-    int status_code = doc["status_code"].GetInt();
-    if (status_code != 200) {
-        LOG_ERROR << "Request lookupd http://" << request->host()
-                  << ":" << request->port() << request->uri()
-                  << " failed: [" << body
-                  << "]. We will automatically retry later.";
-        return;
-    } else {
-        LOG_INFO << "lookupd response OK. http://"
-                 << request->host() << ":"
-                 << request->port() << request->uri()
-                 << " : " << body;
-    } */
-
     rapidjson::Value* jnode = &doc["producers"];
 
     // bear version = 0.3.8
