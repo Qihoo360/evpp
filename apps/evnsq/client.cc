@@ -133,21 +133,15 @@ void Client::HandleLoopkupdHTTPResponse(
 
     rapidjson::Document doc;
     doc.Parse(body.c_str());
-    int status_code = doc["status_code"].GetInt();
-    if (status_code != 200) {
-        LOG_ERROR << "Request lookupd http://" << request->host()
-                  << ":" << request->port() << request->uri()
-                  << " failed: [" << body
-                  << "]. We will automatically retry later.";
-        return;
-    } else {
-        LOG_INFO << "lookupd response OK. http://"
-                 << request->host() << ":"
-                 << request->port() << request->uri()
-                 << " : " << body;
+
+    rapidjson::Value* jnode = &doc["producers"];
+
+    // bear version = 0.3.8
+    if (!doc["data"].IsNull())  {
+        jnode = &doc["data"]["producers"];
     }
 
-    rapidjson::Value& producers = doc["data"]["producers"];
+    rapidjson::Value& producers = *jnode;
     for (rapidjson::SizeType i = 0; i < producers.Size(); ++i) {
         rapidjson::Value& producer = producers[i];
         std::string broadcast_address = producer["broadcast_address"].GetString();
