@@ -37,6 +37,8 @@ NSQConn::~NSQConn() {
 void NSQConn::Connect(const std::string& addr) {
     DLOG_TRACE << " remote_addr=" << addr;
     tcp_client_ = evpp::TCPClientPtr(new evpp::TCPClient(loop_, addr, std::string("NSQClient-") + addr));
+    tcp_client_->set_auto_reconnect(option_.auto_reconnect_);
+    tcp_client_->set_reconnect_interval(option_.reconnect_interval_);
     status_ = kConnecting;
     tcp_client_->SetConnectionCallback(std::bind(&NSQConn::OnTCPConnectionEvent, this, std::placeholders::_1));
     tcp_client_->SetMessageCallback(std::bind(&NSQConn::OnRecv, this, std::placeholders::_1, std::placeholders::_2));
