@@ -14,21 +14,21 @@ public:
     friend MemcacheClient;
 
     // @brief
-    // @param[in] vbucket_conf - ÓĞÈıÖÖ¸ñÊ½
-    //      1. memcachedµ¥ÊµÀıÄ£Ê½£¬´«ÈëµÄ²ÎÊıÓ¦¸Ã "host:port"
-    //      2. memcached¼¯ÈºÄ£Ê½£¬´«ÊäµÄ²ÎÊı¿ÉÒÔÊÇvbucket conf url £º "http://host:port/vbucket_conf"
-    //      3. memcached¼¯ÈºÄ£Ê½£¬´«ÊäµÄ²ÎÊı¿ÉÒÔÊÇvbucket conf ±¾µØÎÄ¼ş£º "/the/path/to/vbucket_conf"
+    // @param[in] vbucket_conf - æœ‰ä¸‰ç§æ ¼å¼
+    //      1. memcachedå•å®ä¾‹æ¨¡å¼ï¼Œä¼ å…¥çš„å‚æ•°åº”è¯¥ "host:port"
+    //      2. memcachedé›†ç¾¤æ¨¡å¼ï¼Œä¼ è¾“çš„å‚æ•°å¯ä»¥æ˜¯vbucket conf url ï¼š "http://host:port/vbucket_conf"
+    //      3. memcachedé›†ç¾¤æ¨¡å¼ï¼Œä¼ è¾“çš„å‚æ•°å¯ä»¥æ˜¯vbucket conf æœ¬åœ°æ–‡ä»¶ï¼š "/the/path/to/vbucket_conf"
     // @param[in] thread_num -
     // @param[in] timeout_ms -
     // @return  -
     MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms, const char* key_filter = "+")
         : MemcacheClientBase(vbucket_conf), vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
-        , timeout_ms_(timeout_ms), key_filter_(key_filter), filter_len_(-1) {
+        , timeout_ms_(timeout_ms), key_filter_(key_filter), filter_len_(0) {
     }
 
     MemcacheClientPool(const char* vbucket_conf, int thread_num, int timeout_ms, std::size_t filter_len)
         : MemcacheClientBase(vbucket_conf), vbucket_conf_file_(vbucket_conf), loop_pool_(&loop_, thread_num)
-        , timeout_ms_(timeout_ms), filter_len_(filter_len <= 0 ? 16 : filter_len) {
+        , timeout_ms_(timeout_ms), filter_len_(filter_len == 0 ? 16 : filter_len) {
     }
 
     virtual ~MemcacheClientPool();
