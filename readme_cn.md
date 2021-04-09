@@ -155,6 +155,37 @@ int main(int argc, char* argv[]) {
 
 ```
 
+### An echo HTTPS server
+
+支持SSL需要证书和密匙，可以简单使用下面的命令生成一个用于测试的密匙文件和证书链文件。
+```bash
+openssl req -newkey rsa:2048 -nodes -keyout server.key -x509 -days 365 -out server.pem
+```
+
+```cpp
+#include <evpp/http/http_server.h>
+
+int main(int argc, char* argv[]) {
+    std::vector<int> ports = { 9009, 23456, 23457 };
+    int thread_num = 2;
+    evpp::http::Server server(thread_num);
+    server.RegisterHandler("/echo",
+                           [](evpp::EventLoop* loop,
+                              const evpp::http::ContextPtr& ctx,
+                              const evpp::http::HTTPSendResponseCallback& cb) {
+        cb(ctx->body().ToString()); }
+    );
+    // 配置默认的SSL选项（可以针对端口分别设置，请参考Server::setPortSSLOption）
+    server.setPortSSLDefaultOption(true,"./server.pem","./server.key");
+
+    server.Init(ports);
+    server.Start();
+    while (!server.IsStopped()) {
+        usleep(1);
+    }
+    return 0;
+}
+```
 
 ### An echo UDP server
 
