@@ -98,6 +98,57 @@ evpp_socket_t CreateUDPServer(int port) {
     return fd;
 }
 
+evpp_socket_t CreateUDPServer(std::string host, int port) {
+    evpp_socket_t fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd == -1) {
+        int serrno = errno;
+        LOG_ERROR << "socket error " << strerror(serrno);
+        return INVALID_SOCKET;
+    }
+    SetReuseAddr(fd);
+    SetReusePort(fd);
+
+    std::string addr = host + std::to_string(port);
+    struct sockaddr_storage local = ParseFromIPPort(addr.c_str());
+    if (::bind(fd, (struct sockaddr*)&local, sizeof(local))) {
+        int serrno = errno;
+        LOG_ERROR << "socket bind error=" << serrno << " " << strerror(serrno);
+        return INVALID_SOCKET;
+    }
+
+    return fd;
+}
+
+evpp_socket_t CreateUDPMultiCastSocket(std::string host, int port) {
+    evpp_socket_t fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd == -1) {
+        int serrno = errno;
+        LOG_ERROR << "socket error " << strerror(serrno);
+        return INVALID_SOCKET;
+    }
+    SetReuseAddr(fd);
+    SetReusePort(fd);
+
+    std::string addr = std::string("0.0.0.0:") + std::to_string(port);
+    struct sockaddr_storage local = ParseFromIPPort(addr.c_str());
+    if (::bind(fd, (struct sockaddr*)&local, sizeof(local))) {
+        int serrno = errno;
+        LOG_ERROR << "socket bind error=" << serrno << " " << strerror(serrno);
+        return INVALID_SOCKET;
+    }
+
+    struct ip_mreq mreq;
+    mreq.imr_multiaddr.s_addr=inet_addr(host.c_str());
+    mreq.imr_interface.s_addr=htonl(INADDR_ANY);
+    if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
+        int serrno = errno;
+        LOG_ERROR << "socket join error=" << serrno << " " << strerror(serrno);
+        return INVALID_SOCKET;
+    }
+
+    return fd;
+}
+
 bool ParseFromIPPort(const char* address, struct sockaddr_storage& ss) {
     memset(&ss, 0, sizeof(ss));
     std::string host;
