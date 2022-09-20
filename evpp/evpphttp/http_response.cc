@@ -43,7 +43,7 @@ void HttpResponse::MakeHttpResponse(const int response_code, const int64_t body_
     if (response_code_iter == http_status_code.end()) {
         response_code_iter = http_status_code.find(808);
     }
-    char status[16];
+    char status[32] = {0};
     snprintf(status, sizeof status, "HTTP/%d.%d %d ", hp_.http_major, hp_.http_minor, response_code_iter->first);
     buf.Append(status);
     buf.Append(response_code_iter->second);
@@ -85,7 +85,7 @@ void HttpResponse::MakeHttpResponse(const int response_code, const int64_t body_
 void HttpResponse::SendContinue(const evpp::TCPConnPtr& conn) {
     Buffer buf;
     auto response_code_iter = http_status_code.find(100); //continue
-    char status[16];
+    char status[32] = {0};
     snprintf(status, sizeof status, "HTTP/%d.%d %d ", hp_.http_major, hp_.http_minor, response_code_iter->first);
     buf.Append(status);
     buf.Append(response_code_iter->second);

@@ -107,12 +107,12 @@ void Service::OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
     //LOG_TRACE << "recv message:" << buf->ToString();
     if (!conn->context().IsEmpty()) {
         auto context = conn->context();
-        HttpRequest *hr = context.Get<HttpRequest *>();
+        auto TmpReq = context.Get<std::shared_ptr<HttpRequest>>();
+        HttpRequest *hr = TmpReq.get();       
         ret = RequestHandler(conn, buf, *hr);
         if (ret != 0) {
             return;
         }
-        delete hr;
         Any empty;
         conn->set_context(empty);
     }
@@ -124,7 +124,7 @@ void Service::OnMessage(const evpp::TCPConnPtr& conn, evpp::Buffer* buf) {
             return;
         }
         if (ret > 0) {
-            Any context(new HttpRequest(std::move(hr)));
+            Any context(std::make_shared<HttpRequest>(std::move(hr)));
             conn->set_context(context);
             return;
         }

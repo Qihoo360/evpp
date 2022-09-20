@@ -25,7 +25,7 @@ if (UNIX)
          -fms-extensions
          -Wfloat-equal
          -Wextra
-         -std=c++11
+         -std=c++17
     )
     include_directories (${PROJECT_SOURCE_DIR}
                          ${PROJECT_SOURCE_DIR}/3rdparty)
