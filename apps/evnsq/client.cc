@@ -47,7 +47,7 @@ void Client::ConnectToNSQDs(const std::vector<std::string>& tcp_addrs/*host:port
 void Client::ConnectToLookupd(const std::string& lookupd_url/*http://127.0.0.1:4161/lookup?topic=test*/) {
     auto f = [this, lookupd_url]() {
         LOG_INFO << "query nsqlookupd " << lookupd_url;
-        std::shared_ptr<evpp::httpc::Request> r(new evpp::httpc::Request(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
+        std::shared_ptr<evpp::httpc::Request> r(std::make_shared<evpp::httpc::Request>(this->loop_, lookupd_url, "", evpp::Duration(1.0)));
         r->Execute(std::bind(&Client::HandleLoopkupdHTTPResponse, this, std::placeholders::_1, r));
     };
 
@@ -113,6 +113,10 @@ void Client::HandleLoopkupdHTTPResponse(
     const std::shared_ptr<evpp::httpc::Response>& response,
     const std::shared_ptr<evpp::httpc::Request>& request) {
     DLOG_TRACE;
+
+    // release r(evpp::httpc::Request) create  at Client::ConnectToLookupd
+    evpp::httpc::Handler stackptr;
+    request->GetHandler()->swap(stackptr);
 
     if (response.get() == nullptr) {
         LOG_ERROR << "Request lookupd http://" << request->host() << ":"

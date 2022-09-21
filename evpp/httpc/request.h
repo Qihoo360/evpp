@@ -55,6 +55,7 @@ public:
         retry_interval_ = d;
     }
     void AddHeader(const std::string& header, const std::string& value);
+    Handler* GetHandler(){ return &handler_ ;}
 private:
     static void HandleResponse(struct evhttp_request* r, void* v);
     void HandleResponse(struct evhttp_request* r);
