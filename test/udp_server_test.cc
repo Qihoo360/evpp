@@ -11,7 +11,7 @@ static void OnMessage(evpp::udp::Server* udpsrv, evpp::EventLoop* loop, const ev
     g_count++;
     evpp::udp::SendMessage(msg);
     usleep(100);
-    if (memcmp(msg->data(), "stop", msg->size()) == 0) {
+    if (msg->size() == 4 && memcmp(msg->data(), "stop", 4) == 0) {
         g_exit = true;
     }
 }
