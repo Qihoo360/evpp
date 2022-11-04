@@ -2,6 +2,14 @@ cmake_minimum_required (VERSION 2.8)
 
 project (safe-evpp C CXX)
 
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    SET(DARWIN 1)
+endif()
+
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    SET(LINUX 1)
+endif()
+
 if (UNIX)
     if(NOT CMAKE_BUILD_TYPE)
         set(CMAKE_BUILD_TYPE "Release")
@@ -27,8 +35,12 @@ if (UNIX)
          -Wextra
          -std=c++11
     )
-    include_directories (${PROJECT_SOURCE_DIR}
+    include_directories(${PROJECT_SOURCE_DIR}
                          ${PROJECT_SOURCE_DIR}/3rdparty)
+    if(DARWIN)
+        include_directories(/opt/homebrew/include)
+        link_directories(/opt/homebrew/lib)
+    endif()
 else (UNIX)
 set (CXX_FLAGS -DWIN32 -D_WIN32 -EHsc)
     set(VcpkgRoot ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET})
@@ -98,7 +110,9 @@ endif ()
 
 set (CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include (utils)
-include (packages)
+if (LINUX)
+    include (packages)
+endif()
 
 include (CPack)
 include (CTest)
