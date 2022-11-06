@@ -125,10 +125,10 @@ typedef int ssize_t;
 /* True iff e is an error that means a read/write operation can be retried. */
 #define EVUTIL_ERR_RW_RETRIABLE(e)              \
     ((e) == EINTR || (e) == EAGAIN)
-/* True iff e is an error that means an connect can be retried. */
+/* True iff e is an error that means a connect can be retried. */
 #define EVUTIL_ERR_CONNECT_RETRIABLE(e)         \
     ((e) == EINTR || (e) == EINPROGRESS)
-/* True iff e is an error that means a accept can be retried. */
+/* True iff e is an error that means an accept can be retried. */
 #define EVUTIL_ERR_ACCEPT_RETRIABLE(e)          \
     ((e) == EINTR || (e) == EAGAIN || (e) == ECONNABORTED)
 

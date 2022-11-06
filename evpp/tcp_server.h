@@ -23,7 +23,7 @@ class Listener;
 //      5. Process TCP client connections and messages in callbacks
 //      6. At last call Server::Stop() to stop the whole server
 //
-// The examples code is as bellow:
+// The example code is as bellow:
 // <code>
 //     std::string addr = "0.0.0.0:9099";
 //     int thread_num = 4;
@@ -62,13 +62,13 @@ public:
     ~TCPServer();
 
     // @brief Do the initialization works here.
-    //  It will create a nonblocking TCP socket, and bind with the give address
+    //  It will create a nonblocking TCP socket, and bind with the given address
     //  then listen on it. If there is anything wrong it will return false.
-    // @return bool - True if anything goes well
+    // @return bool - True if everything goes well
     bool Init();
 
     // @brief Start the TCP server and we can accept new connections now.
-    // @return bool - True if anything goes well
+    // @return bool - True if everything goes well
     bool Start();
 
     // @brief Stop the TCP server
@@ -80,7 +80,7 @@ public:
     void AfterFork();
 
 public:
-    // Set a connection event relative callback when the TCPServer
+    // Set a connection event relative callback which will be invoked when the TCPServer
     // receives a new connection or an exist connection breaks down.
     // When these two events happened, the value of the parameter in the callback is:
     //      1. Received a new connection : TCPConn::IsConnected() == true
@@ -115,7 +115,7 @@ private:
 
     DoneCallback stopped_cb_;
 
-    // always in the listening loop thread
+    // These two member variables will always be modified in the listening loop thread
     uint64_t next_conn_id_ = 0;
     typedef std::map<uint64_t/*the id of the connection*/, TCPConnPtr> ConnectionMap;
     ConnectionMap connections_;
