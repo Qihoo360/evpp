@@ -12,6 +12,7 @@ namespace evnsq {
 struct EVNSQ_EXPORT Option {
 public:
     Option();
+    void setReconnect(bool auto_reconnect, evpp::Duration reconnect_interval);
     std::string ToJSON() const;
 
 public:
@@ -45,5 +46,7 @@ public:
     // Integer percentage to sample the channel (requires nsqd 0.2.25+)
     // min:"0" max : "99"
     int sample_rate = 0;
+    bool auto_reconnect_ = true; // The flag whether it reconnects automatically, Default : true
+    evpp::Duration reconnect_interval_ = evpp::Duration(3.0); // Default : 3 seconds
 };
 }

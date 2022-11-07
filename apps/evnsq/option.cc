@@ -8,7 +8,13 @@
 namespace evnsq {
 
 Option::Option() {
-   // hostname = "evnsq.localhost.com"; // TODO get hostname
+    // hostname = "evnsq.localhost.com"; // TODO get hostname
+}
+
+void Option::setReconnect(bool auto_reconnect, evpp::Duration reconnect_interval)
+{
+    auto_reconnect_ = auto_reconnect;
+    reconnect_interval_ = reconnect_interval;
 }
 
 std::string Option::ToJSON() const {
