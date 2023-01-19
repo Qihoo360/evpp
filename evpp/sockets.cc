@@ -8,8 +8,8 @@ namespace evpp {
 
 static const std::string empty_string;
 
-std::string strerror(int e) {
 #ifdef H_OS_WINDOWS
+std::string strerror(int e) {
     LPVOID buf = nullptr;
     ::FormatMessageA(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -20,29 +20,24 @@ std::string strerror(int e) {
         LocalFree(buf);
         return s;
     }
-
-#elif defined(H_OS_MACOSX)
-    char buf[2048] = {};
-    int rc = strerror_r(e, buf, sizeof(buf) - 1); // XSI-compliant
-    if (rc == 0) {
-        return std::string(buf);
-    }
-#else
-    char buf[2048] = {};
-    #if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
-    int rc = strerror_r(e, buf, sizeof(buf) - 1); // XSI-compliant
-    if (rc == 0) {
-        return std::string(buf);
-    }
-    #else
-    const char* s = strerror_r(e, buf, sizeof(buf) - 1); // GNU-specific
-    if (s) {
-        return std::string(s);
-    }
-    #endif
-#endif
     return empty_string;
 }
+#else
+std::string handle_strerror_r(const char* s, const char* buf) // GNU-specific
+{
+    return (s) ? std::string(s) : empty_string;
+}
+
+std::string handle_strerror_r(int rc, const char* buf) // XSI-compliant
+{
+    return (rc == 0) ? std::string(buf) : empty_string;
+}
+
+std::string strerror(int e) {
+    char buf[2048] = {};
+    return handle_strerror_r(strerror_r(e, buf, sizeof(buf) - 1), buf);
+}
+#endif
 
 namespace sock {
 evpp_socket_t CreateNonblockingSocket() {
