@@ -23,7 +23,7 @@ We can use a queue to store the task. The producer can put tasks to the queue an
 
 ### Test method
 
-Test code is at here [https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc](https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc). The producers post task into the queue the only one consumer to execute. We can specify the count of producer threads and the total count of the tasks posted by every producer. 
+Test code is at here [https://github.com/Qihoo360/evpp/blob/master/evpp/event_loop.cc](https://github.com/Qihoo360/evpp/blob/master/evpp/event_loop.cc). The producers post task into the queue the only one consumer to execute. We can specify the count of producer threads and the total count of the tasks posted by every producer. 
 
 The relative code of event_loop.h is bellow:
 

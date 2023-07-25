@@ -24,7 +24,7 @@
 
 ### 测试方法
 
-测试代码请参考[https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc](https://github.com/Qihoo360/evpp/blob/master/benchmark/post_task/post_task6.cc). 在一个消费者线程中运行一个`EventLoop`对象`loop_`，多个生产者线程不停的调用`loop_->QueueInLoop(...)`方法将仿函数执行体放入到消费者的队列中让其消费（执行）。每个生产者线程放入一定总数（由运行参数指定）的仿函数执行体之后就停下来，等消费者线程完全消费完所有的仿函数执行体之后，程序退出，并记录开始和结束时间。
+测试代码请参考[https://github.com/Qihoo360/evpp/blob/master/evpp/event_loop.cc](https://github.com/Qihoo360/evpp/blob/master/evpp/event_loop.cc). 在一个消费者线程中运行一个`EventLoop`对象`loop_`，多个生产者线程不停的调用`loop_->QueueInLoop(...)`方法将仿函数执行体放入到消费者的队列中让其消费（执行）。每个生产者线程放入一定总数（由运行参数指定）的仿函数执行体之后就停下来，等消费者线程完全消费完所有的仿函数执行体之后，程序退出，并记录开始和结束时间。
 
 为了便于大家阅读，现将相关代码的核心部分摘录如下。
 
