@@ -56,6 +56,11 @@ static void accept_conn_cb(struct evconnlistener *listener,
   struct event_base *base = evconnlistener_get_base(listener);
   struct bufferevent *bev = bufferevent_socket_new(
       base, fd, BEV_OPT_CLOSE_ON_FREE);
+
+  if (bev == NULL) {
+      perror("Couldn't create bufferevent");
+      return;
+  }
   set_tcp_no_delay(fd);
 
   bufferevent_setcb(bev, echo_read_cb, NULL, echo_event_cb, NULL);
@@ -89,6 +94,10 @@ int main(int argc, char **argv)
   }
 
   evstop = evsignal_new(base, SIGHUP, signal_cb, base);
+  if (!evstop) {
+    puts("Couldn't create event");
+    return 1;
+  }
   evsignal_add(evstop, NULL);
 
   /* Clear the sockaddr before using it, in case there are extra
