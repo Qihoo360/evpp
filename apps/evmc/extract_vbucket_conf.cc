@@ -45,7 +45,13 @@ void GetVbucketConf::OnHttpReqDone(struct evhttp_request* req, void* arg) {
 int GetVbucketConf::GetRemoteVbucketConf(const std::string& conf_addr, std::string& context) {
     evpp::httpc::URLParser url(conf_addr);
     struct event_base* base = event_base_new();
+    if (base == NULL) {
+        return -1;
+    }
     struct evhttp_connection* conn = evhttp_connection_base_new(base, nullptr, url.host.c_str(), url.port);
+    if (conn == NULL) {
+        return -1;
+    }
     HttpReqDoneArg arg;
     arg.event = base;
     arg.retstr = &context;
