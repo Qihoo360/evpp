@@ -83,6 +83,10 @@ int main(int argc, char **argv)
   }
 
   evtimeout = evtimer_new(base, timeoutcb, base);
+  if (evtimeout == NULL) {
+      puts("error create event");
+      return -1;
+    }
   evtimer_add(evtimeout, &timeout);
 
   memset(&sin, 0, sizeof(sin));
@@ -93,7 +97,10 @@ int main(int argc, char **argv)
   bevs = malloc(session_count * sizeof(struct bufferevent *));
   for (i = 0; i < session_count; ++i) {
     struct bufferevent *bev = bufferevent_socket_new(base, -1, BEV_OPT_CLOSE_ON_FREE);
-
+    if (bev == NULL) {
+      puts("error create bufferevent");
+      return -1;
+    }
     bufferevent_setcb(bev, readcb, NULL, eventcb, NULL);
     bufferevent_enable(bev, EV_READ|EV_WRITE);
     evbuffer_add(bufferevent_get_output(bev), message, block_size);
